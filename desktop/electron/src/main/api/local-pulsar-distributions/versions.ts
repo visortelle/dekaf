@@ -16,10 +16,6 @@ export const pulsarVersionInfos: PulsarVersionInfo[] = [{
   version: "2.11.2",
   downloadUrl: "https://archive.apache.org/dist/pulsar/pulsar-2.11.2/apache-pulsar-2.11.2-bin.tar.gz",
   sha512: "21f68ae8d651d2369557a80d65cca0a10eed3e72e146b51adb8107d369d57e31ba8129de7f4a343b875397d63584f1ec535ec48fd6aafc0697e33ea5118ce3e0"
-}, {
-  version: "3.3.3",
-  downloadUrl: "https://github.com/bufbuild/buf/releases/download/v1.28.1/buf-Darwin-x86_64.tar.gz",
-  sha512: "abfe461e5915021a09103ba9bf6240911dd6f76142ca627eaaed9afed3168a96"
 }];
 
 

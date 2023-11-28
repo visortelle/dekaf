@@ -92,7 +92,6 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
   try {
     // Downloading
     const versionInfo = pulsarVersionInfos.find(v => v.version === arg.version)!;
-    const url = await resolveUrlRedirects(versionInfo.downloadUrl, 10);
     const downloadedFile = path.join(tempDir, arg.version);
 
     let bytesTotal = 0;
@@ -169,6 +168,19 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
 
     const downloadStream = fs.createWriteStream(downloadedFile)
 
+    const downloadingReq: PulsarDistributionStatusChanged = {
+      type: "PulsarDistributionStatusChanged",
+      version: arg.version,
+      distributionStatus: {
+        type: "downloading",
+        version: arg.version,
+        bytesReceived,
+        bytesTotal
+      }
+    };
+    event.reply(apiChannel, downloadingReq);
+
+    const url = await resolveUrlRedirects(versionInfo.downloadUrl, 10);
     const req = https.get(url, res => {
       console.info('Downloading', url, 'to', downloadedFile);
       res.pipe(downloadStream);
@@ -188,7 +200,7 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
 
     // Check checksum and unpack
     downloadStream.on('finish', async () => {
-      const hash = await computeFileHash(downloadedFile, 'sha256');
+      const hash = await computeFileHash(downloadedFile, 'sha512');
 
       if (hash !== versionInfo.sha512) {
         const errMessage = `Unable to install Pulsar ${arg.version} distribution. Checksum verification failed.`;

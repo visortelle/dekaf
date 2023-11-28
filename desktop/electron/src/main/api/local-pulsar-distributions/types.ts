@@ -1,4 +1,4 @@
-export const knownPulsarVersions = ["3.3.3", "3.1.1", "3.1.0", "3.0.1", "2.11.2"] as const;
+export const knownPulsarVersions = ["3.1.1", "3.1.0", "3.0.1", "2.11.2"] as const;
 export type KnownPulsarVersion = typeof knownPulsarVersions[number];
 export type AnyPulsarVersion = string;
 
