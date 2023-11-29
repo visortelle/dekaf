@@ -86,7 +86,7 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
     const paths = getPaths();
 
     await download({
-      name: arg.version,
+      taskId: arg.version,
       dest: paths.getPulsarDistributionDir(arg.version),
       source: versionInfo.downloadUrl,
       checksum: {

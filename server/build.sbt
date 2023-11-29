@@ -54,6 +54,7 @@ lazy val root = project
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,
+        Universal / packageName := "dekaf",
         buildInfoPackage := "buildinfo",
         buildInfoObject := "BuildInfo",
         buildInfoOptions += BuildInfoOption.BuildTime,
