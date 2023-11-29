@@ -16,12 +16,9 @@ export type LocalPulsarInfo = {
 }
 
 export type CreateLocalPulsar = {
-  type: "CreateLocalPulsar"
-};
-
-export type CreateLocalPulsarResult = {
   type: "CreateLocalPulsar",
-}
+  config: LocalPulsarConfig
+};
 
 export type ListLocalPulsar = {
   type: "ListLocalPulsars"
@@ -29,4 +26,5 @@ export type ListLocalPulsar = {
 
 export type ListLocalPulsarsResult = {
   type: "ListLocalPulsarsResult",
+  configs: LocalPulsarConfig[]
 }

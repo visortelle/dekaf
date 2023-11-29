@@ -25,49 +25,51 @@ export function handleGetPaths(event: Electron.IpcMainEvent): void {
   event.reply(apiChannel, req);
 }
 
-const dataDir = "data";
-const configDir = "config";
-
-export const getDataDir = () => {
+export const getUserDataDir = () => {
   let dir: null | string = null;
   if (
     process.env.NODE_ENV === 'development' ||
     process.env.DEBUG_PROD === 'true'
   ) {
-    dir = path.resolve(process.cwd(), path.join(dataDir));
+    dir = path.resolve(process.cwd(), path.join("user-data"));
   } else {
-    dir = path.resolve(path.join(electron.app.getPath("appData"), dataDir));
-    console.log('getAppPath', electron.app.getAppPath());
-    console.log('appData', dir)
+    dir = path.resolve(path.join(electron.app.getPath("userData")));
   }
 
   return dir;
 };
 
-export const getConfigDir = () => {
+export const getAssetsDir = () => {
   let dir: null | string = null;
   if (
     process.env.NODE_ENV === 'development' ||
     process.env.DEBUG_PROD === 'true'
   ) {
-    dir = path.resolve(process.cwd(), path.join(configDir));
+    dir = path.resolve(process.cwd(), path.join("dist_assets", "build"));
   } else {
-    dir = path.resolve(path.join(electron.app.getPath("userData"), configDir));
+    dir = path.resolve(path.join(electron.app.getAppPath(), "dist_assets"));
   }
 
   return dir;
 };
 
 export function getPaths(): Paths {
-  const pulsarDistributionsDir = path.join(dataDir, "pulsar", "distributions");
+  const appPath = electron.app.getAppPath();
+  const assetsDir = getAssetsDir();
+  const userDataDir = getUserDataDir();
+  const pulsarDistributionsDir = path.resolve(path.join(userDataDir, "pulsar", "distributions"));
+  const getPulsarDistributionDir = (version: string) => path.resolve(path.join(pulsarDistributionsDir, version))
+  const getPulsarBin = (version: string) => path.resolve(path.join(getPulsarDistributionDir(version), 'bin', 'pulsar'))
+
   return {
-    dataDir: getDataDir(),
-    configDir: getConfigDir(),
-    javaHome: path.join(dataDir, `graalvm/graalvm-jdk-21.0.1+12.1/Contents/Home`),
+    appPath,
+    assetsDir,
+    userDataDir,
+    javaHome: path.resolve(path.join(assetsDir, 'graalvm', 'Contents', 'Home')),
     pulsarDistributionsDir,
-    getPulsarDistributionDir: (version) => path.join(pulsarDistributionsDir, version),
-    pulsarInstancesDir: path.join(dataDir, `pulsar/instances`),
-    pulsarBin: path.join(dataDir, `pulsar/versions/3.1.1/bin/pulsar`),
-    dekafBin: path.join(dataDir, `dekaf/current/bin/dekaf`),
+    getPulsarDistributionDir,
+    getPulsarBin,
+    pulsarLocalInstancesDir: path.resolve(path.join(userDataDir, 'pulsar', 'instances')),
+    dekafBin: path.resolve(path.join(assetsDir, 'dekaf', 'bin', 'dekaf')),
   };
 };

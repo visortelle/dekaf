@@ -90,16 +90,16 @@ async function prepare() {
   const arch = os.arch();
   const onError = () => { console.error('Exit 1'); process.exit(1) };
 
-  console.info('Preparing Dekaf dependencies.');
+  console.info('Preparing Dekaf assets.');
 
-  const depsDir = path.resolve(path.join(process.cwd(), "dependencies"));
-  console.info("Dependencies dir:", depsDir);
+  const depsDir = path.resolve(path.join(process.cwd(), "dist_assets"));
+  console.info("Assets dir:", depsDir);
 
   const platformDepsDir = path.resolve(path.join(depsDir, "src", platform, arch));
-  console.info("Platform dependencies dir:", platformDepsDir);
+  console.info("Platform assets dir:", platformDepsDir);
 
   const depsOutDir = path.resolve(path.join(depsDir, "build"));
-  console.info("Dependencies out dir:", depsOutDir);
+  console.info("Assets out dir:", depsOutDir);
 
   const graalvmOut = path.resolve(path.join(depsOutDir, 'graalvm'));
   await Promise.all(getGraalvmDownloaderTargets({ dest: graalvmOut }).map(
@@ -110,9 +110,7 @@ async function prepare() {
     taskId: 'dekaf-dist',
     source: 'file://' + path.resolve(path.join(process.cwd(), '../../server/target/universal/dekaf.tgz')),
     dest: path.resolve(path.join(depsOutDir, './dekaf')),
-    unpack: {
-      strip: 1
-    }
+    unpack: { strip: 1 }
   }
   await download(dekafDist, { onError });
 }

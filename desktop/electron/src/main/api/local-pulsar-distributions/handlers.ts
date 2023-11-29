@@ -1,3 +1,4 @@
+import fs from 'fs';
 import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
@@ -6,7 +7,7 @@ import { PulsarDistributionStatus, ListPulsarDistributionsResult, PulsarDistribu
 import { ErrorHappened } from '../api/types';
 import { pulsarVersionInfos } from './versions';
 import { sendError } from '../api/send-error';
-import { download } from '../../../../dependencies/downloader/downloader';
+import { download } from '../../../../dist_assets/downloader/downloader';
 
 const activeDownloads: Record<AnyPulsarVersion, { abortDownload: () => Promise<void> }> = {};
 
@@ -36,8 +37,10 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
 
   try {
     const paths = getPaths();
-    const downloadedVersions = (await fsAsync.readdir(paths.pulsarDistributionsDir))
-      .filter(p => !p.startsWith('.'))
+    const isDistributionsDirExits = await fsAsync.stat(paths.pulsarDistributionsDir).catch(() => undefined);
+    const downloadedVersions = isDistributionsDirExits ?
+      (await fsAsync.readdir(paths.pulsarDistributionsDir)).filter(p => !p.startsWith('.'))
+      : []
 
     const versions = Array.from(new Set(downloadedVersions.concat(knownPulsarVersions)));
 

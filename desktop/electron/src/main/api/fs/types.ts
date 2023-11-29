@@ -3,13 +3,14 @@ export type GetPaths = {
 };
 
 export type Paths = {
-  dataDir: string,
-  configDir: string,
+  appPath: string,
+  assetsDir: string,
+  userDataDir: string,
   javaHome: string,
   pulsarDistributionsDir: string
-  getPulsarDistributionDir: (version: string) => string
-  pulsarInstancesDir: string,
-  pulsarBin: string,
+  getPulsarDistributionDir: (version: string) => string,
+  getPulsarBin: (version: string) => string,
+  pulsarLocalInstancesDir: string,
   dekafBin: string,
 }
 

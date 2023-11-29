@@ -8,7 +8,7 @@
     "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
     "check-ts": "tsc --noEmit",
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll",
-    "pre-package": "rimraf ./dependencies/build && ts-node ./dependencies/prepare.ts",
+    "pre-package": "rimraf ./dist_assets/build && ts-node ./dist_assets/prepare.ts",
     "package": "npm run check-ts && npm run pre-package && rimraf ./release/build && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run start:renderer",
@@ -213,8 +213,8 @@
         ]
       },
       {
-        "from": "dependencies/build",
-        "to": "dependencies",
+        "from": "dist_assets/build",
+        "to": "dist_assets",
         "filter": [
           "**/*"
         ]
