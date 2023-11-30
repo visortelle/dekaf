@@ -72,6 +72,7 @@
     "semver": "^7.5.4",
     "tar": "^6.2.0",
     "unzipper": "^0.10.14",
+    "use-debounce": "^9.0.4",
     "use-local-storage-state": "^19.1.0",
     "uuid": "^9.0.1"
   },
@@ -93,8 +94,8 @@
     "@types/react-test-renderer": "^18.0.1",
     "@types/tar": "^6.1.10",
     "@types/terser-webpack-plugin": "^5.0.4",
-    "@types/uuid": "^9.0.7",
     "@types/unzipper": "^0.10.9",
+    "@types/uuid": "^9.0.7",
     "@types/webpack-bundle-analyzer": "^4.6.0",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",

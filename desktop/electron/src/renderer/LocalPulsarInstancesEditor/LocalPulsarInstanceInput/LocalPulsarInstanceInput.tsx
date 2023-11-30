@@ -1,13 +1,13 @@
 import React from 'react';
-import s from './LocalPulsarConfigInput.module.css'
-import { LocalPulsarConfig } from '../../main/api/local-pulsar/types';
-import FormItem from '../ui/FormItem/FormItem';
-import FormLabel from '../ui/FormLabel/FormLabel';
-import Input from '../ui/Input/Input';
+import s from './LocalPulsarInstanceInput.module.css'
+import { LocalPulsarInstance } from '../../../main/api/local-pulsar-instances/types';
+import FormItem from '../../ui/FormItem/FormItem';
+import FormLabel from '../../ui/FormLabel/FormLabel';
+import Input from '../../ui/Input/Input';
 
 export type LocalPulsarConfigInputProps = {
-  value: LocalPulsarConfig,
-  onChange: (v: LocalPulsarConfig) => void
+  value: LocalPulsarInstance,
+  onChange: (v: LocalPulsarInstance) => void
 };
 
 const LocalPulsarConfigInput: React.FC<LocalPulsarConfigInputProps> = (props) => {

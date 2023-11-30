@@ -45,7 +45,10 @@ const configuration: webpack.Configuration = {
           {
             loader: 'css-loader',
             options: {
-              modules: true,
+              modules: {
+                mode: 'local',
+                localIdentName: '[name]__[local]--[hash:base64:5]',
+              },
               sourceMap: true,
               importLoaders: 1,
             },

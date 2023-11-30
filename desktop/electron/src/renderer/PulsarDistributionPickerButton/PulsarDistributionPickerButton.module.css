@@ -1,0 +1,4 @@
+.PickerContainer {
+  overflow: auto;
+  max-height: inherit;
+}
