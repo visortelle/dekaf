@@ -7,8 +7,6 @@ import { H2 } from '../../ui/H/H';
 
 import closeIcon from './close.svg';
 
-console.log('closeIIIII', closeIcon);
-
 import s from './Modals.module.css'
 
 export type ModalStackEntry = {

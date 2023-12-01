@@ -1,44 +1,26 @@
+import fs from 'fs';
 import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
-import { PulsarDistributionStatus, ListPulsarDistributionsResult, PulsarDistributionStatusChanged, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution, ListPulsarDistributions, PulsarDistributionDeleted } from './types';
+import { PulsarDistributionStatus, ListPulsarDistributionsResult, PulsarDistributionStatusChanged, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution, ListPulsarDistributions, PulsarDistributionDeleted, GetPulsarDistributionStatus } from './types';
 import { ErrorHappened } from '../api/types';
 import { pulsarReleaseLines } from './versions';
 import { sendError } from '../api/send-error';
 import { download } from '../../../../dist_assets/downloader/downloader';
 
-const activeDownloads: Record<AnyPulsarVersion, { abortDownload: () => Promise<void> }> = {};
+const activeDownloads: Record<AnyPulsarVersion, {
+  abortDownload: () => Promise<void>,
+  bytesReceived: number,
+  bytesTotal: number
+}> = {};
 
 const knownPulsarDistributions = pulsarReleaseLines.flatMap(v => v.knownVersions);
 
 export async function handleListPulsarDistributions(event: Electron.IpcMainEvent): Promise<void> {
-  async function getDistributionStatus(version: AnyPulsarVersion): Promise<PulsarDistributionStatus> {
-    const paths = getPaths();
-
-    let isInstalled = true;
-    try {
-      await fsAsync.readdir(paths.getPulsarDistributionDir(version))
-    } catch (_) {
-      isInstalled = false;
-    };
-
-    if (isInstalled) {
-      return {
-        type: "installed",
-        version
-      };
-    }
-
-    return {
-      type: "not-installed",
-      version
-    };
-  }
-
   try {
     const paths = getPaths();
-    const isDistributionsDirExits = await fsAsync.stat(paths.pulsarDistributionsDir).catch(() => undefined);
+    const isDistributionsDirExits = fs.existsSync(paths.pulsarDistributionsDir);
     const downloadedVersions = isDistributionsDirExits ?
       (await fsAsync.readdir(paths.pulsarDistributionsDir)).filter(p => !p.startsWith('.'))
       : []
@@ -50,28 +32,6 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
       versions
     }
     event.reply(apiChannel, req);
-
-    versions.forEach(async (version) => {
-      try {
-        const distributionStatus = await getDistributionStatus(version);
-        const req: PulsarDistributionStatusChanged = {
-          type: "PulsarDistributionStatusChanged",
-          distributionStatus,
-          version
-        }
-        event.reply(apiChannel, req);
-      } catch (err) {
-        const errMessage = `Unable to list installed Pulsar distributions. ${err as Error}`
-        const req: ErrorHappened = {
-          type: "ErrorHappened",
-          message: errMessage
-        }
-        event.reply(apiChannel, req);
-        sendError(event, errMessage);
-      }
-    });
-
-    return;
   } catch (err) {
     const errMessage = `Unable to list installed Pulsar distributions. ${err as Error}`;
     const req: ErrorHappened = {
@@ -81,6 +41,53 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
     event.reply(apiChannel, req);
     sendError(event, errMessage);
     return;
+  }
+}
+
+export async function handleGetPulsarDistributionStatus(event: Electron.IpcMainEvent, arg: GetPulsarDistributionStatus): Promise<void> {
+  async function getDistributionStatus(version: AnyPulsarVersion): Promise<PulsarDistributionStatus> {
+    const paths = getPaths();
+
+    let isInstalled = fs.existsSync(paths.getPulsarDistributionDir(version));
+
+    if (isInstalled) {
+      return {
+        type: "installed",
+        version
+      };
+    }
+
+    if (activeDownloads[version] !== undefined) {
+      return {
+        type: 'downloading',
+        version,
+        bytesReceived: activeDownloads[version].bytesReceived,
+        bytesTotal: activeDownloads[version].bytesTotal,
+      }
+    }
+
+    return {
+      type: "not-installed",
+      version
+    };
+  }
+
+  try {
+    const distributionStatus = await getDistributionStatus(arg.version);
+    const req: PulsarDistributionStatusChanged = {
+      type: "PulsarDistributionStatusChanged",
+      distributionStatus,
+      version: arg.version
+    }
+    event.reply(apiChannel, req);
+  } catch (err) {
+    const errMessage = `Unable to list installed Pulsar distributions. ${err as Error}`
+    const req: ErrorHappened = {
+      type: "ErrorHappened",
+      message: errMessage
+    }
+    event.reply(apiChannel, req);
+    sendError(event, errMessage);
   }
 }
 
@@ -122,6 +129,12 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
           return;
         }
 
+        activeDownloads[arg.version.version] = {
+          ...activeDownloads[arg.version.version],
+          bytesReceived,
+          bytesTotal
+        };
+
         const req: PulsarDistributionStatusChanged = {
           type: "PulsarDistributionStatusChanged",
           version: arg.version.version,
@@ -136,7 +149,7 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
         lastDownloadProgressUpdate = Date.now();
       },
       onDownloadAbortReady(abortDownload) {
-        activeDownloads[arg.version.version] = { abortDownload };
+        activeDownloads[arg.version.version] = { ...activeDownloads[arg.version.version], abortDownload };
       },
       onUnpackStart: () => {
         const req: PulsarDistributionStatusChanged = {
@@ -235,7 +248,6 @@ export async function handleCancelDownloadPulsarDistribution(event: Electron.Ipc
     sendError(event, errMessage);
   }
 }
-
 
 export async function handleDeletePulsarDistribution(event: Electron.IpcMainEvent, arg: DeletePulsarDistribution): Promise<void> {
   try {

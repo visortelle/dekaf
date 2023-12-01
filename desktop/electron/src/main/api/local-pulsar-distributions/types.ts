@@ -56,7 +56,8 @@ export type DownloadPulsarDistribution = {
 }
 
 export type GetPulsarDistributionStatus = {
-
+  type: "GetPulsarDistributionStatus",
+  version: string
 };
 
 export type PulsarDistributionStatusChanged = {

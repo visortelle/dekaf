@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import s from './PulsarVersionElement.module.css'
-import { CancelDownloadPulsarDistribution, DownloadPulsarDistribution, PulsarDistributionStatus, KnownPulsarVersion } from '../../../../main/api/local-pulsar-distributions/types';
+import { CancelDownloadPulsarDistribution, DownloadPulsarDistribution, PulsarDistributionStatus, KnownPulsarVersion, GetPulsarDistributionStatus } from '../../../../main/api/local-pulsar-distributions/types';
 import { apiChannel } from '../../../../main/channels';
 import SmallButton from '../../../ui/SmallButton/SmallButton';
 import * as I18n from '../../../app/I18n/I18n';
@@ -25,12 +25,14 @@ const PulsarVersionElement: React.FC<PulsarVersionInfoElementProps> = (props) =>
   const i18n = I18n.useContext();
   const modals = Modals.useContext();
 
-  console.log('distributioin status', distributionStatus);
-  console.log('vvvv', version)
-
   useEffect(() => {
-    window.electron.ipcRenderer.on('api', (arg) => {
-      console.log('hm', arg);
+    const req: GetPulsarDistributionStatus = {
+      type: "GetPulsarDistributionStatus",
+      version
+    };
+    window.electron.ipcRenderer.sendMessage(apiChannel, req);
+
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "PulsarDistributionStatusChanged" && arg.version === version) {
         setDistributionStatus(arg.distributionStatus);
       }
