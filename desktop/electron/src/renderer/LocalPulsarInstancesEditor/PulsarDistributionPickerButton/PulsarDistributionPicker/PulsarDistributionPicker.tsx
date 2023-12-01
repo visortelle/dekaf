@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import s from './PulsarDistributionPicker.module.css';
 import PulsarVersionElement from './PulsarVersionInfoElement/PulsarVersionElement';
-import { AnyPulsarVersion, ListPulsarDistributions } from '../../../main/api/local-pulsar-distributions/types';
-import { apiChannel } from '../../../main/channels';
-import { knownPulsarVersions, pulsarReleaseLines } from '../../../main/api/local-pulsar-distributions/versions';
-import { H2 } from '../../ui/H/H';
+import { AnyPulsarVersion, ListPulsarDistributions } from '../../../../main/api/local-pulsar-distributions/types';
+import { apiChannel } from '../../../../main/channels';
+import { knownPulsarVersions, pulsarReleaseLines } from '../../../../main/api/local-pulsar-distributions/versions';
+import { H2 } from '../../../ui/H/H';
 
 const formatDate = (date: Date) => (
   <span>
@@ -13,7 +13,7 @@ const formatDate = (date: Date) => (
 );
 
 export type PulsarDistributionPickerProps = {
-
+  onSelectVersion: (v: string) => void
 };
 
 export const PulsarDistributionsPicker: React.FC<PulsarDistributionPickerProps> = (props) => {
@@ -65,7 +65,11 @@ export const PulsarDistributionsPicker: React.FC<PulsarDistributionPickerProps> 
               </div>
             </div>
             {rl.knownVersions.sort((a, b) => b.version.localeCompare(a.version, 'en', { numeric: true })).map(knownVersion => (
-              <PulsarVersionElement key={knownVersion.version} version={{ type: 'known-version', knownVersion }} />
+              <PulsarVersionElement
+                key={knownVersion.version}
+                version={{ type: 'known-version', knownVersion }}
+                onSelectThisVersion={() => props.onSelectVersion(knownVersion.version)}
+              />
             ))}
           </div>
         );
@@ -78,7 +82,11 @@ export const PulsarDistributionsPicker: React.FC<PulsarDistributionPickerProps> 
           </div>
           <div>
             {unknownPulsarVersions.sort((a, b) => b.localeCompare(a, 'en', { numeric: true })).map(unknownVersion => (
-              <PulsarVersionElement key={unknownVersion} version={{ type: 'unknown-version', unknownVersion: unknownVersion }} />
+              <PulsarVersionElement
+                key={unknownVersion}
+                version={{ type: 'unknown-version', unknownVersion: unknownVersion }}
+                onSelectThisVersion={() => props.onSelectVersion(unknownVersion)}
+              />
             ))}
           </div>
         </>

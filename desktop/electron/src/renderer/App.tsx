@@ -1,12 +1,7 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Button from './ui/Button/Button';
 import '../../assets/globals.css';
 import '../../assets/fonts.css';
-import FormItem from './ui/FormItem/FormItem';
-import FormLabel from './ui/FormLabel/FormLabel';
-import Input from './ui/Input/Input';
-import useLocalStorage from "use-local-storage-state";
 import { ApiEvent } from '../main/api/service';
 import * as I18n from './app/I18n/I18n';
 import * as Notifications from './app/Notifications/Notifications';
@@ -14,8 +9,11 @@ import * as Modals from './app/Modals/Modals';
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from 'react';
 import { LocalPulsarInstance } from '../main/api/local-pulsar-instances/types';
-import LocalPulsarConfigInput from './LocalPulsarInstancesEditor/LocalPulsarInstanceInput/LocalPulsarInstanceInput';
-import PulsarDistributionPickerButton from './PulsarDistributionPickerButton/PulsarDistributionPickerButton';
+import PulsarStandaloneConfigInput from './LocalPulsarInstancesEditor/PulsarStandaloneConfigInput/PulsarStandaloneConfigInput';
+import PulsarDistributionPickerButton from './LocalPulsarInstancesEditor/PulsarDistributionPickerButton/PulsarDistributionPickerButton';
+import SmallButton from './ui/SmallButton/SmallButton';
+import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
+import Tooltip from './ui/Tooltip/Tooltip';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
@@ -25,14 +23,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 function InitialAppScreen() {
-  const [licenseId, setLicenseId] = useLocalStorage<string>('DEKAF_LICENSE_ID', { defaultValue: '' });
-  const [licenseToken, setLicenseToken] = useLocalStorage<string>('DEKAF_LICENSE_TOKEN', { defaultValue: '' });
   const { notifyError } = Notifications.useContext();
-
-  const [localPulsarConfig, setLocalPulsarConfig] = useState<LocalPulsarInstance>({
-    name: 'new',
-    version: '3.3.1'
-  });
 
   useEffect(() => {
     window.electron.ipcRenderer.on('api', (arg) => {
@@ -47,29 +38,10 @@ function InitialAppScreen() {
       <Notifications.DefaultProvider>
         <Modals.DefaultProvider>
           <div>
-            <LocalPulsarConfigInput
-              value={localPulsarConfig}
-              onChange={setLocalPulsarConfig}
-            />
+            <Tooltip />
             <PulsarDistributionPickerButton />
-            <FormItem>
-              <FormLabel content="License ID" />
-              <Input
-                value={licenseId}
-                onChange={setLicenseId}
-              />
-            </FormItem>
-
-            <FormItem>
-              <FormLabel content="License Token" />
-              <Input
-                value={licenseToken}
-                onChange={setLicenseToken}
-                inputProps={{ type: 'password' }}
-              />
-            </FormItem>
-
-            <Button
+            <CreateLocalPulsarInstanceButton />
+            {/* <SmallButton
               onClick={() => {
                 const event: ApiEvent = { type: "GetPaths" };
                 window.electron.ipcRenderer.sendMessage('api', event);
@@ -85,9 +57,9 @@ function InitialAppScreen() {
                 // pulsarProcess.stderr.on("data", data => console.log(`[ERROR][pulsar] ${data}`));
               }}
               type='primary'
-              text='Start local Pulsar instance'
-            />
-            <Button
+              text='Create a local Pulsar instance'
+            /> */}
+            {/* <SmallButton
               onClick={() => {
                 // const pulsarProcess = spawn(
                 //   dekafBin,
@@ -112,7 +84,7 @@ function InitialAppScreen() {
               }}
               type='primary'
               text='Connect'
-            />
+            /> */}
           </div>
         </Modals.DefaultProvider>
       </Notifications.DefaultProvider>

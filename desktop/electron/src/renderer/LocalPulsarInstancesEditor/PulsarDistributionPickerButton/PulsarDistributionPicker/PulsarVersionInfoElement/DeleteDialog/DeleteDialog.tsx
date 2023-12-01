@@ -1,8 +1,8 @@
 import React from 'react';
-import * as Modals from '../../../../app/Modals/Modals';
-import ConfirmationDialog from '../../../../ui/ConfirmationDialog/ConfirmationDialog';
-import { DeletePulsarDistribution } from '../../../../../main/api/local-pulsar-distributions/types';
-import { apiChannel } from '../../../../../main/channels';
+import * as Modals from '../../../../../app/Modals/Modals';
+import ConfirmationDialog from '../../../../../ui/ConfirmationDialog/ConfirmationDialog';
+import { DeletePulsarDistribution } from '../../../../../../main/api/local-pulsar-distributions/types';
+import { apiChannel } from '../../../../../../main/channels';
 
 export type DeleteDialogProps = {
   version: string

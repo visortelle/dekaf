@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import s from './PulsarVersionElement.module.css'
-import { CancelDownloadPulsarDistribution, DownloadPulsarDistribution, PulsarDistributionStatus, KnownPulsarVersion, GetPulsarDistributionStatus } from '../../../../main/api/local-pulsar-distributions/types';
-import { apiChannel } from '../../../../main/channels';
-import SmallButton from '../../../ui/SmallButton/SmallButton';
-import * as I18n from '../../../app/I18n/I18n';
-import * as Modals from '../../../app/Modals/Modals';
+import { CancelDownloadPulsarDistribution, DownloadPulsarDistribution, PulsarDistributionStatus, KnownPulsarVersion, GetPulsarDistributionStatus } from '../../../../../main/api/local-pulsar-distributions/types';
+import { apiChannel } from '../../../../../main/channels';
+import SmallButton from '../../../../ui/SmallButton/SmallButton';
+import * as I18n from '../../../../app/I18n/I18n';
+import * as Modals from '../../../../app/Modals/Modals';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
-import { knownPulsarVersions } from '../../../../main/api/local-pulsar-distributions/versions';
-import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
+import { knownPulsarVersions } from '../../../../../main/api/local-pulsar-distributions/versions';
+import DeleteButton from '../../../../ui/DeleteButton/DeleteButton';
 
 export type PulsarVersionInfoElementProps = {
   version: ({
@@ -17,6 +17,7 @@ export type PulsarVersionInfoElementProps = {
     type: 'unknown-version',
     unknownVersion: string
   })
+  onSelectThisVersion: () => void
 };
 
 const PulsarVersionElement: React.FC<PulsarVersionInfoElementProps> = (props) => {
@@ -72,7 +73,7 @@ const PulsarVersionElement: React.FC<PulsarVersionInfoElementProps> = (props) =>
             onClick={() => {
               modals.push({
                 id: "delete-pulsar-distribution",
-                title: `Delete Pulsar version`,
+                title: `Delete Pulsar Version`,
                 content: (
                   <DeleteDialog version={version} />
                 ),
@@ -83,7 +84,7 @@ const PulsarVersionElement: React.FC<PulsarVersionInfoElementProps> = (props) =>
           <SmallButton
             text="Select this version"
             type='primary'
-            onClick={() => { }}
+            onClick={props.onSelectThisVersion}
           />
         </div>
       )}
