@@ -3,7 +3,8 @@ import { handleGetPaths } from "./fs/handlers";
 import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleGetPulsarDistributionStatus, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
 import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted, GetPulsarDistributionStatus } from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
-import { CreateLocalPulsarInstance } from './local-pulsar-instances/types';
+import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
+import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
 
 export type ApiEvent = ErrorHappened |
   GetPaths |
@@ -16,7 +17,11 @@ export type ApiEvent = ErrorHappened |
   DeletePulsarDistribution |
   PulsarDistributionDeleted |
   PulsarDistributionStatusChanged |
-  CreateLocalPulsarInstance
+  CreateLocalPulsarInstance |
+  UpdateLocalPulsarInstance |
+  DeleteLocalPulsarInstance |
+  ListLocalPulsarInstances |
+  ListLocalPulsarInstancesResult
 
 export type ApiService = {
   handleEvent: (event: Electron.IpcMainEvent, arg: any) => void
@@ -40,6 +45,14 @@ export const apiService: ApiService = {
       case "CancelDownloadPulsarDistributionRequest": handleCancelDownloadPulsarDistribution(event, arg);
         break;
       case "DeletePulsarDistribution": handleDeletePulsarDistribution(event, arg);
+        break;
+      case "ListLocalPulsarInstances": handleListLocalPulsarInstances(event, arg);
+        break;
+      case "CreateLocalPulsarInstance": handleCreateLocalPulsarInstance(event, arg);
+        break;
+      case "UpdateLocalPulsarInstance": handleUpdateLocalPulsarInstance(event, arg);
+        break;
+      case "DeleteLocalPulsarInstance": handleDeleteLocalPulsarInstance(event, arg);
         break;
     }
   }

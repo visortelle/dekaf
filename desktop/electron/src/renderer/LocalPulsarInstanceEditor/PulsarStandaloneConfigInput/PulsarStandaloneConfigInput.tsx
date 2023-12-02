@@ -35,7 +35,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
           help={(
             <>
               <p>
-                Remove all Pulsar instance resources and messages before the next instance launch.
+                Remove all Pulsar instance resources and messages before each instance launch.
               </p>
               <p>
                 It may be useful if you frequently need to test various scenarios on a fresh Pulsar instance.

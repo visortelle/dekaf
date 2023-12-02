@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import s from './CreateLocalPulsarInstanceButton.module.css'
 import * as Modals from '../app/Modals/Modals';
-import LocalPulsarInstanceEditor from '../LocalPulsarInstancesEditor/LocalPulsarInstanceEditor';
+import LocalPulsarInstanceEditor from '../LocalPulsarInstanceEditor/LocalPulsarInstanceEditor';
 import { CreateLocalPulsarInstance, LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import Button from '../ui/Button/Button';
 import { v4 as uuid } from 'uuid';
@@ -69,10 +69,10 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         onChange={setLocalPulsarInstance}
       />
 
-      <div style={{ marginLeft: 'auto' }}>
+      <div style={{ marginLeft: 'auto', marginTop: '24rem' }}>
         <Button
           type='primary'
-          text='Create'
+          text='Create Pulsar Instance'
           disabled={localPulsarInstance.name.length === 0}
           onClick={() => {
             const req: CreateLocalPulsarInstance = {

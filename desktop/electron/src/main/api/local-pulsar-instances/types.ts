@@ -29,6 +29,11 @@ export type CreateLocalPulsarInstance = {
   config: LocalPulsarInstance
 };
 
+export type UpdateLocalPulsarInstance = {
+  type: "UpdateLocalPulsarInstance",
+  config: LocalPulsarInstance
+};
+
 export type DeleteLocalPulsarInstance = {
   type: "DeleteLocalPulsarInstance",
   instanceId: string

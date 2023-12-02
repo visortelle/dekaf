@@ -9,15 +9,17 @@ import * as Modals from './app/Modals/Modals';
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from 'react';
 import { LocalPulsarInstance } from '../main/api/local-pulsar-instances/types';
-import PulsarStandaloneConfigInput from './LocalPulsarInstancesEditor/PulsarStandaloneConfigInput/PulsarStandaloneConfigInput';
-import PulsarDistributionPickerButton from './LocalPulsarInstancesEditor/PulsarDistributionPickerButton/PulsarDistributionPickerButton';
+import PulsarStandaloneConfigInput from './LocalPulsarInstanceEditor/PulsarStandaloneConfigInput/PulsarStandaloneConfigInput';
+import PulsarDistributionPickerButton from './LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPickerButton';
 import SmallButton from './ui/SmallButton/SmallButton';
 import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
 import Tooltip from './ui/Tooltip/Tooltip';
+import { apiChannel } from '../main/channels';
+import ConnectionsList from './ConnectionsList/ConnectionsList';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
-  window.electron.ipcRenderer.on('api', (arg) => {
+  window.electron.ipcRenderer.on(apiChannel, (arg) => {
     console.debug('Received API event:', arg);
   });
 }
@@ -26,7 +28,7 @@ function InitialAppScreen() {
   const { notifyError } = Notifications.useContext();
 
   useEffect(() => {
-    window.electron.ipcRenderer.on('api', (arg) => {
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ErrorHappened") {
         notifyError(arg.message);
       }
@@ -39,8 +41,8 @@ function InitialAppScreen() {
         <Modals.DefaultProvider>
           <div>
             <Tooltip />
-            <PulsarDistributionPickerButton />
             <CreateLocalPulsarInstanceButton />
+            <ConnectionsList />
             {/* <SmallButton
               onClick={() => {
                 const event: ApiEvent = { type: "GetPaths" };
