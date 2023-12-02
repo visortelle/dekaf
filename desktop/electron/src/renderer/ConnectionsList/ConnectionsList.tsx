@@ -3,6 +3,8 @@ import s from './ConnectionsList.module.css'
 import { ListLocalPulsarInstances, LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import { apiChannel } from '../../main/channels';
 import LocalPulsarInstanceElement from './LocalPulsarInstanceElement/LocalPulsarInstanceElement';
+import SmallButton from '../ui/SmallButton/SmallButton';
+import { SpawnProcess } from '../../main/api/processes/type';
 
 export type ConnectionsListProps = {};
 
@@ -27,7 +29,7 @@ const ConnectionsList: React.FC<ConnectionsListProps> = (props) => {
 
   return (
     <div className={s.ConnectionsList}>
-      {localPulsarInstances.map(lpi => <LocalPulsarInstanceElement key={lpi.id} value={lpi} />)}
+      {localPulsarInstances.map(lpi => <LocalPulsarInstanceElement key={lpi.id} pulsarInstance={lpi} />)}
     </div>
   );
 }

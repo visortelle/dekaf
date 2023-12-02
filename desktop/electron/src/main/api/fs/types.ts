@@ -1,3 +1,5 @@
+import { PulsarStandalonePaths } from "../local-pulsar-instances/types";
+
 export type GetPaths = {
   type: "GetPaths"
 };
@@ -13,6 +15,7 @@ export type Paths = {
   pulsarLocalInstancesDir: string,
   getPulsarLocalInstanceDir: (instanceId: string) => string,
   getPulsarLocalInstanceConfigPath: (instanceId: string) => string,
+  getPulsarStandalonePaths: (instanceId: string) => PulsarStandalonePaths,
   dekafBin: string,
 }
 

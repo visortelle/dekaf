@@ -65,12 +65,6 @@ export async function handleListLocalPulsarInstances(event: Electron.IpcMainEven
 
     const instanceIds = await fsExtra.readdir(instancesDir);
 
-    const getInstanceConfig = async (instanceId: string) => {
-      const configFilePath = paths.getPulsarLocalInstanceConfigPath(instanceId);
-      const configFileContent = await fsAsync.readFile(configFilePath, { encoding: 'utf-8' });
-      const config = JSON.parse(configFileContent) as LocalPulsarInstance;
-      return config;
-    }
     const instanceConfigs = await Promise.all(instanceIds.map(getInstanceConfig));
 
     const req: ListLocalPulsarInstancesResult = {
@@ -112,4 +106,12 @@ export async function handleDeleteLocalPulsarInstance(event: Electron.IpcMainEve
 
     event.reply(apiChannel, req);
   }
+}
+
+export const getInstanceConfig = async (instanceId: string) => {
+  const paths = getPaths();
+  const configFilePath = paths.getPulsarLocalInstanceConfigPath(instanceId);
+  const configFileContent = await fsAsync.readFile(configFilePath, { encoding: 'utf-8' });
+  const config = JSON.parse(configFileContent) as LocalPulsarInstance;
+  return config;
 }

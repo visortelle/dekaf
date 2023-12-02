@@ -5,6 +5,8 @@ import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsar
 import { ErrorHappened } from './api/types';
 import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
+import { ProcessLogEntryReceived, SpawnProcess } from './processes/type';
+import { handleSpawnProcess } from './processes/handlers';
 
 export type ApiEvent = ErrorHappened |
   GetPaths |
@@ -21,7 +23,9 @@ export type ApiEvent = ErrorHappened |
   UpdateLocalPulsarInstance |
   DeleteLocalPulsarInstance |
   ListLocalPulsarInstances |
-  ListLocalPulsarInstancesResult
+  ListLocalPulsarInstancesResult |
+  SpawnProcess |
+  ProcessLogEntryReceived
 
 export type ApiService = {
   handleEvent: (event: Electron.IpcMainEvent, arg: any) => void
@@ -53,6 +57,8 @@ export const apiService: ApiService = {
       case "UpdateLocalPulsarInstance": handleUpdateLocalPulsarInstance(event, arg);
         break;
       case "DeleteLocalPulsarInstance": handleDeleteLocalPulsarInstance(event, arg);
+        break;
+      case "SpawnProcess": handleSpawnProcess(event, arg);
         break;
     }
   }

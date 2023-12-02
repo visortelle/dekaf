@@ -3,6 +3,7 @@ import path from 'path';
 import { GetPathsResponse as GetPathsResult, Paths } from './types';
 import { apiChannel } from '../../channels';
 import { ErrorHappened } from '../api/types';
+import { PulsarStandalonePaths } from '../local-pulsar-instances/types';
 
 export function handleGetPaths(event: Electron.IpcMainEvent): void {
   let paths: Paths;
@@ -63,6 +64,15 @@ export function getPaths(): Paths {
   const pulsarLocalInstancesDir = path.resolve(path.join(userDataDir, 'pulsar', 'instances'));
   const getPulsarLocalInstanceDir = (instanceId: string) => path.resolve(path.join(pulsarLocalInstancesDir, instanceId));
   const getPulsarLocalInstanceConfigPath = (instanceId: string) => path.resolve(path.join(getPulsarLocalInstanceDir(instanceId), "pulsar-instance.json"));
+  const getPulsarStandalonePaths = (instanceId: string): PulsarStandalonePaths => {
+    const instanceDir = getPulsarLocalInstanceDir(instanceId);
+    return {
+      metadataDir: path.resolve(path.join(instanceDir, "data", "metadata")),
+      bookkeeperDir: path.resolve(path.join(instanceDir, "data", "bookkeeper")),
+      standaloneConfPath: path.resolve(path.join(instanceDir, "data", "conf", "standalone.conf")),
+      functionsWorkerConfPath: path.resolve(path.join(instanceDir, "data", "conf", "functions_worker.yml")),
+    }
+  }
 
   return {
     appPath,
@@ -75,6 +85,7 @@ export function getPaths(): Paths {
     pulsarLocalInstancesDir,
     getPulsarLocalInstanceDir,
     getPulsarLocalInstanceConfigPath,
+    getPulsarStandalonePaths,
     dekafBin: path.resolve(path.join(assetsDir, 'dekaf', 'bin', 'dekaf')),
   };
 };

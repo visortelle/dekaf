@@ -1,3 +1,10 @@
+export type PulsarStandalonePaths = {
+  metadataDir: string,
+  bookkeeperDir: string,
+  standaloneConfPath: string,
+  functionsWorkerConfPath: string,
+};
+
 export type LocalPulsarInstance = {
   type: "LocalPulsarInstance"
   id: string,
