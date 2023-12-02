@@ -3,11 +3,12 @@ import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
-import { PulsarDistributionStatus, ListPulsarDistributionsResult, PulsarDistributionStatusChanged, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution, ListPulsarDistributions, PulsarDistributionDeleted, GetPulsarDistributionStatus } from './types';
+import { PulsarDistributionStatus, ListPulsarDistributionsResult, PulsarDistributionStatusChanged, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution, ListPulsarDistributions, PulsarDistributionDeleted, GetPulsarDistributionStatus, GetPulsarDistributionFileAtPath, GetPulsarDistributionFileAtPathResult } from './types';
 import { ErrorHappened } from '../api/types';
 import { pulsarReleaseLines } from './versions';
 import { sendError } from '../api/send-error';
 import { download } from '../../../../dist_assets/downloader/downloader';
+import path from 'node:path';
 
 const activeDownloads: Record<AnyPulsarVersion, {
   abortDownload: () => Promise<void>,
@@ -269,6 +270,33 @@ export async function handleDeletePulsarDistribution(event: Electron.IpcMainEven
     event.reply(apiChannel, deletedReq);
   } catch (err) {
     const errMessage = `Unable to delete local Pulsar distribution. ${err}`;
+    const req: ErrorHappened = {
+      type: "ErrorHappened",
+      message: errMessage
+    };
+    event.reply(apiChannel, req);
+
+    sendError(event, errMessage);
+  }
+}
+
+export async function handleGetPulsarDistributionFileAtPath(event: Electron.IpcMainEvent, arg: GetPulsarDistributionFileAtPath): Promise<void> {
+  try {
+    const paths = getPaths();
+    const distributionDir = paths.getPulsarDistributionDir(arg.version);
+    const filePath = path.resolve(path.join(distributionDir, arg.path));
+    const content = await fsAsync.readFile(filePath, { encoding: 'utf-8' });
+
+    const req: GetPulsarDistributionFileAtPathResult = {
+      type: "GetPulsarDistributionFileAtPathResult",
+      path: arg.path,
+      version: arg.version,
+      content
+    };
+
+    event.reply(apiChannel, req);
+  } catch (err) {
+    const errMessage = `Unable to get Pulsar distribution file at path. ${err}`;
     const req: ErrorHappened = {
       type: "ErrorHappened",
       message: errMessage

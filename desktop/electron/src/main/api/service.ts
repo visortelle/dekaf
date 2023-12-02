@@ -1,7 +1,7 @@
 import { GetPaths, GetPathsResponse } from './fs/types'
 import { handleGetPaths } from "./fs/handlers";
-import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleGetPulsarDistributionStatus, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
-import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted, GetPulsarDistributionStatus } from './local-pulsar-distributions/types';
+import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleGetPulsarDistributionFileAtPath, handleGetPulsarDistributionStatus, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
+import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted, GetPulsarDistributionStatus, GetPulsarDistributionFileAtPath, GetPulsarDistributionFileAtPathResult } from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
 import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
@@ -19,6 +19,8 @@ export type ApiEvent = ErrorHappened |
   DeletePulsarDistribution |
   PulsarDistributionDeleted |
   PulsarDistributionStatusChanged |
+  GetPulsarDistributionFileAtPath |
+  GetPulsarDistributionFileAtPathResult |
   CreateLocalPulsarInstance |
   UpdateLocalPulsarInstance |
   DeleteLocalPulsarInstance |
@@ -57,6 +59,8 @@ export const apiService: ApiService = {
       case "UpdateLocalPulsarInstance": handleUpdateLocalPulsarInstance(event, arg);
         break;
       case "DeleteLocalPulsarInstance": handleDeleteLocalPulsarInstance(event, arg);
+        break;
+      case "GetPulsarDistributionFileAtPath": handleGetPulsarDistributionFileAtPath(event, arg);
         break;
       case "SpawnProcess": handleSpawnProcess(event, arg);
         break;

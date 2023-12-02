@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import s from './PulsarStandaloneConfigInput.module.css'
 import { PulsarStandaloneConfig } from '../../../main/api/local-pulsar-instances/types';
 import FormItem from '../../ui/FormItem/FormItem';
@@ -9,6 +9,22 @@ import PulsarDistributionPickerButton from '../PulsarDistributionPickerButton/Pu
 import { H2 } from '../../ui/H/H';
 import Toggle from '../../ui/Toggle/Toggle';
 import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
+import { apiChannel } from '../../../main/channels';
+import { cloneDeep } from 'lodash';
+import { GetPulsarDistributionFileAtPath } from '../../../main/api/local-pulsar-distributions/types';
+import MergeViewButton from '../../ui/MergeView/MergeViewButton/MergeViewButton';
+import semver from 'semver';
+
+const standaloneConfPath = "./conf/standalone.conf" as const;
+const functionsWorkerYamlPath = "./conf/functions_worker.yml" as const;
+
+function isMajorChange(version1: string, version2: string) {
+  const major1 = semver.major(version1);
+  const major2 = semver.major(version2);
+
+  return major1 !== major2;
+}
+
 
 export type PulsarStandaloneConfigInputProps = {
   value: PulsarStandaloneConfig,
@@ -16,6 +32,67 @@ export type PulsarStandaloneConfigInputProps = {
 };
 
 const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = (props) => {
+  const [defaultStandaloneConfPerVersion, setDefaultStandaloneConfPerVersion] = useState<Record<string, string>>({});
+  const [defaultFunctionsWorkerYmlPerVersion, setDefaultFunctionsWorkerYmlPerVersion] = useState<Record<string, string>>({});
+  const [pulsarVersionChangeHistory, setPulsarVersionChangeHistory] = useState<string[]>([]);
+  const originalPulsarVersion = pulsarVersionChangeHistory[0];
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
+      if (arg.type === "GetPulsarDistributionFileAtPathResult") {
+        if (arg.path === standaloneConfPath) {
+          setDefaultStandaloneConfPerVersion(v => ({ ...v, [arg.version]: arg.content }));
+        } else if (arg.path === functionsWorkerYamlPath) {
+          setDefaultFunctionsWorkerYmlPerVersion(v => ({ ...v, [arg.version]: arg.content }));
+        }
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (props.value.standaloneConfContent === undefined && defaultStandaloneConfPerVersion[props.value.pulsarVersion] !== undefined) {
+      const newValue = cloneDeep(props.value);
+      newValue.standaloneConfContent = defaultStandaloneConfPerVersion[props.value.pulsarVersion];
+      props.onChange(newValue);
+      return;
+    }
+  }, [defaultStandaloneConfPerVersion, props.value.standaloneConfContent]);
+
+  useEffect(() => {
+    if (props.value.functionsWorkerConfContent === undefined && defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] !== undefined) {
+      const newValue = cloneDeep(props.value);
+      newValue.functionsWorkerConfContent = defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion];
+      props.onChange(newValue);
+      return;
+    }
+  }, [defaultFunctionsWorkerYmlPerVersion, props.value.functionsWorkerConfContent]);
+
+  useEffect(() => {
+    function refreshDefaultConfigFiles() {
+      const req1: GetPulsarDistributionFileAtPath = {
+        type: "GetPulsarDistributionFileAtPath",
+        version: props.value.pulsarVersion,
+        path: standaloneConfPath
+      }
+      const req2: GetPulsarDistributionFileAtPath = {
+        type: "GetPulsarDistributionFileAtPath",
+        version: props.value.pulsarVersion,
+        path: functionsWorkerYamlPath
+      }
+      window.electron.ipcRenderer.sendMessage(apiChannel, req1);
+      window.electron.ipcRenderer.sendMessage(apiChannel, req2);
+    }
+
+    refreshDefaultConfigFiles();
+
+    if (props.value.pulsarVersion !== pulsarVersionChangeHistory[pulsarVersionChangeHistory.length - 1]) {
+      setPulsarVersionChangeHistory(v => v.concat([props.value.pulsarVersion]));
+    }
+  }, [props.value.pulsarVersion]);
+
+  const isPulsarStandaloneConfSame = defaultStandaloneConfPerVersion[props.value.pulsarVersion] === props.value.standaloneConfContent;
+  const isFunctionsWorkerYmlSame = defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] === props.value.functionsWorkerConfContent;
+
   return (
     <div className={s.PulsarStandaloneConfigInput}>
       <FormItem>
@@ -28,6 +105,40 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
           />
         </div>
       </FormItem>
+
+      {pulsarVersionChangeHistory.length > 0 && !(isPulsarStandaloneConfSame && isFunctionsWorkerYmlSame) && isMajorChange(originalPulsarVersion, props.value.pulsarVersion) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', marginBottom: '24rem', color: 'var(--accent-color-blue)', fontWeight: 'var(--font-weight-bold)', background: `var(--surface-color)`, borderRadius: '8rem', padding: '12rem' }}>
+          <div>
+            You selected Pulsar version from another release line.
+            <br />
+            It may be incompatible with your configuration files. Please review the changes:
+          </div>
+
+          {!isPulsarStandaloneConfSame && (
+            <MergeViewButton
+              onMerge={(v) => props.onChange({ ...props.value, standaloneConfContent: v })}
+              buttonText='Review standalone.conf'
+              originalContent={defaultStandaloneConfPerVersion[props.value.pulsarVersion] || ''}
+              originalFileName={`New standalone.conf Pulsar v${props.value.pulsarVersion}`}
+              modifiedContent={props.value.standaloneConfContent || ''}
+              modifiedFileName={`Your standalone.conf Pulsar v${originalPulsarVersion}`}
+              language='plaintext'
+            />
+          )}
+
+          {!isFunctionsWorkerYmlSame && (
+            <MergeViewButton
+              onMerge={(v) => props.onChange({ ...props.value, functionsWorkerConfContent: v })}
+              buttonText='Review functions_worker.yml'
+              originalContent={defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] || ''}
+              originalFileName={`New functions_worker.yml Pulsar v${props.value.pulsarVersion}`}
+              modifiedContent={props.value.functionsWorkerConfContent || ''}
+              modifiedFileName={`Your functions_worker.yml Pulsar v${originalPulsarVersion}`}
+              language='plaintext'
+            />
+          )}
+        </div>
+      )}
 
       <FormItem>
         <FormLabel
@@ -175,7 +286,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
           value={props.value.standaloneConfContent || ''}
           onChange={(v) => props.onChange({ ...props.value, standaloneConfContent: v === '' ? undefined : v })}
           language='plaintext'
-          height='200rem'
+          height='420rem'
         />
       </FormItem>
 
@@ -197,7 +308,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
           value={props.value.functionsWorkerConfContent || ''}
           onChange={(v) => props.onChange({ ...props.value, functionsWorkerConfContent: v === '' ? undefined : v })}
           language='plaintext'
-          height='200rem'
+          height='420rem'
         />
       </FormItem>
 

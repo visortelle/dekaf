@@ -31,8 +31,8 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
         onChange={props.onChange}
         extensions={extensions}
         theme={githubLight}
-        height={props.height}
-        width={props.width}
+        height={props.height === undefined ? undefined : `${props.height} !important`}
+        width={props.width === undefined ? undefined : `${props.width} !important`}
         readOnly={props.readOnly}
       />
     </div>

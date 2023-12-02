@@ -50,40 +50,45 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
     config: {
       type: "PulsarStandaloneConfig",
       env: {},
-      functionsWorkerConfContent: '',
+      standaloneConfContent: undefined,
+      functionsWorkerConfContent: undefined,
       webServicePort: 8080,
       numBookies: 1,
       brokerServicePort: 6650,
       bookkeeperPort: 3181,
       streamStoragePort: 4181,
       pulsarVersion: latestPulsarVersion,
-      standaloneConfContent: '',
       wipeData: undefined
     }
   });
 
   return (
-    <div style={{ padding: '36rem 24rem', overflow: 'auto', maxHeight: 'inherit', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
-      <LocalPulsarInstanceEditor
-        value={localPulsarInstance}
-        onChange={setLocalPulsarInstance}
-      />
-
-      <div style={{ marginLeft: 'auto', marginTop: '24rem' }}>
-        <Button
-          type='primary'
-          text='Create Pulsar Instance'
-          disabled={localPulsarInstance.name.length === 0}
-          onClick={() => {
-            const req: CreateLocalPulsarInstance = {
-              type: "CreateLocalPulsarInstance",
-              config: localPulsarInstance
-            };
-            window.electron.ipcRenderer.sendMessage(apiChannel, req);
-
-            props.onCreate(localPulsarInstance);
-          }}
+    <div style={{ overflow: 'hidden', maxHeight: 'inherit', display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
+      <div style={{ overflow: 'auto', flex: '1', padding: '36rem 24rem' }}>
+        <LocalPulsarInstanceEditor
+          value={localPulsarInstance}
+          onChange={setLocalPulsarInstance}
         />
+      </div>
+
+      <div style={{ display: 'flex', borderTop: '1px solid var(--border-color)', padding: '8rem 24rem', background: '#fff' }}>
+        <div style={{ marginLeft: 'auto' }}>
+          <Button
+            type='primary'
+            text='Create Pulsar Instance'
+            disabled={localPulsarInstance.name.length === 0}
+            onClick={() => {
+              const req: CreateLocalPulsarInstance = {
+                type: "CreateLocalPulsarInstance",
+                config: localPulsarInstance
+              };
+              window.electron.ipcRenderer.sendMessage(apiChannel, req);
+
+              props.onCreate(localPulsarInstance);
+            }}
+          />
+        </div>
+
       </div>
     </div>
   );

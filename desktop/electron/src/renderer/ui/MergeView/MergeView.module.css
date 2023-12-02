@@ -1,0 +1,3 @@
+.MergeView :global(.cm-merge-theme) {
+  overflow: auto;
+}

@@ -62,7 +62,7 @@ const LocalPulsarInstanceEditor: React.FC<LocalPulsarInstanceEditorProps> = (pro
             onChange={(v) => {
               props.onChange({
                 ...props.value,
-                color: v ? 'orange-600' : undefined
+                color: v ? 'indigo-400' : undefined
               });
             }}
           />

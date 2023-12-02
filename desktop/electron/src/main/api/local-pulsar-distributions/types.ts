@@ -80,3 +80,16 @@ export type PulsarDistributionDeleted = {
   type: "PulsarDistributionDeleted",
   version: string
 };
+
+export type GetPulsarDistributionFileAtPath = {
+  type: "GetPulsarDistributionFileAtPath"
+  version: string,
+  path: string
+};
+
+export type GetPulsarDistributionFileAtPathResult = {
+  type: "GetPulsarDistributionFileAtPathResult",
+  version: string,
+  path: string,
+  content: string
+};

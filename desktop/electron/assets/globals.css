@@ -4,6 +4,8 @@
 
 :root,
 :host {
+  overflow-x: hidden;
+
   font-size: 0.9px;
   font-family: "Inter", sans-serif;
   font-feature-settings: "lnum";
@@ -55,7 +57,8 @@ select {
   background-color: #fff;
 }
 
-strong, b {
+strong,
+b {
   font-weight: var(--font-weight-bold);
 }
 
@@ -118,6 +121,7 @@ code {
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 0.066;
   }
@@ -145,6 +149,7 @@ code {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
