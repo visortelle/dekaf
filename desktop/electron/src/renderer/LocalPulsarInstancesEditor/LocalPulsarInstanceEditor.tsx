@@ -29,6 +29,7 @@ const LocalPulsarInstanceEditor: React.FC<LocalPulsarInstanceEditorProps> = (pro
               <p>This could be on a single server for a small application or spread across a cluster of servers for high performance and reliability.</p>
               <p>A Pulsar <strong>instance</strong> consists of one or more Pulsar <strong>clusters</strong>.</p>
               <p>Each Pulsar <strong>cluster</strong> consists one or more <strong>brokers</strong> (stateless compute nodes), <strong>bookies</strong> (storage nodes), and <strong>metadata storage</strong> (e.g. Zookeeper, Oxia, etcd, or RocksDB).</p>
+              <p>The name should be unique among other local instances and remote connections.</p>
             </>
           )}
           isRequired
@@ -76,7 +77,7 @@ const LocalPulsarInstanceEditor: React.FC<LocalPulsarInstanceEditorProps> = (pro
 
       <PulsarStandaloneConfigInput
         value={props.value.config}
-        onChange={(v) => props.onChange({ ...props.value, config: { ...props.value.config, config: v } })}
+        onChange={(v) => props.onChange({ ...props.value, config: v })}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 export type LocalPulsarInstance = {
   type: "LocalPulsarInstance"
+  id: string,
   name: string,
   color?: string,
   config: PulsarStandaloneConfig
@@ -27,6 +28,16 @@ export type CreateLocalPulsarInstance = {
   type: "CreateLocalPulsarInstance",
   config: LocalPulsarInstance
 };
+
+export type DeleteLocalPulsarInstance = {
+  type: "DeleteLocalPulsarInstance",
+  instanceId: string
+}
+
+export type DeleteLocalPulsarInstanceSucceeded = {
+  type: "DeleteLocalPulsarInstanceSucceeded",
+  instanceId: string
+}
 
 export type ListLocalPulsarInstances = {
   type: "ListLocalPulsarInstances"

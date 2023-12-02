@@ -60,6 +60,9 @@ export function getPaths(): Paths {
   const pulsarDistributionsDir = path.resolve(path.join(userDataDir, "pulsar", "distributions"));
   const getPulsarDistributionDir = (version: string) => path.resolve(path.join(pulsarDistributionsDir, version))
   const getPulsarBin = (version: string) => path.resolve(path.join(getPulsarDistributionDir(version), 'bin', 'pulsar'))
+  const pulsarLocalInstancesDir = path.resolve(path.join(userDataDir, 'pulsar', 'instances'));
+  const getPulsarLocalInstanceDir = (instanceId: string) => path.resolve(path.join(pulsarLocalInstancesDir, instanceId));
+  const getPulsarLocalInstanceConfigPath = (instanceId: string) => path.resolve(path.join(getPulsarLocalInstanceDir(instanceId), "pulsar-instance.json"));
 
   return {
     appPath,
@@ -69,7 +72,9 @@ export function getPaths(): Paths {
     pulsarDistributionsDir,
     getPulsarDistributionDir,
     getPulsarBin,
-    pulsarLocalInstancesDir: path.resolve(path.join(userDataDir, 'pulsar', 'instances')),
+    pulsarLocalInstancesDir,
+    getPulsarLocalInstanceDir,
+    getPulsarLocalInstanceConfigPath,
     dekafBin: path.resolve(path.join(assetsDir, 'dekaf', 'bin', 'dekaf')),
   };
 };

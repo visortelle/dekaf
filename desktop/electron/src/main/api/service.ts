@@ -3,6 +3,7 @@ import { handleGetPaths } from "./fs/handlers";
 import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleGetPulsarDistributionStatus, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
 import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted, GetPulsarDistributionStatus } from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
+import { CreateLocalPulsarInstance } from './local-pulsar-instances/types';
 
 export type ApiEvent = ErrorHappened |
   GetPaths |
@@ -14,8 +15,8 @@ export type ApiEvent = ErrorHappened |
   CancelDownloadPulsarDistribution |
   DeletePulsarDistribution |
   PulsarDistributionDeleted |
-  PulsarDistributionStatusChanged
-
+  PulsarDistributionStatusChanged |
+  CreateLocalPulsarInstance
 
 export type ApiService = {
   handleEvent: (event: Electron.IpcMainEvent, arg: any) => void

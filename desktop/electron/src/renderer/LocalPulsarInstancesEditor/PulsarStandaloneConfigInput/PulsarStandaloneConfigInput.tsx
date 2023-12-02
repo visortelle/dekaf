@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './PulsarStandaloneConfigInput.module.css'
-import { LocalPulsarInstance, PulsarStandaloneConfig } from '../../../main/api/local-pulsar-instances/types';
+import { PulsarStandaloneConfig } from '../../../main/api/local-pulsar-instances/types';
 import FormItem from '../../ui/FormItem/FormItem';
 import FormLabel from '../../ui/FormLabel/FormLabel';
 import Input from '../../ui/Input/Input';
@@ -31,14 +31,14 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
 
       <FormItem>
         <FormLabel
-          content="Wipe Data Before Launch"
+          content="Wipe Data Before Each Launch"
           help={(
             <>
               <p>
                 Remove all Pulsar instance resources and messages before the next instance launch.
               </p>
               <p>
-                It may be useful if you frequently need to test various scenarios on a clean Pulsar instance.
+                It may be useful if you frequently need to test various scenarios on a fresh Pulsar instance.
               </p>
             </>
           )}
@@ -155,7 +155,22 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
       </FormItem>
 
       <FormItem>
-        <FormLabel content="standalone.conf" />
+        <FormLabel
+          content="standalone.conf"
+          help={(
+            <>
+              <p>
+                We are running Pulsar in standalone mode, which is intended for local testing.
+              </p>
+              <p>
+                The <strong>standalone.conf</strong> file is the main configuration file when running Pulsar in this way.
+              </p>
+              <p>
+                When you run Pulsar in regular mode, the <strong>broker.conf</strong> file is used instead. The set of parameters is slightly different in both files.
+              </p>
+            </>
+          )}
+        />
         <CodeEditor
           value={props.value.standaloneConfContent || ''}
           onChange={(v) => props.onChange({ ...props.value, standaloneConfContent: v === '' ? undefined : v })}
@@ -165,7 +180,19 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
       </FormItem>
 
       <FormItem>
-        <FormLabel content="functions_worker.yml" />
+        <FormLabel
+          content="functions_worker.yml"
+          help={(
+            <>
+              <p>
+                <a target='_blank' href="https://pulsar.apache.org/docs/next/functions-overview/">Pulsar Functions</a> are a serverless computing framework that runs on top of Pulsar.
+              </p>
+              <p>
+                This file contains the configuration for Pulsar Functions worker process.
+              </p>
+            </>
+          )}
+        />
         <CodeEditor
           value={props.value.functionsWorkerConfContent || ''}
           onChange={(v) => props.onChange({ ...props.value, functionsWorkerConfContent: v === '' ? undefined : v })}
@@ -175,7 +202,14 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
       </FormItem>
 
       <FormItem>
-        <FormLabel content="Environment Variables" />
+        <FormLabel
+          content="Environment Variables"
+          help={(
+            <p>
+              A set of environment variables passed to the process.
+            </p>
+          )}
+        />
         <KeyValueEditor
           value={recordToIndexedKv(props.value.env || {})}
           onChange={(v) => props.onChange({ ...props.value, env: recordFromIndexedKv(v) })}

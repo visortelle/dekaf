@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import s from './CreateLocalPulsarInstanceButton.module.css'
 import * as Modals from '../app/Modals/Modals';
-import SmallButton from '../ui/SmallButton/SmallButton';
 import LocalPulsarInstanceEditor from '../LocalPulsarInstancesEditor/LocalPulsarInstanceEditor';
-import { LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
+import { CreateLocalPulsarInstance, LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import Button from '../ui/Button/Button';
+import { v4 as uuid } from 'uuid';
+import { apiChannel } from '../../main/channels';
+import { knownPulsarVersions } from '../../main/api/local-pulsar-distributions/versions';
 
 export type CreateLocalPulsarInstanceButtonProps = {};
 
@@ -21,7 +23,9 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
           title: 'Create Local Pulsar Instance',
           content: (
             <CreateLocalPulsarInstanceForm
-              onCreate={(v) => console.log('vvv', v)}
+              onCreate={(v) => {
+                modals.pop();
+              }}
             />
           ),
           styleMode: 'no-content-padding'
@@ -34,10 +38,14 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
 type CreateLocalPulsarInstanceFormProps = {
   onCreate: (v: LocalPulsarInstance) => void
 };
+
+const latestPulsarVersion = knownPulsarVersions.sort((a, b) => b.localeCompare(a, 'en', { numeric: true }))[0] || '3.0.0';
+
 const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps> = (props) => {
   const [localPulsarInstance, setLocalPulsarInstance] = useState<LocalPulsarInstance>({
     type: "LocalPulsarInstance",
-    name: '',
+    id: uuid(),
+    name: `New Instance ${new Date().toISOString()}`,
     color: undefined,
     config: {
       type: "PulsarStandaloneConfig",
@@ -48,7 +56,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
       brokerServicePort: 6650,
       bookkeeperPort: 3181,
       streamStoragePort: 4181,
-      pulsarVersion: '3.11.1',
+      pulsarVersion: latestPulsarVersion,
       standaloneConfContent: '',
       wipeData: undefined
     }
@@ -65,7 +73,14 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         <Button
           type='primary'
           text='Create'
+          disabled={localPulsarInstance.name.length === 0}
           onClick={() => {
+            const req: CreateLocalPulsarInstance = {
+              type: "CreateLocalPulsarInstance",
+              config: localPulsarInstance
+            };
+            window.electron.ipcRenderer.sendMessage(apiChannel, req);
+
             props.onCreate(localPulsarInstance);
           }}
         />
