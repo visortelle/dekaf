@@ -10,7 +10,9 @@ export type CodeEditorProps = {
   value: string,
   onChange: (v: string) => void,
   language: 'plaintext' | 'javascript' | 'json',
-  height?: string
+  readOnly?: boolean,
+  height?: string,
+  width?: string
 };
 
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
@@ -30,6 +32,8 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
         extensions={extensions}
         theme={githubLight}
         height={props.height}
+        width={props.width}
+        readOnly={props.readOnly}
       />
     </div>
   );

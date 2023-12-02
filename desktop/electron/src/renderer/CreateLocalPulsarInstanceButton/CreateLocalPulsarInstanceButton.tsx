@@ -36,26 +36,26 @@ type CreateLocalPulsarInstanceFormProps = {
 };
 const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps> = (props) => {
   const [localPulsarInstance, setLocalPulsarInstance] = useState<LocalPulsarInstance>({
+    type: "LocalPulsarInstance",
     name: '',
     color: undefined,
     config: {
-      type: "pulsar-standalone",
-      config: {
-        type: "PulsarStandaloneConfig",
-        env: {},
-        functionsWorkerConf: '',
-        httpServicePort: 6650,
-        noFunctionsWorker: false,
-        numBookies: 1,
-        pulsarServicePort: 8080,
-        pulsarVersion: '3.11.1',
-        standaloneConf: '',
-      }
+      type: "PulsarStandaloneConfig",
+      env: {},
+      functionsWorkerConfContent: '',
+      webServicePort: 8080,
+      numBookies: 1,
+      brokerServicePort: 6650,
+      bookkeeperPort: 3181,
+      streamStoragePort: 4181,
+      pulsarVersion: '3.11.1',
+      standaloneConfContent: '',
+      wipeData: undefined
     }
   });
 
   return (
-    <div style={{ padding: '24rem 24rem', overflow: 'auto', maxHeight: 'inherit', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+    <div style={{ padding: '36rem 24rem', overflow: 'auto', maxHeight: 'inherit', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
       <LocalPulsarInstanceEditor
         value={localPulsarInstance}
         onChange={setLocalPulsarInstance}

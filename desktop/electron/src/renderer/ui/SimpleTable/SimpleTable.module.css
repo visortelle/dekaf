@@ -1,0 +1,49 @@
+.Table {
+  font-size: 14rem;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.Cell,
+.HeaderCell,
+.HighlightedCell {
+  padding: 4rem 12rem;
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-right: none;
+  font-weight: var(--font-weight-normal);
+}
+
+.HeaderCell {
+  background-color: var(--surface-color);
+}
+
+tr .HighlightedCell:first-child {
+  background-color: var(--surface-color);
+  border-left: none;
+}
+
+tr:first-child .HighlightedCell {
+  border-top: none;
+}
+
+thead .Row:last-child .Cell {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.Row:first-child .Cell {
+  border-top: none;
+}
+
+.Row .Cell:first-child {
+  border-left: none;
+}
+
+.Row .Cell:last-child {
+  border-right: none;
+}
+
+.NoData {
+  color: #aaa;
+}

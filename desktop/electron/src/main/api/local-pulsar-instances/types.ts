@@ -1,25 +1,20 @@
 export type LocalPulsarInstance = {
+  type: "LocalPulsarInstance"
   name: string,
-  config: {
-    type: "pulsar-standalone",
-    config: PulsarStandaloneConfig
-  },
   color?: string,
+  config: PulsarStandaloneConfig
 };
 
 export type PulsarStandaloneConfig = {
   type: "PulsarStandaloneConfig",
   pulsarVersion: string,
   env?: Record<string, string>,
-  advertisedAddress?: string,
   numBookies?: number,
-  standaloneConf?: string,
-  noFunctionsWorker?: boolean,
+  standaloneConfContent?: string,
   functionsWorkerConfContent?: string,
-  pulsarServicePort?: number,
-  httpServicePort?: number,
+  brokerServicePort?: number,
+  webServicePort?: number,
   bookkeeperPort?: number,
-  noStreamStorage?: boolean,
   streamStoragePort?: number,
   wipeData?: boolean
 };
