@@ -64,7 +64,7 @@ const ProcessLogsView: React.FC<ProcessLogsViewProps> = (props) => {
   }, []);
 
   return (
-    <div className={s.ProcessLogsView}>
+    <div className={s.ProcessLogsView} style={{ overflow: 'hidden', display: 'flex' }}>
       <LogsView logs={logs} />
     </div>
   );

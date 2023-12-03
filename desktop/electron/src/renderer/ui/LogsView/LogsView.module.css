@@ -1,0 +1,16 @@
+.LogsView {
+  overflow: hidden;
+  display: flex;
+}
+
+.Logs {
+  overflow: auto;
+}
+
+.LogEntry {
+  word-wrap: break-word;
+  padding: 4rem 24rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.8;
+}
