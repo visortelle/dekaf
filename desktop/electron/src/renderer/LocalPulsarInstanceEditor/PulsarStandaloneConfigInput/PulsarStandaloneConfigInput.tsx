@@ -36,6 +36,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
   const [defaultFunctionsWorkerYmlPerVersion, setDefaultFunctionsWorkerYmlPerVersion] = useState<Record<string, string>>({});
   const [pulsarVersionChangeHistory, setPulsarVersionChangeHistory] = useState<string[]>([]);
   const originalPulsarVersion = pulsarVersionChangeHistory[0];
+  const prevPulsarVersion = pulsarVersionChangeHistory[pulsarVersionChangeHistory.length - 2];
 
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
@@ -50,7 +51,9 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
   }, []);
 
   useEffect(() => {
-    if (props.value.standaloneConfContent === undefined && defaultStandaloneConfPerVersion[props.value.pulsarVersion] !== undefined) {
+    const isConfigTouched = props.value.standaloneConfContent !== defaultStandaloneConfPerVersion[prevPulsarVersion];
+
+    if (!isConfigTouched || (props.value.standaloneConfContent === undefined && defaultStandaloneConfPerVersion[props.value.pulsarVersion] !== undefined)) {
       const newValue = cloneDeep(props.value);
       newValue.standaloneConfContent = defaultStandaloneConfPerVersion[props.value.pulsarVersion];
       props.onChange(newValue);
@@ -59,7 +62,9 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
   }, [defaultStandaloneConfPerVersion, props.value.standaloneConfContent]);
 
   useEffect(() => {
-    if (props.value.functionsWorkerConfContent === undefined && defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] !== undefined) {
+    const isConfigTouched = props.value.functionsWorkerConfContent !== defaultFunctionsWorkerYmlPerVersion[prevPulsarVersion];
+
+    if (!isConfigTouched || (props.value.functionsWorkerConfContent === undefined && defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] !== undefined)) {
       const newValue = cloneDeep(props.value);
       newValue.functionsWorkerConfContent = defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion];
       props.onChange(newValue);
