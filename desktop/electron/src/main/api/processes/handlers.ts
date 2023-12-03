@@ -1,6 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, ProcessId, ProcessLogEntryReceived, ProcessStatus, SpawnProcess } from "./type";
+import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessStatus, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./type";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
@@ -19,6 +19,27 @@ export type ActiveProcess = {
 
 export type ActiveProcesses = Record<ProcessId, ActiveProcess>;
 export type ActiveChildProcesses = Record<ProcessId, ChildProcessWithoutNullStreams>;
+
+export type ProcessLogs = Record<ProcessId, LogEntry[]>;
+const processLogs: ProcessLogs = {};
+
+function appendLog(processId: string, entry: LogEntry, event: Electron.IpcMainEvent) {
+  if (processLogs[processId] === undefined) {
+    processLogs[processId] = [];
+  }
+
+  processLogs[processId].push(entry);
+
+  const req: ProcessLogEntryReceived = {
+    type: "ProcessLogEntryReceived",
+    entry: {
+      processId,
+      content: entry.content,
+      epoch: entry.epoch
+    }
+  };
+  event.reply(logsChannel, req);
+}
 
 let activeProcesses: ActiveProcesses = {};
 let activeChildProcesses: ActiveChildProcesses = {};
@@ -57,6 +78,15 @@ export async function handleGetActiveProcesses(event: Electron.IpcMainEvent): Pr
   }
 
   event.reply(apiChannel, req);
+}
+
+export async function handleResendProcessLogs(event: Electron.IpcMainEvent, arg: ResendProcessLogs): Promise<void> {
+  const req: ResendProcessLogsResult = {
+    type: "ResendProcessLogsResult",
+    correlationId: arg.correlationId,
+    entries: processLogs[arg.processId] || []
+  };
+  event.reply(logsChannel, req);
 }
 
 export async function runPulsarStandalone(instanceId: string, event: Electron.IpcMainEvent) {
@@ -143,22 +173,10 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
   process.stdout.on('data', (data) => {
-    const req: ProcessLogEntryReceived = {
-      type: "ProcessLogEntryReceived",
-      channel: "stdout",
-      processId,
-      text: data
-    };
-    event.reply(logsChannel, req);
+    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
   });
 
   process.stderr.on('data', (data) => {
-    const req: ProcessLogEntryReceived = {
-      type: "ProcessLogEntryReceived",
-      channel: "stderr",
-      processId,
-      text: data
-    };
-    event.reply(logsChannel, req);
+    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
   });
 }

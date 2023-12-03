@@ -1,31 +1,67 @@
 import React, { useEffect, useState } from 'react';
 import s from './ProcessLogsView.module.css'
 import LogsView, { LogEntry } from '../LogsView';
-import { logsChannel } from '../../../../main/channels';
+import { apiChannel, logsChannel } from '../../../../main/channels';
+import { ResendProcessLogs } from '../../../../main/api/processes/type';
+import { v4 as uuid } from 'uuid';
+
+export type LogSource = {
+  processId: string,
+  name: string
+};
 
 export type ProcessLogsViewProps = {
-  processId: string
+  sources: LogSource[]
 };
+
+const maxEntries = 10_000;
 
 const ProcessLogsView: React.FC<ProcessLogsViewProps> = (props) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
   useEffect(() => {
+    const correlationId = uuid();
+
+    props.sources.forEach(s => {
+      const req: ResendProcessLogs = {
+        type: 'ResendProcessLogs',
+        correlationId,
+        processId: s.processId
+      };
+      window.electron.ipcRenderer.sendMessage(apiChannel, req);
+    });
+
     window.electron.ipcRenderer.on(logsChannel, (arg) => {
-      // if (arg.type === "ProcessLogEntryReceived") {
-      // }
-      if (arg.type === "ProcessLogEntryReceived" && arg.processId === props.processId) {
-        console.log('PP', arg);
-        const logEntry: LogEntry = {
-          content: arg.text,
-          level: arg.channel === 'stderr' ? 'error' : 'info'
+      if (arg.type === "ResendProcessLogsResult" && arg.correlationId === correlationId) {
+        setLogs(oldLogs => {
+          const newEntries: LogEntry[] = arg.entries.map(entry => {
+            const source = props.sources.find(s => s.processId === entry.processId)?.name || 'unknown';
+            return {
+              source,
+              content: entry.content,
+              epoch: entry.epoch
+            }
+          })
+          return oldLogs.concat(newEntries).sort((a, b) => a.epoch - b.epoch).slice(-maxEntries);
+        });
+      }
+
+      if (arg.type === "ProcessLogEntryReceived") {
+        const source = props.sources.find(s => s.processId === arg.entry.processId);
+
+        if (source === undefined) {
+          return;
         }
-        setLogs(v => v.concat([logEntry]));
+
+        const logEntry: LogEntry = {
+          source: source.name,
+          content: arg.entry.content,
+          epoch: arg.entry.epoch
+        }
+        setLogs(v => v.concat([logEntry]).slice(-maxEntries));
       }
     });
   }, []);
-
-  console.log('logs', logs, props.processId)
 
   return (
     <div className={s.ProcessLogsView}>

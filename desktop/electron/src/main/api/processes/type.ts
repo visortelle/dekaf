@@ -41,9 +41,25 @@ export type ActiveProcessesUpdated = {
   processes: ActiveProcesses
 };
 
+export type LogEntry = {
+  processId: ProcessId,
+  content: string,
+  epoch: number
+}
+
+export type ResendProcessLogs = {
+  type: "ResendProcessLogs",
+  correlationId: string
+  processId: string,
+}
+
+export type ResendProcessLogsResult = {
+  type: "ResendProcessLogsResult",
+  correlationId: string
+  entries: LogEntry[],
+}
+
 export type ProcessLogEntryReceived = {
   type: "ProcessLogEntryReceived",
-  processId: ProcessId,
-  channel: 'stdout' | 'stderr',
-  text: string,
+  entry: LogEntry
 };

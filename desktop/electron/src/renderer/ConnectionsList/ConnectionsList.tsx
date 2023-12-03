@@ -4,7 +4,6 @@ import { ListLocalPulsarInstances, LocalPulsarInstance } from '../../main/api/lo
 import { apiChannel } from '../../main/channels';
 import LocalPulsarInstanceElement from './LocalPulsarInstanceElement/LocalPulsarInstanceElement';
 import SmallButton from '../ui/SmallButton/SmallButton';
-import { SpawnProcess } from '../../main/api/processes/type';
 
 export type ConnectionsListProps = {};
 
@@ -19,7 +18,6 @@ const ConnectionsList: React.FC<ConnectionsListProps> = (props) => {
     });
 
     function refreshLocalPulsarInstances() {
-      console.log('list');
       const req: ListLocalPulsarInstances = { type: "ListLocalPulsarInstances" };
       window.electron.ipcRenderer.sendMessage(apiChannel, req);
     }

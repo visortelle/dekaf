@@ -5,8 +5,8 @@ import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsar
 import { ErrorHappened } from './api/types';
 import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
-import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, ProcessLogEntryReceived, SpawnProcess } from './processes/type';
-import { handleGetActiveProcesses, handleSpawnProcess } from './processes/handlers';
+import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, ProcessLogEntryReceived, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/type';
+import { handleGetActiveProcesses, handleResendProcessLogs, handleSpawnProcess } from './processes/handlers';
 
 export type ApiEvent = ErrorHappened |
   GetPaths |
@@ -30,6 +30,8 @@ export type ApiEvent = ErrorHappened |
   GetActiveProcesses |
   GetActiveProcessesResult |
   ActiveProcessesUpdated |
+  ResendProcessLogs |
+  ResendProcessLogsResult |
   ProcessLogEntryReceived
 
 export type ApiService = {
@@ -68,6 +70,8 @@ export const apiService: ApiService = {
       case "GetActiveProcesses": handleGetActiveProcesses(event);
         break;
       case "SpawnProcess": handleSpawnProcess(event, arg);
+        break;
+      case "ResendProcessLogs": handleResendProcessLogs(event, arg);
         break;
     }
   }
