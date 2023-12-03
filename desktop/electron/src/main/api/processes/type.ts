@@ -1,3 +1,5 @@
+import { ActiveProcesses } from "./handlers";
+
 export type HttpProbe = {
   url: string
 };
@@ -24,10 +26,19 @@ export type SpawnProcess = {
 };
 
 export type ProcessStatus = 'alive' | 'ready' | 'failed' | 'stopped';
-export type ProcessStatusChanged = {
-  type: "LocalPulsarInstanceStatusChanged"
-  processId: ProcessId,
-  status: ProcessStatus
+
+export type GetActiveProcesses = {
+  type: "GetActiveProcesses"
+};
+
+export type GetActiveProcessesResult = {
+  type: "GetActiveProcessesResult",
+  processes: ActiveProcesses
+}
+
+export type ActiveProcessesUpdated = {
+  type: "ActiveProcessesUpdated",
+  processes: ActiveProcesses
 };
 
 export type ProcessLogEntryReceived = {

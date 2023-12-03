@@ -1,21 +1,39 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ProcessId, ProcessLogEntryReceived, ProcessStatus, ProcessStatusChanged, SpawnProcess } from "./type";
+import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, ProcessId, ProcessLogEntryReceived, ProcessStatus, SpawnProcess } from "./type";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
-import { apiChannel } from "../../channels";
+import { apiChannel, logsChannel } from "../../channels";
 import fsExtra from 'fs-extra';
 import fsAsync from 'fs/promises';
 import path from 'node:path';
 import { ErrorHappened } from "../api/types";
-import { electron } from "process";
 
-type RunningProcess = {
+export type ActiveProcess = {
   status: ProcessStatus,
-  childProcess: ChildProcessWithoutNullStreams
+  type: {
+    type: "pulsar-standalone",
+    instanceId: string
+  }
 };
 
-const processes: Record<ProcessId, RunningProcess> = {};
+export type ActiveProcesses = Record<ProcessId, ActiveProcess>;
+export type ActiveChildProcesses = Record<ProcessId, ChildProcessWithoutNullStreams>;
+
+let activeProcesses: ActiveProcesses = {};
+let activeChildProcesses: ActiveChildProcesses = {};
+
+function updateActiveProcesses(newActiveProcesses: ActiveProcesses, newActiveChildProcesses: ActiveChildProcesses, event: Electron.IpcMainEvent) {
+  activeProcesses = newActiveProcesses;
+  activeChildProcesses = newActiveChildProcesses;
+
+  const req: ActiveProcessesUpdated = {
+    type: "ActiveProcessesUpdated",
+    processes: activeProcesses
+  }
+
+  event.reply(apiChannel, req);
+}
 
 export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: SpawnProcess): Promise<void> {
   try {
@@ -32,8 +50,13 @@ export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: Spaw
   }
 }
 
-export async function handleProcessStatusChanged(event: Electron.IpcMainEvent, arg: ProcessStatusChanged): Promise<void> {
+export async function handleGetActiveProcesses(event: Electron.IpcMainEvent): Promise<void> {
+  const req: GetActiveProcessesResult = {
+    type: "GetActiveProcessesResult",
+    processes: activeProcesses
+  }
 
+  event.reply(apiChannel, req);
 }
 
 export async function runPulsarStandalone(instanceId: string, event: Electron.IpcMainEvent) {
@@ -103,10 +126,21 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   process.stdout.setEncoding('utf-8');
   process.stderr.setEncoding('utf-8');
 
-  processes[processId] = {
-    status: 'alive',
-    childProcess: process
+  const newActiveProcesses: ActiveProcesses = {
+    ...activeProcesses,
+    [processId]: {
+      status: 'alive',
+      type: {
+        type: "pulsar-standalone",
+        instanceId
+      }
+    }
+  };
+  const newActiveChildProcesses: ActiveChildProcesses = {
+    ...activeChildProcesses,
+    [processId]: process
   }
+  updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
   process.stdout.on('data', (data) => {
     const req: ProcessLogEntryReceived = {
@@ -115,7 +149,7 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
       processId,
       text: data
     };
-    event.reply(apiChannel, req);
+    event.reply(logsChannel, req);
   });
 
   process.stderr.on('data', (data) => {
@@ -125,6 +159,6 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
       processId,
       text: data
     };
-    event.reply(apiChannel, req);
+    event.reply(logsChannel, req);
   });
 }
