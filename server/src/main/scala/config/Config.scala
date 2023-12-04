@@ -35,7 +35,7 @@ case class Config(
     @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
     pulsarBrokerUrl: Option[String] = Some("pulsar://localhost:6650"),
     @describe("The URL where Pulsar broker (or proxy) serves http requests.")
-    pulsarHttpUrl: Option[String] = Some("http://localhost:8080"),
+    pulsarWebUrl: Option[String] = Some("http://localhost:8080"),
 
     //
     @describe("Path to the TLS key file.")

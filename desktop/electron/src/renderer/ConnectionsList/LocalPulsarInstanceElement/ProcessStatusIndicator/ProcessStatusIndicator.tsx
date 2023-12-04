@@ -1,31 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import s from './ProcessStatusIndicator.module.css'
-import { ProcessStatus } from '../../../../main/api/processes/type';
+import { ProcessStatus } from '../../../../main/api/processes/types';
 import { apiChannel } from '../../../../main/channels';
 
 export type ProcessStatusIndicatorProps = {
-  processId: string
+  processId?: string
 };
 
 type Color = string;
 const palette: Record<ProcessStatus, Color> = {
-  stopped: 'var(--surface-color)',
+  unknown: 'var(--surface-color)',
   alive: 'var(--accent-color-yellow)',
   failed: 'var(--accent-color-red)',
   ready: 'var(--accent-color-green)',
 };
 
 const ProcessStatusIndicator: React.FC<ProcessStatusIndicatorProps> = (props) => {
-  const [status, setStatus] = useState<ProcessStatus>('stopped');
+  const [status, setStatus] = useState<ProcessStatus>('unknown');
 
   useEffect(() => {
+    if (props.processId === undefined) {
+      return;
+    }
+
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
-      console.log('ARG', arg);
       if (arg.type === "ProcessStatusUpdated" && arg.processId === props.processId) {
         setStatus(arg.status);
       }
     });
-  }, []);
+  }, [props.processId]);
 
   return (
     <div

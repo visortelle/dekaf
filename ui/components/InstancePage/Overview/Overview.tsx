@@ -44,7 +44,7 @@ const Overview: React.FC = () => {
               </>
             )}>
               Pulsar Instance
-              </H2>
+            </H2>
           </div>
           <table className={sts.Table}>
             <tbody>
@@ -65,7 +65,7 @@ const Overview: React.FC = () => {
               <tr className={sts.Row}>
                 <td className={sts.HighlightedCell}>Web Service URL</td>
                 <td className={sts.Cell}>
-                  {config.pulsarHttpUrl}
+                  {config.pulsarWebUrl}
                 </td>
               </tr>
             </tbody>

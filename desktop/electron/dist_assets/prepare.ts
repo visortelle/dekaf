@@ -92,16 +92,16 @@ async function prepare() {
 
   console.info('Preparing Dekaf assets.');
 
-  const depsDir = path.resolve(path.join(process.cwd(), "dist_assets"));
-  console.info("Assets dir:", depsDir);
+  const distAssetsDir = path.resolve(path.join(process.cwd(), "dist_assets"));
+  console.info("Assets dir:", distAssetsDir);
 
-  const platformDepsDir = path.resolve(path.join(depsDir, "src", platform, arch));
+  const platformDepsDir = path.resolve(path.join(distAssetsDir, "src", platform, arch));
   console.info("Platform assets dir:", platformDepsDir);
 
-  const depsOutDir = path.resolve(path.join(depsDir, "build"));
-  console.info("Assets out dir:", depsOutDir);
+  const distAssetsOutDir = path.resolve(path.join(distAssetsDir, "build"));
+  console.info("Assets out dir:", distAssetsOutDir);
 
-  const graalvmOut = path.resolve(path.join(depsOutDir, 'graalvm'));
+  const graalvmOut = path.resolve(path.join(distAssetsOutDir, 'graalvm'));
   await Promise.all(getGraalvmDownloaderTargets({ dest: graalvmOut }).map(
     (t) => download(t, { onError })
   ));
@@ -109,7 +109,7 @@ async function prepare() {
   const dekafDist: DownloaderTarget = {
     taskId: 'dekaf-dist',
     source: 'file://' + path.resolve(path.join(process.cwd(), '../../server/target/universal/dekaf.tgz')),
-    dest: path.resolve(path.join(depsOutDir, './dekaf')),
+    dest: path.resolve(path.join(distAssetsOutDir, './dekaf')),
     unpack: { strip: 1 }
   }
   await download(dekafDist, { onError });

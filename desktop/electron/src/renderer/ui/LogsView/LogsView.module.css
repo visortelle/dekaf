@@ -9,6 +9,7 @@
 
 .LogEntry {
   word-wrap: break-word;
+  white-space: pre-wrap;
   padding: 4rem 24rem;
   border-bottom: 1px solid var(--border-color);
   font-weight: var(--font-weight-bold);

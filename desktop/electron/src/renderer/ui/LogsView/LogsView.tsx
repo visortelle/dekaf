@@ -43,7 +43,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
             color = nextColor;
           }
 
-          return <div key={i} className={s.LogEntry} style={{ color }}>{l.content}</div>
+          return <pre key={i} className={s.LogEntry} style={{ color }}>{l.content}</pre>
         })}
       </div>
     </div>

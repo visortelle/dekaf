@@ -1,6 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./type";
+import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, GetActiveProcesses, GetActiveProcessesResult, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
@@ -9,35 +9,13 @@ import fsAsync from 'fs/promises';
 import path from 'node:path';
 import { ErrorHappened } from "../api/types";
 import axios from 'axios';
-import { LocalPulsarInstance, PulsarStandaloneConfig } from "../local-pulsar-instances/types";
-import { ipcMain, webContents } from "electron";
+import { LocalPulsarInstance } from "../local-pulsar-instances/types";
+import { webContents } from "electron";
+import portfinder from 'portfinder';
 
-export type DekafToPulsarConnection = {
-  type: "local-pulsar-instance",
-  instanceId: string
-} | {
-  type: "remote-pulsar-instance"
-};
+portfinder.setBasePort(3200);
+portfinder.setHighestPort(3300);
 
-export type ActiveProcess = {
-  status: ProcessStatus,
-  type: {
-    type: "pulsar-standalone",
-    instanceConfig: LocalPulsarInstance
-  } | {
-    type: "dekaf",
-    connection: DekafToPulsarConnection
-  }
-};
-
-export type ActiveProcesses = Record<ProcessId, ActiveProcess>;
-
-export type ActiveChildProcess = {
-  childProcess: ChildProcessWithoutNullStreams,
-};
-export type ActiveChildProcesses = Record<ProcessId, ActiveChildProcess>;
-
-export type ProcessLogs = Record<ProcessId, LogEntry[]>;
 const processLogs: ProcessLogs = {};
 
 function appendLog(processId: string, entry: LogEntry, event: Electron.IpcMainEvent) {
@@ -60,6 +38,10 @@ function appendLog(processId: string, entry: LogEntry, event: Electron.IpcMainEv
 
 let activeProcesses: ActiveProcesses = {};
 let activeChildProcesses: ActiveChildProcesses = {};
+
+function getProcessStatus(processId: string): ProcessStatus | undefined {
+  return activeProcesses[processId].status;
+}
 
 function updateProcessStatus(processId: string, status: ProcessStatus) {
   activeProcesses[processId] = { ...activeProcesses[processId], status };
@@ -88,7 +70,27 @@ function monitorProcessStatuses() {
       };
 
       const isReady = await pulsarStandaloneReadinessProbe(proc.type.instanceConfig);
-      updateProcessStatus(processId, isReady ? 'ready' : 'alive');
+      if (getProcessStatus(processId) !== 'failed') {
+        updateProcessStatus(processId, isReady ? 'ready' : 'alive');
+      }
+
+    } else if (proc.type.type === "dekaf") {
+      const dekafReadinessProbe = async (runtimeConfig: DekafRuntimeConfig): Promise<boolean> => {
+        let isReady = false;
+        try {
+          await axios.get(`${runtimeConfig.publicBaseUrl}/health`, { timeout: 2000 });
+          isReady = true
+        } catch (err) {
+          // nothing
+        }
+
+        return isReady;
+      };
+
+      const isReady = await dekafReadinessProbe(proc.type.runtimeConfig);
+      if (getProcessStatus(processId) !== 'failed') {
+        updateProcessStatus(processId, isReady ? 'ready' : 'alive');
+      }
     }
   }
 
@@ -115,6 +117,8 @@ export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: Spaw
     if (arg.process.type === "pulsar-standalone") {
       await runPulsarStandalone(arg.process.instanceId, event);
       return;
+    } else if (arg.process.type === "dekaf" && arg.process.connection.type === "local-pulsar-instance") {
+      await runDekaf(arg.process.connection, event);
     }
   } catch (err) {
     const req: ErrorHappened = {
@@ -209,23 +213,6 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   process.stdout.setEncoding('utf-8');
   process.stderr.setEncoding('utf-8');
 
-  // const setPulsarStandaloneLivenessCheckTimeout = () => {
-  //   return setTimeout(() => {
-  //     const childProcess = activeChildProcesses[processId];
-
-  //     const check = async () => {
-  //       const isPulsarStandaloneReady = await pulsarStandaloneReadinessProbe();
-
-
-  //       console.log('IS READY', isPulsarStandaloneReady);
-  //     };
-
-  //     check();
-  //   }, 1000);
-  // }
-
-  // setPulsarStandaloneLivenessCheckTimeout();
-
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
     [processId]: {
@@ -253,29 +240,109 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   process.stderr.on('data', (data) => {
     appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
   });
+
+  process.on('exit', (code) => {
+    if (code === 0) {
+      updateProcessStatus(processId, 'unknown');
+      return;
+    }
+
+    updateProcessStatus(processId, 'failed');
+  });
 }
 
-// export async function runDekaf(connection: DekafToPulsarConnection) {
-//   const pulsarInstanceConfig = Object.entries(activeProcesses).find();
-// }
+export async function runDekaf(connection: DekafToPulsarConnection, event: Electron.IpcMainEvent) {
+  const paths = getPaths();
 
-// {
-// if (!isPulsarStandaloneAlive) {
-//           return;
-//         }
+  const dekafDataDir = paths.getDekafDataDir(connection.instanceId);
+  await fsExtra.ensureDir(dekafDataDir);
 
-//         const isDekafStarted = Boolean(Object.entries(activeProcesses).find(([_, p]) => {
-//           return p.type.type === "dekaf" &&
-//             p.type.connection.type === "local-pulsar-instance" &&
-//             p.type.connection.instanceId === instanceId;
-//         }));
+  const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
+  await fsExtra.copy(defaultDataDir, dekafDataDir);
 
-//         if (!isDekafStarted) {
-//           const connection: DekafToPulsarConnection = {
-//             type: "local-pulsar-instance",
-//             instanceId
-//           };
+  const port = await portfinder.getPortPromise();
+  const publicBaseUrl = `http://127.0.0.1:${port}`;
 
-//           await runDekaf(connection);
-//         }
+  const javaHome = paths.javaHome;
+
+  let processArgs: string[] = [];
+  let env: Record<string, string> = {
+    "JAVA_HOME": javaHome,
+    "DEKAF_DATA_DIR": dekafDataDir,
+    "DEKAF_PORT": String(port),
+    "DEKAF_PUBLIC_BASE_URL": publicBaseUrl,
+  };
+
+  if (connection.dekafLicenseId.length) {
+    env["DEKAF_LICENSE_ID"] = connection.dekafLicenseId;
+  }
+
+  if (connection.dekafLicenseToken.length) {
+    env["DEKAF_LICENSE_TOKEN"] = connection.dekafLicenseToken;
+  }
+
+  if (connection.type === "local-pulsar-instance") {
+    const instanceConfig = await getInstanceConfig(connection.instanceId);
+
+    env["DEKAF_PULSAR_NAME"] = instanceConfig.name;
+
+    if (instanceConfig.color !== undefined) {
+      env["DEKAF_PULSAR_COLOR"] = instanceConfig.color
+    }
+
+    env["DEKAF_PULSAR_BROKER_URL"] = `http://127.0.0.1:${instanceConfig.config.brokerServicePort}`
+    env["DEKAF_PULSAR_WEB_URL"] = `http://127.0.0.1:${instanceConfig.config.webServicePort}`
+  }
+
+  const dekafBin = paths.dekafBin;
+  const processId = uuid();
+
+  const process = spawn(dekafBin, processArgs, { env });
+  process.stdout.setEncoding('utf-8');
+  process.stderr.setEncoding('utf-8');
+
+  const newActiveProcesses: ActiveProcesses = {
+    ...activeProcesses,
+    [processId]: {
+      status: 'alive',
+      type: {
+        type: "dekaf",
+        connection,
+        runtimeConfig: {
+          port,
+          publicBaseUrl
+        }
+      }
+    }
+  };
+
+  const newActiveChildProcesses: ActiveChildProcesses = {
+    ...activeChildProcesses,
+    [processId]: {
+      childProcess: process,
+    }
+  }
+
+  updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
+
+  process.stdout.on('data', (data) => {
+    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
+  });
+
+  process.stderr.on('data', (data) => {
+    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
+  });
+
+  process.on('exit', (code) => {
+    if (code === 0) {
+      updateProcessStatus(processId, 'unknown');
+      return;
+    }
+
+    updateProcessStatus(processId, 'failed');
+  });
+}
+
+// function openDekafWindow(runtimeConfig: DekafRuntimeConfig) {
+
 // }

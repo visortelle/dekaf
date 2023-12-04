@@ -179,6 +179,9 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
     props?.onDownloadStart === undefined ? {} : props.onDownloadStart();
 
     const url = await resolveUrlRedirects(target.source, 10);
+
+    let lastPercentageReport = -1;
+
     const req = https.get(url, res => {
       console.info('Downloading', url, 'to', downloadedFile);
       res.pipe(downloadStream);
@@ -187,7 +190,8 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
         bytesReceived = bytesReceived + data.length;
 
         const percentage = Math.floor((bytesReceived / bytesTotal) * 100);
-        if (percentage % 5 === 0) {
+        if ((percentage % 5 === 0) && lastPercentageReport !== percentage) {
+          lastPercentageReport = percentage;
           console.info(`${target.taskId} download progress: ${percentage}%`);
         }
 

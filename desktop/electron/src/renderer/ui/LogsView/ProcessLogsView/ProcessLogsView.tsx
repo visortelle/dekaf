@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import s from './ProcessLogsView.module.css'
 import LogsView, { LogEntry } from '../LogsView';
 import { apiChannel, logsChannel } from '../../../../main/channels';
-import { ResendProcessLogs } from '../../../../main/api/processes/type';
+import { ResendProcessLogs } from '../../../../main/api/processes/types';
 import { v4 as uuid } from 'uuid';
 
 export type LogSource = {

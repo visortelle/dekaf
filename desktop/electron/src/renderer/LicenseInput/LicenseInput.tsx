@@ -4,12 +4,13 @@ import FormItem from '../ui/FormItem/FormItem';
 import FormLabel from '../ui/FormLabel/FormLabel';
 import Input from '../ui/Input/Input';
 import useLocalStorage from "use-local-storage-state";
+import { localStorageKeys } from '../app/local-storage';
 
 export type LicenseInputProps = {};
 
 const LicenseInput: React.FC<LicenseInputProps> = (props) => {
-  const [licenseId, setLicenseId] = useLocalStorage<string>('DEKAF_LICENSE_ID', { defaultValue: '' });
-  const [licenseToken, setLicenseToken] = useLocalStorage<string>('DEKAF_LICENSE_TOKEN', { defaultValue: '' });
+  const [licenseId, setLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
+  const [licenseToken, setLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
 
   return (
     <div className={s.LicenseInput}>

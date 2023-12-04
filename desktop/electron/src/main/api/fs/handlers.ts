@@ -73,6 +73,10 @@ export function getPaths(): Paths {
       functionsWorkerConfPath: path.resolve(path.join(instanceDir, "data", "conf", "functions_worker.yml")),
     }
   }
+  const connectionsDir = path.resolve(path.join(userDataDir));
+  const getConnectionDir = (connectionId: string) => path.resolve(path.join(connectionsDir, connectionId));
+  const dekafDir = path.resolve(path.join(assetsDir, 'dekaf'));
+  const getDekafDataDir = (connectionId: string) => path.resolve(path.join(getConnectionDir(connectionId), "dekaf-data"));
 
   return {
     appPath,
@@ -86,6 +90,10 @@ export function getPaths(): Paths {
     getPulsarLocalInstanceDir,
     getPulsarLocalInstanceConfigPath,
     getPulsarStandalonePaths,
-    dekafBin: path.resolve(path.join(assetsDir, 'dekaf', 'bin', 'dekaf')),
+    dekafDir,
+    dekafBin: path.resolve(path.join(dekafDir, 'bin', 'dekaf')),
+    connectionsDir,
+    getConnectionDir,
+    getDekafDataDir
   };
 };
