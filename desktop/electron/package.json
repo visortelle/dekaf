@@ -78,6 +78,7 @@
     "react-router-dom": "^6.16.0",
     "react-toastify": "^9.1.3",
     "react-tooltip": "^5.24.0",
+    "react-virtuoso": "^4.6.2",
     "semver": "^7.5.4",
     "tar": "^6.2.0",
     "unzipper": "^0.10.14",

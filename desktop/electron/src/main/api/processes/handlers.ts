@@ -1,20 +1,22 @@
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
 import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, GetActiveProcesses, GetActiveProcessesResult, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
+import fs from 'node:fs';
 import fsExtra from 'fs-extra';
 import fsAsync from 'fs/promises';
 import path from 'node:path';
 import { ErrorHappened } from "../api/types";
 import axios from 'axios';
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
-import { webContents } from "electron";
+import { BrowserWindow, webContents } from "electron";
 import portfinder from 'portfinder';
+import { electron } from "process";
 
-portfinder.setBasePort(3200);
-portfinder.setHighestPort(3300);
+portfinder.setBasePort(13200);
+portfinder.setHighestPort(13300);
 
 const processLogs: ProcessLogs = {};
 
@@ -44,7 +46,13 @@ function getProcessStatus(processId: string): ProcessStatus | undefined {
 }
 
 function updateProcessStatus(processId: string, status: ProcessStatus) {
-  activeProcesses[processId] = { ...activeProcesses[processId], status };
+  const proc = activeProcesses[processId];
+
+  if (proc.status === status) {
+    return;
+  }
+
+  activeProcesses[processId] = { ...proc, status };
 
   const req: ProcessStatusUpdated = {
     type: "ProcessStatusUpdated",
@@ -52,6 +60,13 @@ function updateProcessStatus(processId: string, status: ProcessStatus) {
     status
   }
   webContents.getFocusedWebContents()?.send(apiChannel, req);
+
+  if (proc.type.type === "dekaf" && status === 'ready') {
+    const url = proc.type.runtimeConfig.publicBaseUrl;
+    const win = new BrowserWindow({ width: 800, height: 600 });
+    win.loadURL(url);
+    win.maximize();
+  }
 }
 
 function monitorProcessStatuses() {
@@ -216,7 +231,7 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
     [processId]: {
-      status: 'alive',
+      status: 'unknown',
       type: {
         type: "pulsar-standalone",
         instanceConfig
@@ -255,10 +270,11 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const paths = getPaths();
 
   const dekafDataDir = paths.getDekafDataDir(connection.instanceId);
-  await fsExtra.ensureDir(dekafDataDir);
-
-  const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
-  await fsExtra.copy(defaultDataDir, dekafDataDir);
+  if (!fs.existsSync(dekafDataDir)) {
+    await fsExtra.ensureDir(dekafDataDir);
+    const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
+    await fsExtra.copy(defaultDataDir, dekafDataDir);
+  }
 
   const port = await portfinder.getPortPromise();
   const publicBaseUrl = `http://127.0.0.1:${port}`;
@@ -304,7 +320,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
     [processId]: {
-      status: 'alive',
+      status: 'unknown',
       type: {
         type: "dekaf",
         connection,
@@ -342,7 +358,3 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     updateProcessStatus(processId, 'failed');
   });
 }
-
-// function openDekafWindow(runtimeConfig: DekafRuntimeConfig) {
-
-// }

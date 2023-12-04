@@ -40,7 +40,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
   let logSources: LogSource[] = [];
   if (pulsarProcessId !== undefined) {
-    logSources = logSources.concat([{ name: 'pulsar-standalone', processId: pulsarProcessId }]);
+    logSources = logSources.concat([{ name: 'pulsar broker', processId: pulsarProcessId }]);
   }
   if (dekafProcessId !== undefined) {
     logSources = logSources.concat([{ name: 'dekaf', processId: dekafProcessId }]);

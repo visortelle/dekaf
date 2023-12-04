@@ -1,17 +1,38 @@
 .LogsView {
   overflow: hidden;
   display: flex;
+  width: calc(100vw - 48rem);
+  height: calc(100vh - 96rem);
 }
 
 .Logs {
-  overflow: auto;
+  overflow: hidden;
+  width: inherit;
+  height: inherit;
 }
 
 .LogEntry {
-  word-wrap: break-word;
-  white-space: pre-wrap;
+  display: flex;
   padding: 4rem 24rem;
   border-bottom: 1px solid var(--border-color);
   font-weight: var(--font-weight-bold);
   line-height: 1.8;
+}
+
+.LogEntrySource {
+  padding-right: 1ch;
+  flex: 0 1 12ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: right;
+  text-overflow: ellipsis;
+}
+
+.LogEntryContent {
+  flex: 1 1;
+  margin: 0;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  border-left: 1px solid var(--border-color);
+  padding-left: 1ch;
 }
