@@ -170,7 +170,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
               const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([\w-]+)\/([\w-]+)\/([\w-]+)$/;
 
               if (!v.match(pulsarTopicFqnRegex)) {
-                return Either.left(new Error('Expected following topic name format: persistent://tenant/namespace/topic'))
+                return Either.left(new Error('Expecting the following topic name format: persistent://tenant/namespace/topic'))
               }
 
               return Either.right(undefined);

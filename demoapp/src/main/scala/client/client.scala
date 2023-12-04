@@ -26,7 +26,7 @@ val authentication: Option[Authentication] = config.auth match
 
 val adminClient =
     val builder = PulsarAdmin.builder
-        .serviceHttpUrl(config.pulsarHttpUrl.get)
+        .serviceHttpUrl(config.pulsarWebUrl.get)
     authentication.foreach(builder.authentication)
     builder.build
 

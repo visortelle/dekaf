@@ -2,7 +2,7 @@ import { MessageDescriptor } from "../../../types";
 import { ExportConfig } from "../types";
 import { takeMessageFields, encodeBigArrayAsJsonBytes, splitMessagesToChunks, MessagesChunk } from "./lib/lib";
 import { saveZipFile, File } from "./lib/files";
-import { partialMessageDescriptorToSerializable } from "../../../conversions";
+import { partialMessageDescriptorToSerializable } from "../../../conversions/conversions";
 
 export type GenFileProps = {
   chunk: MessagesChunk;
@@ -35,7 +35,7 @@ export function genFile(props: GenFileProps): File {
         ? props.fileNameFallback
         : `${props.chunk.messages[0].index}-${props.chunk.messages[props.chunk.messages.length - 1].index}.json`;
     }
-    break;
+      break;
   }
 
   return {

@@ -13,6 +13,7 @@ import { localStorageKeys } from '../../../../../local-storage-keys';
 import { ManagedMessageFilter, ManagedMessageFilterSpec, ManagedMessageFilterValOrRef } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
+import { defaultBasicMessageFilter } from './BasicFilterEditor/defaultBasicMessageFilter';
 
 export type FilterEditorProps = {
   value: ManagedMessageFilterValOrRef;
@@ -95,7 +96,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                   onSpecChange({
                     ...itemSpec,
                     type: 'basic-message-filter',
-                    value: {},
+                    value: defaultBasicMessageFilter,
                   });
                   return;
                 case 'js-message-filter':
@@ -113,7 +114,15 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
 
       <div>
         {itemSpec.type === 'basic-message-filter' && (
-          <BasicFilterEditor />
+          <BasicFilterEditor
+            value={itemSpec.value}
+            onChange={(v) => onSpecChange({
+              type: 'basic-message-filter',
+              value: v,
+              isEnabled: itemSpec.isEnabled,
+              isNegated: itemSpec.isNegated,
+            })}
+          />
         )}
         {itemSpec.type === 'js-message-filter' && (
           <JsFilterEditor
@@ -121,8 +130,8 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             onChange={(v) => onSpecChange({
               type: 'js-message-filter',
               value: v,
-              isEnabled: true,
-              isNegated: false,
+              isEnabled: itemSpec.isEnabled,
+              isNegated: itemSpec.isNegated,
             })}
           />
         )}

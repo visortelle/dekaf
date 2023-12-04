@@ -1,0 +1,19 @@
+.A {
+  display: inline-flex;
+}
+
+.A:hover {
+  opacity: 0.5;
+  text-decoration: underline;
+}
+
+.ExternalLinkIcon {
+  margin-left: 0.5ch;
+  margin-top: 1rem;
+}
+
+.ExternalLinkIcon svg {
+  width: 16rem;
+  height: 16rem;
+  fill: var(--accent-color-blue);
+}

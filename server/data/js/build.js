@@ -15,7 +15,7 @@ require("esbuild")
     entryPoints: ["libs.js"],
     bundle: true,
     minify: false,
-    globalName: "jsLibs",
+    globalName: "__dekaf_libs",
     sourcemap: false,
     outdir,
     define: {

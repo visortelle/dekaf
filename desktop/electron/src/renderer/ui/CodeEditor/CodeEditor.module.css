@@ -1,0 +1,19 @@
+.CodeEditor :global(.cm-editor) {
+  border: 1px solid var(--border-color);
+  outline: none !important;
+  border-radius: 4rem;
+  overflow: hidden;
+  resize: vertical;
+}
+
+.CodeEditor :global(.cm-editor.cm-focused) {
+  border-color: var(--accent-color-blue);
+}
+
+.CodeEditor :global(.cm-activeLine) {
+  background-color: var(--surface-color);
+}
+
+.CodeEditor :global(.cm-activeLineGutter) {
+  background-color: var(--surface-color);
+}

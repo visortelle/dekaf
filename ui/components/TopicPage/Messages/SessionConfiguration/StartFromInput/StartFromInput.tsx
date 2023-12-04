@@ -11,7 +11,7 @@ import { ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpec, M
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
-import { clone } from 'lodash';
+import { cloneDeep } from 'lodash';
 
 export type StartFromInputProps = {
   value: ManagedConsumerSessionStartFromValOrRef;
@@ -172,7 +172,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
             placeholder="08 c3 03 10 cd 04 20 00 30 01"
             onChange={(v) => {
-              const newItemSpec = clone(itemSpec);
+              const newItemSpec = cloneDeep(itemSpec);
 
               if (newItemSpec.startFrom.type !== 'messageId') {
                 return;
@@ -194,7 +194,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           <DatetimePicker
             value={itemSpec.startFrom.dateTime.val?.spec.dateTime}
             onChange={(v) => {
-              const newItemSpec = clone(itemSpec);
+              const newItemSpec = cloneDeep(itemSpec);
 
               if (newItemSpec.startFrom.type !== 'dateTime') {
                 return;
@@ -216,7 +216,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           <RelativeDateTimePicker
             value={itemSpec.startFrom.relativeDateTime.val?.spec!}
             onChange={(v) => {
-              const newItemSpec = clone(itemSpec);
+              const newItemSpec = cloneDeep(itemSpec);
 
               if (newItemSpec.startFrom.type !== 'relativeDateTime') {
                 return;

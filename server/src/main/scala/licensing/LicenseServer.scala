@@ -12,6 +12,9 @@ import java.time.temporal.ChronoField
 val KeygenAccountId = "add36df4-cf52-4909-b352-51318cb23d99"
 val KeygenApiUrl = "https://api.keygen.sh"
 
+val desktopFreeLicenseId = "33a8cc38-5062-4f30-91d6-31b0797ea9d0"
+val desktopFreeLicenseToken = "prod-f6339ce7067c062724ca5e2bb2d36690b3637aed1c5f93e740148d4f1f2e4f6av3"
+
 val Graffiti =
     """
       |########  ######## ##    ##    ###    ########
@@ -37,28 +40,28 @@ object LicenseServer:
                 s"Teal Tools Inc. Wilmington, Delaware, U.S. ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).atZone(ZoneOffset.UTC).getYear}"
             )
             println(s"Product: ${buildinfo.BuildInfo.name} ${buildinfo.BuildInfo.version}")
-            println(s"Built at: ${buildinfo.BuildInfo.builtAtString}")
+            println(s"Built at: ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).toString}")
             println(s"You can get help here: support@teal.tools")
             println(s"More products: https://teal.tools")
             println(s"More info about this product: https://dekaf.io")
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
-        licenseId <- ZIO.attempt(config.licenseId.get)
-        licenseToken <- ZIO.attempt(config.licenseToken.get)
+        licenseId <- ZIO.attempt(config.licenseId.getOrElse(desktopFreeLicenseId))
+        licenseToken <- ZIO.attempt(config.licenseToken.getOrElse(desktopFreeLicenseToken))
         _ <- ZIO.attempt {
             val maskedToken = {
                 val charsToMask = licenseToken.length - 4
                 "*" * charsToMask + licenseToken.drop(charsToMask)
             }
-            println(s"License ID: $licenseId")
-            println(s"License Token: $maskedToken")
+            println(s"License ID: ${if licenseId.isEmpty || licenseId == desktopFreeLicenseId then "<not_provided>" else licenseId}")
+            println(s"License Token: ${if licenseToken.isEmpty || licenseToken == desktopFreeLicenseToken then "<not_provided>" else maskedToken}")
         }
         _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
         config <- readConfig
         keygenClient <- ZIO.attempt {
             new KeygenClient(
-                licenseToken = config.licenseToken.get,
+                licenseToken = licenseToken,
                 keygenApiUrl = KeygenApiUrl,
                 keygenAccountId = KeygenAccountId
             )
@@ -103,12 +106,12 @@ object LicenseServer:
         config <- readConfig
         keygenClient <- ZIO.attempt {
             new KeygenClient(
-                licenseToken = config.licenseToken.get,
+                licenseToken = config.licenseToken.getOrElse(desktopFreeLicenseToken),
                 keygenApiUrl = KeygenApiUrl,
                 keygenAccountId = KeygenAccountId
             )
         }
         _ <- keygenClient
             .licenseHeartbeatPing(keygenMachineId)
-            .repeat(Schedule.fixed(Duration.fromSeconds(15 * 60)))
+            .repeat(Schedule.fixed(Duration.fromSeconds(20 * 60)))
     } yield ()

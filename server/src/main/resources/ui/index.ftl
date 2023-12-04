@@ -30,7 +30,7 @@
       pulsarName: '${pulsarName}',
       pulsarColor: '${pulsarColor}',
       pulsarBrokerUrl: '${pulsarBrokerUrl}',
-      pulsarHttpUrl: '${pulsarHttpUrl}',
+      pulsarWebUrl: '${pulsarWebUrl}',
 
       buildInfo: {
         name: '${buildInfo.name}',

@@ -11,8 +11,10 @@ clean:
 
 .PHONY: build
 build: # Build
-	cd ./library/js && npm install && npm run build
-	sbt universal:packageBin -DisBinaryBuild=true
+	cd ./data/js && npm install && npm run build
+	cp -r ./data ./src/universal/
+	rm -rf ./src/universal/data/js/node_modules
+	sbt universal:packageZipTarball -DisBinaryBuild=true
 
 .PHONY: dev
 dev: ## Start development
