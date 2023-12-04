@@ -51,8 +51,14 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <ProcessLogsViewButton
         sources={logSources}
       />
-      <ProcessStatusIndicator processId={pulsarProcessId} />
-      <ProcessStatusIndicator processId={dekafProcessId} />
+      <div>
+        Pulsar status:&nbsp;
+        <ProcessStatusIndicator processId={pulsarProcessId} />
+      </div>
+      <div>
+        Dekaf status:&nbsp;
+        <ProcessStatusIndicator processId={dekafProcessId} />
+      </div>
 
       {JSON.stringify(props.pulsarInstance.id, null, 4)}&nbsp;
       <SmallButton

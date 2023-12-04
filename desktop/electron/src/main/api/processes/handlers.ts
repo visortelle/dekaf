@@ -13,7 +13,6 @@ import axios from 'axios';
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
 import { BrowserWindow, webContents } from "electron";
 import portfinder from 'portfinder';
-import { electron } from "process";
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -38,8 +37,8 @@ function appendLog(processId: string, entry: LogEntry, event: Electron.IpcMainEv
   event.reply(logsChannel, req);
 }
 
-let activeProcesses: ActiveProcesses = {};
-let activeChildProcesses: ActiveChildProcesses = {};
+const activeProcesses: ActiveProcesses = {};
+const activeChildProcesses: ActiveChildProcesses = {};
 
 function getProcessStatus(processId: string): ProcessStatus | undefined {
   return activeProcesses[processId].status;
@@ -59,7 +58,7 @@ function updateProcessStatus(processId: string, status: ProcessStatus) {
     processId,
     status
   }
-  webContents.getFocusedWebContents()?.send(apiChannel, req);
+  webContents.getAllWebContents().forEach(wc => wc.send(apiChannel, req));
 
   if (proc.type.type === "dekaf" && status === 'ready') {
     const url = proc.type.runtimeConfig.publicBaseUrl;
@@ -116,8 +115,13 @@ function monitorProcessStatuses() {
 setInterval(monitorProcessStatuses, 3000);
 
 function updateActiveProcesses(newActiveProcesses: ActiveProcesses, newActiveChildProcesses: ActiveChildProcesses, event: Electron.IpcMainEvent) {
-  activeProcesses = newActiveProcesses;
-  activeChildProcesses = newActiveChildProcesses;
+  Object.entries(newActiveProcesses).forEach(([processId, proc]) => {
+    activeProcesses[processId] = proc;
+  });
+
+  Object.entries(newActiveChildProcesses).forEach(([processId, proc]) => {
+    activeChildProcesses[processId] = proc;
+  });
 
   const req: ActiveProcessesUpdated = {
     type: "ActiveProcessesUpdated",
