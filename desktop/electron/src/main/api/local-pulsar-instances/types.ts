@@ -20,7 +20,7 @@ export type PulsarStandaloneConfig = {
   numBookies?: number,
   standaloneConfContent?: string,
   functionsWorkerConfContent?: string,
-  brokerServicePort?: number,
+  brokerServicePort: number,
   webServicePort?: number,
   bookkeeperPort?: number,
   streamStoragePort?: number,

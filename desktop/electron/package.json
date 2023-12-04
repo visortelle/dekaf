@@ -59,6 +59,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@uiw/codemirror-theme-github": "^4.21.21",
     "@uiw/react-codemirror": "^4.21.21",
+    "axios": "^1.6.2",
     "dayjs": "^1.11.10",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",

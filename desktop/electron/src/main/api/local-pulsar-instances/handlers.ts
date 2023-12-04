@@ -108,7 +108,7 @@ export async function handleDeleteLocalPulsarInstance(event: Electron.IpcMainEve
   }
 }
 
-export const getInstanceConfig = async (instanceId: string) => {
+export const getInstanceConfig = async (instanceId: string): Promise<LocalPulsarInstance> => {
   const paths = getPaths();
   const configFilePath = paths.getPulsarLocalInstanceConfigPath(instanceId);
   const configFileContent = await fsAsync.readFile(configFilePath, { encoding: 'utf-8' });

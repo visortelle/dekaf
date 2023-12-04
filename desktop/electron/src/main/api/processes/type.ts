@@ -1,16 +1,5 @@
 import { ActiveProcesses } from "./handlers";
 
-export type HttpProbe = {
-  url: string
-};
-
-export type ReadinessProbe = {
-  type: "HttpProbe",
-  probe: HttpProbe
-} | {
-  type: "AlwaysOk"
-}
-
 export type ProcessId = string;
 
 export type SpawnProcess = {
@@ -39,6 +28,12 @@ export type GetActiveProcessesResult = {
 export type ActiveProcessesUpdated = {
   type: "ActiveProcessesUpdated",
   processes: ActiveProcesses
+};
+
+export type ProcessStatusUpdated = {
+  type: "ProcessStatusUpdated",
+  processId: string,
+  status: ProcessStatus
 };
 
 export type LogEntry = {

@@ -178,7 +178,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
         />
         <div style={{ maxWidth: '120rem' }}>
           <Input
-            value={String(props.value.brokerServicePort) || ''}
+            value={String(props.value.brokerServicePort)}
             onChange={(v) => props.onChange({ ...props.value, brokerServicePort: Number(v) })}
             inputProps={{ type: 'number' }}
           />

@@ -5,7 +5,7 @@ import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsar
 import { ErrorHappened } from './api/types';
 import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
-import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, ProcessLogEntryReceived, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/type';
+import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, ProcessLogEntryReceived, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/type';
 import { handleGetActiveProcesses, handleResendProcessLogs, handleSpawnProcess } from './processes/handlers';
 
 export type ApiEvent = ErrorHappened |
@@ -30,6 +30,7 @@ export type ApiEvent = ErrorHappened |
   GetActiveProcesses |
   GetActiveProcessesResult |
   ActiveProcessesUpdated |
+  ProcessStatusUpdated |
   ResendProcessLogs |
   ResendProcessLogsResult |
   ProcessLogEntryReceived

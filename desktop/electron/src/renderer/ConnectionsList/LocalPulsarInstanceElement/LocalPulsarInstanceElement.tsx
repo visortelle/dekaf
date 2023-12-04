@@ -6,6 +6,7 @@ import { GetActiveProcesses, SpawnProcess } from '../../../main/api/processes/ty
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from '../../../main/channels';
 import ProcessLogsViewButton from '../../ui/LogsView/ProcessLogsViewButton/ProcessLogsViewButton';
+import ProcessStatusIndicator from './ProcessStatusIndicator/ProcessStatusIndicator';
 
 export type LocalPulsarInstanceElementProps = {
   pulsarInstance: LocalPulsarInstance
@@ -18,7 +19,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ActiveProcessesUpdated" || arg.type === "GetActiveProcessesResult") {
         const [maybeProcessId] = Object.entries(arg.processes)
-          .find(([_, process]) => process.type.type === "pulsar-standalone" && process.type.instanceId === props.pulsarInstance.id) || [];
+          .find(([_, process]) => process.type.type === "pulsar-standalone" && process.type.instanceConfig.id === props.pulsarInstance.id) || [];
 
         setPulsarProcessId(maybeProcessId)
       }
@@ -30,13 +31,15 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
   return (
     <div className={s.LocalPulsarInstanceElement}>
-
       {pulsarProcessId && (
-        <ProcessLogsViewButton
-          sources={[
-            { name: 'pulsar-standalone', processId: pulsarProcessId },
-          ]}
-        />
+        <>
+          <ProcessLogsViewButton
+            sources={[
+              { name: 'pulsar-standalone', processId: pulsarProcessId },
+            ]}
+          />
+          <ProcessStatusIndicator processId={pulsarProcessId} />
+        </>
       )}
 
       {JSON.stringify(props.pulsarInstance.id, null, 4)}
