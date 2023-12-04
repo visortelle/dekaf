@@ -26,7 +26,7 @@ def getThreadFactory(poolName: String) =
 val sharedTimer = new HashedWheelTimer(getThreadFactory("shared-pulsar-timer"), 1, TimeUnit.MILLISECONDS)
 
 def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
-    var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarHttpUrl.get)
+    var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarWebUrl.get)
 
     builder = tls.configureAdminClient(builder, config)
 

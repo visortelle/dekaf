@@ -23,13 +23,13 @@ case class AuthConfig(oauth2: Option[OAuth2Config], jwt: Option[JwtConfig])
 
 case class Config(
     pulsarBrokerUrl: Option[String],
-    pulsarHttpUrl: Option[String],
+    pulsarWebUrl: Option[String],
     auth: Option[AuthConfig]
 )
 
 val defaultConfig = Config(
     pulsarBrokerUrl = Some("pulsar://localhost:6650"),
-    pulsarHttpUrl = Some("http://localhost:8080"),
+    pulsarWebUrl = Some("http://localhost:8080"),
     auth = None
 )
 

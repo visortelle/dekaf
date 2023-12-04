@@ -43,7 +43,7 @@ object HttpServer:
                             "publicBaseUrl" -> appConfig.publicBaseUrl.get,
                             "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
-                            "pulsarHttpUrl" -> appConfig.pulsarHttpUrl.get,
+                            "pulsarWebUrl" -> appConfig.pulsarWebUrl.get,
                             "pulsarName" -> appConfig.pulsarName.get,
                             "pulsarColor" -> appConfig.pulsarColor.get
                         ).asJava

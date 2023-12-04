@@ -1,0 +1,58 @@
+.Toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5rem;
+}
+
+.Toggle:hover {
+  cursor: pointer;
+}
+
+.Body {
+  height: 12rem;
+  width: 32rem;
+  border-radius: 99999px;
+  background-color: #aaa;
+  border: 2rem solid #aaa;
+}
+
+.Body:focus {
+  outline: none;
+  border-color: var(--accent-color-blue);
+}
+
+.True .Body {
+  background-color: var(--accent-color-blue);
+  border-color: var(--accent-color-blue);
+}
+
+.True .Body:focus {
+  border-color: var(--accent-color-blue);
+}
+
+.False .Body {
+  background-color: #aaa;
+}
+
+.Label {
+  margin-left: 10rem;
+  user-select: none;
+}
+
+.Circle {
+  background-color: #fff;
+  border-radius: 50%;
+  width: 18rem;
+  height: 18rem;
+  box-shadow: 1rem 1rem 4rem rgba(0, 0, 0, 0.5);
+  position: relative;
+  top: calc(-5rem);
+  left: calc(-10rem);
+  transform: translate(0, 0);
+  transition: transform 0.1s ease-in-out;
+}
+
+.True .Circle {
+  transform: translate(28rem, 0);
+  transition: transform 0.1s ease-in-out;
+}

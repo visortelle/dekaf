@@ -13,7 +13,7 @@ export type Config = {
   pulsarName: string,
   pulsarColor: string,
   pulsarBrokerUrl: string,
-  pulsarHttpUrl: string,
+  pulsarWebUrl: string,
   buildInfo: BuildInfo,
 }
 
@@ -37,7 +37,7 @@ const defaultValue: Value = {
     pulsarName: '',
     pulsarColor: '',
     pulsarBrokerUrl: '',
-    pulsarHttpUrl: '',
+    pulsarWebUrl: '',
     buildInfo: {
       name: '',
       version: '',

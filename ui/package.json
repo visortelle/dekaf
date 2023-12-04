@@ -79,7 +79,7 @@
     "eslint": "8.29.0",
     "jest": "^29.3.1",
     "jest-environment-jsdom": "^29.3.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   },
   "optionalDependencies": {
     "ui-grpc-web-client": "*"

@@ -54,6 +54,7 @@ lazy val root = project
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,
+        Universal / packageName := "dekaf",
         buildInfoPackage := "buildinfo",
         buildInfoObject := "BuildInfo",
         buildInfoOptions += BuildInfoOption.BuildTime,
@@ -100,6 +101,7 @@ lazy val root = project
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.12.0",
+            "org.apache.commons" % "commons-text" % "1.11.0",
             "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
             "com.google.guava" % "guava" % "31.1-jre",
             "com.lihaoyi" %% "os-lib" % "0.9.1",

@@ -7,15 +7,17 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 import org.apache.pulsar.common.schema.SchemaType
 import io.circe.syntax.*
+import io.circe.generic.auto.*
 
 import java.nio.charset.StandardCharsets
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
 type JsonValue = String
-type MessageValueToJsonResult = Either[Throwable, JsonValue]
+type MessageAsJsonOmittingValue = JsonValue
+type MessageValueAsJson = Either[Throwable, JsonValue]
 
-case class MessageJson(
+case class PulsarMessageJsonOmittingValue(
     eventTime: Option[Long],
     publishTime: Option[Long],
     brokerPublishTime: Option[Long],
@@ -35,7 +37,7 @@ case class MessageJson(
 
 object converters:
     def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): ConsumerSessionMessage =
-        val messageValueToJsonResult = messageValueToJson(schemas, msg)
+        val messageValueAsJson = messageValueToJson(schemas, msg)
 
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
@@ -57,7 +59,7 @@ object converters:
         val isReplicated = Option(msg.isReplicated)
         val replicatedFrom = Option(msg.getReplicatedFrom)
 
-        val messageJson = MessageJson(
+        val messageAsJsonOmittingValue = PulsarMessageJsonOmittingValue(
             properties = properties,
             eventTime = eventTime,
             publishTime = publishTime,
@@ -78,7 +80,7 @@ object converters:
         val messagePb = consumerPb.Message(
             properties = properties,
             rawValue = Option(msg.getValue).map(ByteString.copyFrom),
-            value = messageValueToJsonResult.toOption,
+            value = messageValueAsJson.toOption,
             eventTime = eventTime,
             publishTime = publishTime,
             brokerPublishTime = brokerPublishTime,
@@ -94,9 +96,14 @@ object converters:
             replicatedFrom = replicatedFrom,
             size = size
         )
-        ConsumerSessionMessage(messagePb, messageJson, messageValueToJsonResult)
 
-    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
+        ConsumerSessionMessage(
+            messagePb = messagePb,
+            messageAsJsonOmittingValue = messageAsJsonOmittingValue.asJson.toString,
+            messageValueAsJson = messageValueAsJson
+        )
+
+    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueAsJson =
         val msgData = msg.getData
         val schemasByVersion = schemas.get(msg.getTopicName)
 

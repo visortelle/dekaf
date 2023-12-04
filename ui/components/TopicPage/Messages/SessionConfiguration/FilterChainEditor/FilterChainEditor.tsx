@@ -15,6 +15,7 @@ import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
+import { defaultBasicMessageFilter } from './FilterEditor/BasicFilterEditor/defaultBasicMessageFilter';
 
 export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
@@ -154,7 +155,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                   isEnabled: true,
                   isNegated: false,
                   type: 'basic-message-filter',
-                  value: {}
+                  value: defaultBasicMessageFilter
                 }
               };
               break;

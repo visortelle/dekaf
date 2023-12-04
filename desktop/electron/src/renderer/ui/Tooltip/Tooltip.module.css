@@ -1,0 +1,22 @@
+.Tooltip {
+  max-width: 480rem;
+  font-size: 14rem;
+}
+
+.TooltipRoot {
+  z-index: 9999;
+  position: fixed;
+}
+
+.Tooltip a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.Tooltip a svg {
+  fill: #ffffff;
+}
+
+.Tooltip code {
+  color: var(--text-color);
+}
