@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import s from './ProcessStatusIndicator.module.css'
-import { ProcessStatus } from '../../../../main/api/processes/types';
+import { GetActiveProcesses, ProcessStatus } from '../../../../main/api/processes/types';
 import { apiChannel } from '../../../../main/channels';
 
 export type ProcessStatusIndicatorProps = {
@@ -27,7 +27,18 @@ const ProcessStatusIndicator: React.FC<ProcessStatusIndicatorProps> = (props) =>
       if (arg.type === "ProcessStatusUpdated" && arg.processId === props.processId) {
         setStatus(arg.status);
       }
+
+      if (arg.type === "GetActiveProcessesResult") {
+        Object.entries(arg.processes).forEach(([processId, proc]) => {
+          if (processId === props.processId) {
+            setStatus(proc.status);
+          }
+        });
+      }
     });
+
+    const req: GetActiveProcesses = { type: "GetActiveProcesses" };
+    window.electron.ipcRenderer.sendMessage(apiChannel, req);
   }, [props.processId]);
 
   return (
