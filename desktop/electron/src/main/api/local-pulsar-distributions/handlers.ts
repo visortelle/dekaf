@@ -271,6 +271,8 @@ export async function handleDeletePulsarDistribution(event: Electron.IpcMainEven
     const distributionPath = paths.getPulsarDistributionDir(arg.version);
     await fsExtra.remove(distributionPath);
 
+    delete activeDownloads[arg.version];
+
     const deletedReq: PulsarDistributionDeleted = { type: "PulsarDistributionDeleted", version: arg.version };
     event.reply(apiChannel, deletedReq);
   } catch (err) {
