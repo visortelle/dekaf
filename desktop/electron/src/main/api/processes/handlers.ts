@@ -13,6 +13,7 @@ import axios from 'axios';
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
 import { BrowserWindow, webContents } from "electron";
 import portfinder from 'portfinder';
+import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -62,9 +63,14 @@ function updateProcessStatus(processId: string, status: ProcessStatus) {
 
   if (proc.type.type === "dekaf" && status === 'ready') {
     const url = proc.type.runtimeConfig.publicBaseUrl;
-    const win = new BrowserWindow({ width: 800, height: 600 });
+    const win = new BrowserWindow({
+      width: 1280,
+      height: 800,
+      show: false,
+      backgroundColor: '#f5f5f5'
+    });
     win.loadURL(url);
-    win.maximize();
+    win.once('ready-to-show', win.show);
   }
 }
 
@@ -307,7 +313,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     env["DEKAF_PULSAR_NAME"] = instanceConfig.name;
 
     if (instanceConfig.color !== undefined) {
-      env["DEKAF_PULSAR_COLOR"] = instanceConfig.color
+      env["DEKAF_PULSAR_COLOR"] = colorsByName[instanceConfig.color] || instanceConfig.color;
     }
 
     env["DEKAF_PULSAR_BROKER_URL"] = `pulsar://127.0.0.1:${instanceConfig.config.brokerServicePort}`

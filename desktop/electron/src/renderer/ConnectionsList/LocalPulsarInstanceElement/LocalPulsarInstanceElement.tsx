@@ -61,6 +61,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       </div>
 
       {JSON.stringify(props.pulsarInstance.id, null, 4)}&nbsp;
+      {JSON.stringify(props.pulsarInstance.name, null, 4)}&nbsp;
       <SmallButton
         type='primary'
         text='Start and Connect'
