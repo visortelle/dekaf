@@ -4,19 +4,30 @@ import { GetActiveProcesses, ProcessStatus } from '../../../../main/api/processe
 import { apiChannel } from '../../../../main/channels';
 
 export type ProcessStatusIndicatorProps = {
-  processId?: string
+  processId?: string,
+  onStatusChange?: (status: ProcessStatus) => void
 };
 
 type Color = string;
 const palette: Record<ProcessStatus, Color> = {
   unknown: 'var(--surface-color)',
+  starting: 'var(--accent-color-yellow)',
   alive: 'var(--accent-color-yellow)',
   failed: 'var(--accent-color-red)',
   ready: 'var(--accent-color-green)',
+  stopping: 'var(--accent-color-yellow)'
 };
 
 const ProcessStatusIndicator: React.FC<ProcessStatusIndicatorProps> = (props) => {
-  const [status, setStatus] = useState<ProcessStatus>('unknown');
+  const [status, _setStatus] = useState<ProcessStatus>('unknown');
+
+  const setStatus = (status: ProcessStatus) => {
+    _setStatus(status);
+
+    if (props.onStatusChange !== undefined) {
+      props.onStatusChange(status);
+    }
+  }
 
   useEffect(() => {
     if (props.processId === undefined) {

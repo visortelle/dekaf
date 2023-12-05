@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, GetActiveProcesses, GetActiveProcessesResult, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
+import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, GetActiveProcesses, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
@@ -11,13 +11,16 @@ import path from 'node:path';
 import { ErrorHappened } from "../api/types";
 import axios from 'axios';
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
-import { BrowserWindow, webContents } from "electron";
+import { BrowserWindow } from "electron";
 import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
+import { sendMessage } from "../api/send-message";
+import { exitCode } from "process";
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
 
+const sigTermExitCode = 143;
 const processLogs: ProcessLogs = {};
 
 function appendLog(processId: string, entry: LogEntry, event: Electron.IpcMainEvent) {
@@ -45,10 +48,28 @@ function getProcessStatus(processId: string): ProcessStatus | undefined {
   return activeProcesses[processId].status;
 }
 
+function deleteProcess(processId: string) {
+  delete activeProcesses[processId];
+  delete activeChildProcesses[processId];
+  delete processLogs[processId];
+
+  const req: GetActiveProcessesResult = {
+    type: "GetActiveProcessesResult",
+    processes: activeProcesses
+  }
+  sendMessage(apiChannel, req);
+}
+
 function updateProcessStatus(processId: string, status: ProcessStatus) {
   const proc = activeProcesses[processId];
 
   if (proc.status === status) {
+    return;
+  }
+
+  if (proc.status === 'stopping' && (status === 'alive' || status === 'ready')) {
+    // XXX - probably wrong place to do that.
+    // You may want to move it to the right place during process statuses monitor refactoring.
     return;
   }
 
@@ -59,7 +80,8 @@ function updateProcessStatus(processId: string, status: ProcessStatus) {
     processId,
     status
   }
-  webContents.getAllWebContents().forEach(wc => wc.send(apiChannel, req));
+
+  sendMessage(apiChannel, req);
 
   if (proc.type.type === "dekaf" && status === 'ready') {
     const url = proc.type.runtimeConfig.publicBaseUrl;
@@ -71,6 +93,7 @@ function updateProcessStatus(processId: string, status: ProcessStatus) {
     });
     win.loadURL(url);
     win.once('ready-to-show', win.show);
+    win.maximize();
   }
 }
 
@@ -152,6 +175,22 @@ export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: Spaw
     };
     event.reply(apiChannel, req);
   }
+}
+
+export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillProcess): Promise<void> {
+  const proc = activeChildProcesses[arg.processId];
+
+  if (proc === undefined) {
+    const req: ErrorHappened = {
+      type: "ErrorHappened",
+      message: `Unable to kill process. No such process ${arg.processId}`
+    };
+    sendMessage(apiChannel, req);
+  }
+
+  proc.childProcess.kill();
+
+  updateProcessStatus(arg.processId, 'stopping');
 }
 
 export async function handleGetActiveProcesses(event: Electron.IpcMainEvent): Promise<void> {
@@ -241,7 +280,7 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
     [processId]: {
-      status: 'unknown',
+      status: 'starting',
       type: {
         type: "pulsar-standalone",
         instanceConfig
@@ -267,8 +306,9 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   });
 
   process.on('exit', (code) => {
-    if (code === 0) {
+    if (code === 0 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
+      deleteProcess(processId);
       return;
     }
 
@@ -330,7 +370,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
     [processId]: {
-      status: 'unknown',
+      status: 'starting',
       type: {
         type: "dekaf",
         connection,
@@ -360,8 +400,9 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   });
 
   process.on('exit', (code) => {
-    if (code === 0) {
+    if (code === 0 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
+      deleteProcess(processId);
       return;
     }
 
