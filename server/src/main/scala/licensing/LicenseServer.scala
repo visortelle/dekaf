@@ -25,7 +25,7 @@ val Graffiti =
       |##     ## ##       ##   ##  ##     ## ##
       |########  ######## ##    ## ##     ## ##
       |for Apache Pulsar
-      |""".stripMargin.replace("$", "▓")
+      |""".stripMargin.trim.replace("$", "▓")
 
 object LicenseServer:
     case class InitResult(

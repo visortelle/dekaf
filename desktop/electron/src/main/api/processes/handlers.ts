@@ -298,11 +298,15 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
   process.stdout.on('data', (data) => {
-    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
+    (data as string).split('\n\n').forEach(line => {
+      appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
+    });
   });
 
   process.stderr.on('data', (data) => {
-    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
+    (data as string).split('\n\n').forEach(line => {
+      appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
+    });
   });
 
   process.on('exit', (code) => {
@@ -392,11 +396,15 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
   process.stdout.on('data', (data) => {
-    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
+    (data as string).split('\n\n').forEach(line => {
+      appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
+    });
   });
 
   process.stderr.on('data', (data) => {
-    appendLog(processId, { processId, content: data, epoch: Date.now() }, event);
+    (data as string).split('\n\n').forEach(line => {
+      appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
+    });
   });
 
   process.on('exit', (code) => {

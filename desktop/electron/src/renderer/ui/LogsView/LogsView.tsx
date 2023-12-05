@@ -36,14 +36,14 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const logsRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = (bottomOffset?: number) => {
+  const scrollToBottom = (bottomOffset?: number, behavior?: 'auto' | 'smooth') => {
     const scrollParent = logsRef.current?.children[0];
-    scrollParent?.scrollTo({ top: scrollParent.scrollHeight - (bottomOffset || 0), behavior: 'auto' });
+    scrollParent?.scrollTo({ top: scrollParent.scrollHeight - (bottomOffset || 0), behavior: behavior || 'auto' });
   }
 
   useInterval(() => {
     scrollToBottom();
-  }, isFollow ? 200 : false);
+  }, isFollow ? 100 : false);
 
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (!isFollow) {
@@ -60,7 +60,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
 
     if (e.deltaY < 0 && isFollow) {
       setIsFollow(false);
-      setTimeout(() => scrollToBottom(50), 100);
+      setTimeout(() => scrollToBottom(15), 50);
     }
   }, [isFollow]);
 
@@ -79,7 +79,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
 
     return (
       <div key={i} className={s.LogEntry} style={{ color }}>
-        <div className={s.LogEntrySource}><i><u>{entry.source}</u></i>&nbsp;</div>
+        <div className={s.LogEntrySource}>{entry.source}&nbsp;</div>
         <pre className={s.LogEntryContent}>{entry.content}</pre>
       </div>
     );
@@ -94,6 +94,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
           totalCount={entriesToShow.length}
           itemContent={itemContent}
           followOutput={isFollow}
+          atBottomThreshold={10}
           overscan={{ main: window.innerHeight * 2, reverse: window.innerWidth }}
         />
       </div>
