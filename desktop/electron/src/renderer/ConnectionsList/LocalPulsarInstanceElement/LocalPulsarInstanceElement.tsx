@@ -11,6 +11,7 @@ import { LogSource } from '../../ui/LogsView/ProcessLogsView/ProcessLogsView';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../app/local-storage';
 import NoData from '../../ui/NoData/NoData';
+import EditLocalPulsarInstanceButton from '../../EditLocalPulsarInstanceButton/EditLocalPulsarInstanceButton';
 
 export type LocalPulsarInstanceElementProps = {
   pulsarInstance: LocalPulsarInstance
@@ -133,6 +134,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
           });
         }}
       />}
+      <EditLocalPulsarInstanceButton instanceId={props.pulsarInstance.id} disabled={isRunning} />
     </div>
   );
 }

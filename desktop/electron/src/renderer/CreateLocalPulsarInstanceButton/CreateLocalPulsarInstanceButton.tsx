@@ -23,7 +23,7 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
           title: 'Create Local Pulsar Instance',
           content: (
             <CreateLocalPulsarInstanceForm
-              onCreate={(v) => {
+              onCreate={() => {
                 modals.pop();
               }}
             />
