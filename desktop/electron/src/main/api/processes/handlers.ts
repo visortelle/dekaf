@@ -310,7 +310,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
       env["DEKAF_PULSAR_COLOR"] = instanceConfig.color
     }
 
-    env["DEKAF_PULSAR_BROKER_URL"] = `http://127.0.0.1:${instanceConfig.config.brokerServicePort}`
+    env["DEKAF_PULSAR_BROKER_URL"] = `pulsar://127.0.0.1:${instanceConfig.config.brokerServicePort}`
     env["DEKAF_PULSAR_WEB_URL"] = `http://127.0.0.1:${instanceConfig.config.webServicePort}`
   }
 

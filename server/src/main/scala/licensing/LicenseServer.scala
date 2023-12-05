@@ -41,9 +41,8 @@ object LicenseServer:
             )
             println(s"Product: ${buildinfo.BuildInfo.name} ${buildinfo.BuildInfo.version}")
             println(s"Built at: ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).toString}")
-            println(s"You can get help here: support@teal.tools")
-            println(s"More products: https://teal.tools")
-            println(s"More info about this product: https://dekaf.io")
+            println(s"More about Dekaf: https://dekaf.io")
+            println(s"More about Teal Tools: https://teal.tools")
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)

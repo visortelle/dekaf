@@ -60,7 +60,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
 
     if (e.deltaY < 0 && isFollow) {
       setIsFollow(false);
-      setTimeout(() => scrollToBottom(50), 0);
+      setTimeout(() => scrollToBottom(50), 100);
     }
   }, [isFollow]);
 
