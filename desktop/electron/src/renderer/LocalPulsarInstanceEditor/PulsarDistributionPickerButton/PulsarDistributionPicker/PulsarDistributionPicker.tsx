@@ -25,7 +25,7 @@ export const PulsarDistributionsPicker: React.FC<PulsarDistributionPickerProps> 
       window.electron.ipcRenderer.sendMessage(apiChannel, req);
     };
 
-    window.electron.ipcRenderer.on('api', (arg) => {
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ListPulsarDistributionsResult" && !arg.isInstalledOnly) {
         setVersions(arg.versions || []);
       } else if (arg.type === "PulsarDistributionDeleted") {

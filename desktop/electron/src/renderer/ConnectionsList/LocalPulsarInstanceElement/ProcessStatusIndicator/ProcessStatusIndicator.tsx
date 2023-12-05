@@ -10,7 +10,7 @@ export type ProcessStatusIndicatorProps = {
 
 type Color = string;
 const palette: Record<ProcessStatus, Color> = {
-  unknown: 'var(--surface-color)',
+  unknown: 'var(--border-color)',
   starting: 'var(--accent-color-yellow)',
   alive: 'var(--accent-color-yellow)',
   failed: 'var(--accent-color-red)',
@@ -40,11 +40,13 @@ const ProcessStatusIndicator: React.FC<ProcessStatusIndicatorProps> = (props) =>
       }
 
       if (arg.type === "GetActiveProcessesResult") {
-        Object.entries(arg.processes).forEach(([processId, proc]) => {
-          if (processId === props.processId) {
-            setStatus(proc.status);
-          }
-        });
+        const maybeProc = Object.entries(arg.processes).find(([processId]) => processId === props.processId)
+        if (maybeProc === undefined) {
+          setStatus('unknown');
+          return;
+        }
+
+        setStatus(maybeProc[1].status);
       }
     });
 

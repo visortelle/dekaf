@@ -189,6 +189,11 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     sendMessage(apiChannel, req);
   }
 
+  if (activeProcesses[arg.processId].status === 'failed') {
+    deleteProcess(arg.processId);
+    return;
+  }
+
   proc.childProcess.kill();
 
   updateProcessStatus(arg.processId, 'stopping');

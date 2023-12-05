@@ -73,7 +73,7 @@ export function getPaths(): Paths {
       functionsWorkerConfPath: path.resolve(path.join(instanceDir, "data", "conf", "functions_worker.yml")),
     }
   }
-  const connectionsDir = path.resolve(path.join(userDataDir));
+  const connectionsDir = path.resolve(path.join(userDataDir, 'connections'));
   const getConnectionDir = (connectionId: string) => path.resolve(path.join(connectionsDir, connectionId));
   const dekafDir = path.resolve(path.join(assetsDir, 'dekaf'));
   const getDekafDataDir = (connectionId: string) => path.resolve(path.join(getConnectionDir(connectionId), "dekaf-data"));

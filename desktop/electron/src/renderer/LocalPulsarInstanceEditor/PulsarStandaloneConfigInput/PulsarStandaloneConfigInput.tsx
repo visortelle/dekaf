@@ -51,26 +51,20 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
   }, []);
 
   useEffect(() => {
-    const isConfigTouched = props.value.standaloneConfContent !== defaultStandaloneConfPerVersion[prevPulsarVersion];
+    const newValue = cloneDeep(props.value);
 
-    if (!isConfigTouched || (props.value.standaloneConfContent === undefined && defaultStandaloneConfPerVersion[props.value.pulsarVersion] !== undefined)) {
-      const newValue = cloneDeep(props.value);
-      newValue.standaloneConfContent = defaultStandaloneConfPerVersion[props.value.pulsarVersion];
-      props.onChange(newValue);
-      return;
-    }
-  }, [defaultStandaloneConfPerVersion, props.value.standaloneConfContent]);
+    const isStandaloneConfTouched = props.value.standaloneConfContent !== defaultStandaloneConfPerVersion[prevPulsarVersion];
+    const isFunctionsWorkerYmlTouched = props.value.functionsWorkerConfContent !== defaultFunctionsWorkerYmlPerVersion[prevPulsarVersion];
 
-  useEffect(() => {
-    const isConfigTouched = props.value.functionsWorkerConfContent !== defaultFunctionsWorkerYmlPerVersion[prevPulsarVersion];
-
-    if (!isConfigTouched || (props.value.functionsWorkerConfContent === undefined && defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] !== undefined)) {
-      const newValue = cloneDeep(props.value);
+    if (!isFunctionsWorkerYmlTouched || (props.value.functionsWorkerConfContent === undefined && defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion] !== undefined)) {
       newValue.functionsWorkerConfContent = defaultFunctionsWorkerYmlPerVersion[props.value.pulsarVersion];
-      props.onChange(newValue);
-      return;
     }
-  }, [defaultFunctionsWorkerYmlPerVersion, props.value.functionsWorkerConfContent]);
+    if (!isStandaloneConfTouched || (props.value.standaloneConfContent === undefined && defaultStandaloneConfPerVersion[props.value.pulsarVersion] !== undefined)) {
+      newValue.standaloneConfContent = defaultStandaloneConfPerVersion[props.value.pulsarVersion];
+    }
+
+    props.onChange(newValue);
+  }, [defaultStandaloneConfPerVersion, defaultFunctionsWorkerYmlPerVersion, props.value.standaloneConfContent]);
 
   useEffect(() => {
     function refreshDefaultConfigFiles() {

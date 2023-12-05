@@ -10,11 +10,20 @@ import ProcessStatusIndicator from './ProcessStatusIndicator/ProcessStatusIndica
 import { LogSource } from '../../ui/LogsView/ProcessLogsView/ProcessLogsView';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../app/local-storage';
+import * as Modals from '../../app/Modals/Modals';
 import NoData from '../../ui/NoData/NoData';
 import EditLocalPulsarInstanceButton from '../../EditLocalPulsarInstanceButton/EditLocalPulsarInstanceButton';
 import DeleteLocalPulsarInstanceButton from '../../DeleteLocalPulsarInstanceButton/DeleteLocalPulsarInstanceButton';
 import { H3 } from '../../ui/H/H';
 import * as I18n from '../../app/I18n/I18n';
+import { ListPulsarDistributions } from '../../../main/api/local-pulsar-distributions/types';
+import PulsarDistributionPicker from '../../LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
+import { cloneDeep } from 'lodash';
+
+const getInstalledPulsarVersions = () => {
+  const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
+  window.electron.ipcRenderer.sendMessage(apiChannel, req);
+};
 
 export type LocalPulsarInstanceElementProps = {
   pulsarInstance: LocalPulsarInstance
@@ -22,12 +31,14 @@ export type LocalPulsarInstanceElementProps = {
 
 const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (props) => {
   const i18n = I18n.useContext();
+  const modals = Modals.useContext();
   const [pulsarProcessId, setPulsarProcessId] = useState<string | undefined>(undefined);
   const [pulsarProcessStatus, setPulsarProcessStatus] = useState<ProcessStatus | undefined>(undefined);
   const [dekafProcessId, setDekafProcessId] = useState<string | undefined>(undefined);
   const [dekafProcessStatus, setDekafProcessStatus] = useState<ProcessStatus | undefined>(undefined);
   const [dekafLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
   const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
+  const [isMissingPulsarDistribution, setIsMissingPulsarDistribution] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
@@ -39,12 +50,19 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         const [maybeDekafProcessId] = Object.entries(arg.processes)
           .find(([_, process]) => process.type.type === "dekaf" && process.type.connection.type === "local-pulsar-instance" && process.type.connection.instanceId === props.pulsarInstance.id) || [];
         setDekafProcessId(maybeDekafProcessId);
+      } else if (arg.type === "ListPulsarDistributionsResult" && arg.isInstalledOnly) {
+        const isInstalled = arg.versions?.includes(props.pulsarInstance.config.pulsarVersion);
+        setIsMissingPulsarDistribution(!isInstalled);
+      } else if (arg.type === "PulsarDistributionDeleted" && props.pulsarInstance.config.pulsarVersion === arg.version) {
+        setIsMissingPulsarDistribution(true);
       }
     });
 
+    getInstalledPulsarVersions();
+
     const req: GetActiveProcesses = { type: "GetActiveProcesses" };
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
-  }, []);
+  }, [props.pulsarInstance]);
 
   let logSources: LogSource[] = [];
   if (pulsarProcessId !== undefined) {
@@ -81,6 +99,42 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.pulsarInstance.lastUsedAt))}</div>
 
       <div><strong>Pulsar version:</strong>&nbsp;{props.pulsarInstance.config.pulsarVersion}</div>
+      {isMissingPulsarDistribution && (
+        <div style={{ display: 'flex', gap: '12rem', alignItems: 'center' }}>
+          <div style={{ color: 'var(--accent-color-red)' }}>Selected Pulsar version is not installed.</div>
+          <SmallButton
+            text='Repair'
+            type='primary'
+            onClick={() => {
+              modals.push({
+                id: 'create-local-pulsar-instance-button-select-pulsar-distribution',
+                title: 'Select Pulsar Version',
+                content: (
+                  <div style={{ maxHeight: 'inherit', overflow: 'auto' }}>
+                    <PulsarDistributionPicker
+                      onSelectVersion={(version) => {
+                        modals.pop();
+
+                        const newLocalPulsarInstance: LocalPulsarInstance = cloneDeep(props.pulsarInstance);
+                        newLocalPulsarInstance.config.pulsarVersion = version;
+
+                        const req: UpdateLocalPulsarInstance = {
+                          type: "UpdateLocalPulsarInstance",
+                          config: newLocalPulsarInstance
+                        }
+                        window.electron.ipcRenderer.sendMessage(apiChannel, req);
+
+                        getInstalledPulsarVersions();
+                      }}
+                    />
+                  </div>
+                ),
+                styleMode: 'no-content-padding'
+              })
+            }}
+          />
+        </div>
+      )}
       <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
         <ProcessStatusIndicator processId={pulsarProcessId} onStatusChange={setPulsarProcessStatus} />
         <strong>Pulsar status:&nbsp;</strong>{renderStatus(pulsarProcessStatus)}
@@ -94,7 +148,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         {!isRunning && <SmallButton
           type='primary'
           text='Start'
-          disabled={isStopping}
+          disabled={isStopping || isMissingPulsarDistribution}
           onClick={() => {
             const pulsarReq: SpawnProcess = {
               type: "SpawnProcess",
@@ -151,7 +205,10 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
           }}
         />}
 
-        <ProcessLogsViewButton sources={logSources} />
+        <ProcessLogsViewButton
+          sources={logSources}
+          disabled={pulsarProcessStatus === undefined && dekafProcessStatus === undefined}
+        />
 
         <EditLocalPulsarInstanceButton instanceId={props.pulsarInstance.id} disabled={isRunning} />
         <DeleteLocalPulsarInstanceButton instanceId={props.pulsarInstance.id} instanceName={props.pulsarInstance.name} disabled={isRunning} />

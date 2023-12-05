@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import { apiChannel } from '../../main/channels';
 import { ListPulsarDistributions } from '../../main/api/local-pulsar-distributions/types';
 import PulsarDistributionPicker from '../LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
-import { cloneDeep, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 
 export type CreateLocalPulsarInstanceButtonProps = {};
 
