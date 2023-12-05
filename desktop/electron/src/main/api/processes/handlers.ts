@@ -15,7 +15,6 @@ import { BrowserWindow } from "electron";
 import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 import { sendMessage } from "../api/send-message";
-import { exitCode } from "process";
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);

@@ -106,7 +106,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
           <H2>{props.value.pulsarVersion}</H2>
           <PulsarDistributionPickerButton
             onSelectVersion={(v) => props.onChange({ ...props.value, pulsarVersion: v })}
-            buttonText='Select Another Version'
+            buttonText='Select Pulsar Version'
           />
         </div>
       </FormItem>

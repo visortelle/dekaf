@@ -9,8 +9,9 @@ export type LocalPulsarInstance = {
   type: "LocalPulsarInstance"
   id: string,
   name: string,
+  config: PulsarStandaloneConfig,
+  lastUsedAt: number,
   color?: string,
-  config: PulsarStandaloneConfig
 };
 
 export type PulsarStandaloneConfig = {

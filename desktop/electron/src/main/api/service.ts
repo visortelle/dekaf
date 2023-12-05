@@ -52,7 +52,7 @@ export const apiService: ApiService = {
     switch (arg.type) {
       case "GetPaths": handleGetPaths(event);
         break;
-      case "ListPulsarDistributions": handleListPulsarDistributions(event);
+      case "ListPulsarDistributions": handleListPulsarDistributions(event, arg);
         break;
       case "GetPulsarDistributionStatus": handleGetPulsarDistributionStatus(event, arg);
         break;

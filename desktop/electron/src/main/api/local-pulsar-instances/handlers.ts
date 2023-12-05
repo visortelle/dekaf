@@ -75,6 +75,7 @@ export async function handleListLocalPulsarInstances(event: Electron.IpcMainEven
     const paths = getPaths();
 
     const instancesDir = paths.pulsarLocalInstancesDir;
+    await fsExtra.ensureDir(instancesDir);
 
     const instanceIds = await fsExtra.readdir(instancesDir);
 

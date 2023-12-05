@@ -18,19 +18,24 @@ const activeDownloads: Record<AnyPulsarVersion, {
 
 const knownPulsarDistributions = pulsarReleaseLines.flatMap(v => v.knownVersions);
 
-export async function handleListPulsarDistributions(event: Electron.IpcMainEvent): Promise<void> {
+export async function handleListPulsarDistributions(event: Electron.IpcMainEvent, arg: ListPulsarDistributions): Promise<void> {
   try {
     const paths = getPaths();
-    const isDistributionsDirExits = fs.existsSync(paths.pulsarDistributionsDir);
-    const downloadedVersions = isDistributionsDirExits ?
-      (await fsAsync.readdir(paths.pulsarDistributionsDir)).filter(p => !p.startsWith('.'))
-      : []
+    await fsExtra.ensureDir(paths.pulsarDistributionsDir);
+    const downloadedVersions = (await fsAsync.readdir(paths.pulsarDistributionsDir)).filter(p => !p.startsWith('.'))
 
-    const versions = Array.from(new Set(downloadedVersions.concat(knownPulsarDistributions.flatMap(d => d.version))));
+    let versions = Array.from(new Set(downloadedVersions.concat(knownPulsarDistributions.flatMap(d => d.version))));
+    if (arg.isInstalledOnly !== undefined) {
+      versions = versions.filter(v => {
+        let isInstalled = fs.existsSync(paths.getPulsarDistributionDir(v));
+        return isInstalled;
+      });
+    }
 
     const req: ListPulsarDistributionsResult = {
       type: "ListPulsarDistributionsResult",
-      versions
+      versions,
+      isInstalledOnly: arg.isInstalledOnly
     }
     event.reply(apiChannel, req);
   } catch (err) {
