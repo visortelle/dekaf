@@ -3,7 +3,7 @@ import { handleGetPaths } from "./fs/handlers";
 import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleGetPulsarDistributionFileAtPath, handleGetPulsarDistributionStatus, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
 import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted, GetPulsarDistributionStatus, GetPulsarDistributionFileAtPath, GetPulsarDistributionFileAtPathResult } from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
-import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
+import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, LocalPulsarInstanceCreated, LocalPulsarInstanceDeleted, LocalPulsarInstanceUpdated, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
 import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, KillProcess, ProcessLogEntryReceived, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/types';
 import { handleGetActiveProcesses, handleKillProcess, handleResendProcessLogs, handleSpawnProcess } from './processes/handlers';
@@ -26,6 +26,9 @@ export type ApiEvent = ErrorHappened |
   DeleteLocalPulsarInstance |
   ListLocalPulsarInstances |
   ListLocalPulsarInstancesResult |
+  LocalPulsarInstanceCreated |
+  LocalPulsarInstanceDeleted |
+  LocalPulsarInstanceUpdated |
   SpawnProcess |
   KillProcess |
   GetActiveProcesses |

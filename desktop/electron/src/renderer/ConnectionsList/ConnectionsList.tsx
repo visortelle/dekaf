@@ -11,16 +11,25 @@ const ConnectionsList: React.FC<ConnectionsListProps> = (props) => {
   const [localPulsarInstances, setLocalPulsarInstances] = useState<LocalPulsarInstance[]>([]);
 
   useEffect(() => {
-    window.electron.ipcRenderer.on(apiChannel, (arg) => {
-      if (arg.type === "ListLocalPulsarInstancesResult") {
-        setLocalPulsarInstances(arg.configs);
-      }
-    });
-
     function refreshLocalPulsarInstances() {
       const req: ListLocalPulsarInstances = { type: "ListLocalPulsarInstances" };
       window.electron.ipcRenderer.sendMessage(apiChannel, req);
     }
+
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
+      if (arg.type === "ListLocalPulsarInstancesResult") {
+        setLocalPulsarInstances(arg.configs);
+      }
+
+      const isRefreshLocalPulsarInstances =
+        arg.type === "LocalPulsarInstanceCreated" ||
+        arg.type === "LocalPulsarInstanceUpdated" ||
+        arg.type === "LocalPulsarInstanceDeleted";
+
+      if (isRefreshLocalPulsarInstances) {
+        refreshLocalPulsarInstances();
+      }
+    });
 
     refreshLocalPulsarInstances();
   }, []);

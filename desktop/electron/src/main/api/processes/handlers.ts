@@ -92,8 +92,10 @@ function updateProcessStatus(processId: string, status: ProcessStatus) {
       backgroundColor: '#f5f5f5'
     });
     win.loadURL(url);
-    win.once('ready-to-show', win.show);
-    win.maximize();
+    win.once('ready-to-show', () => {
+      win.show();
+      win.maximize();
+    });
   }
 }
 

@@ -2,8 +2,9 @@ import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
-import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, DeleteLocalPulsarInstanceSucceeded, UpdateLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, LocalPulsarInstance, LocalPulsarInstanceInfo } from './types';
+import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, UpdateLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, LocalPulsarInstance, LocalPulsarInstanceInfo, LocalPulsarInstanceCreated, LocalPulsarInstanceUpdated, LocalPulsarInstanceDeleted } from './types';
 import { ErrorHappened } from '../api/types';
+import { sendMessage } from '../api/send-message';
 
 export async function handleCreateLocalPulsarInstance(event: Electron.IpcMainEvent, arg: CreateLocalPulsarInstance): Promise<void> {
   console.info(`Creating local Pulsar instance ${arg.config.id}`);
@@ -20,6 +21,12 @@ export async function handleCreateLocalPulsarInstance(event: Electron.IpcMainEve
     const configFileContent = JSON.stringify(arg.config, null, 4);
 
     await fsAsync.writeFile(configFilePath, configFileContent, { encoding: 'utf-8' });
+
+    const req: LocalPulsarInstanceCreated = {
+      type: "LocalPulsarInstanceCreated",
+      instanceId: arg.config.id
+    };
+    sendMessage(apiChannel, req);
   } catch (err) {
     const req: ErrorHappened = {
       type: "ErrorHappened",
@@ -45,6 +52,12 @@ export async function handleUpdateLocalPulsarInstance(event: Electron.IpcMainEve
     const configFileContent = JSON.stringify(arg.config, null, 4);
 
     await fsAsync.writeFile(configFilePath, configFileContent, { encoding: 'utf-8' });
+
+    const req: LocalPulsarInstanceUpdated = {
+      type: "LocalPulsarInstanceUpdated",
+      instanceId: arg.config.id
+    };
+    sendMessage(apiChannel, req);
   } catch (err) {
     const req: ErrorHappened = {
       type: "ErrorHappened",
@@ -93,11 +106,11 @@ export async function handleDeleteLocalPulsarInstance(event: Electron.IpcMainEve
 
     await fsExtra.remove(instanceDir);
 
-    const req: DeleteLocalPulsarInstanceSucceeded = {
-      type: "DeleteLocalPulsarInstanceSucceeded",
+    const req: LocalPulsarInstanceDeleted = {
+      type: "LocalPulsarInstanceDeleted",
       instanceId: arg.instanceId
-    }
-    event.reply(apiChannel, req);
+    };
+    sendMessage(apiChannel, req);
   } catch (err) {
     const req: ErrorHappened = {
       type: "ErrorHappened",

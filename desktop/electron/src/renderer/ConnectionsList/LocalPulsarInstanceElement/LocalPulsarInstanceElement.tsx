@@ -76,6 +76,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <ProcessLogsViewButton
         sources={logSources}
       />
+      <div><strong>Pulsar version:</strong>&nbsp;{props.pulsarInstance.config.pulsarVersion}</div>
       <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
         <ProcessStatusIndicator processId={pulsarProcessId} onStatusChange={setPulsarProcessStatus} />
         <strong>Pulsar status:&nbsp;</strong>{renderStatus(pulsarProcessStatus)}
