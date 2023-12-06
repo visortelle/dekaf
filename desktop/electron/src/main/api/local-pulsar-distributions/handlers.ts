@@ -26,9 +26,8 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
 
     let versions = Array.from(new Set(downloadedVersions.concat(knownPulsarDistributions.flatMap(d => d.version))));
     if (arg.isInstalledOnly !== undefined) {
-      versions = versions.filter(v => {
-        let isInstalled = fs.existsSync(paths.getPulsarDistributionDir(v));
-        return isInstalled;
+      versions = versions.filter(async (v) => {
+        return await fsExtra.pathExists(paths.getPulsarDistributionDir(v));
       });
     }
 
@@ -54,7 +53,7 @@ export async function handleGetPulsarDistributionStatus(event: Electron.IpcMainE
   async function getDistributionStatus(version: AnyPulsarVersion): Promise<PulsarDistributionStatus> {
     const paths = getPaths();
 
-    let isInstalled = fs.existsSync(paths.getPulsarDistributionDir(version));
+    let isInstalled = await fsExtra.pathExists(paths.getPulsarDistributionDir(version));
 
     if (isInstalled) {
       return {

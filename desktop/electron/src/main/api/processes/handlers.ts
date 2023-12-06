@@ -330,7 +330,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const paths = getPaths();
 
   const dekafDataDir = paths.getDekafDataDir(connection.instanceId);
-  if (!fs.existsSync(dekafDataDir)) {
+  if (!(await fsExtra.pathExists(dekafDataDir))) {
     await fsExtra.ensureDir(dekafDataDir);
     const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
     await fsExtra.copy(defaultDataDir, dekafDataDir);
