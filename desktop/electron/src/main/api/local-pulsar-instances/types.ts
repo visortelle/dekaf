@@ -1,3 +1,5 @@
+import { ConnectionMetadata } from "../dekaf/types";
+
 export type PulsarStandalonePaths = {
   metadataDir: string,
   bookkeeperDir: string,
@@ -7,11 +9,8 @@ export type PulsarStandalonePaths = {
 
 export type LocalPulsarInstance = {
   type: "LocalPulsarInstance"
-  id: string,
-  name: string,
+  metadata: ConnectionMetadata,
   config: PulsarStandaloneConfig,
-  lastUsedAt: number,
-  color?: string,
 };
 
 export type PulsarStandaloneConfig = {

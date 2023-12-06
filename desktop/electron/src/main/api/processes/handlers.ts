@@ -360,10 +360,10 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   if (connection.type === "local-pulsar-instance") {
     const instanceConfig = await getInstanceConfig(connection.instanceId);
 
-    env["DEKAF_PULSAR_NAME"] = instanceConfig.name;
+    env["DEKAF_PULSAR_NAME"] = instanceConfig.metadata.name;
 
-    if (instanceConfig.color !== undefined) {
-      env["DEKAF_PULSAR_COLOR"] = colorsByName[instanceConfig.color] || instanceConfig.color;
+    if (instanceConfig.metadata.color !== undefined) {
+      env["DEKAF_PULSAR_COLOR"] = colorsByName[instanceConfig.metadata.color] || instanceConfig.metadata.color;
     }
 
     env["DEKAF_PULSAR_BROKER_URL"] = `pulsar://127.0.0.1:${instanceConfig.config.brokerServicePort}`

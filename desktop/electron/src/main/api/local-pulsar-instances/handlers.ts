@@ -7,12 +7,12 @@ import { ErrorHappened } from '../api/types';
 import { sendMessage } from '../api/send-message';
 
 export async function handleCreateLocalPulsarInstance(event: Electron.IpcMainEvent, arg: CreateLocalPulsarInstance): Promise<void> {
-  console.info(`Creating local Pulsar instance ${arg.config.id}`);
+  console.info(`Creating local Pulsar instance ${arg.config.metadata.id}`);
 
   try {
     const paths = getPaths();
 
-    const instanceId = arg.config.id;
+    const instanceId = arg.config.metadata.id;
     const instanceDir = paths.getPulsarLocalInstanceDir(instanceId);
 
     await fsExtra.ensureDir(instanceDir);
@@ -24,7 +24,7 @@ export async function handleCreateLocalPulsarInstance(event: Electron.IpcMainEve
 
     const req: LocalPulsarInstanceCreated = {
       type: "LocalPulsarInstanceCreated",
-      instanceId: arg.config.id
+      instanceId: arg.config.metadata.id
     };
     sendMessage(apiChannel, req);
   } catch (err) {
@@ -38,12 +38,12 @@ export async function handleCreateLocalPulsarInstance(event: Electron.IpcMainEve
 }
 
 export async function handleUpdateLocalPulsarInstance(event: Electron.IpcMainEvent, arg: UpdateLocalPulsarInstance): Promise<void> {
-  console.info(`Updating local Pulsar instance ${arg.config.id}`);
+  console.info(`Updating local Pulsar instance ${arg.config.metadata.id}`);
 
   try {
     const paths = getPaths();
 
-    const instanceId = arg.config.id;
+    const instanceId = arg.config.metadata.id;
     const instanceDir = paths.getPulsarLocalInstanceDir(instanceId);
 
     await fsExtra.ensureDir(instanceDir);
@@ -55,7 +55,7 @@ export async function handleUpdateLocalPulsarInstance(event: Electron.IpcMainEve
 
     const req: LocalPulsarInstanceUpdated = {
       type: "LocalPulsarInstanceUpdated",
-      instanceId: arg.config.id
+      instanceId: arg.config.metadata.id
     };
     sendMessage(apiChannel, req);
   } catch (err) {

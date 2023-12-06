@@ -44,11 +44,11 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ActiveProcessesUpdated" || arg.type === "GetActiveProcessesResult") {
         const [maybePulsarProcessId] = Object.entries(arg.processes)
-          .find(([_, process]) => process.type.type === "pulsar-standalone" && process.type.instanceConfig.id === props.pulsarInstance.id) || [];
+          .find(([_, process]) => process.type.type === "pulsar-standalone" && process.type.instanceConfig.metadata.id === props.pulsarInstance.metadata.id) || [];
         setPulsarProcessId(maybePulsarProcessId);
 
         const [maybeDekafProcessId] = Object.entries(arg.processes)
-          .find(([_, process]) => process.type.type === "dekaf" && process.type.connection.type === "local-pulsar-instance" && process.type.connection.instanceId === props.pulsarInstance.id) || [];
+          .find(([_, process]) => process.type.type === "dekaf" && process.type.connection.type === "local-pulsar-instance" && process.type.connection.instanceId === props.pulsarInstance.metadata.id) || [];
         setDekafProcessId(maybeDekafProcessId);
       } else if (arg.type === "ListPulsarDistributionsResult" && arg.isInstalledOnly) {
         const isInstalled = arg.versions?.includes(props.pulsarInstance.config.pulsarVersion);
@@ -94,9 +94,9 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
   return (
     <div className={s.LocalPulsarInstanceElement}>
-      <H3>{props.pulsarInstance.name}</H3>
+      <H3>{props.pulsarInstance.metadata.name}</H3>
 
-      <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.pulsarInstance.lastUsedAt))}</div>
+      <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.pulsarInstance.metadata.lastUsedAt))}</div>
 
       <div><strong>Pulsar version:</strong>&nbsp;{props.pulsarInstance.config.pulsarVersion}</div>
       {isMissingPulsarDistribution && (
@@ -154,7 +154,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
               type: "SpawnProcess",
               process: {
                 type: "pulsar-standalone",
-                instanceId: props.pulsarInstance.id,
+                instanceId: props.pulsarInstance.metadata.id,
               },
               processId: uuid()
             };
@@ -167,7 +167,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
                 type: "dekaf",
                 connection: {
                   type: "local-pulsar-instance",
-                  instanceId: props.pulsarInstance.id,
+                  instanceId: props.pulsarInstance.metadata.id,
                   dekafLicenseId,
                   dekafLicenseToken
                 }
@@ -181,7 +181,10 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
               type: "UpdateLocalPulsarInstance",
               config: {
                 ...props.pulsarInstance,
-                lastUsedAt: Date.now()
+                metadata: {
+                  ...props.pulsarInstance.metadata,
+                  lastUsedAt: Date.now()
+                }
               }
             }
 
@@ -210,8 +213,8 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
           disabled={pulsarProcessStatus === undefined && dekafProcessStatus === undefined}
         />
 
-        <EditLocalPulsarInstanceButton instanceId={props.pulsarInstance.id} disabled={isRunning} />
-        <DeleteLocalPulsarInstanceButton instanceId={props.pulsarInstance.id} instanceName={props.pulsarInstance.name} disabled={isRunning} />
+        <EditLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} disabled={isRunning} />
+        <DeleteLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} instanceName={props.pulsarInstance.metadata.name} disabled={isRunning} />
       </div>
     </div>
   );

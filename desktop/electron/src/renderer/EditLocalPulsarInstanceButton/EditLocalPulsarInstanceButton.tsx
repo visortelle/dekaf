@@ -52,7 +52,7 @@ const EditLocalPulsarInstanceForm: React.FC<EditLocalPulsarInstanceFormProps> = 
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ListLocalPulsarInstancesResult") {
-        const instance = arg.configs.find(c => c.id === props.instanceId);
+        const instance = arg.configs.find(c => c.metadata.id === props.instanceId);
 
         if (!instance) {
           notifyError(`Unable to find local Pulsar instance: ${props.instanceId}`);
@@ -85,7 +85,7 @@ const EditLocalPulsarInstanceForm: React.FC<EditLocalPulsarInstanceFormProps> = 
           <Button
             type='primary'
             text='Save'
-            disabled={localPulsarInstance.name.length === 0}
+            disabled={localPulsarInstance.metadata.name.length === 0}
             onClick={() => {
               const req: UpdateLocalPulsarInstance = {
                 type: "UpdateLocalPulsarInstance",

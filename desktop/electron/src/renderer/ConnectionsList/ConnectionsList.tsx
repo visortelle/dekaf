@@ -34,11 +34,11 @@ const ConnectionsList: React.FC<ConnectionsListProps> = (props) => {
     refreshLocalPulsarInstances();
   }, []);
 
-  const sortedLocalPulsarInstances = localPulsarInstances.sort((a, b) => b.lastUsedAt - a.lastUsedAt);
+  const sortedLocalPulsarInstances = localPulsarInstances.sort((a, b) => b.metadata.lastUsedAt - a.metadata.lastUsedAt);
 
   return (
     <div className={s.ConnectionsList}>
-      {sortedLocalPulsarInstances.map(lpi => <LocalPulsarInstanceElement key={lpi.id} pulsarInstance={lpi} />)}
+      {sortedLocalPulsarInstances.map(lpi => <LocalPulsarInstanceElement key={lpi.metadata.id} pulsarInstance={lpi} />)}
     </div>
   );
 }

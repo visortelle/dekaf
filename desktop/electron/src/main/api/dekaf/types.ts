@@ -1,7 +1,7 @@
-export type RunDekafRequest = {
-
-};
-
-export type RunDekafResponse = {
-
+export type ConnectionMetadata = {
+  type: "ConnectionMetadata"
+  id: string,
+  name: string,
+  lastUsedAt: number,
+  color?: string
 };

@@ -72,9 +72,13 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
 
     const newLocalPulsarInstance: LocalPulsarInstance = {
       type: "LocalPulsarInstance",
-      id: uuid(),
-      name: `New Instance ${new Date().toISOString()}`,
-      color: undefined,
+      metadata: {
+        type: "ConnectionMetadata",
+        id: uuid(),
+        name: `New Instance ${new Date().toISOString()}`,
+        color: undefined,
+        lastUsedAt: Date.now()
+      },
       config: {
         type: "PulsarStandaloneConfig",
         env: {},
@@ -88,7 +92,6 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         pulsarVersion: newestInstalledPulsarVersion,
         wipeData: undefined,
       },
-      lastUsedAt: Date.now()
     }
 
     setLocalPulsarInstance(newLocalPulsarInstance);
@@ -136,7 +139,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
           <Button
             type='primary'
             text='Create Pulsar Instance'
-            disabled={localPulsarInstance.name.length === 0 || localPulsarInstance.config.pulsarVersion === undefined}
+            disabled={localPulsarInstance.metadata.name.length === 0 || localPulsarInstance.config.pulsarVersion === undefined}
             onClick={() => {
               const req: CreateLocalPulsarInstance = {
                 type: "CreateLocalPulsarInstance",
