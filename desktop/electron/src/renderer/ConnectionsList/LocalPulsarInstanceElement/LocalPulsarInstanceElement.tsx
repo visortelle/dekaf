@@ -110,7 +110,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
                 id: 'create-local-pulsar-instance-button-select-pulsar-distribution',
                 title: 'Select Pulsar Version',
                 content: (
-                  <div style={{ maxHeight: 'inherit', overflow: 'auto' }}>
+                  <div style={{ overflow: 'auto' }}>
                     <PulsarDistributionPicker
                       onSelectVersion={(version) => {
                         modals.pop();

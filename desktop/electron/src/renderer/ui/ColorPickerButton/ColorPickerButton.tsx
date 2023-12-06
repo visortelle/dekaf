@@ -30,7 +30,7 @@ const ColorPickerButton: React.FC<ColorPickerButtonProps> = (props) => {
           id: 'color-picker',
           title: 'Pick a Color',
           content: (
-            <div style={{ maxHeight: 'inherit', overflow: 'auto' }}>
+            <div style={{ overflow: 'auto' }}>
               <ColorPicker
                 value={props.value}
                 onChange={(v) => {

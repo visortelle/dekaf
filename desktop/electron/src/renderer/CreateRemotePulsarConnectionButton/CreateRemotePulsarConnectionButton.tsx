@@ -59,11 +59,11 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
   });
 
   return (
-    <div style={{ overflow: 'hidden', maxHeight: 'inherit', display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
       <div style={{ overflow: 'auto', flex: '1', padding: '36rem 24rem' }}>
         <RemotePulsarConnectionEditor
           value={connection}
-          onChange={(v) => console.log('VVV', v) || setConnection(v)}
+          onChange={(v) => setConnection(v)}
         />
       </div>
 

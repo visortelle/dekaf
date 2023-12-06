@@ -8,6 +8,20 @@ export type StreamNativeCloudRemotePulsarConnectionFlavor = {
 export type RemotePulsarConnectionConfig = {
   type: "RemotePulsarConnectionConfig",
   flavor?: StreamNativeCloudRemotePulsarConnectionFlavor,
+  auth?: {
+    type: "AuthParamsStringCredentials",
+    authPluginClassName: string,
+    authParams: string
+  } | {
+    type: "JwtCredentials",
+    token: string
+  } | {
+    type: "OAuth2Credentials",
+    issuerUrl: string,
+    privateKey: string,
+    audience?: string,
+    scope?: string
+  },
   pulsarTlsKeyFilePath?: string,
   pulsarTlsCertificateFilePath?: string,
   pulsarTlsTrustCertsFilePath?: string,

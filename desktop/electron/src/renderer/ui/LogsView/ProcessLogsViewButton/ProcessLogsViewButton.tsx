@@ -23,7 +23,7 @@ const ProcessLogsViewButton: React.FC<ProcessLogsViewButtonProps> = (props) => {
             id: 'process-logs',
             title: props.modalTitle || 'Logs',
             content: (
-              <div style={{ maxHeight: 'inherit', overflow: 'hidden', display: 'flex', maxWidth: 'calc(100vw - 48rem)' }}>
+              <div style={{ display: 'flex', maxWidth: 'calc(100vw - 48rem)' }}>
                 <ProcessLogsView {...props} />
               </div>
             ),

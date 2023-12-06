@@ -15,8 +15,14 @@ export type JwtCredentials = {
   token: string
 }
 
+export type AuthParamsStringCredentials = {
+  type: 'authParamsString',
+  authPluginClassName: string,
+  authParams: string
+}
+
 // Ref: https://pulsar.apache.org/docs/3.0.x/security-oauth2/
-export type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials;
+export type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials | AuthParamsStringCredentials;
 
 export type CredentialsType = Credentials['type'];
 

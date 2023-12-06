@@ -106,7 +106,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         id: 'create-local-pulsar-instance-button-select-pulsar-distribution',
         title: 'Select Pulsar Version',
         content: (
-          <div style={{ maxHeight: 'inherit', overflow: 'auto' }}>
+          <div style={{ overflow: 'auto' }}>
             <PulsarDistributionPicker
               onSelectVersion={(version) => {
                 modals.pop();
@@ -126,7 +126,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
   }
 
   return (
-    <div style={{ overflow: 'hidden', maxHeight: 'inherit', display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
       <div style={{ overflow: 'auto', flex: '1', padding: '36rem 24rem' }}>
         <LocalPulsarInstanceEditor
           value={localPulsarInstance}

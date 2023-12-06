@@ -53,7 +53,7 @@ def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
 
     Try(builder.build) match {
         case Success(value)     => Right(value)
-        case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Admin"))
+        case Failure(_) => Left(new Exception("Wrong credentials for Pulsar Admin"))
     }
 
 def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
