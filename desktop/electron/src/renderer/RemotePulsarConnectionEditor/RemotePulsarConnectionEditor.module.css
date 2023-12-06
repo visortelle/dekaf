@@ -1,0 +1,12 @@
+.RemotePulsarConnectionEditor {
+  width: 600rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12rem;
+}
+
+.ToggleAndInput {
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}

@@ -1,13 +1,13 @@
 import { ConnectionMetadata } from "../dekaf/types";
 
-export type RemotePulsarConnectionFlavor = {
-  type: "RemotePulsarConnectionFlavor",
-  flavor: "Default" | "StreamNativeCloud"
-};
+export type StreamNativeCloudRemotePulsarConnectionFlavor = {
+  type: "StreamNativeCloudRemotePulsarConnectionFlavor",
+  token?: string
+}
 
 export type RemotePulsarConnectionConfig = {
   type: "RemotePulsarConnectionConfig",
-  flavor: RemotePulsarConnectionFlavor,
+  flavor?: StreamNativeCloudRemotePulsarConnectionFlavor,
   pulsarTlsKeyFilePath?: string,
   pulsarTlsCertificateFilePath?: string,
   pulsarTlsTrustCertsFilePath?: string,

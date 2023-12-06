@@ -47,6 +47,8 @@ def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
                             cr.scope.orNull
                         )
                     )
+                case cr: AuthParamsStringCredentials =>
+                    builder.authentication(cr.authPluginClassName, cr.authParams)
                 case _ => Left(new Exception("Unsupported credentials type"))
 
     Try(builder.build) match {
@@ -58,7 +60,7 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
     val pulsarClientConfig = ClientConfigurationData()
 
     /* By default, for partitioned topics Pulsar client may use several threads.
-    We use the "accum" js-var in for MessageFilter, to aggregate some value over consumed messages.
+    We use the "state" js-var in for MessageFilter, to aggregate some value over consumed messages.
     GraalJS doesn't allow access to a single js variable across several JVM threads,
     so we need to use only one thread per client. */
     pulsarClientConfig.setNumIoThreads(1)
@@ -89,7 +91,7 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
 
     Try(builder.build) match {
         case Success(value)     => Right(value)
-        case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Client"))
+        case Failure(_) => Left(new Exception("Wrong credentials for Pulsar Client"))
     }
 
 def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData) =
@@ -110,4 +112,7 @@ def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfiguratio
                             cr.scope.orNull
                         )
                     )
+                case cr: AuthParamsStringCredentials =>
+                    pulsarClientConfig.setAuthPluginClassName(cr.authPluginClassName)
+                    pulsarClientConfig.setAuthParams(cr.authParams)
                 case _ => Left(new Exception("Unsupported credentials type"))

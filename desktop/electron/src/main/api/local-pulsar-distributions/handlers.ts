@@ -1,4 +1,3 @@
-import fs from 'fs';
 import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
