@@ -1,4 +1,4 @@
-import { random, capitalize } from 'lodash';
+import { random, startCase, camelCase, toLength, toLower } from 'lodash';
 
 const subjects = [
   "Dog",
@@ -410,6 +410,10 @@ const adjectives = [
   "zestful"
 ] as const;
 
+// Capitalizes each word in the string.
+function capitalize(str: string): string {
+  return startCase(toLower(str));
+}
 
 export function genRandomName(): string {
   const randomAdjetiveIndex = random(0, adjectives.length - 1);

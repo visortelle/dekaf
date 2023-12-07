@@ -6,6 +6,9 @@ import FormLabel from '../ui/FormLabel/FormLabel';
 import Input from '../ui/Input/Input';
 import Toggle from '../ui/Toggle/Toggle';
 import ColorPickerButton from '../ui/ColorPickerButton/ColorPickerButton';
+import SmallButton from '../ui/SmallButton/SmallButton';
+import { genRandomName } from './gen-random-name';
+import repeatIcon from './repeat.svg';
 
 export type ConnectionMetadataEditorProps = {
   value: ConnectionMetadata,
@@ -29,10 +32,19 @@ const ConnectionMetadataEditor: React.FC<ConnectionMetadataEditorProps> = (props
           )}
           isRequired
         />
-        <div style={{ width: '420rem' }}>
-          <Input
-            value={props.value.name}
-            onChange={(v) => props.onChange({ ...props.value, name: v })}
+        <div style={{ width: '420rem', display: 'flex', gap: '8rem', alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>
+            <Input
+              value={props.value.name}
+              onChange={(v) => props.onChange({ ...props.value, name: v })}
+            />
+          </div>
+          <SmallButton
+            type='regular'
+            onClick={() => props.onChange({ ...props.value, name: genRandomName() })}
+            title="Regenerate random name"
+            svgIcon={repeatIcon}
+            appearance='borderless-semitransparent'
           />
         </div>
       </FormItem>

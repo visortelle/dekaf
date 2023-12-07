@@ -15,7 +15,7 @@ const PulsarDistributionPickerButton: React.FC<PulsarDistributionPickerButtonPro
   return (
     <div className={s.PulsarDistributionPickerButton}>
       <SmallButton
-        type='primary'
+        type='regular'
         text={props.buttonText || 'Select Pulsar Version'}
         onClick={() => {
           modals.push({

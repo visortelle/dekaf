@@ -44,32 +44,15 @@ type CreateLocalPulsarInstanceFormProps = {
 
 
 const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps> = (props) => {
-  const [installedPulsarVersions, setInstalledPulsarVersions] = useState<string[]>([]);
   const modals = Modals.useContext();
 
+  const [pulsarVersion, setPulsarVersion] = useState<string | undefined>(undefined);
   const [localPulsarInstance, setLocalPulsarInstance] = useState<LocalPulsarInstance | undefined>(undefined);
 
   useEffect(() => {
-    window.electron.ipcRenderer.on(apiChannel, (arg) => {
-      if (arg.type === "ListPulsarDistributionsResult" && arg.isInstalledOnly) {
-        if (isEqual(arg.versions, installedPulsarVersions)) {
-          return;
-        }
-
-        setInstalledPulsarVersions(arg.versions || []);
-      }
-    });
-
-    const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
-    window.electron.ipcRenderer.sendMessage(apiChannel, req);
-  }, []);
-
-  useEffect(() => {
-    if (localPulsarInstance !== undefined || installedPulsarVersions.length === 0) {
+    if (localPulsarInstance !== undefined || pulsarVersion === undefined) {
       return;
     }
-
-    const newestInstalledPulsarVersion = (installedPulsarVersions || []).sort((a, b) => b.localeCompare(a, 'en', { numeric: true }))[0];
 
     const newLocalPulsarInstance: LocalPulsarInstance = {
       type: "LocalPulsarInstance",
@@ -90,7 +73,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         brokerServicePort: 6650,
         bookkeeperPort: 3181,
         streamStoragePort: 4181,
-        pulsarVersion: newestInstalledPulsarVersion,
+        pulsarVersion,
         wipeData: undefined,
       },
     }
@@ -99,10 +82,10 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
 
     const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
-  }, [installedPulsarVersions])
+  }, [pulsarVersion])
 
   useEffect(() => {
-    if (installedPulsarVersions.length === 0) {
+    if (pulsarVersion === undefined) {
       modals.push({
         id: 'create-local-pulsar-instance-button-select-pulsar-distribution',
         title: 'Select Pulsar Version',
@@ -111,7 +94,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
             <PulsarDistributionPicker
               onSelectVersion={(version) => {
                 modals.pop();
-                setInstalledPulsarVersions([version]);
+                setPulsarVersion(version);
               }}
             />
           </div>
@@ -120,7 +103,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         onClose: modals.pop
       });
     }
-  }, [installedPulsarVersions]);
+  }, [pulsarVersion]);
 
   if (localPulsarInstance === undefined) {
     return <>Loading...</>;
