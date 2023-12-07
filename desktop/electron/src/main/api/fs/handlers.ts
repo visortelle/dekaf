@@ -73,10 +73,12 @@ export function getPaths(): Paths {
       functionsWorkerConfPath: path.resolve(path.join(instanceDir, "data", "conf", "functions_worker.yml")),
     }
   }
-  const connectionsDir = path.resolve(path.join(userDataDir, 'connections'));
-  const getConnectionDir = (connectionId: string) => path.resolve(path.join(connectionsDir, connectionId));
+  const remotePulsarConnectionsDir = path.resolve(path.join(userDataDir, 'connections'));
+  const getRemotePulsarConnectionDir = (connectionId: string) => path.resolve(path.join(remotePulsarConnectionsDir, connectionId));
+  const getRemotePulsarConnectionConfigPath = (connectionId: string) => path.resolve(path.join(getRemotePulsarConnectionDir(connectionId), "remote-pulsar-connection.json"));
+
   const dekafDir = path.resolve(path.join(assetsDir, 'dekaf'));
-  const getDekafDataDir = (connectionId: string) => path.resolve(path.join(getConnectionDir(connectionId), "dekaf-data"));
+  const getDekafDataDir = (connectionId: string) => path.resolve(path.join(getRemotePulsarConnectionDir(connectionId), "dekaf-data"));
 
   return {
     appPath,
@@ -92,8 +94,9 @@ export function getPaths(): Paths {
     getPulsarStandalonePaths,
     dekafDir,
     dekafBin: path.resolve(path.join(dekafDir, 'bin', 'dekaf')),
-    connectionsDir,
-    getConnectionDir,
+    remotePulsarConnectionsDir,
+    getRemotePulsarConnectionDir,
+    getRemotePulsarConnectionConfigPath,
     getDekafDataDir
   };
 };

@@ -1,4 +1,4 @@
-import { random, startCase, camelCase, toLength, toLower } from 'lodash';
+import { random, startCase, toLower } from 'lodash';
 
 const subjects = [
   "Dog",
@@ -416,11 +416,11 @@ function capitalize(str: string): string {
 }
 
 export function genRandomName(): string {
-  const randomAdjetiveIndex = random(0, adjectives.length - 1);
-  const randomAdective = capitalize(adjectives[randomAdjetiveIndex]);
+  const randomAdjectiveIndex = random(0, adjectives.length - 1);
+  const randomAdjective = capitalize(adjectives[randomAdjectiveIndex]);
 
   const randomSubjectIndex = random(0, subjects.length - 1);
   const randomSubject = capitalize(subjects[randomSubjectIndex]);
 
-  return `${randomAdective} ${randomSubject}`;
+  return `${randomAdjective} ${randomSubject}`;
 }
