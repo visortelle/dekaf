@@ -5,10 +5,7 @@
 }
 
 .CredentialsMetadataEditor {
-  padding: 24rem;
-  padding-bottom: 18rem;
-  margin-bottom: 18rem;
-  border-bottom: 1px solid var(--border-color);
+  padding: 12rem 24rem;
 }
 
 .ToggleAndInput {

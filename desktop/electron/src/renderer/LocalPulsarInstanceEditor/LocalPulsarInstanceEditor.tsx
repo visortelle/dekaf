@@ -17,11 +17,13 @@ const LocalPulsarInstanceEditor: React.FC<LocalPulsarInstanceEditorProps> = (pro
 
   return (
     <div className={s.LocalPulsarInstanceEditor}>
-      <div style={{ padding: '24rem', borderBottom: '1px solid var(--border-color)', marginBottom: '12rem' }}>
+      <div style={{ padding: '24rem', marginBottom: '12rem' }}>
+        <div style={{ marginBottom: '12rem' }}>
+          <H2>Connection Metadata</H2>
+        </div>
         <ConnectionMetadataEditor
           value={props.value.metadata}
           onChange={(v) => props.onChange({ ...props.value, metadata: v })}
-          flavor='instance'
         />
       </div>
 

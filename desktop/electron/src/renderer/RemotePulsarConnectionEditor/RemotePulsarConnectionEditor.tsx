@@ -19,14 +19,96 @@ export type RemotePulsarConnectionEditorProps = {
 const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> = (props) => {
   return (
     <div className={s.RemotePulsarConnectionEditor}>
+      <div style={{ padding: '24rem 24rem 0' }}>
+        <H2>Connection Metadata</H2>
+      </div>
       <div className={s.CredentialsMetadataEditor}>
         <FormItem>
           <ConnectionMetadataEditor
             value={props.value.metadata}
             onChange={v => props.onChange({ ...props.value, metadata: v })}
-            flavor='connection'
           />
         </FormItem>
+      </div>
+
+      <div>
+        <div style={{ padding: '24rem 24rem 0 24rem', marginBottom: '48rem' }}>
+          <div style={{ marginBottom: '8rem' }}>
+            <H2>URLs</H2>
+          </div>
+
+          <FormItem>
+            <FormLabel
+              content="Web Service URL"
+            />
+            <Input
+              value={props.value.config.pulsarWebUrl}
+              onChange={(v) => {
+                const newConfig = cloneDeep(props.value.config);
+                newConfig.pulsarWebUrl = v;
+                props.onChange({ ...props.value, config: newConfig });
+              }}
+              placeholder='https://pulsar-broker:8080'
+            />
+          </FormItem>
+
+          <FormItem>
+            <FormLabel
+              content="Broker Service URL"
+            />
+            <Input
+              value={props.value.config.pulsarBrokerUrl}
+              onChange={(v) => {
+                const newConfig = cloneDeep(props.value.config);
+                newConfig.pulsarBrokerUrl = v;
+                props.onChange({ ...props.value, config: newConfig });
+              }}
+              placeholder='pulsar+ssl://pulsar-broker:6650'
+            />
+          </FormItem>
+
+          <div className={s.ToggleAndInput}>
+            <FormItem>
+              <Toggle
+                value={props.value.config.pulsarListenerName !== undefined}
+                onChange={(v) => {
+                  const newConfig = cloneDeep(props.value.config);
+                  newConfig.pulsarListenerName = v ? '' : undefined;
+                  props.onChange({ ...props.value, config: newConfig });
+                }}
+              />
+              <FormLabel
+                content="Listener Name"
+                help={(<div>
+                  <p>
+                    When a Pulsar cluster is deployed in the production environment, it may require to expose multiple advertised addresses for the broker.
+                    <br />
+                    <br />
+                    For example, when you deploy a Pulsar cluster in Kubernetes and want other clients, which are not in the same Kubernetes cluster,
+                    to connect to the Pulsar cluster, you need to assign a broker URL to external clients.
+                    <br />
+                    <br />
+                    But clients in the same Kubernetes cluster can still connect to the Pulsar cluster through the internal network of Kubernetes.
+                  </p>
+                  <A href='https://pulsar.apache.org/docs/next/concepts-multiple-advertised-listeners/' isExternalLink>Learn more.</A>
+                  <br />
+                  <br />
+                </div>)}
+              />
+
+              {props.value.config.pulsarListenerName !== undefined && <Input
+                value={props.value.config.pulsarListenerName}
+                onChange={(v) => {
+                  const newConfig = cloneDeep(props.value.config);
+                  newConfig.pulsarListenerName = v;
+                  props.onChange({ ...props.value, config: newConfig });
+                }}
+                placeholder='internal'
+              />}
+            </FormItem>
+          </div>
+
+        </div>
       </div>
 
       <div style={{ marginBottom: '6rem' }}>
@@ -68,7 +150,40 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
 
 
       </div>
+
       <div className={s.Form}>
+        <div className={s.ToggleAndInput}>
+          <FormItem>
+            <Toggle
+              value={Boolean(props.value.config.pulsarEnableTlsHostnameVerification)}
+              onChange={(v) => {
+                const newConfig = cloneDeep(props.value.config);
+                newConfig.pulsarEnableTlsHostnameVerification = v;
+                props.onChange({ ...props.value, config: newConfig });
+              }}
+            />
+            <FormLabel
+              content="Enable TLS Hostname Verification"
+            />
+          </FormItem>
+        </div>
+
+        <div className={s.ToggleAndInput}>
+          <FormItem>
+            <Toggle
+              value={Boolean(props.value.config.pulsarAllowTlsInsecureConnection)}
+              onChange={(v) => {
+                const newConfig = cloneDeep(props.value.config);
+                newConfig.pulsarAllowTlsInsecureConnection = v;
+                props.onChange({ ...props.value, config: newConfig });
+              }}
+            />
+            <FormLabel
+              content="Allow TLS Insecure Connection"
+            />
+          </FormItem>
+        </div>
+
         <div className={s.ToggleAndInput}>
           <FormItem>
             <Toggle
@@ -90,6 +205,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsKeyFilePath = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='/path/to/broker.key-pk8.pem'
             />}
           </FormItem>
         </div>
@@ -115,6 +231,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsCertificateFilePath = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='/path/to/broker.cert.pem'
             />}
           </FormItem>
         </div>
@@ -140,63 +257,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsTrustCertsFilePath = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
-            />}
-          </FormItem>
-        </div>
-
-        <div className={s.ToggleAndInput}>
-          <FormItem>
-            <Toggle
-              value={Boolean(props.value.config.pulsarAllowTlsInsecureConnection)}
-              onChange={(v) => {
-                const newConfig = cloneDeep(props.value.config);
-                newConfig.pulsarAllowTlsInsecureConnection = v;
-                props.onChange({ ...props.value, config: newConfig });
-              }}
-            />
-            <FormLabel
-              content="Allow TLS Insecure Connection"
-            />
-          </FormItem>
-        </div>
-
-        <div className={s.ToggleAndInput}>
-          <FormItem>
-            <Toggle
-              value={Boolean(props.value.config.pulsarEnableTlsHostnameVerification)}
-              onChange={(v) => {
-                const newConfig = cloneDeep(props.value.config);
-                newConfig.pulsarEnableTlsHostnameVerification = v;
-                props.onChange({ ...props.value, config: newConfig });
-              }}
-            />
-            <FormLabel
-              content="Enable TLS Hostname Verification"
-            />
-          </FormItem>
-        </div>
-
-        <div className={s.ToggleAndInput}>
-          <FormItem>
-            <Toggle
-              value={props.value.config.pulsarSslProvider !== undefined}
-              onChange={(v) => {
-                const newConfig = cloneDeep(props.value.config);
-                newConfig.pulsarSslProvider = v ? '' : undefined;
-                props.onChange({ ...props.value, config: newConfig });
-              }}
-            />
-            <FormLabel
-              content="SSL Provider"
-            />
-
-            {props.value.config.pulsarSslProvider !== undefined && <Input
-              value={props.value.config.pulsarSslProvider}
-              onChange={(v) => {
-                const newConfig = cloneDeep(props.value.config);
-                newConfig.pulsarSslProvider = v;
-                props.onChange({ ...props.value, config: newConfig });
-              }}
+              placeholder='/path/to/ca.cert.pem'
             />}
           </FormItem>
         </div>
@@ -238,6 +299,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsKeyStoreType = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='JKS'
             />}
           </FormItem>
         </div>
@@ -263,6 +325,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsKeyStorePath = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='/var/private/tls/client.keystore.jks'
             />}
           </FormItem>
         </div>
@@ -289,6 +352,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 props.onChange({ ...props.value, config: newConfig });
               }}
               inputProps={{ type: 'password' }}
+              placeholder='very-secure-password'
             />}
           </FormItem>
         </div>
@@ -314,6 +378,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsTrustStoreType = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='JKS'
             />}
           </FormItem>
         </div>
@@ -324,7 +389,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
               value={props.value.config.pulsarTlsTrustStorePath !== undefined}
               onChange={(v) => {
                 const newConfig = cloneDeep(props.value.config);
-                newConfig.pulsarTlsTrustStoreType = v ? '' : undefined;
+                newConfig.pulsarTlsTrustStorePath = v ? '' : undefined;
                 props.onChange({ ...props.value, config: newConfig });
               }}
             />
@@ -339,6 +404,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsTrustStorePath = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='/var/private/tls/client.truststore.jks'
             />}
           </FormItem>
         </div>
@@ -365,6 +431,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 props.onChange({ ...props.value, config: newConfig });
               }}
               inputProps={{ type: "password" }}
+              placeholder='very-secure-password'
             />}
           </FormItem>
         </div>
@@ -390,6 +457,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarTlsCiphers = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
+              placeholder='TLS_DH_RSA_WITH_AES_256_GCM_SHA384,TLS_DH_RSA_WITH_AES_256_CBC_SHA'
             />}
           </FormItem>
         </div>
@@ -413,6 +481,32 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
               onChange={(v) => {
                 const newConfig = cloneDeep(props.value.config);
                 newConfig.pulsarTlsProtocols = v;
+                props.onChange({ ...props.value, config: newConfig });
+              }}
+              placeholder='TLSv1.3,TLSv1.2'
+            />}
+          </FormItem>
+        </div>
+
+        <div className={s.ToggleAndInput}>
+          <FormItem>
+            <Toggle
+              value={props.value.config.pulsarSslProvider !== undefined}
+              onChange={(v) => {
+                const newConfig = cloneDeep(props.value.config);
+                newConfig.pulsarSslProvider = v ? '' : undefined;
+                props.onChange({ ...props.value, config: newConfig });
+              }}
+            />
+            <FormLabel
+              content="SSL Provider"
+            />
+
+            {props.value.config.pulsarSslProvider !== undefined && <Input
+              value={props.value.config.pulsarSslProvider}
+              onChange={(v) => {
+                const newConfig = cloneDeep(props.value.config);
+                newConfig.pulsarSslProvider = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
             />}

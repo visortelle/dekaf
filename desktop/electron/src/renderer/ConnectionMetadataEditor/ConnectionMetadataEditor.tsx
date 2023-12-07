@@ -10,7 +10,6 @@ import ColorPickerButton from '../ui/ColorPickerButton/ColorPickerButton';
 export type ConnectionMetadataEditorProps = {
   value: ConnectionMetadata,
   onChange: (v: ConnectionMetadata) => void,
-  flavor: 'instance' | 'connection'
 };
 
 const ConnectionMetadataEditor: React.FC<ConnectionMetadataEditorProps> = (props) => {
@@ -18,7 +17,7 @@ const ConnectionMetadataEditor: React.FC<ConnectionMetadataEditorProps> = (props
     <div className={s.ConnectionMetadataEditor}>
       <FormItem>
         <FormLabel
-          content={`${props.flavor === 'connection' ? 'Connection' : 'Instance'} name`}
+          content={`Name`}
           help={(
             <>
               <p>An <strong>instance</strong> is a specific deployment of the Pulsar system.</p>
@@ -40,7 +39,7 @@ const ConnectionMetadataEditor: React.FC<ConnectionMetadataEditorProps> = (props
 
       <FormItem>
         <FormLabel
-          content={`${props.flavor === 'connection' ? 'Connection' : 'Instance'} color`}
+          content={`Color`}
           help={(
             <>
               <p>

@@ -69,6 +69,8 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
 
     pulsarClientConfig.setServiceUrl(config.pulsarBrokerUrl.get)
 
+    config.pulsarListenerName.foreach(l => pulsarClientConfig.setListenerName(l))
+
     tls.configureClient(pulsarClientConfig, config)
 
     configureAuth(pulsarAuth, pulsarClientConfig)

@@ -45,7 +45,7 @@ const AuthParamsString: React.FC<AuthParamsStringProps> = (props) => {
               <br />
               Example:
               <br />
-              <code>userId:john,password:very-secret-password</code>
+              <code>userId:john,password:very-secure-password</code>
             </p>
           )}
         />
