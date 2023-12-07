@@ -72,8 +72,8 @@ const EditLocalPulsarInstanceForm: React.FC<EditLocalPulsarInstanceFormProps> = 
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
-      <div style={{ overflow: 'auto', flex: '1', padding: '36rem 24rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative', maxHeight: 'inherit' }}>
+      <div style={{ overflow: 'auto', flex: '1' }}>
         <LocalPulsarInstanceEditor
           value={localPulsarInstance}
           onChange={setLocalPulsarInstance}

@@ -1,3 +1,4 @@
+import { Credentials } from "../../../renderer/RemotePulsarConnectionEditor/pulsar-auth/domain";
 import { ConnectionMetadata } from "../dekaf/types";
 
 export type StreamNativeCloudRemotePulsarConnectionFlavor = {
@@ -8,20 +9,7 @@ export type StreamNativeCloudRemotePulsarConnectionFlavor = {
 export type RemotePulsarConnectionConfig = {
   type: "RemotePulsarConnectionConfig",
   flavor?: StreamNativeCloudRemotePulsarConnectionFlavor,
-  auth?: {
-    type: "AuthParamsStringCredentials",
-    authPluginClassName: string,
-    authParams: string
-  } | {
-    type: "JwtCredentials",
-    token: string
-  } | {
-    type: "OAuth2Credentials",
-    issuerUrl: string,
-    privateKey: string,
-    audience?: string,
-    scope?: string
-  },
+  auth?: Credentials,
   pulsarTlsKeyFilePath?: string,
   pulsarTlsCertificateFilePath?: string,
   pulsarTlsTrustCertsFilePath?: string,
@@ -35,8 +23,8 @@ export type RemotePulsarConnectionConfig = {
   pulsarTlsTrustStoreType?: string,
   pulsarTlsTrustStorePath?: string,
   pulsarTlsTrustStorePassword?: string,
-  pulsarTlsCiphers?: string[],
-  pulsarTlsProtocols?: string[]
+  pulsarTlsCiphers?: string,
+  pulsarTlsProtocols?: string
 };
 
 export type RemotePulsarConnection = {

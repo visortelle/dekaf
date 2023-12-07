@@ -1,14 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import s from './CreateRemotePulsarConnectionButton.module.css'
 import * as Modals from '../app/Modals/Modals';
 import RemotePulsarConnectionEditor from '../RemotePulsarConnectionEditor/RemotePulsarConnectionEditor';
-import { CreateLocalPulsarInstance, LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
+import { LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import Button from '../ui/Button/Button';
 import { v4 as uuid } from 'uuid';
-import { apiChannel } from '../../main/channels';
-import { ListPulsarDistributions } from '../../main/api/local-pulsar-distributions/types';
-import PulsarDistributionPicker from '../LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
-import { isEqual } from 'lodash';
 import { RemotePulsarConnection } from '../../main/api/remote-pulsar-connections/types';
 
 export type CreateRemotePulsarConnectionButtonProps = {};
@@ -19,11 +15,11 @@ const CreateRemotePulsarConnectionButton: React.FC<CreateRemotePulsarConnectionB
   return (
     <Button
       type='primary'
-      text='Create Remote Pulsar Connection'
+      text='Create Remote Connection'
       onClick={() => {
         modals.push({
           id: 'add-modal-pulsar-instance',
-          title: 'Create Local Pulsar Instance',
+          title: 'Create Remote Connection',
           content: (
             <CreateLocalPulsarInstanceForm
               onCreate={() => {
@@ -59,8 +55,8 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative' }}>
-      <div style={{ overflow: 'auto', flex: '1', padding: '36rem 24rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative', maxHeight: 'inherit' }}>
+      <div style={{ overflow: 'auto', flex: '1 1 0%' }}>
         <RemotePulsarConnectionEditor
           value={connection}
           onChange={(v) => setConnection(v)}
@@ -71,7 +67,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
         <div style={{ marginLeft: 'auto' }}>
           <Button
             type='primary'
-            text='Create Remote Pulsar Connection'
+            text='Create Remote Connection'
             onClick={() => {
               // const req: CreateLocalPulsarInstance = {
               //   type: "CreateLocalPulsarInstance",

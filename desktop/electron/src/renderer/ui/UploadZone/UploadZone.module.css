@@ -1,0 +1,28 @@
+.UploadZone {
+  background-color: var(--surface-color);
+  border-radius: 6rem;
+  padding: 36rem;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.UploadZone:hover {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: var(--transition-short);
+}
+
+.UploadZoneIcon {
+  margin-bottom: 12rem;
+}
+.UploadZoneIcon svg {
+  fill: var(--text-color);
+  width: 36rem;
+  height: 36rem;
+}
+
+.hidden {
+  display: none;
+}
