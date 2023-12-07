@@ -9,6 +9,7 @@ import { apiChannel } from '../../main/channels';
 import { ListPulsarDistributions } from '../../main/api/local-pulsar-distributions/types';
 import PulsarDistributionPicker from '../LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
 import { isEqual } from 'lodash';
+import { genRandomName } from '../ConnectionMetadataEditor/gen-random-name';
 
 export type CreateLocalPulsarInstanceButtonProps = {};
 
@@ -75,7 +76,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
       metadata: {
         type: "ConnectionMetadata",
         id: uuid(),
-        name: `New Instance ${new Date().toISOString()}`,
+        name: genRandomName(),
         color: undefined,
         lastUsedAt: Date.now()
       },

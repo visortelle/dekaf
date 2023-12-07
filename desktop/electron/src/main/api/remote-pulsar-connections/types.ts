@@ -35,3 +35,42 @@ export type RemotePulsarConnection = {
   metadata: ConnectionMetadata,
   config: RemotePulsarConnectionConfig,
 };
+
+export type CreateRemotePulsarConnection = {
+  type: "CreateRemotePulsarConnection",
+  config: RemotePulsarConnection
+};
+
+export type RemotePulsarConnectionCreated = {
+  type: "RemotePulsarConnectionCreated",
+  connectionId: string
+}
+
+export type UpdateRemotePulsarConnection = {
+  type: "UpdateRemotePulsarConnection",
+  config: RemotePulsarConnection
+};
+
+export type RemotePulsarConnectionUpdated = {
+  type: "RemotePulsarConnectionUpdated",
+  connectionId: string
+}
+
+export type DeleteRemotePulsarConnection = {
+  type: "DeleteRemotePulsarConnection",
+  connectionId: string
+}
+
+export type RemotePulsarConnectionDeleted = {
+  type: "RemotePulsarConnectionDeleted",
+  connectionId: string
+}
+
+export type ListRemotePulsarConnections = {
+  type: "ListRemotePulsarConnections"
+};
+
+export type ListRemotePulsarConnectionsResult = {
+  type: "ListRemotePulsarConnectionsResult",
+  configs: RemotePulsarConnection[]
+}

@@ -6,6 +6,7 @@ import { LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types
 import Button from '../ui/Button/Button';
 import { v4 as uuid } from 'uuid';
 import { RemotePulsarConnection } from '../../main/api/remote-pulsar-connections/types';
+import { genRandomName } from '../ConnectionMetadataEditor/gen-random-name';
 
 export type CreateRemotePulsarConnectionButtonProps = {};
 
@@ -46,16 +47,18 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
       type: "ConnectionMetadata",
       id: uuid(),
       lastUsedAt: Date.now(),
-      name: `New connection ${new Date().toISOString()}`,
+      name: genRandomName(),
       color: undefined
     },
     config: {
-      type: "RemotePulsarConnectionConfig"
+      type: "RemotePulsarConnectionConfig",
+      pulsarBrokerUrl: '',
+      pulsarWebUrl: ''
     }
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', position: 'relative', maxHeight: 'inherit' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', maxHeight: 'inherit' }}>
       <div style={{ overflow: 'auto', flex: '1 1 0%' }}>
         <RemotePulsarConnectionEditor
           value={connection}
