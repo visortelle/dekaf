@@ -17,6 +17,7 @@
   border-bottom: 1px solid var(--border-color);
   font-weight: var(--font-weight-bold);
   line-height: 1.8;
+  animation: fade-in 0.2s ease-in-out;
 }
 
 .LogEntrySource {
@@ -35,4 +36,15 @@
   white-space: pre-wrap;
   border-left: 1px solid var(--border-color);
   padding-left: 1ch;
+}
+
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

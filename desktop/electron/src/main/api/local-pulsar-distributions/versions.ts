@@ -1,11 +1,5 @@
 import { PulsarReleaseLine, KnownPulsarVersion } from "./types";
 
-// {
-//   version: "0.0.1-test",
-//   downloadUrl: "https://github.com/bufbuild/buf/releases/download/v1.28.1/buf-Darwin-x86_64.tar.gz",
-//   sha512: "77d9cef2b3274c5d8e94a01f79382f06c2814ef5ea5dc1608a0fa7d0a3915b9714b7d79c0c9db5a10b981cf47ec71955ef6c6d836cce4ed7230f0f0b08cfdfb7"
-// },
-
 export const pulsarReleaseLines: PulsarReleaseLine[] = [
   {
     minorVersion: '3.0',
@@ -14,6 +8,11 @@ export const pulsarReleaseLines: PulsarReleaseLine[] = [
     activeSupportEndsAt: '2025-05-02T00:00:00Z',
     securitySupportEndsAt: '2026-05-02T00:00:00Z',
     knownVersions: [
+      // {
+      //   version: "0.0.1-test",
+      //   downloadUrl: "https://github.com/bufbuild/buf/releases/download/v1.28.1/buf-Darwin-x86_64.tar.gz",
+      //   sha512: "77d9cef2b3274c5d8e94a01f79382f06c2814ef5ea5dc1608a0fa7d0a3915b9714b7d79c0c9db5a10b981cf47ec71955ef6c6d836cce4ed7230f0f0b08cfdfb7"
+      // },
       {
         version: "3.0.1",
         downloadUrl: "https://archive.apache.org/dist/pulsar/pulsar-3.0.1/apache-pulsar-3.0.1-bin.tar.gz",

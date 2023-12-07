@@ -27,17 +27,23 @@ const PulsarVersionElement: React.FC<PulsarVersionInfoElementProps> = (props) =>
   const modals = Modals.useContext();
 
   useEffect(() => {
-    const req: GetPulsarDistributionStatus = {
-      type: "GetPulsarDistributionStatus",
-      version
-    };
-    window.electron.ipcRenderer.sendMessage(apiChannel, req);
+    function refreshStatus() {
+      const req: GetPulsarDistributionStatus = {
+        type: "GetPulsarDistributionStatus",
+        version
+      };
+      window.electron.ipcRenderer.sendMessage(apiChannel, req);
+    }
 
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "PulsarDistributionStatusChanged" && arg.version === version) {
         setDistributionStatus(arg.distributionStatus);
+      } else if (arg.type === "PulsarDistributionDeleted" && arg.version === version) {
+        refreshStatus();
       }
     });
+
+    refreshStatus();
   }, []);
 
   return (

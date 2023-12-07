@@ -21,19 +21,15 @@ export const PulsarDistributionsPicker: React.FC<PulsarDistributionPickerProps> 
 
   useEffect(() => {
     const refreshPulsarDistributionsList = () => {
-      const req: ListPulsarDistributions = { type: "ListPulsarDistributions" };
+      const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: false };
       window.electron.ipcRenderer.sendMessage(apiChannel, req);
     };
 
-    window.electron.ipcRenderer.on('api', (arg) => {
-      switch (arg.type) {
-        case "ListPulsarDistributionsResult": {
-          setVersions(arg.versions || []);
-          break;
-        }
-        case "PulsarDistributionDeleted": {
-          refreshPulsarDistributionsList();
-        }
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
+      if (arg.type === "ListPulsarDistributionsResult" && !arg.isInstalledOnly) {
+        setVersions(arg.versions || []);
+      } else if (arg.type === "PulsarDistributionDeleted") {
+        refreshPulsarDistributionsList();
       }
     });
 

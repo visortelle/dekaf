@@ -1,4 +1,3 @@
-import fs from 'fs';
 import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
@@ -18,19 +17,23 @@ const activeDownloads: Record<AnyPulsarVersion, {
 
 const knownPulsarDistributions = pulsarReleaseLines.flatMap(v => v.knownVersions);
 
-export async function handleListPulsarDistributions(event: Electron.IpcMainEvent): Promise<void> {
+export async function handleListPulsarDistributions(event: Electron.IpcMainEvent, arg: ListPulsarDistributions): Promise<void> {
   try {
     const paths = getPaths();
-    const isDistributionsDirExits = fs.existsSync(paths.pulsarDistributionsDir);
-    const downloadedVersions = isDistributionsDirExits ?
-      (await fsAsync.readdir(paths.pulsarDistributionsDir)).filter(p => !p.startsWith('.'))
-      : []
+    await fsExtra.ensureDir(paths.pulsarDistributionsDir);
+    const downloadedVersions = (await fsAsync.readdir(paths.pulsarDistributionsDir)).filter(p => !p.startsWith('.'))
 
-    const versions = Array.from(new Set(downloadedVersions.concat(knownPulsarDistributions.flatMap(d => d.version))));
+    let versions = Array.from(new Set(downloadedVersions.concat(knownPulsarDistributions.flatMap(d => d.version))));
+    if (arg.isInstalledOnly !== undefined) {
+      versions = versions.filter(async (v) => {
+        return await fsExtra.pathExists(paths.getPulsarDistributionDir(v));
+      });
+    }
 
     const req: ListPulsarDistributionsResult = {
       type: "ListPulsarDistributionsResult",
-      versions
+      versions,
+      isInstalledOnly: arg.isInstalledOnly
     }
     event.reply(apiChannel, req);
   } catch (err) {
@@ -49,7 +52,7 @@ export async function handleGetPulsarDistributionStatus(event: Electron.IpcMainE
   async function getDistributionStatus(version: AnyPulsarVersion): Promise<PulsarDistributionStatus> {
     const paths = getPaths();
 
-    let isInstalled = fs.existsSync(paths.getPulsarDistributionDir(version));
+    let isInstalled = await fsExtra.pathExists(paths.getPulsarDistributionDir(version));
 
     if (isInstalled) {
       return {
@@ -265,6 +268,8 @@ export async function handleDeletePulsarDistribution(event: Electron.IpcMainEven
     const paths = getPaths();
     const distributionPath = paths.getPulsarDistributionDir(arg.version);
     await fsExtra.remove(distributionPath);
+
+    delete activeDownloads[arg.version];
 
     const deletedReq: PulsarDistributionDeleted = { type: "PulsarDistributionDeleted", version: arg.version };
     event.reply(apiChannel, deletedReq);

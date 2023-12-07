@@ -1,0 +1,22 @@
+.RemotePulsarConnectionEditor {
+  width: 600rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.CredentialsMetadataEditor {
+  padding: 12rem 24rem;
+}
+
+.ToggleAndInput {
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.Form {
+  display: flex;
+  flex-direction: column;
+  padding: 12rem 24rem;
+  gap: 18rem;
+}

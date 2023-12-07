@@ -5,7 +5,8 @@ import SmallButton from '../../SmallButton/SmallButton';
 import ProcessLogsView, { ProcessLogsViewProps } from '../ProcessLogsView/ProcessLogsView';
 
 export type ProcessLogsViewButtonProps = {
-  title?: string
+  modalTitle?: string,
+  disabled?: boolean
 } & ProcessLogsViewProps;
 
 const ProcessLogsViewButton: React.FC<ProcessLogsViewButtonProps> = (props) => {
@@ -16,12 +17,13 @@ const ProcessLogsViewButton: React.FC<ProcessLogsViewButtonProps> = (props) => {
       <SmallButton
         type='regular'
         text='Show logs'
+        disabled={props.disabled}
         onClick={() => {
           modals.push({
             id: 'process-logs',
-            title: props.title || 'Logs',
+            title: props.modalTitle || 'Logs',
             content: (
-              <div style={{ maxHeight: 'inherit', overflow: 'hidden', display: 'flex', maxWidth: 'calc(100vw - 48rem)' }}>
+              <div style={{ display: 'flex', maxWidth: 'calc(100vw - 48rem)' }}>
                 <ProcessLogsView {...props} />
               </div>
             ),

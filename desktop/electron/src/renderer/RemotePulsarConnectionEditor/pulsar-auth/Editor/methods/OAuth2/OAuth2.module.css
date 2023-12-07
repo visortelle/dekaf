@@ -1,0 +1,30 @@
+.UploadZone {
+    background-color: var(--surface-color);
+    overflow: auto;
+    font-size: 14rem;
+    color: var(--text-color);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.FileUploaded {
+    background-color: var(--surface-color);
+    overflow: auto;
+    font-size: 14rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.FileUploaded .UploadZoneIcon svg {
+  fill: var(--accent-color-green);
+}
+
+.UploadZoneIcon {
+    margin-bottom: 12rem;
+}
+
+.UploadZoneIcon svg {
+    fill: var(--text-color);
+    width: 36rem;
+    height: 36rem;
+}

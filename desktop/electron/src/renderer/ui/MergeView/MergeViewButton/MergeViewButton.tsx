@@ -23,7 +23,7 @@ const MergeViewButton: React.FC<MergeViewButtonProps> = (props) => {
           modals.push({
             id: 'merge-view',
             content: (
-              <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'auto', maxHeight: 'inherit', width: 'calc(100vw - 64rem)' }}>
+              <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'auto', width: 'calc(100vw - 64rem)' }}>
                 <MergeView
                   onMerge={(v) => {
                     modals.pop();

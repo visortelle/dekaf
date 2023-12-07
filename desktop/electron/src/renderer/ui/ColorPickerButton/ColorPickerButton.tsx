@@ -30,13 +30,15 @@ const ColorPickerButton: React.FC<ColorPickerButtonProps> = (props) => {
           id: 'color-picker',
           title: 'Pick a Color',
           content: (
-            <ColorPicker
-              value={props.value}
-              onChange={(v) => {
-                modals.pop();
-                props.onChange(v);
-              }}
-            />
+            <div style={{ overflow: 'auto' }}>
+              <ColorPicker
+                value={props.value}
+                onChange={(v) => {
+                  modals.pop();
+                  props.onChange(v);
+                }}
+              />
+            </div>
           ),
           styleMode: 'no-content-padding'
         });
