@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import s from './CreateRemotePulsarConnectionButton.module.css'
 import * as Modals from '../app/Modals/Modals';
 import RemotePulsarConnectionEditor from '../RemotePulsarConnectionEditor/RemotePulsarConnectionEditor';
-import { LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import Button from '../ui/Button/Button';
 import { v4 as uuid } from 'uuid';
-import { RemotePulsarConnection } from '../../main/api/remote-pulsar-connections/types';
+import { CreateRemotePulsarConnection, RemotePulsarConnection } from '../../main/api/remote-pulsar-connections/types';
 import { genRandomName } from '../ConnectionMetadataEditor/gen-random-name';
+import { apiChannel } from '../../main/channels';
 
 export type CreateRemotePulsarConnectionButtonProps = {};
 
@@ -36,7 +36,7 @@ const CreateRemotePulsarConnectionButton: React.FC<CreateRemotePulsarConnectionB
 }
 
 type CreateLocalPulsarInstanceFormProps = {
-  onCreate: (v: LocalPulsarInstance) => void
+  onCreate: (v: RemotePulsarConnection) => void
 };
 
 
@@ -59,7 +59,7 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', maxHeight: 'inherit' }}>
-      <div style={{ overflow: 'auto', flex: '1 1 0%' }}>
+      <div style={{ overflowX: 'hidden', overflowY: 'auto', flex: '1 1 0%' }}>
         <RemotePulsarConnectionEditor
           value={connection}
           onChange={(v) => setConnection(v)}
@@ -72,13 +72,12 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
             type='primary'
             text='Create Remote Connection'
             onClick={() => {
-              // const req: CreateLocalPulsarInstance = {
-              //   type: "CreateLocalPulsarInstance",
-              //   config: connection
-              // };
-              // window.electron.ipcRenderer.sendMessage(apiChannel, req);
-
-              // props.onCreate(connection);
+              const req: CreateRemotePulsarConnection = {
+                type: "CreateRemotePulsarConnection",
+                config: connection
+              };
+              window.electron.ipcRenderer.sendMessage(apiChannel, req);
+              props.onCreate(connection);
             }}
           />
         </div>

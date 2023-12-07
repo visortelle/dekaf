@@ -27,8 +27,8 @@ export type DekafToPulsarConnection = {
   type: "local-pulsar-instance",
   instanceId: string
 } | {
-  type: "remote-pulsar-instance",
-  instanceId: string
+  type: "remote-pulsar-connection",
+  connectionId: string
 });
 
 export type DekafRuntimeConfig = {

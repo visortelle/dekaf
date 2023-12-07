@@ -7,6 +7,8 @@ import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarIn
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
 import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, KillProcess, ProcessLogEntryReceived, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/types';
 import { handleGetActiveProcesses, handleKillProcess, handleResendProcessLogs, handleSpawnProcess } from './processes/handlers';
+import { CreateRemotePulsarConnection, DeleteRemotePulsarConnection, ListRemotePulsarConnections, ListRemotePulsarConnectionsResult, RemotePulsarConnectionCreated, RemotePulsarConnectionDeleted, RemotePulsarConnectionUpdated, UpdateRemotePulsarConnection } from './remote-pulsar-connections/types';
+import { handleCreateRemotePulsarConnection, handleDeleteRemotePulsarConnection, handleListRemotePulsarConnections, handleUpdateRemotePulsarConnection } from './remote-pulsar-connections/handlers';
 
 export type ApiEvent = ErrorHappened |
   GetPaths |
@@ -29,6 +31,14 @@ export type ApiEvent = ErrorHappened |
   LocalPulsarInstanceCreated |
   LocalPulsarInstanceDeleted |
   LocalPulsarInstanceUpdated |
+  CreateRemotePulsarConnection |
+  RemotePulsarConnectionCreated |
+  UpdateRemotePulsarConnection |
+  RemotePulsarConnectionUpdated |
+  ListRemotePulsarConnections |
+  ListRemotePulsarConnectionsResult |
+  DeleteRemotePulsarConnection |
+  RemotePulsarConnectionDeleted |
   SpawnProcess |
   KillProcess |
   GetActiveProcesses |
@@ -62,6 +72,8 @@ export const apiService: ApiService = {
         break;
       case "DeletePulsarDistribution": handleDeletePulsarDistribution(event, arg);
         break;
+      case "GetPulsarDistributionFileAtPath": handleGetPulsarDistributionFileAtPath(event, arg);
+        break;
       case "ListLocalPulsarInstances": handleListLocalPulsarInstances(event, arg);
         break;
       case "CreateLocalPulsarInstance": handleCreateLocalPulsarInstance(event, arg);
@@ -70,7 +82,13 @@ export const apiService: ApiService = {
         break;
       case "DeleteLocalPulsarInstance": handleDeleteLocalPulsarInstance(event, arg);
         break;
-      case "GetPulsarDistributionFileAtPath": handleGetPulsarDistributionFileAtPath(event, arg);
+      case "ListRemotePulsarConnections": handleListRemotePulsarConnections(event, arg);
+        break;
+      case "CreateRemotePulsarConnection": handleCreateRemotePulsarConnection(event, arg);
+        break;
+      case "UpdateRemotePulsarConnection": handleUpdateRemotePulsarConnection(event, arg);
+        break;
+      case "DeleteRemotePulsarConnection": handleDeleteRemotePulsarConnection(event, arg);
         break;
       case "GetActiveProcesses": handleGetActiveProcesses(event);
         break;
