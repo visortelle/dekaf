@@ -18,7 +18,7 @@ const EditRemotePulsarConnectionButton: React.FC<EditRemotePulsarConnectionButto
 
   return (
     <SmallButton
-      type='primary'
+      type='regular'
       text='Configure'
       onClick={() => {
         modals.push({
@@ -27,9 +27,8 @@ const EditRemotePulsarConnectionButton: React.FC<EditRemotePulsarConnectionButto
           content: (
             <EditRemotePulsarConnectionForm
               connectionId={props.connectionId}
-              onSave={() => {
-                modals.pop();
-              }}
+              onSave={modals.pop}
+              onCancel={modals.pop}
             />
           ),
           styleMode: 'no-content-padding'
@@ -41,13 +40,14 @@ const EditRemotePulsarConnectionButton: React.FC<EditRemotePulsarConnectionButto
 
 type EditRemotePulsarConnectionFormProps = {
   connectionId: string,
-  onSave: (v: RemotePulsarConnection) => void
+  onSave: (v: RemotePulsarConnection) => void,
+  onCancel: () => void
 };
 
 
 const EditRemotePulsarConnectionForm: React.FC<EditRemotePulsarConnectionFormProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const [remotePulsarConnection, setRemotePulsarConnection] = useState<RemotePulsarConnection | undefined>(undefined);
+  const [connection, setConnection] = useState<RemotePulsarConnection | undefined>(undefined);
 
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
@@ -59,7 +59,7 @@ const EditRemotePulsarConnectionForm: React.FC<EditRemotePulsarConnectionFormPro
           return;
         }
 
-        setRemotePulsarConnection(connection);
+        setConnection(connection);
       }
     });
 
@@ -67,7 +67,7 @@ const EditRemotePulsarConnectionForm: React.FC<EditRemotePulsarConnectionFormPro
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
   }, []);
 
-  if (remotePulsarConnection === undefined) {
+  if (connection === undefined) {
     return <></>;
   }
 
@@ -75,23 +75,29 @@ const EditRemotePulsarConnectionForm: React.FC<EditRemotePulsarConnectionFormPro
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', maxHeight: 'inherit' }}>
       <div style={{ overflowX: 'hidden', overflowY: 'auto', flex: '1 1 0%' }}>
         <RemotePulsarConnectionEditor
-          value={remotePulsarConnection}
-          onChange={setRemotePulsarConnection}
+          value={connection}
+          onChange={setConnection}
         />
       </div>
 
       <div style={{ display: 'flex', borderTop: '1px solid var(--border-color)', padding: '8rem 24rem', background: '#fff' }}>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '12rem' }}>
+          <Button
+            type='regular'
+            text='Cancel'
+            onClick={props.onCancel}
+          />
           <Button
             type='primary'
             text='Save'
+            disabled={connection.metadata.name.length === 0 || connection.config.pulsarBrokerUrl.length === 0 || connection.config.pulsarWebUrl.length === 0}
             onClick={() => {
               const req: UpdateRemotePulsarConnection = {
                 type: "UpdateRemotePulsarConnection",
-                config: remotePulsarConnection
+                config: connection
               };
               window.electron.ipcRenderer.sendMessage(apiChannel, req);
-              props.onSave(remotePulsarConnection);
+              props.onSave(connection);
             }}
           />
         </div>

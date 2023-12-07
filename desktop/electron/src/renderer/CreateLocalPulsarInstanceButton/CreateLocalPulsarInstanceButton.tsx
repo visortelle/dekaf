@@ -25,9 +25,8 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
           title: 'Create Local Pulsar Instance',
           content: (
             <CreateLocalPulsarInstanceForm
-              onCreate={() => {
-                modals.pop();
-              }}
+              onCreate={modals.pop}
+              onCancel={modals.pop}
             />
           ),
           styleMode: 'no-content-padding'
@@ -38,7 +37,8 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
 }
 
 type CreateLocalPulsarInstanceFormProps = {
-  onCreate: (v: LocalPulsarInstance) => void
+  onCreate: (v: LocalPulsarInstance) => void,
+  onCancel: () => void
 };
 
 
@@ -118,10 +118,15 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
       </div>
 
       <div style={{ display: 'flex', borderTop: '1px solid var(--border-color)', padding: '8rem 24rem', background: '#fff' }}>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '12rem' }}>
+          <Button
+            type='regular'
+            text='Cancel'
+            onClick={props.onCancel}
+          />
           <Button
             type='primary'
-            text='Create Pulsar Instance'
+            text='Create'
             disabled={localPulsarInstance.metadata.name.length === 0 || localPulsarInstance.config.pulsarVersion === undefined}
             onClick={() => {
               const req: CreateLocalPulsarInstance = {

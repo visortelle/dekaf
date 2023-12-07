@@ -23,9 +23,8 @@ const CreateRemotePulsarConnectionButton: React.FC<CreateRemotePulsarConnectionB
           title: 'Create Remote Connection',
           content: (
             <CreateLocalPulsarInstanceForm
-              onCreate={() => {
-                modals.pop();
-              }}
+              onCreate={modals.pop}
+              onCancel={modals.pop}
             />
           ),
           styleMode: 'no-content-padding'
@@ -36,7 +35,8 @@ const CreateRemotePulsarConnectionButton: React.FC<CreateRemotePulsarConnectionB
 }
 
 type CreateLocalPulsarInstanceFormProps = {
-  onCreate: (v: RemotePulsarConnection) => void
+  onCreate: (v: RemotePulsarConnection) => void,
+  onCancel: () => void
 };
 
 
@@ -52,8 +52,8 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
     },
     config: {
       type: "RemotePulsarConnectionConfig",
-      pulsarBrokerUrl: '',
-      pulsarWebUrl: ''
+      pulsarBrokerUrl: 'pulsar://localhost:6650',
+      pulsarWebUrl: 'http://localhost:8080'
     }
   });
 
@@ -67,10 +67,16 @@ const CreateLocalPulsarInstanceForm: React.FC<CreateLocalPulsarInstanceFormProps
       </div>
 
       <div style={{ display: 'flex', borderTop: '1px solid var(--border-color)', padding: '8rem 24rem', background: '#fff' }}>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '12rem' }}>
+          <Button
+            type='regular'
+            text='Cancel'
+            onClick={props.onCancel}
+          />
           <Button
             type='primary'
-            text='Create Remote Connection'
+            text='Create'
+            disabled={connection.metadata.name.length === 0 || connection.config.pulsarBrokerUrl.length === 0 || connection.config.pulsarWebUrl.length === 0}
             onClick={() => {
               const req: CreateRemotePulsarConnection = {
                 type: "CreateRemotePulsarConnection",

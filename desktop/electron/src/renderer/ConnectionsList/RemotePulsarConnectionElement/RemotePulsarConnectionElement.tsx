@@ -31,7 +31,7 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ActiveProcessesUpdated" || arg.type === "GetActiveProcessesResult") {
         const [maybeDekafProcessId] = Object.entries(arg.processes)
-          .find(([_, process]) => process.type.type === "dekaf" && process.type.connection.type === "local-pulsar-instance" && process.type.connection.instanceId === props.connection.metadata.id) || [];
+          .find(([_, process]) => process.type.type === "dekaf" && process.type.connection.type === "remote-pulsar-connection" && process.type.connection.connectionId === props.connection.metadata.id) || [];
         setDekafProcessId(maybeDekafProcessId);
       }
     });

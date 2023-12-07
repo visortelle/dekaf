@@ -48,7 +48,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarWebUrl = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
-              placeholder='https://pulsar-broker:8080'
+              placeholder='https://pulsar-broker:8443'
             />
           </FormItem>
 
@@ -63,7 +63,7 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
                 newConfig.pulsarBrokerUrl = v;
                 props.onChange({ ...props.value, config: newConfig });
               }}
-              placeholder='pulsar+ssl://pulsar-broker:6650'
+              placeholder='pulsar+ssl://pulsar-broker:6651'
             />
           </FormItem>
 
@@ -147,8 +147,6 @@ const RemotePulsarConnectionEditor: React.FC<RemotePulsarConnectionEditorProps> 
               </div>}
           </FormItem>
         </div>
-
-
       </div>
 
       <div className={s.Form}>

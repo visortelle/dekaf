@@ -58,10 +58,10 @@ export function getPaths(): Paths {
   const appPath = electron.app.getAppPath();
   const assetsDir = getAssetsDir();
   const userDataDir = getUserDataDir();
-  const pulsarDistributionsDir = path.resolve(path.join(userDataDir, "pulsar", "distributions"));
+  const pulsarDistributionsDir = path.resolve(path.join(userDataDir, "pulsar-distributions"));
   const getPulsarDistributionDir = (version: string) => path.resolve(path.join(pulsarDistributionsDir, version))
   const getPulsarBin = (version: string) => path.resolve(path.join(getPulsarDistributionDir(version), 'bin', 'pulsar'))
-  const pulsarLocalInstancesDir = path.resolve(path.join(userDataDir, 'pulsar', 'instances'));
+  const pulsarLocalInstancesDir = path.resolve(path.join(userDataDir, "local-pulsar-instances"));
   const getPulsarLocalInstanceDir = (instanceId: string) => path.resolve(path.join(pulsarLocalInstancesDir, instanceId));
   const getPulsarLocalInstanceConfigPath = (instanceId: string) => path.resolve(path.join(getPulsarLocalInstanceDir(instanceId), "pulsar-instance.json"));
   const getPulsarStandalonePaths = (instanceId: string): PulsarStandalonePaths => {
@@ -73,7 +73,7 @@ export function getPaths(): Paths {
       functionsWorkerConfPath: path.resolve(path.join(instanceDir, "data", "conf", "functions_worker.yml")),
     }
   }
-  const remotePulsarConnectionsDir = path.resolve(path.join(userDataDir, 'connections'));
+  const remotePulsarConnectionsDir = path.resolve(path.join(userDataDir, 'remote-pulsar-connections'));
   const getRemotePulsarConnectionDir = (connectionId: string) => path.resolve(path.join(remotePulsarConnectionsDir, connectionId));
   const getRemotePulsarConnectionConfigPath = (connectionId: string) => path.resolve(path.join(getRemotePulsarConnectionDir(connectionId), "remote-pulsar-connection.json"));
 

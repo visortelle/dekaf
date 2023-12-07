@@ -28,9 +28,8 @@ const EditLocalPulsarInstanceButton: React.FC<EditLocalPulsarInstanceButtonProps
           content: (
             <EditLocalPulsarInstanceForm
               instanceId={props.instanceId}
-              onSave={() => {
-                modals.pop();
-              }}
+              onSave={modals.pop}
+              onCancel={modals.pop}
             />
           ),
           styleMode: 'no-content-padding'
@@ -42,7 +41,8 @@ const EditLocalPulsarInstanceButton: React.FC<EditLocalPulsarInstanceButtonProps
 
 type EditLocalPulsarInstanceFormProps = {
   instanceId: string,
-  onSave: (v: LocalPulsarInstance) => void
+  onSave: (v: LocalPulsarInstance) => void,
+  onCancel: () => void
 };
 
 const EditLocalPulsarInstanceForm: React.FC<EditLocalPulsarInstanceFormProps> = (props) => {
@@ -81,7 +81,12 @@ const EditLocalPulsarInstanceForm: React.FC<EditLocalPulsarInstanceFormProps> = 
       </div>
 
       <div style={{ display: 'flex', borderTop: '1px solid var(--border-color)', padding: '8rem 24rem', background: '#fff' }}>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '12rem' }}>
+          <Button
+            type='regular'
+            text='Cancel'
+            onClick={props.onCancel}
+          />
           <Button
             type='primary'
             text='Save'
