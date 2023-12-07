@@ -4,14 +4,15 @@ import { apiChannel } from '../../main/channels';
 import { DeleteLocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import ConfirmationDialog from '../ui/ConfirmationDialog/ConfirmationDialog';
 import DeleteButton from '../ui/DeleteButton/DeleteButton';
+import { DeleteRemotePulsarConnection } from '../../main/api/remote-pulsar-connections/types';
 
-export type DeleteLocalPulsarInstanceButtonProps = {
-  instanceId: string,
-  instanceName: string,
+export type DeleteRemotePulsarConnectionButtonProps = {
+  connectionId: string,
+  connectionName: string,
   disabled?: boolean
 };
 
-const DeleteLocalPulsarInstanceButton: React.FC<DeleteLocalPulsarInstanceButtonProps> = (props) => {
+const DeleteRemotePulsarConnectionButton: React.FC<DeleteRemotePulsarConnectionButtonProps> = (props) => {
   const modals = Modals.useContext();
 
   return (
@@ -20,19 +21,19 @@ const DeleteLocalPulsarInstanceButton: React.FC<DeleteLocalPulsarInstanceButtonP
       isHideText
       onClick={() => {
         modals.push({
-          id: 'delete-local-pulsar-instance',
-          title: 'Delete Local Pulsar Instance',
+          id: 'edit-modal-pulsar-instance',
+          title: 'Delete Remote Pulsar Connection',
           content: (
             <ConfirmationDialog
-              content={(<>Are you sure that you're going to delete local Pulsar instance <strong>{props.instanceName}</strong> and all it's data?</>)}
+              content={(<>Are you sure that you're going to delete remote Pulsar connection <strong>{props.connectionName}</strong>?</>)}
               type='danger'
               onCancel={() => {
                 modals.pop();
               }}
               onConfirm={() => {
-                const req: DeleteLocalPulsarInstance = {
-                  type: "DeleteLocalPulsarInstance",
-                  instanceId: props.instanceId,
+                const req: DeleteRemotePulsarConnection = {
+                  type: "DeleteRemotePulsarConnection",
+                  connectionId: props.connectionId,
                 }
                 window.electron.ipcRenderer.sendMessage(apiChannel, req);
 
@@ -47,4 +48,4 @@ const DeleteLocalPulsarInstanceButton: React.FC<DeleteLocalPulsarInstanceButtonP
   );
 }
 
-export default DeleteLocalPulsarInstanceButton;
+export default DeleteRemotePulsarConnectionButton;

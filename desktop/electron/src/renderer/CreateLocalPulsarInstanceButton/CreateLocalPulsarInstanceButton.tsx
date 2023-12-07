@@ -21,7 +21,7 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
       text='Create Local Pulsar Instance'
       onClick={() => {
         modals.push({
-          id: 'add-modal-pulsar-instance',
+          id: 'create-local-pulsar-instance',
           title: 'Create Local Pulsar Instance',
           content: (
             <CreateLocalPulsarInstanceForm

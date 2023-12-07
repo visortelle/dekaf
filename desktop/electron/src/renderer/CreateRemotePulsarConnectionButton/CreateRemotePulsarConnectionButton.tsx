@@ -19,7 +19,7 @@ const CreateRemotePulsarConnectionButton: React.FC<CreateRemotePulsarConnectionB
       text='Create Remote Connection'
       onClick={() => {
         modals.push({
-          id: 'add-modal-pulsar-instance',
+          id: 'create-remote-pulsar-connection',
           title: 'Create Remote Connection',
           content: (
             <CreateLocalPulsarInstanceForm
