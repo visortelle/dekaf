@@ -32,10 +32,12 @@ case class Config(
     pulsarName: Option[String] = Some("default"),
     @describe("Optional accent color to visually distinguish this instance")
     pulsarColor: Option[String] = Some("transparent"),
-    @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
-    pulsarBrokerUrl: Option[String] = Some("pulsar://localhost:6650"),
     @describe("The URL where Pulsar broker (or proxy) serves http requests.")
     pulsarWebUrl: Option[String] = Some("http://localhost:8080"),
+    @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
+    pulsarBrokerUrl: Option[String] = Some("pulsar://localhost:6650"),
+    @describe("Advertised listener name.")
+    pulsarListenerName: Option[String] = None,
 
     //
     @describe("Path to the TLS key file.")
@@ -83,7 +85,7 @@ case class Config(
           |""".stripMargin)
     pulsarTlsProtocols: Option[List[String]] = None,
 
-    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    @describe("Default authentication credentials for all users. Not recommended to use it in multi-user production environment.")
     defaultPulsarAuth: Option[String] = None,
 
     // Postgres

@@ -1,3 +1,5 @@
+import { ConnectionMetadata } from "../dekaf/types";
+
 export type PulsarStandalonePaths = {
   metadataDir: string,
   bookkeeperDir: string,
@@ -7,10 +9,8 @@ export type PulsarStandalonePaths = {
 
 export type LocalPulsarInstance = {
   type: "LocalPulsarInstance"
-  id: string,
-  name: string,
-  color?: string,
-  config: PulsarStandaloneConfig
+  metadata: ConnectionMetadata,
+  config: PulsarStandaloneConfig,
 };
 
 export type PulsarStandaloneConfig = {
@@ -20,7 +20,7 @@ export type PulsarStandaloneConfig = {
   numBookies?: number,
   standaloneConfContent?: string,
   functionsWorkerConfContent?: string,
-  brokerServicePort: number,
+  brokerServicePort?: number,
   webServicePort?: number,
   bookkeeperPort?: number,
   streamStoragePort?: number,
@@ -36,18 +36,28 @@ export type CreateLocalPulsarInstance = {
   config: LocalPulsarInstance
 };
 
+export type LocalPulsarInstanceCreated = {
+  type: "LocalPulsarInstanceCreated",
+  instanceId: string
+}
+
 export type UpdateLocalPulsarInstance = {
   type: "UpdateLocalPulsarInstance",
   config: LocalPulsarInstance
 };
+
+export type LocalPulsarInstanceUpdated = {
+  type: "LocalPulsarInstanceUpdated",
+  instanceId: string
+}
 
 export type DeleteLocalPulsarInstance = {
   type: "DeleteLocalPulsarInstance",
   instanceId: string
 }
 
-export type DeleteLocalPulsarInstanceSucceeded = {
-  type: "DeleteLocalPulsarInstanceSucceeded",
+export type LocalPulsarInstanceDeleted = {
+  type: "LocalPulsarInstanceDeleted",
   instanceId: string
 }
 

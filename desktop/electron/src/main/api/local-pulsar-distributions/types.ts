@@ -42,11 +42,13 @@ export type PulsarDistributionStatus = {
 };
 
 export type ListPulsarDistributions = {
-  type: "ListPulsarDistributions"
+  type: "ListPulsarDistributions",
+  isInstalledOnly: boolean
 }
 
 export type ListPulsarDistributionsResult = {
   type: "ListPulsarDistributionsResult"
+  isInstalledOnly: boolean
   versions?: string[]
 }
 

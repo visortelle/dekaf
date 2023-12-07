@@ -16,6 +16,7 @@ import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/C
 import Tooltip from './ui/Tooltip/Tooltip';
 import { apiChannel } from '../main/channels';
 import ConnectionsList from './ConnectionsList/ConnectionsList';
+import CreateRemotePulsarConnectionButton from './CreateRemotePulsarConnectionButton/CreateRemotePulsarConnectionButton';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
@@ -41,7 +42,10 @@ function InitialAppScreen() {
         <Modals.DefaultProvider>
           <div>
             <Tooltip />
+
             <CreateLocalPulsarInstanceButton />
+            <CreateRemotePulsarConnectionButton />
+
             <ConnectionsList />
             {/* <SmallButton
               onClick={() => {

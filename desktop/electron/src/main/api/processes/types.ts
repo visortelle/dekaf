@@ -15,6 +15,11 @@ export type SpawnProcess = {
   }
 };
 
+export type KillProcess = {
+  type: "KillProcess",
+  processId: string
+};
+
 export type DekafToPulsarConnection = {
   dekafLicenseId: string,
   dekafLicenseToken: string
@@ -22,8 +27,8 @@ export type DekafToPulsarConnection = {
   type: "local-pulsar-instance",
   instanceId: string
 } | {
-  type: "remote-pulsar-instance",
-  instanceId: string
+  type: "remote-pulsar-connection",
+  connectionId: string
 });
 
 export type DekafRuntimeConfig = {
@@ -52,7 +57,7 @@ export type ActiveChildProcesses = Record<ProcessId, ActiveChildProcess>;
 
 export type ProcessLogs = Record<ProcessId, LogEntry[]>;
 
-export type ProcessStatus = 'unknown' | 'alive' | 'ready' | 'failed';
+export type ProcessStatus = 'unknown' | 'starting' | 'alive' | 'ready' | 'stopping' | 'failed';
 
 export type GetActiveProcesses = {
   type: "GetActiveProcesses"

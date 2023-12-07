@@ -14,6 +14,8 @@ export type ModalStackEntry = {
   title: string,
   content: ReactNode,
   styleMode?: 'no-content-padding',
+  onClose?: () => void,
+  isCloseDisabled?: boolean
 }
 
 export type ModalStack = ModalStackEntry[];
@@ -51,7 +53,17 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           <ModalElement
             key={entry.id}
             entry={entry}
-            onClose={pop}
+            onClose={() => {
+              if (entry.isCloseDisabled) {
+                return;
+              }
+
+              if (entry.onClose !== undefined) {
+                entry.onClose();
+              }
+
+              pop();
+            }}
             isVisible={i === value.stack.length - 1}
           />
         ))}
@@ -108,7 +120,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
           <div className={s.TopBarTitle}>
             <H2>{props.entry.title}</H2>
           </div>
-          <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>
+          {!props.entry.isCloseDisabled && <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>}
         </div>
         {(
           <div className={`${s.Content} ${props.entry.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{props.entry.content}</div>
