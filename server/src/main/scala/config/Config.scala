@@ -85,7 +85,7 @@ case class Config(
           |""".stripMargin)
     pulsarTlsProtocols: Option[List[String]] = None,
 
-    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    @describe("Default authentication credentials for all users. Not recommended to use it in multi-user production environment.")
     defaultPulsarAuth: Option[String] = None,
 
     // Postgres

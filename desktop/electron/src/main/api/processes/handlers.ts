@@ -15,6 +15,7 @@ import { BrowserWindow } from "electron";
 import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 import { sendMessage } from "../api/send-message";
+import { getConnectionConfig } from "../remote-pulsar-connections/handlers";
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -329,7 +330,9 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
 export async function runDekaf(connection: DekafToPulsarConnection, event: Electron.IpcMainEvent) {
   const paths = getPaths();
 
-  const dekafDataDir = paths.getDekafDataDir(connection.instanceId);
+  const connectionId = connection.type === "local-pulsar-instance" ? connection.instanceId : connection.connectionId;
+
+  const dekafDataDir = paths.getDekafDataDir(connectionId);
   if (!(await fsExtra.pathExists(dekafDataDir))) {
     await fsExtra.ensureDir(dekafDataDir);
     const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
@@ -391,6 +394,88 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
       }
     }
   };
+
+  if (connection.type === "remote-pulsar-connection") {
+    const connectionConfig = await getConnectionConfig(connection.connectionId);
+    const config = connectionConfig.config;
+
+    env["DEKAF_PULSAR_NAME"] = connectionConfig.metadata.name;
+
+    if (connectionConfig.metadata.color !== undefined) {
+      env["DEKAF_PULSAR_COLOR"] = colorsByName[connectionConfig.metadata.color] || connectionConfig.metadata.color;
+    }
+
+    env["DEKAF_PULSAR_BROKER_URL"] = `pulsar://127.0.0.1:${config.pulsarBrokerUrl}`
+    env["DEKAF_PULSAR_WEB_URL"] = `http://127.0.0.1:${config.pulsarWebUrl}`
+
+    if (config.auth !== undefined) {
+      env["DEKAF_DEFAULT_PULSAR_AUTH"] = JSON.stringify(config.auth);
+    }
+
+    if (config.pulsarListenerName !== undefined) {
+      env["DEKAF_PULSAR_LISTENER_NAME"] = config.pulsarListenerName;
+    }
+
+    if (config.pulsarTlsKeyFilePath !== undefined) {
+      env["DEKAF_PULSAR_TLS_KEY_FILE_PATH"] = config.pulsarTlsKeyFilePath;
+    }
+
+    if (config.pulsarTlsCertificateFilePath !== undefined) {
+      env["DEKAF_PULSAR_TLS_CERTIFICATE_FILE_PATH"] = config.pulsarTlsCertificateFilePath;
+    }
+
+    if (config.pulsarTlsTrustCertsFilePath !== undefined) {
+      env["DEKAF_PULSAR_TLS_TRUST_CERTS_FILE_PATH"] = config.pulsarTlsTrustCertsFilePath;
+    }
+
+    if (config.pulsarAllowTlsInsecureConnection) {
+      env["DEKAF_PULSAR_ALLOW_TLS_INSECURE_CONNECTION"] = "true";
+    }
+
+    if (config.pulsarEnableTlsHostnameVerification) {
+      env["DEKAF_PULSAR_ALLOW_TLS_HOSTNAME_VERIFICATION"] = "true";
+    }
+
+    if (config.pulsarUseKeyStoreTls) {
+      env["DEKAF_PULSAR_USE_KEY_STORE_TLS"] = "true";
+    }
+
+    if (config.pulsarSslProvider !== undefined) {
+      env["DEKAF_PULSAR_SSL_PROVIDER"] = config.pulsarSslProvider;
+    }
+
+    if (config.pulsarTlsKeyStoreType !== undefined) {
+      env["DEKAF_PULSAR_TLS_KEY_STORE_TYPE"] = config.pulsarTlsKeyStoreType;
+    }
+
+    if (config.pulsarTlsKeyStorePath !== undefined) {
+      env["DEKAF_PULSAR_TLS_KEY_STORE_PATH"] = config.pulsarTlsKeyStorePath;
+    }
+
+    if (config.pulsarTlsKeyStorePassword !== undefined) {
+      env["DEKAF_PULSAR_TLS_KEY_STORE_PASSWORD"] = config.pulsarTlsKeyStorePassword;
+    }
+
+    if (config.pulsarTlsTrustStoreType !== undefined) {
+      env["DEKAF_PULSAR_TLS_TRUST_STORE_TYPE"] = config.pulsarTlsTrustStoreType;
+    }
+
+    if (config.pulsarTlsTrustStorePath !== undefined) {
+      env["DEKAF_PULSAR_TLS_TRUST_STORE_PATH"] = config.pulsarTlsTrustStorePath;
+    }
+
+    if (config.pulsarTlsTrustStorePassword !== undefined) {
+      env["DEKAF_PULSAR_TLS_TRUST_STORE_PASSWORD"] = config.pulsarTlsTrustStorePassword;
+    }
+
+    if (config.pulsarTlsCiphers !== undefined) {
+      env["DEKAF_PULSAR_TLS_CIPHERS"] = config.pulsarTlsCiphers;
+    }
+
+    if (config.pulsarTlsProtocols !== undefined) {
+      env["DEKAF_PULSAR_TLS_PROTOCOLS"] = config.pulsarTlsProtocols;
+    }
+  }
 
   const newActiveChildProcesses: ActiveChildProcesses = {
     ...activeChildProcesses,
