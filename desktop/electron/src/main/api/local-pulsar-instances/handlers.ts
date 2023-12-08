@@ -104,8 +104,10 @@ export async function handleDeleteLocalPulsarInstance(event: Electron.IpcMainEve
     const paths = getPaths();
 
     const instanceDir = paths.getPulsarLocalInstanceDir(arg.instanceId);
-
     await fsExtra.remove(instanceDir);
+
+    const dekafDataDir = paths.getDekafDataDir(arg.instanceId);
+    await fsExtra.remove(dekafDataDir);
 
     const req: LocalPulsarInstanceDeleted = {
       type: "LocalPulsarInstanceDeleted",

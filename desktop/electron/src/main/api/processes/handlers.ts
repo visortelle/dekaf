@@ -4,6 +4,7 @@ import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUp
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
+import fs from 'node:fs';
 import fsExtra from 'fs-extra';
 import fsAsync from 'fs/promises';
 import path from 'node:path';
@@ -135,6 +136,10 @@ function monitorProcessStatuses() {
       if (getProcessStatus(processId) !== 'failed') {
         updateProcessStatus(processId, isReady ? 'ready' : 'alive');
       }
+    } else if (proc.type.type === "dekaf-demoapp") {
+      if (getProcessStatus(processId) !== 'failed') {
+        updateProcessStatus(processId, 'ready');
+      }
     }
   }
 
@@ -162,13 +167,14 @@ function updateActiveProcesses(newActiveProcesses: ActiveProcesses, newActiveChi
 }
 
 export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: SpawnProcess): Promise<void> {
-  console.log('SPAWN', JSON.stringify(arg));
   try {
     if (arg.process.type === "pulsar-standalone") {
       await runPulsarStandalone(arg.process.instanceId, event);
       return;
     } else if (arg.process.type === "dekaf") {
       await runDekaf(arg.process.connection, event);
+    } else if (arg.process.type === "dekaf-demoapp") {
+      await runDekafDemoapp(arg.process.connection, event);
     }
   } catch (err) {
     const req: ErrorHappened = {
@@ -333,7 +339,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const connectionId = connection.type === "local-pulsar-instance" ? connection.instanceId : connection.connectionId;
 
   const dekafDataDir = paths.getDekafDataDir(connectionId);
-  if (!(await fsExtra.pathExists(dekafDataDir))) {
+  if (!(fs.existsSync(dekafDataDir))) {
     await fsExtra.ensureDir(dekafDataDir);
     const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
     await fsExtra.copy(defaultDataDir, dekafDataDir);
@@ -473,6 +479,77 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
           port,
           publicBaseUrl
         }
+      }
+    }
+  };
+
+  const newActiveChildProcesses: ActiveChildProcesses = {
+    ...activeChildProcesses,
+    [processId]: {
+      childProcess: process,
+    }
+  }
+
+  updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
+
+  process.stdout.on('data', (data) => {
+    (data as string).split('\n\n').forEach(line => {
+      appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
+    });
+  });
+
+  process.stderr.on('data', (data) => {
+    (data as string).split('\n\n').forEach(line => {
+      appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
+    });
+  });
+
+  process.on('exit', (code) => {
+    if (code === 0 || code === sigTermExitCode || code === null) {
+      updateProcessStatus(processId, 'unknown');
+      deleteProcess(processId);
+      return;
+    }
+
+    updateProcessStatus(processId, 'failed');
+  });
+}
+
+export async function runDekafDemoapp(connection: DekafToPulsarConnection, event: Electron.IpcMainEvent) {
+  const paths = getPaths();
+
+  const javaHome = paths.javaHome;
+
+  let processArgs: string[] = [];
+  let env: Record<string, string> = {
+    "JAVA_HOME": javaHome,
+  };
+
+  if (connection.type === "local-pulsar-instance") {
+    const instanceConfig = await getInstanceConfig(connection.instanceId);
+
+    env["DEKAF_DEMOAPP_PULSAR_BROKER_URL"] = `pulsar://127.0.0.1:${instanceConfig.config.brokerServicePort}`
+    env["DEKAF_DEMOAPP_PULSAR_WEB_URL"] = `http://127.0.0.1:${instanceConfig.config.webServicePort}`
+  }
+
+  if (connection.type === "remote-pulsar-connection") {
+    throw new Error(`Running Dekaf Demoapp isn't support for remote Pulsar connections.`);
+  }
+
+  const dekafDemoappBin = paths.dekafDemoappBin;
+  const processId = uuid();
+
+  const process = spawn(dekafDemoappBin, processArgs, { env });
+  process.stdout.setEncoding('utf-8');
+  process.stderr.setEncoding('utf-8');
+
+  const newActiveProcesses: ActiveProcesses = {
+    ...activeProcesses,
+    [processId]: {
+      status: 'starting',
+      type: {
+        type: "dekaf-demoapp",
+        connection,
       }
     }
   };

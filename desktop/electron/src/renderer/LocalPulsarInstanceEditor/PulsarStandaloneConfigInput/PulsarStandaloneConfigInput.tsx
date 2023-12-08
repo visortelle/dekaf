@@ -141,6 +141,32 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
 
       <FormItem>
         <FormLabel
+          content="Launch Demo Application"
+          help={(
+            <>
+              <p>
+                In order to demonstrate Dekaf features, the demo application runs together with the local cluster.
+                <br />
+                It creates multiple Pulsar resources like tenants, namespaces, and topics.
+                <br />
+                Also it produces random data to the created topics.
+              </p>
+            </>
+          )}
+        />
+        <div>
+          <Toggle
+            value={Boolean(props.value.extensions?.some(ext => ext.type === "DekafDemoappExtension"))}
+            onChange={(v) => props.onChange({
+              ...props.value,
+              extensions: v ? [{ type: "DekafDemoappExtension" }] : []
+            })}
+          />
+        </div>
+      </FormItem>
+
+      <FormItem>
+        <FormLabel
           content="Wipe Data Before Each Launch"
           help={(
             <>

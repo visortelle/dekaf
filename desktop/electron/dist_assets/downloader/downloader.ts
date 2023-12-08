@@ -90,7 +90,7 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
     const unpack = async (sourceArchive: string, destDir: string, strip?: number) => {
       console.info(`Unpacking ${sourceArchive} to ${destDir}`);
 
-      if (!(await fsExtra.pathExists(destDir))) {
+      if (!(fs.existsSync(destDir))) {
         fs.mkdirSync(destDir);
       }
 
@@ -132,7 +132,7 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
     if (target.cacheDir !== undefined && target.checksum !== undefined) {
       console.info(`Verifying checksum for ${target.taskId}`);
       const maybeCachedFile = path.resolve(path.join(target.cacheDir, target.checksum.hash));
-      const isExists = await fsExtra.pathExists(maybeCachedFile);
+      const isExists = fs.existsSync(maybeCachedFile);
 
       if (isExists) {
         const hash = await computeFileHash(maybeCachedFile, target.checksum.algorithm);
@@ -146,7 +146,7 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
 
     if (target.source.startsWith('file://')) {
       const filePath = target.source.replace('file://', '');
-      const isExists = await fsExtra.pathExists(filePath);
+      const isExists = fs.existsSync(filePath);
 
       if (isExists) {
         await copyOrUnpack(filePath);

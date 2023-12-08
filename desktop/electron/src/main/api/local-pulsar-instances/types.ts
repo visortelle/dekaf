@@ -13,6 +13,10 @@ export type LocalPulsarInstance = {
   config: PulsarStandaloneConfig,
 };
 
+export type PulsarStandaloneExtension = {
+  type: "DekafDemoappExtension"
+};
+
 export type PulsarStandaloneConfig = {
   type: "PulsarStandaloneConfig",
   pulsarVersion: string,
@@ -24,7 +28,8 @@ export type PulsarStandaloneConfig = {
   webServicePort?: number,
   bookkeeperPort?: number,
   streamStoragePort?: number,
-  wipeData?: boolean
+  wipeData?: boolean,
+  extensions?: PulsarStandaloneExtension[]
 };
 
 export type LocalPulsarInstanceInfo = {
