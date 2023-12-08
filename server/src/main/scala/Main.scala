@@ -3,7 +3,7 @@ package main
 import _root_.server.grpc.GrpcServer
 import _root_.server.http.HttpServer
 import _root_.licensing.LicenseServer
-import _root_.envoy.Envoy
+import _root_.nginx.Nginx
 import _root_.config.{ConfigProvider, ConfigProviderImpl}
 import main.Main.app
 import zio.*
@@ -16,7 +16,7 @@ object Main extends ZIOAppDefault:
             ZIO.never,
             List(
                 LicenseServer.run(licenseServerInitResult),
-                Envoy.run,
+                Nginx.run,
                 HttpServer.run,
                 GrpcServer.run
             )

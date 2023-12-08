@@ -1,4 +1,4 @@
-package envoy
+package nginx
 
 import zio.*
 import org.apache.commons.lang3.SystemUtils
@@ -27,23 +27,23 @@ def getArch: IO[Throwable, Arch] =
         case "aarch64" => ZIO.succeed(Arm64())
         case _         => ZIO.fail(new Exception(s"Unsupported architecture: ${arch}"))
 
-def getEnvoyBinResourcePath: IO[Throwable, os.ResourcePath] =
+def getNginxBinResourcePath: IO[Throwable, os.ResourcePath] =
     for
         currentOs <- getOs
         currentArch <- getArch
         path <- (currentOs, currentArch) match
-            case (Darwin(), Amd64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "amd64" / "envoy.bin")
+            case (Darwin(), Amd64()) => ZIO.succeed(os.resource / "nginx" / "darwin" / "amd64" / "nginx")
             // Rely on the Rosetta 2 subsystem that emulates x86_64 on Apple Silicon
-            case (Darwin(), Arm64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "amd64" / "envoy.bin")
-            case (Linux(), Amd64()) => ZIO.succeed(os.resource / "envoy" / "linux" / "amd64" / "envoy.bin")
-            case (Linux(), Arm64()) => ZIO.succeed(os.resource / "envoy" / "linux" / "arm64" / "envoy.bin")
+            case (Darwin(), Arm64()) => ZIO.succeed(os.resource / "nginx" / "darwin" / "amd64" / "nginx")
+            case (Linux(), Amd64()) => ZIO.succeed(os.resource / "nginx" / "linux" / "amd64" / "nginx")
+            case (Linux(), Arm64()) => ZIO.succeed(os.resource / "nginx" / "linux" / "arm64" / "nginx")
             case _                   => ZIO.fail(new Exception(s"Unsupported OS/architecture combination: $currentOs/$currentArch"))
     yield path
 
-def getEnvoyBinPath: IO[Throwable, os.Path] =
+def getNginxBinPath: IO[Throwable, os.Path] =
     for
-        binResourcePath <- getEnvoyBinResourcePath
-        binOut <- ZIO.attempt(os.temp.dir(null, "pulsar-ui") / "envoy")
-        _ <- ZIO.logInfo(s"Copying Envoy proxy binary to temp directory: ${binOut.toString}")
+        binResourcePath <- getNginxBinResourcePath
+        binOut <- ZIO.attempt(os.temp.dir(null, "dekaf") / "nginx")
+        _ <- ZIO.logInfo(s"Copying Nginx binary to temp directory: ${binOut.toString}")
         _ <- ZIO.attempt({ os.write(binOut, binResourcePath.toSource, "r-xr-xr-x") })
     yield binOut

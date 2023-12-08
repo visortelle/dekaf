@@ -9,7 +9,7 @@ plugins:
   - name: grpc-web
     out: ../ui/grpc-web
     opt:
-      - mode=grpcwebtext
+      - mode=grpcweb
       - import_style=typescript
   - name: scala
     out: ../server/src/main/scala/pb
