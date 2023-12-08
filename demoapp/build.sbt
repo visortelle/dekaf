@@ -26,8 +26,9 @@ lazy val root = project
     .enablePlugins(GitVersioning)
     .in(file("."))
     .settings(
-        name := "demoapp",
+        name := "dekaf-demoapp",
         scalaVersion := scala3Version,
+        Universal / packageName := "dekaf-demoapp",
         libraryDependencies ++= Seq(
             // Serialization
             "io.circe" %% "circe-core" % circeVersion,

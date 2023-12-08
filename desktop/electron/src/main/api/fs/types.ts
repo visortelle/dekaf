@@ -21,7 +21,9 @@ export type Paths = {
   remotePulsarConnectionsDir: string,
   getRemotePulsarConnectionDir: (connectionId: string) => string,
   getRemotePulsarConnectionConfigPath: (connectionId: string) => string,
-  getDekafDataDir: (connectionId: string) => string
+  getDekafDataDir: (connectionId: string) => string,
+  dekafDemoappDir: string,
+  dekafDemoappBin: string,
 }
 
 export type GetPathsResponse = {

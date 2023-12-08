@@ -1,8 +1,17 @@
 .LogsView {
   overflow: hidden;
   display: flex;
+  flex-direction: column;
   width: calc(100vw - 48rem);
   height: calc(100vh - 96rem);
+}
+
+.Toolbar {
+  display: flex;
+  gap: 12rem;
+  align-items: center;
+  padding: 12rem;
+  background-color: var(--surface-color);
 }
 
 .Logs {

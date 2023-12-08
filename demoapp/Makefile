@@ -11,7 +11,7 @@ clean:
 
 .PHONY: build
 build: # Build
-	sbt universal:packageZipTarball
+	sbt universal:packageZipTarball -DisBinaryBuild=true
 
 .PHONY: dev
 dev: ## Start development
