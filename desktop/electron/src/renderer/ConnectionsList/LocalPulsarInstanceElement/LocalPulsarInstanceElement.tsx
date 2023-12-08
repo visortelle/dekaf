@@ -70,6 +70,49 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
   }, [props.pulsarInstance]);
 
+  useEffect(() => {
+    function runDemoapp() {
+      const dekafDemoappReq: SpawnProcess = {
+        type: "SpawnProcess",
+        process: {
+          type: "dekaf-demoapp",
+          connection: {
+            type: "local-pulsar-instance",
+            instanceId: props.pulsarInstance.metadata.id,
+            dekafLicenseId,
+            dekafLicenseToken
+          }
+        },
+        processId: uuid()
+      };
+
+      window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
+    }
+
+    function stopDemoappIfExists() {
+      if (dekafDemoappProcessId === undefined) {
+        return;
+      }
+
+      const dekafDemoappReq: KillProcess = {
+        type: "KillProcess",
+        processId: dekafDemoappProcessId
+      };
+
+      window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
+    }
+
+    const isHasDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
+
+    if (isHasDemoapp) {
+      if (pulsarProcessStatus === 'ready') {
+        runDemoapp();
+      } else if (pulsarProcessStatus === 'stopping' || pulsarProcessStatus === 'failed') {
+        stopDemoappIfExists();
+      }
+    }
+  }, [pulsarProcessStatus]);
+
   let logSources: LogSource[] = [];
   if (pulsarProcessId !== undefined) {
     logSources = logSources.concat([{ name: 'pulsar broker', processId: pulsarProcessId }]);
@@ -78,7 +121,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     logSources = logSources.concat([{ name: 'dekaf', processId: dekafProcessId }]);
   }
   if (dekafDemoappProcessId !== undefined) {
-    logSources = logSources.concat([{ name: 'dekaf-demoappp', processId: dekafDemoappProcessId }]);
+    logSources = logSources.concat([{ name: 'demoappp', processId: dekafDemoappProcessId }]);
   }
 
   const isRunning =
@@ -100,8 +143,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       default: return status;
     }
   }
-
-  const isRunDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
 
   return (
     <div className={s.LocalPulsarInstanceElement}>
@@ -193,42 +234,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
             };
 
             window.electron.ipcRenderer.sendMessage(apiChannel, dekafReq);
-
-            if (isRunDemoapp) {
-              const dekafDemoappReq: SpawnProcess = {
-                type: "SpawnProcess",
-                process: {
-                  type: "dekaf-demoapp",
-                  connection: {
-                    type: "local-pulsar-instance",
-                    instanceId: props.pulsarInstance.metadata.id,
-                    dekafLicenseId,
-                    dekafLicenseToken
-                  }
-                },
-                processId: uuid()
-              };
-
-              window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
-
-              const dekafReq: SpawnProcess = {
-                type: "SpawnProcess",
-                process: {
-                  type: "dekaf-demoapp",
-                  connection: {
-                    type: "local-pulsar-instance",
-                    instanceId: props.pulsarInstance.metadata.id,
-                    dekafLicenseId,
-                    dekafLicenseToken
-                  }
-                },
-                processId: uuid()
-              };
-
-              window.electron.ipcRenderer.sendMessage(apiChannel, dekafReq);
-
-
-            }
 
             const updateReq: UpdateLocalPulsarInstance = {
               type: "UpdateLocalPulsarInstance",
