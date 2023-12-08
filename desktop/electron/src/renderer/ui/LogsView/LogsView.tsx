@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import s from './LogsView.module.css'
 import { colorsByName } from '../ColorPickerButton/ColorPicker/color-palette';
-import { ItemContent, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import useInterval from '../../app/hooks/use-interval';
+import Select, { ListItem } from '../Select/Select';
 
 const logsColorPalette: string[] = [
   colorsByName['slate-700'],
@@ -26,15 +27,18 @@ export type LogsViewProps = {
   logs: LogEntry[]
 };
 
+const allSources = 'e9cca391-7fd0-4ab7-a28c-c701047437f9';
+
 const displayEntriesWhenFollow = 50;
 
-type ColorPerSource = Record<string, string>;
+type LogSources = Record<string, { color: string }>;
 
 const LogsView: React.FC<LogsViewProps> = (props) => {
-  const colorPerSource = useRef<ColorPerSource>({});
+  const sources = useRef<LogSources>({});
   const [isFollow, setIsFollow] = useState(true);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const logsRef = useRef<HTMLDivElement>(null);
+  const [sourceFilter, setSourceFilter] = useState(allSources);
 
   const scrollToBottom = (bottomOffset?: number, behavior?: 'auto' | 'smooth') => {
     const scrollParent = logsRef.current?.children[0];
@@ -64,18 +68,23 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
     }
   }, [isFollow]);
 
-  const entriesToShow = isFollow ? props.logs.slice(-displayEntriesWhenFollow) : props.logs;
-
-  const itemContent = (i: number, entry: LogEntry) => {
+  props.logs.forEach(entry => {
     let color = 'inherit';
 
-    if (colorPerSource.current[entry.source] !== undefined) {
-      color = colorPerSource.current[entry.source];
+    if (sources.current[entry.source] !== undefined) {
+      color = sources.current[entry.source].color;
     } else {
-      const nextColor = logsColorPalette[Object.keys(colorPerSource.current).length];
-      colorPerSource.current[entry.source] = nextColor;
+      const nextColor = logsColorPalette[Object.keys(sources.current).length];
+      sources.current[entry.source] = { ...sources.current[entry.source], color: nextColor };
       color = nextColor;
     }
+  });
+
+  const filteredItems = sourceFilter === allSources ? props.logs : props.logs.filter(entry => entry.source === sourceFilter);
+  const itemsToShow = isFollow ? filteredItems.slice(-displayEntriesWhenFollow) : filteredItems;
+
+  const itemContent = (i: number, entry: LogEntry) => {
+    const color = sources.current[entry.source].color;
 
     return (
       <div key={i} className={s.LogEntry} style={{ color }}>
@@ -87,11 +96,26 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
 
   return (
     <div className={s.LogsView}>
+      <div className={s.Toolbar}>
+        <div style={{ maxWidth: '240rem', flex: '1' }}>
+          <Select<string>
+            value={sourceFilter}
+            list={
+              [
+                { type: 'item', title: 'All sources', value: allSources },
+                ...Object.entries(sources.current).map<ListItem<string>>(([sourceId]) => ({ type: 'item', title: sourceId, value: sourceId }))
+              ]
+            }
+            onChange={setSourceFilter}
+          />
+        </div>
+        <div>Shown <strong>{filteredItems.length}</strong> of <strong>{props.logs.length}</strong> entries</div>
+      </div>
       <div ref={logsRef} className={s.Logs} onWheel={onWheel}>
         <Virtuoso
           ref={virtuosoRef}
-          data={entriesToShow}
-          totalCount={entriesToShow.length}
+          data={itemsToShow}
+          totalCount={itemsToShow.length}
           itemContent={itemContent}
           followOutput={isFollow}
           atBottomThreshold={10}

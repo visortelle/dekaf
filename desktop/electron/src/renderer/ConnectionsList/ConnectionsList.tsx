@@ -3,7 +3,6 @@ import s from './ConnectionsList.module.css'
 import { ListLocalPulsarInstances, LocalPulsarInstance } from '../../main/api/local-pulsar-instances/types';
 import { apiChannel } from '../../main/channels';
 import LocalPulsarInstanceElement from './LocalPulsarInstanceElement/LocalPulsarInstanceElement';
-import SmallButton from '../ui/SmallButton/SmallButton';
 import { ListRemotePulsarConnections, RemotePulsarConnection } from '../../main/api/remote-pulsar-connections/types';
 import RemotePulsarConnectionElement from './RemotePulsarConnectionElement/RemotePulsarConnectionElement';
 

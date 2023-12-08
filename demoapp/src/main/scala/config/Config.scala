@@ -34,7 +34,7 @@ val defaultConfig = Config(
 )
 
 val yamlConfigDescriptor = descriptor[Config]
-val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_${toUpperSnakeCase(key)}")
+val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_DEMOAPP_${toUpperSnakeCase(key)}")
 
 def readConfig =
     for

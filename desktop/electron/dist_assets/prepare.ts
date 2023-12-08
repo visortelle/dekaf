@@ -113,6 +113,14 @@ async function prepare() {
     unpack: { strip: 1 }
   }
   await download(dekafDist, { onError });
+
+  const dekafDemoappDist: DownloaderTarget = {
+    taskId: 'dekaf-demoapp-dist',
+    source: 'file://' + path.resolve(path.join(process.cwd(), '../../demoapp/target/universal/dekaf-demoapp.tgz')),
+    dest: path.resolve(path.join(distAssetsOutDir, './dekaf-demoapp')),
+    unpack: { strip: 1 }
+  }
+  await download(dekafDemoappDist, { onError });
 }
 
 prepare();
