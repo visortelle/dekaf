@@ -84,7 +84,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             paddingTop: props.appearance === 'compact' ? '8rem' : '0',
             flexDirection: props.appearance === 'compact' ? 'column' : 'row',
           }}>
-          <div style={{ display: 'flex', gap: '12rem', flexDirection: 'row', flex: '1' }}>
+          <div style={{ display: 'flex', gap: '12rem', flex: '1', position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
               <OnOffToggle
                 value={itemSpec.isEnabled}
@@ -93,10 +93,10 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
               <InvertedToggle
                 value={itemSpec.isNegated}
                 onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
-                helpOverride="If enabled, then messages that matches the filter chain will be not passed and vice versa."
+                helpOverride="Invert result. If enabled, then messages that matches the filter chain will be not passed and vice versa."
               />
             </div>
-            {itemSpec.filters.length > 0 && (<div style={{ display: 'flex', marginLeft: 'auto', position: 'relative', top: '30rem', zIndex: 5 }}>
+            {/* {itemSpec.filters.length > 0 && (<div style={{ display: 'inline-flex', position: 'absolute', bottom: '-30rem', right: 0, zIndex: 5 }}>
               <IconToggle<'all' | 'any'>
                 items={[
                   { type: 'item', label: 'AND', help: 'Every filter should match.', value: 'all' },
@@ -106,7 +106,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 onChange={v => onSpecChange({ ...itemSpec, mode: v })}
               />
             </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
@@ -115,8 +115,10 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
         value={itemSpec.filters}
         onChange={(filters) => onSpecChange({ ...itemSpec, filters })}
-        renderItem={(filter) => {
+        renderItem={(filter, i) => {
           const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id
+          const isLast = i === itemSpec.filters.length - 1;
+          console.log('IS LAST', isLast);
           return (
             <div className={s.Entry}>
               <div className={s.EntryFilter}>
@@ -135,6 +137,18 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                   libraryContext={props.libraryContext}
                 />
               </div>
+              {!isLast && (
+                <div className={s.ModeToggle}>
+                  <IconToggle<'all' | 'any'>
+                    items={[
+                      { type: 'item', label: 'AND', help: 'Every filter should match.', value: 'all' },
+                      { type: 'item', label: 'OR', help: 'Some filter should match.', value: 'any' },
+                    ]}
+                    value={itemSpec.mode}
+                    onChange={v => onSpecChange({ ...itemSpec, mode: v })}
+                  />
+                </div>
+              )}
             </div>
           );
         }}

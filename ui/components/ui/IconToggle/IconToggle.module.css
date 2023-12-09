@@ -13,20 +13,18 @@
 }
 
 .SvgIcon {
-  width: 20rem;
-  height: 20rem;
+  width: 16rem;
+  height: 16rem;
 }
 
 .IconToggle.IconToggleWithLabel {
-  height: 28rem;
-  box-shadow: none;
+  height: 20rem;
+  border: 1px solid var(--border-color);
 }
 
 .Label {
   font-weight: var(--font-weight-bold);
-  font-size: 14rem;
-  padding: 2rem 12rem;
-  border: 1px dotted #aaa;
+  font-size: 12rem;
+  padding: 0 12rem;
   border-radius: 4rem;
-  /* text-decoration: underline dotted; */
 }

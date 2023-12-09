@@ -16,7 +16,7 @@ export type BasicMessageFilterBracesInputProps = {
 const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps> = (props) => {
   return (
     <div className={s.BasicMessageFilterBracesInput}>
-      <div style={{ marginLeft: 'auto', display: 'inline-flex', marginBottom: '-18rem', position: 'relative', zIndex: 5 }}>
+      <div style={{ marginLeft: 'auto', display: 'inline-flex', bottom: '-18rem', position: 'relative', zIndex: 5 }}>
         <IconToggle<'all' | 'any'>
           items={[
             { type: "item", value: 'all', label: 'AND', help: 'Every test operation should match.' },

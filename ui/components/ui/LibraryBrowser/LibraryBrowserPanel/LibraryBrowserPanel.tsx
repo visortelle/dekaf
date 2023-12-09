@@ -37,8 +37,8 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           content={(
             <strong>
               {props.itemType === 'consumer-session-config' && 'Consumer Session'}
-              {props.itemType === 'message-filter' && 'Message Filter'}
-              {props.itemType === 'message-filter-chain' && 'Message Filter Chain'}
+              {props.itemType === 'message-filter' && 'Filter'}
+              {props.itemType === 'message-filter-chain' && ' Filter Chain'}
               {props.itemType === 'consumer-session-start-from' && 'Start From'}
               {props.itemType === 'topic-selector' && 'Topic Selector'}
               {props.itemType === 'consumer-session-topic' && 'Consumer Target'}

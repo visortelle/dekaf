@@ -46,7 +46,7 @@
   align-items: center;
   font-size: 14rem;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
 }
 

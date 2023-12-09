@@ -77,7 +77,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
           <InvertedToggle
             value={itemSpec.isNegated}
             onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
-            helpOverride="If enabled, then messages that matches the filter will be not passed and vice versa."
+            helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
           />
 
           <div>

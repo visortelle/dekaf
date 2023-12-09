@@ -1,8 +1,8 @@
-.FilterChainEditor {
-}
+.FilterChainEditor {}
 
 .Entry {
-  padding: 8rem 0;
+  padding: 12rem 0;
+  padding-bottom: 24rem;
   border-radius: 4rem;
   display: flex;
   position: relative;
@@ -11,4 +11,14 @@
 
 .EntryFilter {
   flex: 1 1 auto;
+}
+
+.ModeToggle {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  z-index: 10;
+  background-color: #fff;
+  display: inline-flex;
 }

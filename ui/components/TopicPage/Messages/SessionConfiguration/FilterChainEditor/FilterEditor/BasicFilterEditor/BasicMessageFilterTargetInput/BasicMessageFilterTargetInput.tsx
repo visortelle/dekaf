@@ -17,13 +17,13 @@ type TargetType = BasicMessageFilterTarget['target']['type'];
 const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps> = (props) => {
   return (
     <div className={s.BasicMessageFilterTargetInput}>
-      <div style={{ flex: '0 1 110rem' }}>
+      <div style={{ flex: '0 1 150rem' }}>
         <Select<TargetType>
           list={[
-            { type: 'item', title: 'Value', value: 'BasicMessageFilterValueTarget' },
-            { type: 'item', title: 'Key', value: 'BasicMessageFilterKeyTarget' },
-            { type: 'item', title: 'Property', value: 'BasicMessageFilterPropertyTarget' },
-            { type: 'item', title: 'State', value: 'BasicMessageFilterSessionContextStateTarget' }
+            { type: 'item', title: 'Message Value', value: 'BasicMessageFilterValueTarget' },
+            { type: 'item', title: 'Message Key', value: 'BasicMessageFilterKeyTarget' },
+            { type: 'item', title: 'Message Prop.', value: 'BasicMessageFilterPropertyTarget' },
+            { type: 'item', title: 'Session State', value: 'BasicMessageFilterSessionContextStateTarget' }
           ]}
           value={props.value.target.type}
           onChange={v => {

@@ -19,3 +19,10 @@
 .Required {
   transform: translate(0.2ch, -0.8ch);
 }
+
+.FormLabel.Small {
+  font-size: 12rem;
+  opacity: 0.6;
+  font-weight: var(--font-weight-normal);
+  margin-bottom: 2rem;
+}

@@ -17,7 +17,7 @@ export type BasicMessageFilterOpInputProps = {
 const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (props) => {
   return (
     <div className={s.BasicMessageFilterOpInput}>
-      <div style={{ display: 'flex', gap: '12rem' }}>
+      <div style={{ display: 'flex', gap: '12rem', marginBottom: '12rem' }}>
         <div style={{ display: 'flex', gap: '6rem', flex: '0 1', alignItems: 'flex-start' }}>
           <OnOffToggle
             value={props.value.isEnabled}
@@ -26,7 +26,7 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
           <InvertedToggle
             value={props.value.isNegated}
             onChange={(v) => props.onChange({ ...props.value, isNegated: v })}
-            helpOverride="If enabled, then messages that matches the filter will be not passed and vice versa."
+            helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
           />
           <IconToggle<boolean>
             items={[
@@ -64,16 +64,15 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
             }}
           />
         </div>
-        {props.value.op.type === "AnyTestOp" && (
-          <div style={{ flex: 1 }}>
-            <AnyTestOpInput
-              value={props.value.op}
-              onChange={(v) => props.onChange({ ...props.value, op: v })}
-            />
-          </div>
-        )}
       </div>
+
       <div>
+        {props.value.op.type === "AnyTestOp" && (
+          <AnyTestOpInput
+            value={props.value.op}
+            onChange={(v) => props.onChange({ ...props.value, op: v })}
+          />
+        )}
         {props.value.op.type === "BasicMessageFilterBraces" && (
           <BasicMessageFilterBracesInput
             value={props.value.op}
