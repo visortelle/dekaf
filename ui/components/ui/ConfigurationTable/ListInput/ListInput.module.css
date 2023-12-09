@@ -40,7 +40,7 @@
 
 .ListFieldValue {
   padding: 0 12rem;
-  min-height: 36rem;
+  min-height: 34rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -81,10 +81,12 @@
   align-items: flex-start;
   padding-top: 12rem;
 }
+
 .ListFieldRemoveValue:hover {
   opacity: 0.5;
   cursor: pointer;
 }
+
 .ListFieldRemoveValue svg {
   width: 14rem;
   height: 14rem;

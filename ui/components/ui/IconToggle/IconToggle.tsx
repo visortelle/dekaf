@@ -35,7 +35,7 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
 
   return (
     <div
-      className={s.IconToggle}
+      className={`${s.IconToggle} ${currentItem?.label ? s.IconToggleWithLabel : ''}`}
       onClick={() => {
         const nextValue = getNextValue<T>(props.value, props.items);
         props.onChange(nextValue);
@@ -46,7 +46,7 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
       data-tooltip-id={tooltipId}
       data-tooltip-html={currentItem?.help === undefined ? undefined : renderToStaticMarkup(<>{currentItem.help}</>)}
     >
-      {currentItem?.iconSvg && (
+      {(currentItem?.iconSvg) && (
         <div
           className={s.SvgIcon}
           style={{
@@ -57,7 +57,7 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
         </div>
       )}
       {currentItem?.label && (
-        <div className={s.Label}>
+        <div className={s.Label} style={{ color: currentItem.foregroundColor }}>
           {currentItem.label}
         </div>
       )}

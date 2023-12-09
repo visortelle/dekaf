@@ -2,6 +2,16 @@ import s from './Input.module.css';
 import { HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from './clear.svg';
+import { tooltipId } from '../Tooltip/Tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+export type InputAddon = {
+  id: string,
+  isEnabled: boolean,
+  iconSvg: string,
+  onClick: () => void,
+  help?: string | React.ReactElement
+}
 
 export type InputProps = {
   value: string,
@@ -16,9 +26,10 @@ export type InputProps = {
   inputProps?: InputHTMLAttributes<any>,
   placeholder?: string,
   testId?: string,
-  appearance?: 'default' | 'no-borders'
+  appearance?: 'default' | 'no-borders',
+  addons?: InputAddon[]
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId, annotation, appearance }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId, annotation, appearance, addons }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,11 +38,18 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, ico
     }
   }, [inputRef.current]);
 
+  let paddingRightRem = 12;
+  addons?.forEach(() => paddingRightRem += 24);
+  if (clearable) {
+    paddingRightRem += 24
+  }
+
   return (
-    <div className={`${s.Input} ${annotation && s.InputAnnotation} ${appearance === 'no-borders' ? s.NoBorders : ''}` }>
+    <div className={`${s.Input} ${annotation && s.InputAnnotation} ${appearance === 'no-borders' ? s.NoBorders : ''}`}>
       {annotation && <span className={s.Annotation}>{annotation}</span>}
       <input
         ref={inputRef}
+        style={{ paddingRight: `${paddingRightRem}rem` }}
         className={`${s.InputInput} ${isSmall ? s.SmallInputInput : ''} ${isError ? s.InputInputWithError : ''} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
         type={type || 'text'}
         value={value}
@@ -50,6 +68,23 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, ico
       {iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={iconSvg} />
       </div>
+      )}
+      {addons && addons.length > 0 && (
+        <div className={s.Addons}>
+          {addons.map(addon => {
+            return (
+              <div
+                key={addon.id}
+                onClick={addon.onClick}
+                className={`${s.Addon} ${!addon.isEnabled ? '' : s.AddonDisabled}`}
+                data-tooltip-id={addon.help ? tooltipId : undefined}
+                data-tooltip-html={addon.help ? renderToStaticMarkup(<>{addon.help}</>) : undefined}
+              >
+                <SvgIcon svg={addon.iconSvg} />
+              </div>
+            );
+          })}
+        </div>
       )}
       {clearable && (
         <div className={s.Clear} onClick={() => onChange('')}>

@@ -14,12 +14,13 @@ export type BasicFilterEditorProps = {
 const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
   return (
     <div className={s.BasicFilterEditor}>
-      <BasicMessageFilterTargetInput
-        value={props.value.target}
-        onChange={(v) => props.onChange({ ...props.value, target: v })}
-      />
       <FormItem>
-        <FormLabel content="Operator" />
+        <BasicMessageFilterTargetInput
+          value={props.value.target}
+          onChange={(v) => props.onChange({ ...props.value, target: v })}
+        />
+      </FormItem>
+      <FormItem>
         <BasicMessageFilterOpInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}

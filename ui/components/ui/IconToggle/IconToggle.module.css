@@ -1,5 +1,6 @@
 .IconToggle {
   display: inline-flex;
+  align-items: center;
   border-radius: 5rem;
   overflow: hidden;
   padding: 2rem;
@@ -14,4 +15,18 @@
 .SvgIcon {
   width: 20rem;
   height: 20rem;
+}
+
+.IconToggle.IconToggleWithLabel {
+  height: 28rem;
+  box-shadow: none;
+}
+
+.Label {
+  font-weight: var(--font-weight-bold);
+  font-size: 14rem;
+  padding: 2rem 12rem;
+  border: 1px dotted #aaa;
+  border-radius: 4rem;
+  /* text-decoration: underline dotted; */
 }

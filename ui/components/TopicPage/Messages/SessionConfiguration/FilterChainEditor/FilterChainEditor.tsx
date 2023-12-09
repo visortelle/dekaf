@@ -18,6 +18,7 @@ import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import { defaultBasicMessageFilter } from './FilterEditor/BasicFilterEditor/defaultBasicMessageFilter';
 import OnOffToggle from '../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
 import InvertedToggle from '../../../../ui/IconToggle/InvertedToggle/InvertedToggle';
+import IconToggle from '../../../../ui/IconToggle/IconToggle';
 
 export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
@@ -95,16 +96,17 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 helpOverride="If enabled, then messages that matches the filter chain will be not passed and vice versa."
               />
             </div>
-            <div style={{ flex: '0 1 180rem', display: 'flex', marginLeft: 'auto' }}>
-              <Select<'all' | 'any'>
-                list={[
-                  { type: 'item', title: 'Every filter should match', value: 'all' },
-                  { type: 'item', title: 'Some filter should match', value: 'any' },
+            {itemSpec.filters.length > 0 && (<div style={{ display: 'flex', marginLeft: 'auto', position: 'relative', top: '30rem', zIndex: 5 }}>
+              <IconToggle<'all' | 'any'>
+                items={[
+                  { type: 'item', label: 'AND', help: 'Every filter should match.', value: 'all' },
+                  { type: 'item', label: 'OR', help: 'Some filter should match.', value: 'any' },
                 ]}
                 value={itemSpec.mode}
                 onChange={v => onSpecChange({ ...itemSpec, mode: v })}
               />
             </div>
+            )}
           </div>
         </div>
       </div>

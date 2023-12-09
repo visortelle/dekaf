@@ -3,9 +3,7 @@ import s from './FilterEditor.module.css'
 import * as t from '../../../types';
 import JsFilterEditor, { defaultJsFilterValue } from './JsFilterEditor/JsFilterEditor';
 import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
-import Select from '../../../../../ui/Select/Select';
 import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
-import Toggle from '../../../../../ui/Toggle/Toggle';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
@@ -16,6 +14,7 @@ import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-c
 import { defaultBasicMessageFilter } from './BasicFilterEditor/defaultBasicMessageFilter';
 import OnOffToggle from '../../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
 import InvertedToggle from '../../../../../ui/IconToggle/InvertedToggle/InvertedToggle';
+import IconToggle from '../../../../../ui/IconToggle/IconToggle';
 
 export type FilterEditorProps = {
   value: ManagedMessageFilterValOrRef;
@@ -81,11 +80,19 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             helpOverride="If enabled, then messages that matches the filter will be not passed and vice versa."
           />
 
-          <div style={{ width: '140rem', marginLeft: 'auto' }}>
-            <Select<t.MessageFilterType>
-              list={[
-                { type: 'item', title: 'Basic Filter', value: 'basic-message-filter' },
-                { type: 'item', title: 'JS Filter', value: 'js-message-filter' },
+          <div>
+            <IconToggle<t.MessageFilterType>
+              items={[
+                {
+                  type: 'item',
+                  label: 'Basic',
+                  value: 'basic-message-filter',
+                },
+                {
+                  type: 'item',
+                  label: 'JavaScript',
+                  value: 'js-message-filter'
+                },
               ]}
               value={itemSpec.type}
               onChange={v => {

@@ -26,7 +26,8 @@
   align-items: center;
   padding-left: 12rem;
   pointer-events: none;
-  padding-top: 4rem; /* Fix svg align. */
+  padding-top: 4rem;
+  /* Fix svg align. */
 }
 
 .InputIcon svg {
@@ -48,7 +49,7 @@
   border: 1px solid var(--border-color);
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
   padding: 0 12rem;
-  height: 36rem;
+  height: 34rem;
   display: flex;
   flex: 1 0 auto;
   font-size: 14rem;
@@ -100,12 +101,37 @@
   right: 8rem;
   opacity: 0.5;
 }
+
 .Clear:hover {
   opacity: 1;
   cursor: pointer;
 }
+
 .Clear svg {
   width: 18rem;
   height: 18rem;
   fill: var(--text-color);
+}
+
+.Addons {
+  position: absolute;
+  right: 8rem;
+}
+
+.Addon {
+  border-radius: 4rem;
+}
+
+.Addon:hover {
+  cursor: pointer;
+}
+
+.Addon svg {
+  width: 24rem;
+  height: 24rem;
+  fill: var(--text-color);
+}
+
+.AddonDisabled {
+  opacity: 0.6;
 }

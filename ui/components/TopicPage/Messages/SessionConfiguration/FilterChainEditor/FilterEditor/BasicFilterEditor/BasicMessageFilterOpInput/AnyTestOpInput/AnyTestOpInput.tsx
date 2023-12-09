@@ -6,6 +6,7 @@ import Select from '../../../../../../../../ui/Select/Select';
 import TestOpArrayAllInput from './TestOpArrayAllInput/TestOpArrayAllInput';
 import TestOpArrayAnyInput from './TestOpArrayAnyInput/TestOpArrayAnyInput';
 import { v4 as uuid } from 'uuid';
+import FormItem from '../../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
 
 export type AnyTestOpInputProps = {
   value: AnyTestOp,
@@ -15,34 +16,34 @@ export type AnyTestOpInputProps = {
 const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
   return (
     <div className={s.AnyTestOpInput}>
-      <div>
+      <FormItem>
         <Select<AnyTestOp['op']['type']>
           list={[
             {
               type: "group", title: "Any JSON type", items: [
-                { type: "item", title: "Always OK", value: "TestOpAlwaysOk" },
-                { type: "item", title: "Value is defined", value: "TestOpIsDefined" },
-                { type: "item", title: "Value is null", value: "TestOpIsNull" },
+                // { type: "item", title: "Always OK", value: "TestOpAlwaysOk" },
+                { type: "item", title: "is defined", value: "TestOpIsDefined" },
+                { type: "item", title: "is null", value: "TestOpIsNull" },
               ]
             },
             {
               type: "group", title: "Boolean", items: [
-                { type: "item", title: "True or false", value: "TestOpBoolEquals" },
+                { type: "item", title: "is true or false", value: "TestOpBoolEquals" },
               ]
             },
             {
               type: "group", title: "String", items: [
-                { type: "item", title: "String equals", value: "TestOpStringEquals" },
-                { type: "item", title: "String includes", value: "TestOpStringIncludes" },
-                { type: "item", title: "String starts with", value: "TestOpStringStartsWith" },
-                { type: "item", title: "String ends with", value: "TestOpStringEndsWith" },
-                { type: "item", title: "String matches regex", value: "TestOpStringMatchesRegex" },
+                { type: "item", title: "equals string", value: "TestOpStringEquals" },
+                { type: "item", title: "includes", value: "TestOpStringIncludes" },
+                { type: "item", title: "starts with", value: "TestOpStringStartsWith" },
+                { type: "item", title: "ends with", value: "TestOpStringEndsWith" },
+                { type: "item", title: "matches regex", value: "TestOpStringMatchesRegex" },
               ]
             },
             {
               type: "group", title: "Array", items: [
-                { type: "item", title: "All items match", value: "TestOpArrayAll" },
-                { type: "item", title: "Any item match", value: "TestOpArrayAny" },
+                { type: "item", title: "every items match", value: "TestOpArrayAll" },
+                { type: "item", title: "some item matches", value: "TestOpArrayAny" },
               ]
             }
           ]}
@@ -131,7 +132,7 @@ const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
             }
           }}
         />
-      </div>
+      </FormItem>
 
       <div>
         {props.value.op.type === "TestOpStringEquals" && (

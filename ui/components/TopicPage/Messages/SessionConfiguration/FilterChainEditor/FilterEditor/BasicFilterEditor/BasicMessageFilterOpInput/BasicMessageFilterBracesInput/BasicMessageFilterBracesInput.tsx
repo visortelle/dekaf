@@ -6,6 +6,7 @@ import ListInput from '../../../../../../../../ui/ConfigurationTable/ListInput/L
 import BasicMessageFilterOpInput from '../BasicMessageFilterOpInput';
 import { cloneDeep } from 'lodash';
 import { v4 as uuid } from 'uuid';
+import IconToggle from '../../../../../../../../ui/IconToggle/IconToggle';
 
 export type BasicMessageFilterBracesInputProps = {
   value: BasicMessageFilterBraces,
@@ -15,14 +16,20 @@ export type BasicMessageFilterBracesInputProps = {
 const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps> = (props) => {
   return (
     <div className={s.BasicMessageFilterBracesInput}>
-      <Toggle
-        value={props.value.mode === "all"}
-        onChange={(v) => props.onChange({
-          ...props.value,
-          mode: v ? "all" : "any"
-        })}
-        label={props.value.mode === "all" ? "All" : "Any"}
-      />
+      <div style={{ marginLeft: 'auto', display: 'inline-flex', marginBottom: '-18rem', position: 'relative', zIndex: 5 }}>
+        <IconToggle<'all' | 'any'>
+          items={[
+            { type: "item", value: 'all', label: 'AND', help: 'Every test operation should match.' },
+            { type: "item", value: 'any', label: 'OR', help: 'Some test operation should match.' }
+          ]}
+          value={props.value.mode}
+          onChange={(v) => props.onChange({
+            ...props.value,
+            mode: v
+          })}
+        />
+      </div>
+
       <div>
         <ListInput<BasicMessageFilterOp>
           value={props.value.ops}
@@ -39,7 +46,7 @@ const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps
           )}
           getId={(v) => v.reactKey}
           isHideNothingToShow
-          itemName="Filter Operation"
+          itemName="Test Operation"
           onAdd={() => {
             const newOp: BasicMessageFilterOp = {
               type: "BasicMessageFilterOp",
