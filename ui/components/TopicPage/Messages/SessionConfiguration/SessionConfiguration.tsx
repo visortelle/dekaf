@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import s from './SessionConfiguration.module.css'
@@ -14,6 +14,7 @@ import AddButton from '../../../ui/AddButton/AddButton';
 import { createNewTarget } from '../../create-new-target';
 import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
 import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
+import Toggle from '../../../ui/Toggle/Toggle';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
@@ -21,9 +22,33 @@ export type SessionConfigurationProps = {
   libraryContext: LibraryContext;
 };
 
+function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
+  if (value.type === "reference") {
+    return false;
+  }
+
+  if (value.val.spec.coloringRuleChain.val?.spec.isEnabled) {
+    return true;
+  }
+
+  if (value.val.spec.messageFilterChain.val?.spec.isEnabled) {
+    return true;
+  }
+
+  return false;
+}
+
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const columnsRef = React.useRef<HTMLDivElement>(null);
+  const [isShowAdvanced, setIsShowAdvanced] = useState(detectAdvancedConfig(props.value));
+  const isAdvancedConfig = detectAdvancedConfig(props.value);
+
+  useEffect(() => {
+    if (isAdvancedConfig && !isShowAdvanced) {
+      setIsShowAdvanced(true);
+    }
+  }, [isAdvancedConfig, isShowAdvanced]);
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionConfig>(props.value);
   if (resolveResult.type !== 'success') {
@@ -73,18 +98,26 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             libraryContext={props.libraryContext}
           />
 
-          <FilterChainEditor
-            value={itemSpec.messageFilterChain}
-            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-            libraryContext={props.libraryContext}
-          />
+          {!isAdvancedConfig && <Toggle
+            value={isShowAdvanced}
+            onChange={v => setIsShowAdvanced(v)}
+            label='Show advanced settings'
+          />}
+          {isShowAdvanced && (<>
+            <FilterChainEditor
+              value={itemSpec.messageFilterChain}
+              onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+              libraryContext={props.libraryContext}
+            />
 
-          <ColoringRuleChainInput
-            value={itemSpec.coloringRuleChain}
-            onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
-            libraryContext={props.libraryContext}
-          />
+            <ColoringRuleChainInput
+              value={itemSpec.coloringRuleChain}
+              onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+              libraryContext={props.libraryContext}
+            />
+          </>)}
 
+          {/*
           <FormLabel
             content="Pause Trigger"
             help={(
@@ -94,7 +127,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               </div>
             )}
           />
-          <div>TODO</div>
+          <div>TODO</div> */}
         </div>
 
         {itemSpec.targets.map((topic, i) => {

@@ -3,6 +3,8 @@ import s from './BasicFilterEditor.module.css'
 import { BasicMessageFilter } from '../../../../basic-message-filter-types';
 import BasicMessageFilterTargetInput from './BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
 import BasicMessageFilterOpInput from './BasicMessageFilterOpInput/BasicMessageFilterOpInput';
+import FormItem from '../../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type BasicFilterEditorProps = {
   value: BasicMessageFilter,
@@ -12,18 +14,17 @@ export type BasicFilterEditorProps = {
 const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
   return (
     <div className={s.BasicFilterEditor}>
-      <div>
-        <BasicMessageFilterTargetInput
-          value={props.value.target}
-          onChange={(v) => props.onChange({ ...props.value, target: v })}
-        />
-      </div>
-      <div>
+      <BasicMessageFilterTargetInput
+        value={props.value.target}
+        onChange={(v) => props.onChange({ ...props.value, target: v })}
+      />
+      <FormItem>
+        <FormLabel content="Operator" />
         <BasicMessageFilterOpInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
         />
-      </div>
+      </FormItem>
     </div>
   );
 }

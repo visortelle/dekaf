@@ -4,6 +4,8 @@ import { BasicMessageFilterTarget } from '../../../../../basic-message-filter-ty
 import Select from '../../../../../../../ui/Select/Select';
 import { BasicMessageFilterValueTarget } from '../../../../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import BasicMessageFilterValueTargetInput from './BasicMessageFilterValueTargetInput/BasicMessageFilterValueTargetInput';
+import FormItem from '../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type BasicMessageFilterTargetInputProps = {
   value: BasicMessageFilterTarget,
@@ -15,12 +17,12 @@ type TargetType = BasicMessageFilterTarget['target']['type'];
 const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps> = (props) => {
   return (
     <div className={s.BasicMessageFilterTargetInput}>
-      <div>
+      <div style={{ flex: '0 1 140rem' }}>
         <Select<TargetType>
           list={[
-            { type: 'item', title: 'Message Value', value: 'BasicMessageFilterValueTarget' },
-            { type: 'item', title: 'Message Key', value: 'BasicMessageFilterKeyTarget' },
-            { type: 'item', title: 'Message Property', value: 'BasicMessageFilterPropertyTarget' },
+            { type: 'item', title: 'Msg. Value', value: 'BasicMessageFilterValueTarget' },
+            { type: 'item', title: 'Msg. Key', value: 'BasicMessageFilterKeyTarget' },
+            { type: 'item', title: 'Msg. Property', value: 'BasicMessageFilterPropertyTarget' },
             { type: 'item', title: 'Session State', value: 'BasicMessageFilterSessionContextStateTarget' }
           ]}
           value={props.value.target.type}
@@ -43,7 +45,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
         />
       </div>
 
-      <div>
+      <div style={{ flex: 1 }}>
         {props.value.target.type === "BasicMessageFilterValueTarget" && (
           <BasicMessageFilterValueTargetInput
             value={props.value.target}

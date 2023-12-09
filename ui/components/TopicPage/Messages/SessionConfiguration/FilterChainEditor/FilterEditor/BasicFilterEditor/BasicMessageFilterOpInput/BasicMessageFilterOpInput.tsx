@@ -23,7 +23,7 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
         <Toggle
           value={props.value.isNegated}
           onChange={(v) => props.onChange({ ...props.value, isNegated: v })}
-          label="Negated"
+          label="Inverted"
         />
       </div>
       <div>

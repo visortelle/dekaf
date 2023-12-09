@@ -10,6 +10,7 @@ import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRu
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import Toggle from '../../../../ui/Toggle/Toggle';
+import OnOffToggle from '../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
 
 export type ColoringRuleChainInputProps = {
   value: ManagedColoringRuleChainValOrRef,
@@ -64,10 +65,9 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
       </div>
 
       <div style={{ marginBottom: '8rem' }}>
-        <Toggle
+        <OnOffToggle
           value={itemSpec.isEnabled}
           onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
-          label="Enabled"
         />
       </div>
 

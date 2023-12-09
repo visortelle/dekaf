@@ -14,7 +14,7 @@ const BasicMessageFilterValueTargetInput: React.FC<BasicMessageFilterValueTarget
       <Input
         value={props.value.jsonFieldSelector || ''}
         onChange={v => props.onChange({ ...props.value, jsonFieldSelector: v })}
-        placeholder='a.b.c'
+        placeholder='items[42].id'
       />
     </div>
   );

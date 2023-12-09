@@ -14,6 +14,8 @@ import { ManagedMessageFilter, ManagedMessageFilterSpec, ManagedMessageFilterVal
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 import { defaultBasicMessageFilter } from './BasicFilterEditor/defaultBasicMessageFilter';
+import OnOffToggle from '../../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
+import InvertedToggle from '../../../../../ui/IconToggle/InvertedToggle/InvertedToggle';
 
 export type FilterEditorProps = {
   value: ManagedMessageFilterValOrRef;
@@ -68,47 +70,46 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
       />
       <FormItem>
         <div className={s.Controls}>
-          <Toggle
+          <OnOffToggle
             value={itemSpec.isEnabled}
             onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
-            label='Enabled'
-            help="This filter will be disabled if this toggle is off."
           />
 
-          <Toggle
+          <InvertedToggle
             value={itemSpec.isNegated}
             onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
-            help='This filter results will be reversed. Filtered messages will be passed and vice versa.'
-            label='Negated'
+            helpOverride="If enabled, then messages that matches the filter will be not passed and vice versa."
           />
 
-          <Select<t.MessageFilterType>
-            list={[
-              { type: 'item', title: 'Basic Filter', value: 'basic-message-filter' },
-              { type: 'item', title: 'JS Filter', value: 'js-message-filter' },
-            ]}
-            value={itemSpec.type}
-            onChange={v => {
-              setDefaultMessageFilterType(v);
+          <div style={{ width: '140rem', marginLeft: 'auto' }}>
+            <Select<t.MessageFilterType>
+              list={[
+                { type: 'item', title: 'Basic Filter', value: 'basic-message-filter' },
+                { type: 'item', title: 'JS Filter', value: 'js-message-filter' },
+              ]}
+              value={itemSpec.type}
+              onChange={v => {
+                setDefaultMessageFilterType(v);
 
-              switch (v) {
-                case 'basic-message-filter':
-                  onSpecChange({
-                    ...itemSpec,
-                    type: 'basic-message-filter',
-                    value: defaultBasicMessageFilter,
-                  });
-                  return;
-                case 'js-message-filter':
-                  onSpecChange({
-                    ...itemSpec,
-                    type: 'js-message-filter',
-                    value: defaultJsFilterValue,
-                  });
-                  return;
-              }
-            }}
-          />
+                switch (v) {
+                  case 'basic-message-filter':
+                    onSpecChange({
+                      ...itemSpec,
+                      type: 'basic-message-filter',
+                      value: defaultBasicMessageFilter,
+                    });
+                    return;
+                  case 'js-message-filter':
+                    onSpecChange({
+                      ...itemSpec,
+                      type: 'js-message-filter',
+                      value: defaultJsFilterValue,
+                    });
+                    return;
+                }
+              }}
+            />
+          </div>
         </div>
       </FormItem>
 
