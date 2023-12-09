@@ -1,6 +1,8 @@
 .BasicMessageFilterBracesInput {
   display: flex;
   flex-direction: column;
+  padding-bottom: 24rem;
+  padding-left: 24rem;
 }
 
 .Item {

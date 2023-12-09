@@ -50,11 +50,6 @@
   text-overflow: ellipsis;
 }
 
-.ListFieldValue:hover {
-  box-shadow: 0 0 0 1px var(--accent-color-blue);
-  border-radius: 4rem;
-}
-
 .ListFieldValue:last-child {
   border-bottom: none;
 }

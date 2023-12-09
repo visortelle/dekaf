@@ -19,12 +19,12 @@ export type BasicMessageFilterOpInputProps = {
 const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (props) => {
   const bracesHelp = (
     <>
-      Nested filter groups allow to cover complex filtering cases with many conditions.
+      Toggle between a single test operation and a nested test operation group. Nested groups enable the coverage of complex filtering cases with many conditions.
       <br />
       <br />
-      It simplifies the creation of complex filters for less technical users.
-      <br />
-      Despite this, we recommend using JavaScript filters for complex cases where more than two levels of nesting may be needed.
+      This approach simplifies the creation of complex filters for less technical users.
+      Despite this, we highly recommend using JavaScript filters for complex cases where more than two levels of nesting may be needed.
+      Otherwise, it may quickly become cumbersome and hard to understand.
     </>
   );
   return (
