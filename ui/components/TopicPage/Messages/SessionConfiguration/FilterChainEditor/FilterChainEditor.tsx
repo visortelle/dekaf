@@ -24,7 +24,6 @@ export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
   onChange: (value: ManagedMessageFilterChainValOrRef) => void;
   libraryContext: LibraryContext;
-  appearance?: 'default' | 'compact';
 };
 
 const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
@@ -57,7 +56,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
 
   return (
     <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }}>
-      <div ref={hoverRef}>
+      <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
           itemToSave={item}
@@ -74,41 +73,22 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          extraElements={{
+            preItemType: (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4rem' }}>
+                <OnOffToggle
+                  value={itemSpec.isEnabled}
+                  onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+                />
+                <InvertedToggle
+                  value={itemSpec.isNegated}
+                  onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
+                  helpOverride="Invert result. If enabled, then messages that matches the filter chain will be not passed and vice versa."
+                />
+              </div>
+            )
+          }}
         />
-        <div
-          style={{
-            marginBottom: '12rem',
-            display: 'flex',
-            alignItems: props.appearance ? 'unset' : 'center',
-            gap: '8rem',
-            paddingTop: props.appearance === 'compact' ? '8rem' : '0',
-            flexDirection: props.appearance === 'compact' ? 'column' : 'row',
-          }}>
-          <div style={{ display: 'flex', gap: '12rem', flex: '1', position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
-              <OnOffToggle
-                value={itemSpec.isEnabled}
-                onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
-              />
-              <InvertedToggle
-                value={itemSpec.isNegated}
-                onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
-                helpOverride="Invert result. If enabled, then messages that matches the filter chain will be not passed and vice versa."
-              />
-            </div>
-            {/* {itemSpec.filters.length > 0 && (<div style={{ display: 'inline-flex', position: 'absolute', bottom: '-30rem', right: 0, zIndex: 5 }}>
-              <IconToggle<'all' | 'any'>
-                items={[
-                  { type: 'item', label: 'AND', help: 'Every filter should match.', value: 'all' },
-                  { type: 'item', label: 'OR', help: 'Some filter should match.', value: 'any' },
-                ]}
-                value={itemSpec.mode}
-                onChange={v => onSpecChange({ ...itemSpec, mode: v })}
-              />
-            </div>
-            )} */}
-          </div>
-        </div>
       </div>
 
       <ListInput<ManagedMessageFilterValOrRef>

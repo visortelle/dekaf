@@ -50,75 +50,80 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
 
   return (
     <div className={s.FilterEditor} ref={hoverRef} style={{ filter: cssFilter }}>
-      <LibraryBrowserPanel
-        itemToSave={item}
-        itemType='message-filter'
-        onPick={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
-          val: item as ManagedMessageFilter
-        })}
-        onSave={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
-          val: item as ManagedMessageFilter
-        })}
-        isForceShowButtons={isHovered}
-        libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
-      />
-      <FormItem>
-        <div className={s.Controls}>
-          <OnOffToggle
-            value={itemSpec.isEnabled}
-            onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
-          />
+      <div style={{ marginBottom: '8rem' }}>
+        <LibraryBrowserPanel
+          itemToSave={item}
+          itemType='message-filter'
+          onPick={(item) => props.onChange({
+            type: 'reference',
+            ref: item.metadata.id,
+            val: item as ManagedMessageFilter
+          })}
+          onSave={(item) => props.onChange({
+            type: 'reference',
+            ref: item.metadata.id,
+            val: item as ManagedMessageFilter
+          })}
+          isForceShowButtons={isHovered}
+          libraryContext={props.libraryContext}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          extraElements={{
+            preItemType: (
+              <div style={{ display: 'flex', gap: '4rem' }}>
+                <OnOffToggle
+                  value={itemSpec.isEnabled}
+                  onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
+                />
 
-          <InvertedToggle
-            value={itemSpec.isNegated}
-            onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
-            helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
-          />
+                <InvertedToggle
+                  value={itemSpec.isNegated}
+                  onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
+                  helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
+                />
+              </div>
+            ),
+            postItemType: (
+              <div>
+                <IconToggle<t.MessageFilterType>
+                  items={[
+                    {
+                      type: 'item',
+                      label: 'Basic',
+                      value: 'basic-message-filter',
+                    },
+                    {
+                      type: 'item',
+                      label: 'JavaScript',
+                      value: 'js-message-filter'
+                    },
+                  ]}
+                  value={itemSpec.type}
+                  onChange={v => {
+                    setDefaultMessageFilterType(v);
 
-          <div>
-            <IconToggle<t.MessageFilterType>
-              items={[
-                {
-                  type: 'item',
-                  label: 'Basic',
-                  value: 'basic-message-filter',
-                },
-                {
-                  type: 'item',
-                  label: 'JavaScript',
-                  value: 'js-message-filter'
-                },
-              ]}
-              value={itemSpec.type}
-              onChange={v => {
-                setDefaultMessageFilterType(v);
-
-                switch (v) {
-                  case 'basic-message-filter':
-                    onSpecChange({
-                      ...itemSpec,
-                      type: 'basic-message-filter',
-                      value: defaultBasicMessageFilter,
-                    });
-                    return;
-                  case 'js-message-filter':
-                    onSpecChange({
-                      ...itemSpec,
-                      type: 'js-message-filter',
-                      value: defaultJsFilterValue,
-                    });
-                    return;
-                }
-              }}
-            />
-          </div>
-        </div>
-      </FormItem>
+                    switch (v) {
+                      case 'basic-message-filter':
+                        onSpecChange({
+                          ...itemSpec,
+                          type: 'basic-message-filter',
+                          value: defaultBasicMessageFilter,
+                        });
+                        return;
+                      case 'js-message-filter':
+                        onSpecChange({
+                          ...itemSpec,
+                          type: 'js-message-filter',
+                          value: defaultJsFilterValue,
+                        });
+                        return;
+                    }
+                  }}
+                />
+              </div>
+            )
+          }}
+        />
+      </div>
 
       <div>
         {itemSpec.type === 'basic-message-filter' && (

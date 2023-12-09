@@ -60,7 +60,6 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             props.onChange({ ...props.value, spec: v.val });
           }}
           libraryContext={props.libraryContext}
-          appearance="compact"
         />
       );
       break;

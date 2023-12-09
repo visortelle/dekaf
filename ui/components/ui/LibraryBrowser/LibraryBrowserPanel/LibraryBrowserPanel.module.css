@@ -3,8 +3,7 @@
   position: relative;
 }
 
-.ItemName {
-}
+.ItemName {}
 
 .ReferenceIcon {
   width: 16rem;
@@ -31,12 +30,18 @@
   animation: fade-in 0.2s ease-in-out;
 }
 
+.PostItemType {
+  position: relative;
+  left: 4rem;
+  top: 2rem;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
-

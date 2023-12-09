@@ -24,6 +24,10 @@ export type LibraryBrowserPanelProps = {
     id: string;
     onConvertToValue: () => void;
   };
+  extraElements?: {
+    preItemType?: React.ReactElement,
+    postItemType?: React.ReactElement,
+  }
 };
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
@@ -35,16 +39,19 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
       <div style={{ display: 'inline-flex', position: 'relative' }}>
         <FormLabel
           content={(
-            <strong>
-              {props.itemType === 'consumer-session-config' && 'Consumer Session'}
-              {props.itemType === 'message-filter' && 'Filter'}
-              {props.itemType === 'message-filter-chain' && ' Filter Chain'}
-              {props.itemType === 'consumer-session-start-from' && 'Start From'}
-              {props.itemType === 'topic-selector' && 'Topic Selector'}
-              {props.itemType === 'consumer-session-topic' && 'Consumer Target'}
-              {props.itemType === 'coloring-rule' && 'Coloring Rule'}
-              {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
-            </strong>
+            <div style={{ display: 'flex', gap: '8rem' }}>
+              {props.extraElements?.preItemType}
+              <strong>
+                {props.itemType === 'consumer-session-config' && 'Consumer Session'}
+                {props.itemType === 'message-filter' && 'Filter'}
+                {props.itemType === 'message-filter-chain' && ' Filter Chain'}
+                {props.itemType === 'consumer-session-start-from' && 'Start From'}
+                {props.itemType === 'topic-selector' && 'Topic Selector'}
+                {props.itemType === 'consumer-session-topic' && 'Consumer Target'}
+                {props.itemType === 'coloring-rule' && 'Coloring Rule'}
+                {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
+              </strong>
+            </div>
           )}
           help={(
             <div>
@@ -98,6 +105,10 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               onSave={props.onSave}
               libraryContext={props.libraryContext}
             />
+
+            <div className={s.PostItemType}>
+              {props.extraElements?.postItemType}
+            </div>
           </div>
         )}
       </div>

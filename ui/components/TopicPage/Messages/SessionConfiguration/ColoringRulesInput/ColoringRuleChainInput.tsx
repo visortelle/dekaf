@@ -61,13 +61,14 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
-        />
-      </div>
-
-      <div style={{ marginBottom: '8rem' }}>
-        <OnOffToggle
-          value={itemSpec.isEnabled}
-          onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
+          extraElements={{
+            preItemType: (
+              <OnOffToggle
+                value={itemSpec.isEnabled}
+                onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
+              />
+            )
+          }}
         />
       </div>
 
