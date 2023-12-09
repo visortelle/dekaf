@@ -14,6 +14,7 @@ const TestOpArrayAnyInput: React.FC<TestOpArrayAnyInputProps> = (props) => {
       <BasicMessageFilterOpInput
         value={props.value.testItemOp}
         onChange={(v) => props.onChange({ ...props.value, testItemOp: v })}
+        isShowEnableToggle={false}
       />
     </div>
   );

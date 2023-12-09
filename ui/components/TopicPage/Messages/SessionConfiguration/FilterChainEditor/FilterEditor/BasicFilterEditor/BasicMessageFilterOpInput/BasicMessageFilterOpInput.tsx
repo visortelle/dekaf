@@ -8,21 +8,35 @@ import OnOffToggle from '../../../../../../../ui/IconToggle/OnOffToggle/OnOffTog
 import InvertedToggle from '../../../../../../../ui/IconToggle/InvertedToggle/InvertedToggle';
 import IconToggle from '../../../../../../../ui/IconToggle/IconToggle';
 import bracesIcon from './braces.svg';
+import AnyTestOpTypeSelect from './AnyTestOpTypeSelect/AnyTestOpTypeSelect';
 
 export type BasicMessageFilterOpInputProps = {
   value: BasicMessageFilterOp,
-  onChange: (v: BasicMessageFilterOp) => void
+  onChange: (v: BasicMessageFilterOp) => void,
+  isShowEnableToggle: boolean
 };
 
 const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (props) => {
+  const bracesHelp = (
+    <>
+      Nested filter groups allow to cover complex filtering cases with many conditions.
+      <br />
+      <br />
+      It simplifies the creation of complex filters for less technical users.
+      <br />
+      Despite this, we recommend using JavaScript filters for complex cases where more than two levels of nesting may be needed.
+    </>
+  );
   return (
     <div className={s.BasicMessageFilterOpInput}>
       <div style={{ display: 'flex', gap: '12rem', marginBottom: '12rem' }}>
-        <div style={{ display: 'flex', gap: '6rem', flex: '0 1', alignItems: 'flex-start' }}>
-          <OnOffToggle
-            value={props.value.isEnabled}
-            onChange={(v) => props.onChange({ ...props.value, isEnabled: v })}
-          />
+        <div style={{ display: 'flex', gap: '6rem', flex: '1 1', alignItems: 'center' }}>
+          {props.isShowEnableToggle && (
+            <OnOffToggle
+              value={props.value.isEnabled}
+              onChange={(v) => props.onChange({ ...props.value, isEnabled: v })}
+            />
+          )}
           <InvertedToggle
             value={props.value.isNegated}
             onChange={(v) => props.onChange({ ...props.value, isNegated: v })}
@@ -30,8 +44,8 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
           />
           <IconToggle<boolean>
             items={[
-              { type: "item", value: true, iconSvg: bracesIcon, foregroundColor: '#fff', backgroundColor: 'var(--accent-color-blue)' },
-              { type: "item", value: false, iconSvg: bracesIcon, foregroundColor: '#fff', backgroundColor: '#aaa' }
+              { type: "item", value: true, iconSvg: bracesIcon, foregroundColor: '#fff', backgroundColor: 'var(--accent-color-yellow)', help: bracesHelp },
+              { type: "item", value: false, iconSvg: bracesIcon, foregroundColor: '#fff', backgroundColor: '#aaa', help: bracesHelp }
             ]}
             value={props.value.op.type === "BasicMessageFilterBraces"}
             onChange={(v) => {
@@ -63,6 +77,14 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
               }
             }}
           />
+          {props.value.op.type === "AnyTestOp" && (
+            <div style={{ display: 'flex', flex: '1' }}>
+              <AnyTestOpTypeSelect
+                value={props.value.op}
+                onChange={(v) => props.onChange({ ...props.value, op: v })}
+              />
+            </div>
+          )}
         </div>
       </div>
 

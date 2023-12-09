@@ -15,17 +15,16 @@ const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
   return (
     <div className={s.BasicFilterEditor}>
       <FormItem>
-        <FormLabel content="Target" size='small' />
         <BasicMessageFilterTargetInput
           value={props.value.target}
           onChange={(v) => props.onChange({ ...props.value, target: v })}
         />
       </FormItem>
       <FormItem>
-        <FormLabel content="Test Operation" size='small' />
         <BasicMessageFilterOpInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isShowEnableToggle={false}
         />
       </FormItem>
     </div>

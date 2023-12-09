@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
-import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
 import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
@@ -11,7 +10,6 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
-import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';

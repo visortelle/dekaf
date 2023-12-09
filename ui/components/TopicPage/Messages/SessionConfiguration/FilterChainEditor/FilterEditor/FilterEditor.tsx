@@ -3,7 +3,6 @@ import s from './FilterEditor.module.css'
 import * as t from '../../../types';
 import JsFilterEditor, { defaultJsFilterValue } from './JsFilterEditor/JsFilterEditor';
 import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
-import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
@@ -94,7 +93,15 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                     {
                       type: 'item',
                       label: 'JavaScript',
-                      value: 'js-message-filter'
+                      value: 'js-message-filter',
+                      help: (
+                        <>
+                          You can use JavaScript filters for complex scenarios.
+                          <br />
+                          <br />
+                          Click to select basic filter type.
+                        </>
+                      )
                     },
                   ]}
                   value={itemSpec.type}

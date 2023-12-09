@@ -19,12 +19,13 @@
 
 .IconToggle.IconToggleWithLabel {
   height: 20rem;
-  border: 1px solid var(--border-color);
+  box-shadow: none;
 }
 
 .Label {
   font-weight: var(--font-weight-bold);
   font-size: 12rem;
-  padding: 0 12rem;
+  padding: 0 4rem;
   border-radius: 4rem;
+  user-select: none;
 }
