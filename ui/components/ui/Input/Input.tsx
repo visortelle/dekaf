@@ -76,7 +76,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, ico
               <div
                 key={addon.id}
                 onClick={addon.onClick}
-                className={`${s.Addon} ${!addon.isEnabled ? '' : s.AddonDisabled}`}
+                className={`${s.Addon} ${addon.isEnabled ? '' : s.AddonDisabled}`}
                 data-tooltip-id={addon.help ? tooltipId : undefined}
                 data-tooltip-html={addon.help ? renderToStaticMarkup(<>{addon.help}</>) : undefined}
               >

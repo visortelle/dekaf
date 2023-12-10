@@ -96,7 +96,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
         renderItem={(filter, i) => {
           const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id
           const isLast = i === itemSpec.filters.length - 1;
-          console.log('IS LAST', isLast);
+
           return (
             <div className={s.Entry}>
               <div className={s.EntryFilter}>

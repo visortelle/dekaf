@@ -316,13 +316,13 @@ message TestOpArrayItemsCount {
 }
 
 message TestOpArrayAny {
-  BasicMessageFilterFieldTarget item_field_target = 1;
-  BasicMessageFilterOp test_item_op = 2;
+  BasicMessageFilterOp test_item_op = 1;
+  BasicMessageFilterFieldTarget item_field_target = 2;
 }
 
 message TestOpArrayAll {
-  BasicMessageFilterFieldTarget item_field_target = 1;
-  BasicMessageFilterOp test_item_op = 2;
+  BasicMessageFilterOp test_item_op = 1;
+  BasicMessageFilterFieldTarget item_field_target = 2;
 }
 
 message TestOpObjectHasKey {

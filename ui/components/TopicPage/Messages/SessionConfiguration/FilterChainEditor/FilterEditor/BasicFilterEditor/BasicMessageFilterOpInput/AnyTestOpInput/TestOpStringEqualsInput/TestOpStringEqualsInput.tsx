@@ -1,7 +1,6 @@
 import React from 'react';
 import s from './TestOpStringEqualsInput.module.css'
 import { TestOpStringEquals } from '../../../../../../../basic-message-filter-types';
-import Toggle from '../../../../../../../../../ui/Toggle/Toggle';
 import StringFilterInput from '../../../../../../../../../ui/Input/StringFilterInput/StringFilterInput';
 import FormItem from '../../../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
 

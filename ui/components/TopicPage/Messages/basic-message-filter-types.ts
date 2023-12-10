@@ -57,12 +57,14 @@ export type TestOpArrayItemsCount = {
 
 export type TestOpArrayAny = {
   type: "TestOpArrayAny",
-  testItemOp: BasicMessageFilterOp
+  testItemOp: BasicMessageFilterOp,
+  itemFieldTarget: BasicMessageFilterFieldTarget | undefined
 }
 
 export type TestOpArrayAll = {
   type: "TestOpArrayAll",
-  testItemOp: BasicMessageFilterOp
+  testItemOp: BasicMessageFilterOp,
+  itemFieldTarget: BasicMessageFilterFieldTarget | undefined
 }
 
 export type TestOpObjectHasKey = {
@@ -141,6 +143,11 @@ export type BasicMessageFilterPropertyTarget = {
 
 export type BasicMessageFilterSessionContextStateTarget = {
   type: "BasicMessageFilterSessionContextStateTarget",
+  jsonFieldSelector?: string
+}
+
+export type BasicMessageFilterFieldTarget = {
+  type: "BasicMessageFilterFieldTarget",
   jsonFieldSelector?: string
 }
 

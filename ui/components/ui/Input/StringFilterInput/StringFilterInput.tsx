@@ -18,7 +18,6 @@ const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
         id: '1ddd4ec6-2ae3-427d-b1ec-9c02afca8c07',
         isEnabled: props.isMatchCase,
         onClick: () => {
-          console.log(!props.isMatchCase);
           props.onIsMatchCaseChange(!props.isMatchCase);
         },
         iconSvg: matchCaseIcon,

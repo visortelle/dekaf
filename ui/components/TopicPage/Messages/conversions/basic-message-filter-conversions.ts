@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
@@ -131,9 +131,12 @@ export function testOpStringMatchesRegexToPb(v: TestOpStringMatchesRegex): pb.Te
 }
 
 export function testOpArrayAnyFromPb(v: pb.TestOpArrayAny): TestOpArrayAny {
+  const itemFieldTargetPb = v.getItemFieldTarget();
+
   return {
     type: "TestOpArrayAny",
-    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!)
+    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!),
+    itemFieldTarget: itemFieldTargetPb === undefined ? undefined : basicMessageFilterFieldTargetFromPb(itemFieldTargetPb)
   }
 }
 
@@ -141,19 +144,30 @@ export function testOpArrayAnyToPb(v: TestOpArrayAny): pb.TestOpArrayAny {
   const resultPb = new pb.TestOpArrayAny();
   resultPb.setTestItemOp(basicMessageFilterOpToPb(v.testItemOp));
 
+  if (v.itemFieldTarget !== undefined) {
+    resultPb.setItemFieldTarget(basicMessageFilterFieldTargetToPb(v.itemFieldTarget));
+  }
+
   return resultPb;
 }
 
 export function testOpArrayAllFromPb(v: pb.TestOpArrayAll): TestOpArrayAll {
+  const itemFieldTargetPb = v.getItemFieldTarget();
+
   return {
     type: "TestOpArrayAll",
-    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!)
+    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!),
+    itemFieldTarget: itemFieldTargetPb === undefined ? undefined : basicMessageFilterFieldTargetFromPb(itemFieldTargetPb)
   }
 }
 
 export function testOpArrayAllToPb(v: TestOpArrayAll): pb.TestOpArrayAll {
   const resultPb = new pb.TestOpArrayAll();
   resultPb.setTestItemOp(basicMessageFilterOpToPb(v.testItemOp));
+
+  if (v.itemFieldTarget !== undefined) {
+    resultPb.setItemFieldTarget(basicMessageFilterFieldTargetToPb(v.itemFieldTarget));
+  }
 
   return resultPb;
 }
@@ -333,6 +347,22 @@ export function basicMessageFilterSessionContextStateTargetFromPb(v: pb.BasicMes
 
 export function basicMessageFilterSessionContextStateTargetToPb(v: BasicMessageFilterSessionContextStateTarget): pb.BasicMessageFilterSessionContextStateTarget {
   const resultPb = new pb.BasicMessageFilterSessionContextStateTarget();
+  if (v.jsonFieldSelector !== undefined) {
+    resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterFieldTargetFromPb(v: pb.BasicMessageFilterFieldTarget): BasicMessageFilterFieldTarget {
+  return {
+    type: "BasicMessageFilterFieldTarget",
+    jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
+  }
+}
+
+export function basicMessageFilterFieldTargetToPb(v: BasicMessageFilterFieldTarget): pb.BasicMessageFilterFieldTarget {
+  const resultPb = new pb.BasicMessageFilterFieldTarget();
   if (v.jsonFieldSelector !== undefined) {
     resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
   }
