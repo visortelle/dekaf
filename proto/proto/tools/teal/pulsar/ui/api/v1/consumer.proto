@@ -253,7 +253,6 @@ message TestOpIsDefined {}
 
 message TestOpIsNull {}
 
-
 message TestOpBoolEquals {
   bool equals = 1;
 }
@@ -317,11 +316,13 @@ message TestOpArrayItemsCount {
 }
 
 message TestOpArrayAny {
-  BasicMessageFilterOp test_item_op = 1;
+  BasicMessageFilterFieldTarget item_field_target = 1;
+  BasicMessageFilterOp test_item_op = 2;
 }
 
 message TestOpArrayAll {
-  BasicMessageFilterOp test_item_op = 1;
+  BasicMessageFilterFieldTarget item_field_target = 1;
+  BasicMessageFilterOp test_item_op = 2;
 }
 
 message TestOpObjectHasKey {
@@ -340,7 +341,6 @@ message TestOpObjectHasValueAtKey {
 message TestOpObjectSize {
   BasicMessageFilterOp test_size_op = 1;
 }
-
 
 message AnyTestOp {
   oneof op {
@@ -394,6 +394,14 @@ message BasicMessageFilterKeyTarget {
 }
 
 message BasicMessageFilterValueTarget {
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
+message BasicMessageFilterVarTarget {
+  string var_name = 1;
+}
+
+message BasicMessageFilterFieldTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 

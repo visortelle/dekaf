@@ -1223,6 +1223,151 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAny(
+                            itemFieldTarget = Some(
+                                BasicMessageFilterFieldTarget(
+                                    jsonFieldSelector = Some("a")
+                                )
+                            ),
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEquals("right")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[{ "a": "wrong" }, { "b": "wrong" }, { "a": "wrong" }]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAny(
+                            itemFieldTarget = Some(
+                                BasicMessageFilterFieldTarget(
+                                    jsonFieldSelector = Some("a")
+                                )
+                            ),
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEquals("right")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[{ "a": "wrong" }, { "b": "wrong" }, { "a": "right" }]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAny(
+                            itemFieldTarget = Some(
+                                BasicMessageFilterFieldTarget(
+                                    jsonFieldSelector = Some("a")
+                                )
+                            ),
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEquals("right")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[{ "a": "wrong" }, { "b": "wrong" }, { "a": "right" }]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAny(
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpArrayAny(
+                                        itemFieldTarget = Some(
+                                            BasicMessageFilterFieldTarget(
+                                                jsonFieldSelector = Some("a")
+                                            )
+                                        ),
+                                        testItemOp = BasicMessageFilterOp(
+                                            op = AnyTestOp(
+                                                op = TestOpStringEquals("right")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[
+                      |  [{ "a": "wrong" }, { "b": "wrong" }],
+                      |  [{ "a": "wrong" }, { "a": "wrong" }]
+                      |]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAny(
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpArrayAny(
+                                        itemFieldTarget = Some(
+                                            BasicMessageFilterFieldTarget(
+                                                jsonFieldSelector = Some("a")
+                                            )
+                                        ),
+                                        testItemOp = BasicMessageFilterOp(
+                                            op = AnyTestOp(
+                                                op = TestOpStringEquals("right")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[
+                      |  [{ "a": "wrong" }, { "b": "wrong" }],
+                      |  [{ "a": "right" }, { "a": "wrong" }]
+                      |]
+                      |""".stripMargin
+            )))
+        },
         /*
         ==================
          * TestOpArrayAll *
@@ -1382,5 +1527,125 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |[[], ["abc", "abc"], ["abc", "abc", "abc"]]
                       |""".stripMargin
             )))
-        }
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            itemFieldTarget = Some(
+                                BasicMessageFilterFieldTarget(
+                                    jsonFieldSelector = Some("a")
+                                )
+                            ),
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEquals("right")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[{ "a": "wrong" }, { "b": "wrong" }, { "a": "right" }]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            itemFieldTarget = Some(
+                                BasicMessageFilterFieldTarget(
+                                    jsonFieldSelector = Some("a")
+                                )
+                            ),
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEquals("right")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[{ "a": "right" }, { "a": "right", "b": "wrong" }, { "a": "right" }]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpArrayAll(
+                                        itemFieldTarget = Some(
+                                            BasicMessageFilterFieldTarget(
+                                                jsonFieldSelector = Some("a")
+                                            )
+                                        ),
+                                        testItemOp = BasicMessageFilterOp(
+                                            op = AnyTestOp(
+                                                op = TestOpStringEquals("right")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[
+                      |  [{ "a": "right" }, { "a": "right", "b": "wrong" }],
+                      |  [{ "a": "right" }, { "a": "wrong" }]
+                      |]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAny.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            testItemOp = BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpArrayAll(
+                                        itemFieldTarget = Some(
+                                            BasicMessageFilterFieldTarget(
+                                                jsonFieldSelector = Some("a")
+                                            )
+                                        ),
+                                        testItemOp = BasicMessageFilterOp(
+                                            op = AnyTestOp(
+                                                op = TestOpStringEquals("right")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[
+                      |  [{ "a": "right" }, { "a": "right", "b": "wrong" }],
+                      |  [{ "a": "right" }, { "a": "right" }]
+                      |]
+                      |""".stripMargin
+            )))
+        },
     )
