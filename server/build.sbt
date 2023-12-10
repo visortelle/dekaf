@@ -44,6 +44,7 @@ Compile / sourceGenerators += Def.task {
 }.taskValue
 
 lazy val root = project
+    .enablePlugins(ClasspathJarPlugin)
     .enablePlugins(BuildInfoPlugin)
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
