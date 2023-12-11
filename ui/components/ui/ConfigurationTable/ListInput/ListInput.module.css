@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 4rem;
+  /* padding-bottom: 4rem; */
   position: relative;
 }
 

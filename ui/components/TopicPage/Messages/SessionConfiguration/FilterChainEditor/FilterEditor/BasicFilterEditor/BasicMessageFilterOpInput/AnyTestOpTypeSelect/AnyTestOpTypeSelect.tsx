@@ -13,6 +13,7 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
   return (
     <div className={s.AnyTestOpTypeSelect}>
       <Select<AnyTestOp['op']['type']>
+        size='small'
         list={[
           {
             type: "group", title: "Any JSON type", items: [
@@ -37,8 +38,8 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
           },
           {
             type: "group", title: "Array", items: [
-              { type: "item", title: "every item matches", value: "TestOpArrayAll" },
-              { type: "item", title: "some item matches", value: "TestOpArrayAny" },
+              { type: "item", title: "where every", value: "TestOpArrayAll" },
+              { type: "item", title: "where some", value: "TestOpArrayAny" },
             ]
           }
         ]}

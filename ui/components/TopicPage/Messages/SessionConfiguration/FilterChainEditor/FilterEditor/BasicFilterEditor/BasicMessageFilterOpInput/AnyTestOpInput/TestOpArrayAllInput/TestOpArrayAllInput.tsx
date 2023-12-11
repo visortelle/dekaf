@@ -3,10 +3,8 @@ import s from './TestOpArrayAllInput.module.css'
 import { BasicMessageFilterFieldTarget, TestOpArrayAll } from '../../../../../../../basic-message-filter-types';
 import BasicMessageFilterOpInput from '../../BasicMessageFilterOpInput';
 import BasicMessageFilterFieldTargetInput from '../../../BasicMessageFilterTargetInput/BasicMessageFilterFieldTargetInput/BasicMessageFilterFieldTargetInput';
-import Toggle from '../../../../../../../../../ui/Toggle/Toggle';
 import IconToggle from '../../../../../../../../../ui/IconToggle/IconToggle';
 import FormItem from '../../../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type TestOpArrayAllInputProps = {
   value: TestOpArrayAll,
@@ -22,13 +20,13 @@ const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
           alignItems: 'center',
           marginTop: '-8rem',
           marginBottom: '-8rem',
-          marginLeft: Boolean(props.value.itemFieldTarget) ? '-12rem' : '-8rem'
+          marginLeft: '-32rem'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <IconToggle<boolean>
               items={[
-                { type: "item", value: true, label: 'where sub field' },
-                { type: "item", value: false, label: 'where entire item' }
+                { type: "item", value: true, label: 'item sub field', help: "Click to select entire item" },
+                { type: "item", value: false, label: 'entire item', help: "Click to select item sub field" }
               ]}
               value={Boolean(props.value.itemFieldTarget)}
               onChange={(v) => {
@@ -41,9 +39,6 @@ const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
                 props.onChange({ ...props.value, itemFieldTarget });
               }}
             />
-            {/* {Boolean(props.value.itemFieldTarget) && (
-              <FormLabel size='small' content="matches" />
-            )} */}
           </div>
           {props.value.itemFieldTarget?.type === "BasicMessageFilterFieldTarget" && (
             <div style={{ flex: 1 }}>

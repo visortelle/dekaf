@@ -1,4 +1,14 @@
 .BasicMessageFilterTargetInput {
   display: flex;
-  gap: 4rem;
+}
+
+.TargetType {
+  display: flex;
+  align-items: center;
+  flex: 0 1 130rem;
+}
+
+.Target {
+  display: flex;
+  align-items: flex-end;
 }

@@ -5,3 +5,7 @@
 .FormItem:last-child {
   margin-bottom: 0;
 }
+
+.FormItem.Small {
+  margin-bottom: 4rem;
+}

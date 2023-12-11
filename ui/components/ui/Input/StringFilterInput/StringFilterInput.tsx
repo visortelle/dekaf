@@ -1,12 +1,13 @@
 import React from 'react';
-import Input from '../Input';
+import Input, { InputProps } from '../Input';
 import matchCaseIcon from './match-case.svg';
 
 export type StringFilterInputProps = {
   value: string,
   onChange: (v: string) => void,
   isMatchCase: boolean,
-  onIsMatchCaseChange: (v: boolean) => void
+  onIsMatchCaseChange: (v: boolean) => void,
+  size?: InputProps['size']
 };
 
 const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
@@ -23,6 +24,7 @@ const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
         iconSvg: matchCaseIcon,
         help: "Match case"
       }]}
+      size={props.size}
     />
   );
 }

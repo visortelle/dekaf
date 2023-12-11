@@ -14,6 +14,7 @@ const TestOpStringEqualsInput: React.FC<TestOpStringEqualsInputProps> = (props) 
     <div className={s.TestOpStringEqualsInput}>
       <FormItem>
         <StringFilterInput
+          size='small'
           value={props.value.equals}
           onChange={(v) => props.onChange({ ...props.value, equals: v })}
           isMatchCase={!props.value.isCaseInsensitive}

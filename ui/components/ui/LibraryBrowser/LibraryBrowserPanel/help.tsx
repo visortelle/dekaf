@@ -26,9 +26,9 @@ export const help = {
             Use <strong>Basic Filter</strong> if you aren't familiar with writing code, or just want to filter messages by a simple condition.
           </li>
           <li>
-            Use <strong>JS Filter</strong> for complex filtering.
+            Use <strong>JavaScript Filter</strong> for complex filtering.
             <br /><br />
-            Additionally, JS filters support the <strong>State</strong> feature. It allows you to accumulate data from messages and make simple calculations. For example, you may want to calculate the median value of all new orders over last week; or count failure events grouped by it's reason.
+            Additionally, JavaScript filters support the <strong>Consumer Session State</strong> feature. It allows you to accumulate data from messages and make simple calculations. For example, you may want to calculate the median value of all new orders over last week; or count failure events grouped by it's reason.
           </li>
         </ul>
       </p>

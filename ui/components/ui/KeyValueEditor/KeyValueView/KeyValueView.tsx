@@ -78,8 +78,8 @@ const KeyValueView = (props: Props) => {
             <tr className={st.Row} key={index}>
               <td className={`${st.Cell} ${s.InputCell}`}>
                 <Input
-                  isSmall
                   type="text"
+                  size='small'
                   value={kv.key}
                   onChange={(v) => onKvKeyChange(index, v)}
                   testId={`key-${kv.key}-${props.testId}`}
@@ -91,8 +91,8 @@ const KeyValueView = (props: Props) => {
 
               <td className={`${st.Cell} ${s.InputCell}`}>
                 <Input
-                  isSmall
                   value={kv.value}
+                  size='small'
                   onChange={(v) => onKvValueChange(index, v)}
                   testId={`value-${kv.value}-${props.testId}`}
                   appearance='no-borders'
@@ -119,7 +119,7 @@ const KeyValueView = (props: Props) => {
             <tr className={st.Row}>
               <td className={`${st.Cell} ${s.InputCell}`}>
                 <Input
-                  isSmall
+                  size='small'
                   placeholder='New key'
                   value={newKeyValue.key}
                   onChange={(v) => {
@@ -134,7 +134,7 @@ const KeyValueView = (props: Props) => {
               </td>
               <td className={`${st.Cell} ${s.InputCell}`}>
                 <Input
-                  isSmall
+                  size='small'
                   placeholder='New value'
                   value={newKeyValue.value}
                   onChange={(v) => setNewKeyValue({

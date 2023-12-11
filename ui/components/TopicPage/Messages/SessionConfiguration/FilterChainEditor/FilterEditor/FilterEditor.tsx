@@ -89,6 +89,14 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                       type: 'item',
                       label: 'Basic',
                       value: 'basic-message-filter',
+                      help: (
+                        <>
+                          Basic filters allow to define message filters without writing any code.
+                          <br />
+                          <br />
+                          Click to switch to JavaScript filter.
+                        </>
+                      )
                     },
                     {
                       type: 'item',
@@ -96,10 +104,10 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                       value: 'js-message-filter',
                       help: (
                         <>
-                          You can use JavaScript filters for complex scenarios.
+                          JavaScript filters allow to define filters for complex scenarios.
                           <br />
                           <br />
-                          Click to select basic filter type.
+                          Click to switch to Basic filter.
                         </>
                       )
                     },

@@ -24,6 +24,10 @@
   transition: var(--transition-short);
 }
 
+.SmallSelect .Select {
+  height: 28rem;
+}
+
 .NoBorders {
   background-color: transparent;
 }

@@ -29,7 +29,7 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
   );
   return (
     <div className={s.BasicMessageFilterOpInput}>
-      <div style={{ display: 'flex', gap: '12rem', marginBottom: '12rem' }}>
+      <div style={{ display: 'flex', gap: '12rem', marginBottom: '8rem' }}>
         <div style={{ display: 'flex', gap: '6rem', flex: '1 1', alignItems: 'center' }}>
           {props.isShowEnableToggle && (
             <OnOffToggle

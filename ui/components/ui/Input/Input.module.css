@@ -59,7 +59,7 @@
   width: 100%;
 }
 
-.InputInput.SmallInputInput {
+.SmallInput .InputInput {
   height: 28rem;
 }
 
