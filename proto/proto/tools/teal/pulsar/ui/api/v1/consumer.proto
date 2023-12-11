@@ -253,9 +253,8 @@ message TestOpIsDefined {}
 
 message TestOpIsNull {}
 
-message TestOpBoolEquals {
-  bool equals = 1;
-}
+message TestOpBoolIsFalse {}
+message TestOpBoolIsTrue {}
 
 message TestOpNumberEquals {
   string equals = 1; // Number encoded as a string. Having "." char means float number.
@@ -310,11 +309,6 @@ message TestOpArraySize {
   BasicMessageFilterOp op = 1;
 }
 
-message TestOpArrayItemsCount {
-  BasicMessageFilterOp item_filter_op = 1;
-  BasicMessageFilterOp matched_items_count_compare_op = 2;
-}
-
 message TestOpArrayAny {
   BasicMessageFilterOp test_item_op = 1;
   BasicMessageFilterFieldTarget item_field_target = 2;
@@ -323,19 +317,6 @@ message TestOpArrayAny {
 message TestOpArrayAll {
   BasicMessageFilterOp test_item_op = 1;
   BasicMessageFilterFieldTarget item_field_target = 2;
-}
-
-message TestOpObjectHasKey {
-  BasicMessageFilterOp test_key_op = 1;
-}
-
-message TestOpObjectHasValue {
-  BasicMessageFilterOp test_value_op = 1;
-}
-
-message TestOpObjectHasValueAtKey {
-  string key = 1;
-  BasicMessageFilterOp test_value_op = 2;
 }
 
 message TestOpObjectSize {
@@ -347,25 +328,23 @@ message AnyTestOp {
     TestOpAlwaysOk op_always_ok = 50;
     TestOpIsDefined op_is_defined = 1; // done
     TestOpIsNull op_is_null = 2; // done
-    TestOpBoolEquals op_bool_equals = 3; // done
-    TestOpNumberEquals op_number_equals = 4;
-    TestOpNumberLt op_number_lt = 5;
-    TestOpNumberLte op_number_lte = 6;
-    TestOpNumberGt op_number_gt = 7;
-    TestOpNumberGte op_number_gte = 8;
-    TestOpNumberRemainderEquals op_number_remainder_equals = 9;
-    TestOpStringEquals op_string_equals = 10; // done
-    TestOpStringIncludes op_string_includes = 11; // done
-    TestOpStringStartsWith op_string_starts_with = 12; // done
-    TestOpStringEndsWith op_string_ends_with = 13; // done
-    TestOpStringMatchesRegex op_string_matches_regex = 14; // done
-    TestOpArraySize op_array_size = 15;
-    TestOpArrayItemsCount op_array_items_count = 16;
+    TestOpBoolIsTrue op_bool_is_true = 3; // done
+    TestOpBoolIsFalse op_bool_is_false = 4; // done
+    TestOpNumberEquals op_number_equals = 5;
+    TestOpNumberLt op_number_lt = 6;
+    TestOpNumberLte op_number_lte = 7;
+    TestOpNumberGt op_number_gt = 8;
+    TestOpNumberGte op_number_gte = 9;
+    TestOpNumberRemainderEquals op_number_remainder_equals = 10;
+    TestOpStringEquals op_string_equals = 11; // done
+    TestOpStringIncludes op_string_includes = 12; // done
+    TestOpStringStartsWith op_string_starts_with = 13; // done
+    TestOpStringEndsWith op_string_ends_with = 14; // done
+    TestOpStringMatchesRegex op_string_matches_regex = 15; // done
+    TestOpArraySize op_array_size = 16;
     TestOpArrayAny op_array_any = 17; // done
     TestOpArrayAll op_array_all = 18; // done
-    TestOpObjectHasKey op_object_has_key = 19;
-    TestOpObjectHasValue op_object_has_value = 20;
-    TestOpObjectSize op_object_size = 21;
+    TestOpObjectSize op_object_size = 19;
   }
 }
 

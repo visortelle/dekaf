@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
@@ -36,17 +36,21 @@ export function testOpIsNullToPb(v: TestOpIsNull): pb.TestOpIsNull {
   return resultPb;
 }
 
-export function testOpBoolEqualsFromPb(v: pb.TestOpBoolEquals): TestOpBoolEquals {
-  return {
-    type: "TestOpBoolEquals",
-    equals: v.getEquals()
-  }
+export function testOpBoolIsTrueFromPb(v: pb.TestOpBoolIsTrue): TestOpBoolIsTrue {
+  return { type: "TestOpBoolIsTrue" };
 }
 
-export function testOpBoolEqualsToPb(v: TestOpBoolEquals): pb.TestOpBoolEquals {
-  const resultPb = new pb.TestOpBoolEquals();
-  resultPb.setEquals(v.equals);
+export function testOpBoolIsTrueToPb(v: TestOpBoolIsTrue): pb.TestOpBoolIsTrue {
+  const resultPb = new pb.TestOpBoolIsTrue();
+  return resultPb;
+}
 
+export function testOpBoolIsFalseFromPb(v: pb.TestOpBoolIsFalse): TestOpBoolIsFalse {
+  return { type: "TestOpBoolIsFalse" };
+}
+
+export function testOpBoolIsFalseToPb(v: TestOpBoolIsFalse): pb.TestOpBoolIsFalse {
+  const resultPb = new pb.TestOpBoolIsFalse();
   return resultPb;
 }
 
@@ -179,7 +183,8 @@ export function anyTestOpFromPb(v: pb.AnyTestOp): AnyTestOp {
     case pb.AnyTestOp.OpCase.OP_ALWAYS_OK: op = testOpAlwaysOkFromPb(v.getOpAlwaysOk()!); break;
     case pb.AnyTestOp.OpCase.OP_IS_DEFINED: op = testOpIsDefinedFromPb(v.getOpIsDefined()!); break;
     case pb.AnyTestOp.OpCase.OP_IS_NULL: op = testOpIsNullFromPb(v.getOpIsNull()!); break;
-    case pb.AnyTestOp.OpCase.OP_BOOL_EQUALS: op = testOpBoolEqualsFromPb(v.getOpBoolEquals()!); break;
+    case pb.AnyTestOp.OpCase.OP_BOOL_IS_FALSE: op = testOpBoolIsFalseFromPb(v.getOpBoolIsFalse()!); break;
+    case pb.AnyTestOp.OpCase.OP_BOOL_IS_TRUE: op = testOpBoolIsTrueFromPb(v.getOpBoolIsTrue()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_EQUALS: op = testOpStringEqualsFromPb(v.getOpStringEquals()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_INCLUDES: op = testOpStringIncludesFromPb(v.getOpStringIncludes()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_STARTS_WITH: op = testOpStringStartsWithFromPb(v.getOpStringStartsWith()!); break;
@@ -203,7 +208,8 @@ export function anyTestOpToPb(v: AnyTestOp): pb.AnyTestOp {
     case "TestOpAlwaysOk": resultPb.setOpAlwaysOk(testOpAlwaysOkToPb(v.op)); break;
     case "TestOpIsDefined": resultPb.setOpIsDefined(testOpIsDefinedToPb(v.op)); break;
     case "TestOpIsNull": resultPb.setOpIsNull(testOpIsNullToPb(v.op)); break;
-    case "TestOpBoolEquals": resultPb.setOpBoolEquals(testOpBoolEqualsToPb(v.op)); break;
+    case "TestOpBoolIsFalse": resultPb.setOpBoolIsFalse(testOpBoolIsFalseToPb(v.op)); break;
+    case "TestOpBoolIsTrue": resultPb.setOpBoolIsTrue(testOpBoolIsTrueToPb(v.op)); break;
     case "TestOpStringEquals": resultPb.setOpStringEquals(testOpStringEqualsToPb(v.op)); break;
     case "TestOpStringIncludes": resultPb.setOpStringIncludes(testOpStringIncludesToPb(v.op)); break;
     case "TestOpStringStartsWith": resultPb.setOpStringStartsWith(testOpStringStartsWithToPb(v.op)); break;

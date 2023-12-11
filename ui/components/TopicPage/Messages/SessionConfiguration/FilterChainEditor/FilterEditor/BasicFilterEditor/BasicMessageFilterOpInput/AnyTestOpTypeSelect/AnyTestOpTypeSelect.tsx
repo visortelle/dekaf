@@ -19,7 +19,8 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
           { type: "item", title: "is null", value: "TestOpIsNull" },
           {
             type: "group", title: "Boolean", items: [
-              { type: "item", title: "is true or false", value: "TestOpBoolEquals" },
+              { type: "item", title: "is true", value: "TestOpBoolIsTrue" },
+              { type: "item", title: "is false", value: "TestOpBoolIsFalse" },
             ]
           },
           {
@@ -50,8 +51,11 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
             case "TestOpIsNull":
               props.onChange({ ...props.value, op: { type: "TestOpIsNull" } });
               break;
-            case "TestOpBoolEquals":
-              props.onChange({ ...props.value, op: { type: "TestOpBoolEquals", equals: true } });
+            case "TestOpBoolIsFalse":
+              props.onChange({ ...props.value, op: { type: "TestOpBoolIsFalse" } });
+              break;
+            case "TestOpBoolIsTrue":
+              props.onChange({ ...props.value, op: { type: "TestOpBoolIsTrue" } });
               break;
             case "TestOpStringEquals":
               props.onChange({ ...props.value, op: { type: "TestOpStringEquals", equals: "", isCaseInsensitive: false } });

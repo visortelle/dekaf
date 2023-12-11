@@ -5,7 +5,8 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 case class AnyTestOp(
     op: TestOpArrayAny |
         TestOpArrayAll |
-        TestOpBoolEquals |
+        TestOpBoolIsFalse |
+        TestOpBoolIsTrue |
         TestOpIsDefined |
         TestOpIsNull |
         TestOpStringEndsWith |
@@ -20,7 +21,8 @@ object AnyTestOp:
         v.op match
             case pb.AnyTestOp.Op.OpIsDefined(op) => AnyTestOp(op = TestOpIsDefined.fromPb(op))
             case pb.AnyTestOp.Op.OpIsNull(op) => AnyTestOp(op = TestOpIsNull.fromPb(op))
-            case pb.AnyTestOp.Op.OpBoolEquals(op) => AnyTestOp(op = TestOpBoolEquals.fromPb(op))
+            case pb.AnyTestOp.Op.OpBoolIsFalse(op) => AnyTestOp(op = TestOpBoolIsFalse.fromPb(op))
+            case pb.AnyTestOp.Op.OpBoolIsTrue(op) => AnyTestOp(op = TestOpBoolIsTrue.fromPb(op))
             case pb.AnyTestOp.Op.OpStringEndsWith(op) => AnyTestOp(op = TestOpStringEndsWith.fromPb(op))
             case pb.AnyTestOp.Op.OpStringStartsWith(op) => AnyTestOp(op = TestOpStringStartsWith.fromPb(op))
             case pb.AnyTestOp.Op.OpStringEquals(op) => AnyTestOp(op = TestOpStringEquals.fromPb(op))
@@ -34,7 +36,8 @@ object AnyTestOp:
         v.op match
             case op: TestOpIsDefined => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpIsDefined(TestOpIsDefined.toPb(op)))
             case op: TestOpIsNull => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpIsNull(TestOpIsNull.toPb(op)))
-            case op: TestOpBoolEquals => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpBoolEquals(TestOpBoolEquals.toPb(op)))
+            case op: TestOpBoolIsFalse => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpBoolIsFalse(TestOpBoolIsFalse.toPb(op)))
+            case op: TestOpBoolIsTrue => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpBoolIsTrue(TestOpBoolIsTrue.toPb(op)))
             case op: TestOpStringEndsWith => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpStringEndsWith(TestOpStringEndsWith.toPb(op)))
             case op: TestOpStringStartsWith => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpStringStartsWith(TestOpStringStartsWith.toPb(op)))
             case op: TestOpStringEquals => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpStringEquals(TestOpStringEquals.toPb(op)))

@@ -10,9 +10,12 @@ export type TestOpIsNull = {
   type: "TestOpIsNull"
 }
 
-export type TestOpBoolEquals = {
-  type: "TestOpBoolEquals",
-  equals: boolean
+export type TestOpBoolIsTrue = {
+  type: "TestOpBoolIsTrue"
+}
+
+export type TestOpBoolIsFalse = {
+  type: "TestOpBoolIsFalse"
 }
 
 export type TestOpStringEquals = {
@@ -94,7 +97,8 @@ export type AnyTestOp = {
   TestOpAlwaysOk |
   TestOpIsDefined |
   TestOpIsNull |
-  TestOpBoolEquals |
+  TestOpBoolIsFalse |
+  TestOpBoolIsTrue |
   TestOpStringEquals |
   TestOpStringIncludes |
   TestOpStringStartsWith |

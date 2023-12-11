@@ -33,7 +33,7 @@
 .PostItemType {
   position: relative;
   left: 4rem;
-  top: 2rem;
+  top: 4rem;
 }
 
 @keyframes fade-in {
