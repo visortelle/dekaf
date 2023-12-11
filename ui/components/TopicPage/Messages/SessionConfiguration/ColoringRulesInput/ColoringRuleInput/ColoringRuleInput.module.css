@@ -8,6 +8,7 @@
 .TopRow {
   display: flex;
   gap: 12rem;
+  align-items: center;
 }
 
 .ColorPicker {

@@ -1,0 +1,32 @@
+.IconToggle {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 5rem;
+  overflow: hidden;
+  padding: 2rem;
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+}
+
+.IconToggle:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.SvgIcon {
+  width: 16rem;
+  height: 16rem;
+}
+
+.IconToggle.IconToggleWithLabel {
+  height: 20rem;
+  box-shadow: none;
+}
+
+.Label {
+  font-weight: var(--font-weight-bold);
+  font-size: 12rem;
+  padding: 0 4rem;
+  border-radius: 4rem;
+  user-select: none;
+  text-decoration: underline dotted;
+}

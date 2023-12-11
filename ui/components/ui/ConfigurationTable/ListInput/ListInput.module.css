@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 4rem;
+  /* padding-bottom: 4rem; */
   position: relative;
 }
 
@@ -40,19 +40,14 @@
 
 .ListFieldValue {
   padding: 0 12rem;
-  min-height: 36rem;
+  min-height: 34rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   font-size: 14rem;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
-}
-
-.ListFieldValue:hover {
-  box-shadow: 0 0 0 1px var(--accent-color-blue);
-  border-radius: 4rem;
 }
 
 .ListFieldValue:last-child {
@@ -81,10 +76,12 @@
   align-items: flex-start;
   padding-top: 12rem;
 }
+
 .ListFieldRemoveValue:hover {
   opacity: 0.5;
   cursor: pointer;
 }
+
 .ListFieldRemoveValue svg {
   width: 14rem;
   height: 14rem;
