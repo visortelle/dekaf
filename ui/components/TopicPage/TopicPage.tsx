@@ -277,7 +277,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                       type: 'coloring-rule-chain'
                     },
                     spec: {
-                      isEnabled: false,
+                      isEnabled: true,
                       coloringRules: []
                     }
                   }
@@ -292,7 +292,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                       type: 'message-filter-chain'
                     },
                     spec: {
-                      filters: [], mode: "all", isEnabled: false, isNegated: false
+                      filters: [], mode: "all", isEnabled: true, isNegated: false
                     }
                   }
                 },

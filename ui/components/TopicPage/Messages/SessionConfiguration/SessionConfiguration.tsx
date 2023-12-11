@@ -27,11 +27,11 @@ function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): bool
     return false;
   }
 
-  if (value.val.spec.coloringRuleChain.val?.spec.isEnabled) {
+  if (value.val.spec.coloringRuleChain.val?.spec.coloringRules.length) {
     return true;
   }
 
-  if (value.val.spec.messageFilterChain.val?.spec.isEnabled) {
+  if (value.val.spec.messageFilterChain.val?.spec.filters.length) {
     return true;
   }
 

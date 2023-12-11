@@ -28,4 +28,5 @@
   padding: 0 4rem;
   border-radius: 4rem;
   user-select: none;
+  text-decoration: underline dotted;
 }
