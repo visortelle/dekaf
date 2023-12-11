@@ -4,6 +4,7 @@
   gap: 32rem;
   padding: 24rem 12rem;
   position: relative;
+  overflow: auto;
 }
 
 .TargetIndex {

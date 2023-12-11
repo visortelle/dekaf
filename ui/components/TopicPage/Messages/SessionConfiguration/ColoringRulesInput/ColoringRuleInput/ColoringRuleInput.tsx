@@ -9,6 +9,7 @@ import Toggle from '../../../../../ui/Toggle/Toggle';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 import FilterChainEditor from '../../FilterChainEditor/FilterChainEditor';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import OnOffToggle from '../../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
 
 export type ColoringRuleInputProps = {
   value: ManagedColoringRuleValOrRef,
@@ -66,10 +67,9 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
       )}
 
       <div className={s.TopRow} style={{ marginBottom: props.appearance === 'compact' ? '0' : '24rem' }}>
-        <Toggle
+        <OnOffToggle
           value={itemSpec.isEnabled}
           onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
-          label="Enabled"
         />
 
         <div className={s.Colors}>

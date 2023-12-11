@@ -6,6 +6,7 @@ import ListInput from '../../../../../../../../ui/ConfigurationTable/ListInput/L
 import BasicMessageFilterOpInput from '../BasicMessageFilterOpInput';
 import { cloneDeep } from 'lodash';
 import { v4 as uuid } from 'uuid';
+import IconToggle from '../../../../../../../../ui/IconToggle/IconToggle';
 
 export type BasicMessageFilterBracesInputProps = {
   value: BasicMessageFilterBraces,
@@ -15,31 +16,46 @@ export type BasicMessageFilterBracesInputProps = {
 const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps> = (props) => {
   return (
     <div className={s.BasicMessageFilterBracesInput}>
-      <Toggle
-        value={props.value.mode === "all"}
-        onChange={(v) => props.onChange({
-          ...props.value,
-          mode: v ? "all" : "any"
-        })}
-        label={props.value.mode === "all" ? "All" : "Any"}
-      />
       <div>
         <ListInput<BasicMessageFilterOp>
           value={props.value.ops}
-          renderItem={(item) => (
-            <BasicMessageFilterOpInput
-              value={item}
-              onChange={(v) => {
-                const newValue = cloneDeep(props.value);
-                const opIndex = newValue.ops.findIndex(op => op.reactKey === v.reactKey);
-                newValue.ops[opIndex] = v;
-                props.onChange(newValue);
-              }}
-            />
-          )}
+          renderItem={(item, i) => {
+            const isLast = i === props.value.ops.length - 1;
+            const isBraces = item.op.type === "BasicMessageFilterBraces";
+            return (
+              <div className={`${s.Item} ${isBraces ? s.BracesItem : ''}`}>
+                <BasicMessageFilterOpInput
+                  value={item}
+                  onChange={(v) => {
+                    const newValue = cloneDeep(props.value);
+                    const opIndex = newValue.ops.findIndex(op => op.reactKey === v.reactKey);
+                    newValue.ops[opIndex] = v;
+                    props.onChange(newValue);
+                  }}
+                  isShowEnableToggle={true}
+                />
+                {!isLast && (
+                  <div className={s.Mode}>
+                    <IconToggle<'all' | 'any'>
+                      items={[
+                        { type: "item", value: 'all', label: 'AND', help: 'Every comparison operation should match.' },
+                        { type: "item", value: 'any', label: 'OR', help: 'Some comparison operation should match.' }
+                      ]}
+                      value={props.value.mode}
+                      onChange={(v) => props.onChange({
+                        ...props.value,
+                        mode: v
+                      })}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          }}
           getId={(v) => v.reactKey}
           isHideNothingToShow
-          itemName="Filter Operation"
+          isContentDoesntOverlapRemoveButton
+          itemName="Comparison Operation"
           onAdd={() => {
             const newOp: BasicMessageFilterOp = {
               type: "BasicMessageFilterOp",

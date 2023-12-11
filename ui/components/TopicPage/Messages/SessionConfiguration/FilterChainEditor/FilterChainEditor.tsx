@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
-import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
 import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
@@ -11,17 +10,18 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
-import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import { defaultBasicMessageFilter } from './FilterEditor/BasicFilterEditor/defaultBasicMessageFilter';
+import OnOffToggle from '../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
+import InvertedToggle from '../../../../ui/IconToggle/InvertedToggle/InvertedToggle';
+import IconToggle from '../../../../ui/IconToggle/IconToggle';
 
 export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
   onChange: (value: ManagedMessageFilterChainValOrRef) => void;
   libraryContext: LibraryContext;
-  appearance?: 'default' | 'compact';
 };
 
 const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
@@ -54,7 +54,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
 
   return (
     <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }}>
-      <div ref={hoverRef}>
+      <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
           itemToSave={item}
@@ -71,51 +71,32 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          extraElements={{
+            preItemType: (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4rem' }}>
+                <OnOffToggle
+                  value={itemSpec.isEnabled}
+                  onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+                />
+                <InvertedToggle
+                  value={itemSpec.isNegated}
+                  onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
+                  helpOverride="Invert result. If enabled, then messages that matches the filter chain will be not passed and vice versa."
+                />
+              </div>
+            )
+          }}
         />
-        <div
-          style={{
-            marginBottom: '12rem',
-            display: 'flex',
-            alignItems: props.appearance ? 'unset' : 'center',
-            gap: '8rem',
-            paddingTop: props.appearance === 'compact' ? '8rem' : '0',
-            flexDirection: props.appearance === 'compact' ? 'column' : 'row',
-          }}>
-          <div style={{ display: 'flex', gap: '12rem', flexDirection: 'row', flex: '1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
-              <Toggle
-                label="Enabled"
-                value={itemSpec.isEnabled}
-                onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
-                help="The whole filter chain will be disabled if this toggle is off."
-              />
-              <Toggle
-                label="Negated"
-                value={itemSpec.isNegated}
-                onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
-                help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
-              />
-            </div>
-            <div style={{ flex: '1', display: 'flex' }}>
-              <Select<'all' | 'any'>
-                list={[
-                  { type: 'item', title: 'Every filter match', value: 'all' },
-                  { type: 'item', title: 'Some filter match', value: 'any' },
-                ]}
-                value={itemSpec.mode}
-                onChange={v => onSpecChange({ ...itemSpec, mode: v })}
-              />
-            </div>
-          </div>
-        </div>
       </div>
 
       <ListInput<ManagedMessageFilterValOrRef>
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
         value={itemSpec.filters}
         onChange={(filters) => onSpecChange({ ...itemSpec, filters })}
-        renderItem={(filter) => {
+        renderItem={(filter, i) => {
           const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id
+          const isLast = i === itemSpec.filters.length - 1;
+
           return (
             <div className={s.Entry}>
               <div className={s.EntryFilter}>
@@ -134,6 +115,18 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                   libraryContext={props.libraryContext}
                 />
               </div>
+              {!isLast && (
+                <div className={s.ModeToggle}>
+                  <IconToggle<'all' | 'any'>
+                    items={[
+                      { type: 'item', label: 'AND', help: 'Every filter should match.', value: 'all' },
+                      { type: 'item', label: 'OR', help: 'Some filter should match.', value: 'any' },
+                    ]}
+                    value={itemSpec.mode}
+                    onChange={v => onSpecChange({ ...itemSpec, mode: v })}
+                  />
+                </div>
+              )}
             </div>
           );
         }}
@@ -179,7 +172,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           const newChain = itemSpec.filters.filter((f) => f.type === 'reference' ? f.ref !== id : f.val.metadata.id !== id);
           onSpecChange({ ...itemSpec, filters: newChain });
         }}
-        itemName='Message Filter'
+        itemName='Filter'
         isHideNothingToShow
         isContentDoesntOverlapRemoveButton
       />

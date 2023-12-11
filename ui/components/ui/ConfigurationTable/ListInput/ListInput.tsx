@@ -113,9 +113,9 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       onDragEnd={handleDragEnd}
     >
       <div className={s.Header}>
-        <div className={s.HeaderItemName}>
+        {/* <div className={s.HeaderItemName}>
           {props.itemName === undefined ? '' : `${props.itemName}s`}: <strong>{props.value.length}</strong>
-        </div>
+        </div> */}
         <div className={s.HeaderControls}>
           {props.isHasCollapsedRenderer && (
             <SmallButton
