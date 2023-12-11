@@ -28,8 +28,8 @@ const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
           }}>
             <IconToggle<boolean>
               items={[
-                { type: "item", value: true, label: 'list item sub field', help: "Click to select the entire item" },
-                { type: "item", value: false, label: 'list item', help: "Click to select an item sub field" }
+                { type: "item", value: true, label: "list item's sub field", help: "Click to select the entire item" },
+                { type: "item", value: false, label: 'list item', help: "Click to select the list item's sub field" }
               ]}
               value={Boolean(props.value.itemFieldTarget)}
               onChange={(v) => {

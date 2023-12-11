@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
@@ -51,6 +51,76 @@ export function testOpBoolIsFalseFromPb(v: pb.TestOpBoolIsFalse): TestOpBoolIsFa
 
 export function testOpBoolIsFalseToPb(v: TestOpBoolIsFalse): pb.TestOpBoolIsFalse {
   const resultPb = new pb.TestOpBoolIsFalse();
+  return resultPb;
+}
+
+export function testOpNumberEqFromPb(v: pb.TestOpNumberEq): TestOpNumberEq {
+  return {
+    type: "TestOpNumberEq",
+    eq: v.getEq(),
+  }
+}
+
+export function testOpNumberEqToPb(v: TestOpNumberEq): pb.TestOpNumberEq {
+  const resultPb = new pb.TestOpNumberEq();
+  resultPb.setEq(v.eq);
+
+  return resultPb;
+}
+
+export function testOpNumberLtFromPb(v: pb.TestOpNumberLt): TestOpNumberLt {
+  return {
+    type: "TestOpNumberLt",
+    lt: v.getLt(),
+  }
+}
+
+export function testOpNumberLtToPb(v: TestOpNumberLt): pb.TestOpNumberLt {
+  const resultPb = new pb.TestOpNumberLt();
+  resultPb.setLt(v.lt);
+
+  return resultPb;
+}
+
+export function testOpNumberLteFromPb(v: pb.TestOpNumberLte): TestOpNumberLte {
+  return {
+    type: "TestOpNumberLte",
+    lte: v.getLte(),
+  }
+}
+
+export function testOpNumberLteToPb(v: TestOpNumberLte): pb.TestOpNumberLte {
+  const resultPb = new pb.TestOpNumberLte();
+  resultPb.setLte(v.lte);
+
+  return resultPb;
+}
+
+export function testOpNumberGtFromPb(v: pb.TestOpNumberGt): TestOpNumberGt {
+  return {
+    type: "TestOpNumberGt",
+    gt: v.getGt(),
+  }
+}
+
+export function testOpNumberGtToPb(v: TestOpNumberGt): pb.TestOpNumberGt {
+  const resultPb = new pb.TestOpNumberGt();
+  resultPb.setGt(v.gt);
+
+  return resultPb;
+}
+
+export function testOpNumberGteFromPb(v: pb.TestOpNumberGte): TestOpNumberGte {
+  return {
+    type: "TestOpNumberGte",
+    gte: v.getGte(),
+  }
+}
+
+export function testOpNumberGteToPb(v: TestOpNumberGte): pb.TestOpNumberGte {
+  const resultPb = new pb.TestOpNumberGte();
+  resultPb.setGte(v.gte);
+
   return resultPb;
 }
 
@@ -185,6 +255,11 @@ export function anyTestOpFromPb(v: pb.AnyTestOp): AnyTestOp {
     case pb.AnyTestOp.OpCase.OP_IS_NULL: op = testOpIsNullFromPb(v.getOpIsNull()!); break;
     case pb.AnyTestOp.OpCase.OP_BOOL_IS_FALSE: op = testOpBoolIsFalseFromPb(v.getOpBoolIsFalse()!); break;
     case pb.AnyTestOp.OpCase.OP_BOOL_IS_TRUE: op = testOpBoolIsTrueFromPb(v.getOpBoolIsTrue()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_EQ: op = testOpNumberEqFromPb(v.getOpNumberEq()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_LT: op = testOpNumberLtFromPb(v.getOpNumberLt()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_LTE: op = testOpNumberLteFromPb(v.getOpNumberLte()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_GT: op = testOpNumberGtFromPb(v.getOpNumberGt()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_GTE: op = testOpNumberGteFromPb(v.getOpNumberGte()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_EQUALS: op = testOpStringEqualsFromPb(v.getOpStringEquals()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_INCLUDES: op = testOpStringIncludesFromPb(v.getOpStringIncludes()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_STARTS_WITH: op = testOpStringStartsWithFromPb(v.getOpStringStartsWith()!); break;
@@ -210,6 +285,11 @@ export function anyTestOpToPb(v: AnyTestOp): pb.AnyTestOp {
     case "TestOpIsNull": resultPb.setOpIsNull(testOpIsNullToPb(v.op)); break;
     case "TestOpBoolIsFalse": resultPb.setOpBoolIsFalse(testOpBoolIsFalseToPb(v.op)); break;
     case "TestOpBoolIsTrue": resultPb.setOpBoolIsTrue(testOpBoolIsTrueToPb(v.op)); break;
+    case "TestOpNumberEq": resultPb.setOpNumberEq(testOpNumberEqToPb(v.op)); break;
+    case "TestOpNumberLt": resultPb.setOpNumberLt(testOpNumberLtToPb(v.op)); break;
+    case "TestOpNumberLte": resultPb.setOpNumberLte(testOpNumberLteToPb(v.op)); break;
+    case "TestOpNumberGt": resultPb.setOpNumberGt(testOpNumberGtToPb(v.op)); break;
+    case "TestOpNumberGte": resultPb.setOpNumberGte(testOpNumberGteToPb(v.op)); break;
     case "TestOpStringEquals": resultPb.setOpStringEquals(testOpStringEqualsToPb(v.op)); break;
     case "TestOpStringIncludes": resultPb.setOpStringIncludes(testOpStringIncludesToPb(v.op)); break;
     case "TestOpStringStartsWith": resultPb.setOpStringStartsWith(testOpStringStartsWithToPb(v.op)); break;

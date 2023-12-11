@@ -18,6 +18,31 @@ export type TestOpBoolIsFalse = {
   type: "TestOpBoolIsFalse"
 }
 
+export type TestOpNumberEq = {
+  type: "TestOpNumberEq",
+  eq: string,
+}
+
+export type TestOpNumberLt = {
+  type: "TestOpNumberLt",
+  lt: string,
+}
+
+export type TestOpNumberLte = {
+  type: "TestOpNumberLte",
+  lte: string,
+}
+
+export type TestOpNumberGt = {
+  type: "TestOpNumberGt",
+  gt: string,
+}
+
+export type TestOpNumberGte = {
+  type: "TestOpNumberGte",
+  gte: string,
+}
+
 export type TestOpStringEquals = {
   type: "TestOpStringEquals",
   equals: string,
@@ -99,6 +124,11 @@ export type AnyTestOp = {
   TestOpIsNull |
   TestOpBoolIsFalse |
   TestOpBoolIsTrue |
+  TestOpNumberEq |
+  TestOpNumberLt |
+  TestOpNumberLte |
+  TestOpNumberGt |
+  TestOpNumberGte |
   TestOpStringEquals |
   TestOpStringIncludes |
   TestOpStringStartsWith |

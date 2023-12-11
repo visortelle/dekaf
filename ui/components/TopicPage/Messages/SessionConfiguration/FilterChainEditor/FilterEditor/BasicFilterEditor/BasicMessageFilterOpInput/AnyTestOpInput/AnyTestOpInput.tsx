@@ -8,6 +8,11 @@ import TestOpStringMatchesRegexInput from './TestOpStringMatchesRegexInput/TestO
 import TestOpStringIncludesInput from './TestOpStringIncludesInput/TestOpStringIncludesInput';
 import TestOpStringStartsWithInput from './TestOpStringStartsWith/TestOpStringStartsWithInput';
 import TestOpStringEndsWithInput from './TestOpStringEndsWithInput/TestOpStringEndsWithWithInput';
+import TestOpNumberEqInput from './TestOpNumberEqInput/TestOpNumberEqInput';
+import TestOpNumberLtInput from './TestOpNumberLtInput/TestOpNumberLtInput';
+import TestOpNumberLteInput from './TestOpNumberLteInput/TestOpNumberLteInput';
+import TestOpNumberGtInput from './TestOpNumberGtInput/TestOpNumberGtInput';
+import TestOpNumberGteInput from './TestOpNumberGteInput/TestOpNumberGteInput';
 
 export type AnyTestOpInputProps = {
   value: AnyTestOp,
@@ -17,6 +22,37 @@ export type AnyTestOpInputProps = {
 const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
   return (
     <div className={s.AnyTestOpInput}>
+      {props.value.op.type === "TestOpNumberEq" && (
+        <TestOpNumberEqInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberLt" && (
+        <TestOpNumberLtInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberLte" && (
+        <TestOpNumberLteInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberGt" && (
+        <TestOpNumberGtInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberGte" && (
+        <TestOpNumberGteInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+
       {props.value.op.type === "TestOpStringEquals" && (
         <TestOpStringEqualsInput
           value={props.value.op}
@@ -47,6 +83,7 @@ const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
           onChange={(v) => props.onChange({ ...props.value, op: v })}
         />
       )}
+
       {props.value.op.type === "TestOpArrayAll" && (
         <TestOpArrayAllInput
           value={props.value.op}

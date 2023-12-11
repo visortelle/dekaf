@@ -256,8 +256,8 @@ message TestOpIsNull {}
 message TestOpBoolIsFalse {}
 message TestOpBoolIsTrue {}
 
-message TestOpNumberEquals {
-  string equals = 1; // Number encoded as a string. Having "." char means float number.
+message TestOpNumberEq {
+  string eq = 1; // Number encoded as a string. Having "." char means float number.
 }
 
 message TestOpNumberLt {
@@ -330,7 +330,7 @@ message AnyTestOp {
     TestOpIsNull op_is_null = 2; // done
     TestOpBoolIsTrue op_bool_is_true = 3; // done
     TestOpBoolIsFalse op_bool_is_false = 4; // done
-    TestOpNumberEquals op_number_equals = 5;
+    TestOpNumberEq op_number_eq = 5;
     TestOpNumberLt op_number_lt = 6;
     TestOpNumberLte op_number_lte = 7;
     TestOpNumberGt op_number_gt = 8;
