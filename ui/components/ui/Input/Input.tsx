@@ -8,8 +8,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 export type InputAddon = {
   id: string,
   isEnabled: boolean,
-  iconSvg: string,
   onClick: () => void,
+  label?: string,
+  iconSvg?: string,
   help?: string | React.ReactElement
 }
 
@@ -87,7 +88,8 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
                 data-tooltip-id={addon.help ? tooltipId : undefined}
                 data-tooltip-html={addon.help ? renderToStaticMarkup(<>{addon.help}</>) : undefined}
               >
-                <SvgIcon svg={addon.iconSvg} />
+                {addon.iconSvg && <SvgIcon svg={addon.iconSvg} />}
+                {addon.label && <div className={s.AddonLabel}>{addon.label}</div>}
               </div>
             );
           })}

@@ -116,10 +116,13 @@
 .Addons {
   position: absolute;
   right: 8rem;
+  display: flex;
+  gap: 4rem;
 }
 
 .Addon {
   border-radius: 4rem;
+  font-weight: var(--font-weight-bold);
 }
 
 .Addon:hover {
@@ -133,5 +136,13 @@
 }
 
 .AddonDisabled {
-  opacity: 0.6;
+  opacity: 0.5;
+}
+
+.AddonLabel {
+  width: 16rem;
+  height: 20rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

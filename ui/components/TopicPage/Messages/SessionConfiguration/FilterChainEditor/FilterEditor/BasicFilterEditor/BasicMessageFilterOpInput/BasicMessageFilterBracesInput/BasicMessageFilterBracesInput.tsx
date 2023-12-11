@@ -38,8 +38,8 @@ const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps
                   <div className={s.Mode}>
                     <IconToggle<'all' | 'any'>
                       items={[
-                        { type: "item", value: 'all', label: 'AND', help: 'Every test operation should match.' },
-                        { type: "item", value: 'any', label: 'OR', help: 'Some test operation should match.' }
+                        { type: "item", value: 'all', label: 'AND', help: 'Every comparison operation should match.' },
+                        { type: "item", value: 'any', label: 'OR', help: 'Some comparison operation should match.' }
                       ]}
                       value={props.value.mode}
                       onChange={(v) => props.onChange({
@@ -55,7 +55,7 @@ const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps
           getId={(v) => v.reactKey}
           isHideNothingToShow
           isContentDoesntOverlapRemoveButton
-          itemName="Test Operation"
+          itemName="Comparison Operation"
           onAdd={() => {
             const newOp: BasicMessageFilterOp = {
               type: "BasicMessageFilterOp",

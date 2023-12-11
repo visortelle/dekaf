@@ -15,13 +15,8 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
       <Select<AnyTestOp['op']['type']>
         size='small'
         list={[
-          {
-            type: "group", title: "Any JSON type", items: [
-              // { type: "item", title: "Always OK", value: "TestOpAlwaysOk" },
-              { type: "item", title: "is defined", value: "TestOpIsDefined" },
-              { type: "item", title: "is null", value: "TestOpIsNull" },
-            ]
-          },
+          { type: "item", title: "is defined", value: "TestOpIsDefined" },
+          { type: "item", title: "is null", value: "TestOpIsNull" },
           {
             type: "group", title: "Boolean", items: [
               { type: "item", title: "is true or false", value: "TestOpBoolEquals" },
@@ -37,7 +32,7 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
             ]
           },
           {
-            type: "group", title: "Array", items: [
+            type: "group", title: "List", items: [
               { type: "item", title: "where every", value: "TestOpArrayAll" },
               { type: "item", title: "where some", value: "TestOpArrayAny" },
             ]
@@ -85,6 +80,7 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
                   ...props.value,
                   op: {
                     type: "TestOpArrayAll",
+                    itemFieldTarget: undefined,
                     testItemOp: {
                       type: "BasicMessageFilterOp",
                       isEnabled: true,
@@ -111,6 +107,7 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
                   ...props.value,
                   op: {
                     type: "TestOpArrayAny",
+                    itemFieldTarget: undefined,
                     testItemOp: {
                       type: "BasicMessageFilterOp",
                       isEnabled: true,

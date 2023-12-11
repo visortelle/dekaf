@@ -3,8 +3,6 @@ import s from './BasicMessageFilterTargetInput.module.css'
 import { BasicMessageFilterTarget } from '../../../../../basic-message-filter-types';
 import Select from '../../../../../../../ui/Select/Select';
 import BasicMessageFilterValueTargetInput from './BasicMessageFilterValueTargetInput/BasicMessageFilterValueTargetInput';
-import FormItem from '../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
-import { cloneDeep, cloneDeepWith } from 'lodash';
 
 export type BasicMessageFilterTargetInputProps = {
   value: BasicMessageFilterTarget,
@@ -21,7 +19,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
 
   return (
     <div className={s.BasicMessageFilterTargetInput} style={{ flexDirection }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ fontSize: '12rem' }}>
           <strong style={{ whiteSpace: 'nowrap' }}>messages where</strong>&nbsp;
           {props.value.target.type === "BasicMessageFilterValueTarget" && props.value.target.jsonFieldSelector === undefined && (
@@ -77,7 +75,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
 
       <div className={s.Target}>
         {props.value.target.type === "BasicMessageFilterValueTarget" && props.value.target.jsonFieldSelector !== undefined && (
-          <div style={{ display: 'flex', alignItems: 'center', flex: '1', paddingLeft: '48rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: '1', paddingLeft: '48rem', marginTop: '8rem' }}>
             <strong
               style={{ textDecoration: 'underline dotted', cursor: 'pointer', fontSize: '12rem' }}
               onClick={() => {

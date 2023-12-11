@@ -14,19 +14,22 @@ export type TestOpArrayAllInputProps = {
 const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
   return (
     <div className={s.TestOpArrayAllInput}>
-      <FormItem>
+      <FormItem size='small'>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          marginTop: '-8rem',
-          marginBottom: '-8rem',
           marginLeft: '-32rem'
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginTop: Boolean(props.value.itemFieldTarget) ? undefined : '-6rem',
+            marginBottom: Boolean(props.value.itemFieldTarget) ? undefined : '-6rem',
+          }}>
             <IconToggle<boolean>
               items={[
-                { type: "item", value: true, label: 'item sub field', help: "Click to select entire item" },
-                { type: "item", value: false, label: 'entire item', help: "Click to select item sub field" }
+                { type: "item", value: true, label: 'item sub field', help: "Click to select the entire item" },
+                { type: "item", value: false, label: 'list item', help: "Click to select an item sub field" }
               ]}
               value={Boolean(props.value.itemFieldTarget)}
               onChange={(v) => {
