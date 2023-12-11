@@ -1,8 +1,8 @@
 import React from 'react';
 import s from './TestOpStringEqualsInput.module.css'
 import { TestOpStringEquals } from '../../../../../../../basic-message-filter-types';
-import Toggle from '../../../../../../../../../ui/Toggle/Toggle';
-import Input from '../../../../../../../../../ui/Input/Input';
+import StringFilterInput from '../../../../../../../../../ui/Input/StringFilterInput/StringFilterInput';
+import FormItem from '../../../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
 
 export type TestOpStringEqualsInputProps = {
   value: TestOpStringEquals,
@@ -12,15 +12,15 @@ export type TestOpStringEqualsInputProps = {
 const TestOpStringEqualsInput: React.FC<TestOpStringEqualsInputProps> = (props) => {
   return (
     <div className={s.TestOpStringEqualsInput}>
-      <Input
-        value={props.value.equals}
-        onChange={(v) => props.onChange({ ...props.value, equals: v })}
-      />
-      <Toggle
-        value={props.value.isCaseInsensitive}
-        onChange={(v) => props.onChange({ ...props.value, isCaseInsensitive: v })}
-        label="Ignore Case"
-      />
+      <FormItem>
+        <StringFilterInput
+          size='small'
+          value={props.value.equals}
+          onChange={(v) => props.onChange({ ...props.value, equals: v })}
+          isMatchCase={!props.value.isCaseInsensitive}
+          onIsMatchCaseChange={v => props.onChange({ ...props.value, isCaseInsensitive: !v })}
+        />
+      </FormItem>
     </div>
   );
 }

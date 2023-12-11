@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
@@ -36,16 +36,90 @@ export function testOpIsNullToPb(v: TestOpIsNull): pb.TestOpIsNull {
   return resultPb;
 }
 
-export function testOpBoolEqualsFromPb(v: pb.TestOpBoolEquals): TestOpBoolEquals {
+export function testOpBoolIsTrueFromPb(v: pb.TestOpBoolIsTrue): TestOpBoolIsTrue {
+  return { type: "TestOpBoolIsTrue" };
+}
+
+export function testOpBoolIsTrueToPb(v: TestOpBoolIsTrue): pb.TestOpBoolIsTrue {
+  const resultPb = new pb.TestOpBoolIsTrue();
+  return resultPb;
+}
+
+export function testOpBoolIsFalseFromPb(v: pb.TestOpBoolIsFalse): TestOpBoolIsFalse {
+  return { type: "TestOpBoolIsFalse" };
+}
+
+export function testOpBoolIsFalseToPb(v: TestOpBoolIsFalse): pb.TestOpBoolIsFalse {
+  const resultPb = new pb.TestOpBoolIsFalse();
+  return resultPb;
+}
+
+export function testOpNumberEqFromPb(v: pb.TestOpNumberEq): TestOpNumberEq {
   return {
-    type: "TestOpBoolEquals",
-    equals: v.getEquals()
+    type: "TestOpNumberEq",
+    eq: v.getEq(),
   }
 }
 
-export function testOpBoolEqualsToPb(v: TestOpBoolEquals): pb.TestOpBoolEquals {
-  const resultPb = new pb.TestOpBoolEquals();
-  resultPb.setEquals(v.equals);
+export function testOpNumberEqToPb(v: TestOpNumberEq): pb.TestOpNumberEq {
+  const resultPb = new pb.TestOpNumberEq();
+  resultPb.setEq(v.eq);
+
+  return resultPb;
+}
+
+export function testOpNumberLtFromPb(v: pb.TestOpNumberLt): TestOpNumberLt {
+  return {
+    type: "TestOpNumberLt",
+    lt: v.getLt(),
+  }
+}
+
+export function testOpNumberLtToPb(v: TestOpNumberLt): pb.TestOpNumberLt {
+  const resultPb = new pb.TestOpNumberLt();
+  resultPb.setLt(v.lt);
+
+  return resultPb;
+}
+
+export function testOpNumberLteFromPb(v: pb.TestOpNumberLte): TestOpNumberLte {
+  return {
+    type: "TestOpNumberLte",
+    lte: v.getLte(),
+  }
+}
+
+export function testOpNumberLteToPb(v: TestOpNumberLte): pb.TestOpNumberLte {
+  const resultPb = new pb.TestOpNumberLte();
+  resultPb.setLte(v.lte);
+
+  return resultPb;
+}
+
+export function testOpNumberGtFromPb(v: pb.TestOpNumberGt): TestOpNumberGt {
+  return {
+    type: "TestOpNumberGt",
+    gt: v.getGt(),
+  }
+}
+
+export function testOpNumberGtToPb(v: TestOpNumberGt): pb.TestOpNumberGt {
+  const resultPb = new pb.TestOpNumberGt();
+  resultPb.setGt(v.gt);
+
+  return resultPb;
+}
+
+export function testOpNumberGteFromPb(v: pb.TestOpNumberGte): TestOpNumberGte {
+  return {
+    type: "TestOpNumberGte",
+    gte: v.getGte(),
+  }
+}
+
+export function testOpNumberGteToPb(v: TestOpNumberGte): pb.TestOpNumberGte {
+  const resultPb = new pb.TestOpNumberGte();
+  resultPb.setGte(v.gte);
 
   return resultPb;
 }
@@ -131,9 +205,12 @@ export function testOpStringMatchesRegexToPb(v: TestOpStringMatchesRegex): pb.Te
 }
 
 export function testOpArrayAnyFromPb(v: pb.TestOpArrayAny): TestOpArrayAny {
+  const itemFieldTargetPb = v.getItemFieldTarget();
+
   return {
     type: "TestOpArrayAny",
-    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!)
+    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!),
+    itemFieldTarget: itemFieldTargetPb === undefined ? undefined : basicMessageFilterFieldTargetFromPb(itemFieldTargetPb)
   }
 }
 
@@ -141,19 +218,30 @@ export function testOpArrayAnyToPb(v: TestOpArrayAny): pb.TestOpArrayAny {
   const resultPb = new pb.TestOpArrayAny();
   resultPb.setTestItemOp(basicMessageFilterOpToPb(v.testItemOp));
 
+  if (v.itemFieldTarget !== undefined) {
+    resultPb.setItemFieldTarget(basicMessageFilterFieldTargetToPb(v.itemFieldTarget));
+  }
+
   return resultPb;
 }
 
 export function testOpArrayAllFromPb(v: pb.TestOpArrayAll): TestOpArrayAll {
+  const itemFieldTargetPb = v.getItemFieldTarget();
+
   return {
     type: "TestOpArrayAll",
-    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!)
+    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!),
+    itemFieldTarget: itemFieldTargetPb === undefined ? undefined : basicMessageFilterFieldTargetFromPb(itemFieldTargetPb)
   }
 }
 
 export function testOpArrayAllToPb(v: TestOpArrayAll): pb.TestOpArrayAll {
   const resultPb = new pb.TestOpArrayAll();
   resultPb.setTestItemOp(basicMessageFilterOpToPb(v.testItemOp));
+
+  if (v.itemFieldTarget !== undefined) {
+    resultPb.setItemFieldTarget(basicMessageFilterFieldTargetToPb(v.itemFieldTarget));
+  }
 
   return resultPb;
 }
@@ -165,7 +253,13 @@ export function anyTestOpFromPb(v: pb.AnyTestOp): AnyTestOp {
     case pb.AnyTestOp.OpCase.OP_ALWAYS_OK: op = testOpAlwaysOkFromPb(v.getOpAlwaysOk()!); break;
     case pb.AnyTestOp.OpCase.OP_IS_DEFINED: op = testOpIsDefinedFromPb(v.getOpIsDefined()!); break;
     case pb.AnyTestOp.OpCase.OP_IS_NULL: op = testOpIsNullFromPb(v.getOpIsNull()!); break;
-    case pb.AnyTestOp.OpCase.OP_BOOL_EQUALS: op = testOpBoolEqualsFromPb(v.getOpBoolEquals()!); break;
+    case pb.AnyTestOp.OpCase.OP_BOOL_IS_FALSE: op = testOpBoolIsFalseFromPb(v.getOpBoolIsFalse()!); break;
+    case pb.AnyTestOp.OpCase.OP_BOOL_IS_TRUE: op = testOpBoolIsTrueFromPb(v.getOpBoolIsTrue()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_EQ: op = testOpNumberEqFromPb(v.getOpNumberEq()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_LT: op = testOpNumberLtFromPb(v.getOpNumberLt()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_LTE: op = testOpNumberLteFromPb(v.getOpNumberLte()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_GT: op = testOpNumberGtFromPb(v.getOpNumberGt()!); break;
+    case pb.AnyTestOp.OpCase.OP_NUMBER_GTE: op = testOpNumberGteFromPb(v.getOpNumberGte()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_EQUALS: op = testOpStringEqualsFromPb(v.getOpStringEquals()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_INCLUDES: op = testOpStringIncludesFromPb(v.getOpStringIncludes()!); break;
     case pb.AnyTestOp.OpCase.OP_STRING_STARTS_WITH: op = testOpStringStartsWithFromPb(v.getOpStringStartsWith()!); break;
@@ -189,7 +283,13 @@ export function anyTestOpToPb(v: AnyTestOp): pb.AnyTestOp {
     case "TestOpAlwaysOk": resultPb.setOpAlwaysOk(testOpAlwaysOkToPb(v.op)); break;
     case "TestOpIsDefined": resultPb.setOpIsDefined(testOpIsDefinedToPb(v.op)); break;
     case "TestOpIsNull": resultPb.setOpIsNull(testOpIsNullToPb(v.op)); break;
-    case "TestOpBoolEquals": resultPb.setOpBoolEquals(testOpBoolEqualsToPb(v.op)); break;
+    case "TestOpBoolIsFalse": resultPb.setOpBoolIsFalse(testOpBoolIsFalseToPb(v.op)); break;
+    case "TestOpBoolIsTrue": resultPb.setOpBoolIsTrue(testOpBoolIsTrueToPb(v.op)); break;
+    case "TestOpNumberEq": resultPb.setOpNumberEq(testOpNumberEqToPb(v.op)); break;
+    case "TestOpNumberLt": resultPb.setOpNumberLt(testOpNumberLtToPb(v.op)); break;
+    case "TestOpNumberLte": resultPb.setOpNumberLte(testOpNumberLteToPb(v.op)); break;
+    case "TestOpNumberGt": resultPb.setOpNumberGt(testOpNumberGtToPb(v.op)); break;
+    case "TestOpNumberGte": resultPb.setOpNumberGte(testOpNumberGteToPb(v.op)); break;
     case "TestOpStringEquals": resultPb.setOpStringEquals(testOpStringEqualsToPb(v.op)); break;
     case "TestOpStringIncludes": resultPb.setOpStringIncludes(testOpStringIncludesToPb(v.op)); break;
     case "TestOpStringStartsWith": resultPb.setOpStringStartsWith(testOpStringStartsWithToPb(v.op)); break;
@@ -333,6 +433,22 @@ export function basicMessageFilterSessionContextStateTargetFromPb(v: pb.BasicMes
 
 export function basicMessageFilterSessionContextStateTargetToPb(v: BasicMessageFilterSessionContextStateTarget): pb.BasicMessageFilterSessionContextStateTarget {
   const resultPb = new pb.BasicMessageFilterSessionContextStateTarget();
+  if (v.jsonFieldSelector !== undefined) {
+    resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterFieldTargetFromPb(v: pb.BasicMessageFilterFieldTarget): BasicMessageFilterFieldTarget {
+  return {
+    type: "BasicMessageFilterFieldTarget",
+    jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
+  }
+}
+
+export function basicMessageFilterFieldTargetToPb(v: BasicMessageFilterFieldTarget): pb.BasicMessageFilterFieldTarget {
+  const resultPb = new pb.BasicMessageFilterFieldTarget();
   if (v.jsonFieldSelector !== undefined) {
     resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
   }

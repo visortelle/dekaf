@@ -6,11 +6,18 @@ export type FormLabelProps = {
   content: React.ReactNode;
   help?: React.ReactElement | string;
   isRequired?: boolean;
+  size?: 'regular' | 'small'
 };
 
 const FormLabel: React.FC<FormLabelProps> = (props) => {
   return (
-    <div className={`${s.FormLabel} ${props.help === undefined ? '' : s.WithHelp}`}>
+    <div
+      className={`
+        ${s.FormLabel}
+        ${props.help === undefined ? '' : s.WithHelp}
+        ${props.size === 'small' ? s.Small : ''}
+      `}
+    >
       {props.content}
       {props.isRequired && <span className={s.Required}>*</span>}
       {props.help && (

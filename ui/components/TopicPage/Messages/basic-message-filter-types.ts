@@ -10,9 +10,37 @@ export type TestOpIsNull = {
   type: "TestOpIsNull"
 }
 
-export type TestOpBoolEquals = {
-  type: "TestOpBoolEquals",
-  equals: boolean
+export type TestOpBoolIsTrue = {
+  type: "TestOpBoolIsTrue"
+}
+
+export type TestOpBoolIsFalse = {
+  type: "TestOpBoolIsFalse"
+}
+
+export type TestOpNumberEq = {
+  type: "TestOpNumberEq",
+  eq: string,
+}
+
+export type TestOpNumberLt = {
+  type: "TestOpNumberLt",
+  lt: string,
+}
+
+export type TestOpNumberLte = {
+  type: "TestOpNumberLte",
+  lte: string,
+}
+
+export type TestOpNumberGt = {
+  type: "TestOpNumberGt",
+  gt: string,
+}
+
+export type TestOpNumberGte = {
+  type: "TestOpNumberGte",
+  gte: string,
 }
 
 export type TestOpStringEquals = {
@@ -57,12 +85,14 @@ export type TestOpArrayItemsCount = {
 
 export type TestOpArrayAny = {
   type: "TestOpArrayAny",
-  testItemOp: BasicMessageFilterOp
+  testItemOp: BasicMessageFilterOp,
+  itemFieldTarget: BasicMessageFilterFieldTarget | undefined
 }
 
 export type TestOpArrayAll = {
   type: "TestOpArrayAll",
-  testItemOp: BasicMessageFilterOp
+  testItemOp: BasicMessageFilterOp,
+  itemFieldTarget: BasicMessageFilterFieldTarget | undefined
 }
 
 export type TestOpObjectHasKey = {
@@ -92,7 +122,13 @@ export type AnyTestOp = {
   TestOpAlwaysOk |
   TestOpIsDefined |
   TestOpIsNull |
-  TestOpBoolEquals |
+  TestOpBoolIsFalse |
+  TestOpBoolIsTrue |
+  TestOpNumberEq |
+  TestOpNumberLt |
+  TestOpNumberLte |
+  TestOpNumberGt |
+  TestOpNumberGte |
   TestOpStringEquals |
   TestOpStringIncludes |
   TestOpStringStartsWith |
@@ -141,6 +177,11 @@ export type BasicMessageFilterPropertyTarget = {
 
 export type BasicMessageFilterSessionContextStateTarget = {
   type: "BasicMessageFilterSessionContextStateTarget",
+  jsonFieldSelector?: string
+}
+
+export type BasicMessageFilterFieldTarget = {
+  type: "BasicMessageFilterFieldTarget",
   jsonFieldSelector?: string
 }
 

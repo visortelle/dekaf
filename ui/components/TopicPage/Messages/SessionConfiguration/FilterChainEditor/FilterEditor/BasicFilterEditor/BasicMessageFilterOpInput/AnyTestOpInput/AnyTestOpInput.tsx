@@ -1,11 +1,18 @@
 import React from 'react';
 import s from './AnyTestOpInput.module.css'
-import { AnyTestOp, TestOpArrayAll, TestOpArrayAny } from '../../../../../../basic-message-filter-types';
+import { AnyTestOp } from '../../../../../../basic-message-filter-types';
 import TestOpStringEqualsInput from './TestOpStringEqualsInput/TestOpStringEqualsInput';
-import Select from '../../../../../../../../ui/Select/Select';
 import TestOpArrayAllInput from './TestOpArrayAllInput/TestOpArrayAllInput';
 import TestOpArrayAnyInput from './TestOpArrayAnyInput/TestOpArrayAnyInput';
-import { v4 as uuid } from 'uuid';
+import TestOpStringMatchesRegexInput from './TestOpStringMatchesRegexInput/TestOpStringMatchesRegexInput';
+import TestOpStringIncludesInput from './TestOpStringIncludesInput/TestOpStringIncludesInput';
+import TestOpStringStartsWithInput from './TestOpStringStartsWith/TestOpStringStartsWithInput';
+import TestOpStringEndsWithInput from './TestOpStringEndsWithInput/TestOpStringEndsWithWithInput';
+import TestOpNumberEqInput from './TestOpNumberEqInput/TestOpNumberEqInput';
+import TestOpNumberLtInput from './TestOpNumberLtInput/TestOpNumberLtInput';
+import TestOpNumberLteInput from './TestOpNumberLteInput/TestOpNumberLteInput';
+import TestOpNumberGtInput from './TestOpNumberGtInput/TestOpNumberGtInput';
+import TestOpNumberGteInput from './TestOpNumberGteInput/TestOpNumberGteInput';
 
 export type AnyTestOpInputProps = {
   value: AnyTestOp,
@@ -15,144 +22,80 @@ export type AnyTestOpInputProps = {
 const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
   return (
     <div className={s.AnyTestOpInput}>
-      <div>
-        <Select<AnyTestOp['op']['type']>
-          list={[
-            {
-              type: "group", title: "Any JSON type", items: [
-                { type: "item", title: "Always OK", value: "TestOpAlwaysOk" },
-                { type: "item", title: "Value is defined", value: "TestOpIsDefined" },
-                { type: "item", title: "Value is null", value: "TestOpIsNull" },
-              ]
-            },
-            {
-              type: "group", title: "Boolean", items: [
-                { type: "item", title: "True or false", value: "TestOpBoolEquals" },
-              ]
-            },
-            {
-              type: "group", title: "String", items: [
-                { type: "item", title: "String equals", value: "TestOpStringEquals" },
-                { type: "item", title: "String includes", value: "TestOpStringIncludes" },
-                { type: "item", title: "String starts with", value: "TestOpStringStartsWith" },
-                { type: "item", title: "String ends with", value: "TestOpStringEndsWith" },
-                { type: "item", title: "String matches regex", value: "TestOpStringMatchesRegex" },
-              ]
-            },
-            {
-              type: "group", title: "Array", items: [
-                { type: "item", title: "All items match", value: "TestOpArrayAll" },
-                { type: "item", title: "Any item match", value: "TestOpArrayAny" },
-              ]
-            }
-          ]}
-          value={props.value.op.type}
-          onChange={(v) => {
-            switch (v) {
-              case "TestOpAlwaysOk":
-                props.onChange({ ...props.value, op: { type: "TestOpAlwaysOk" } });
-                break;
-              case "TestOpIsDefined":
-                props.onChange({ ...props.value, op: { type: "TestOpIsDefined" } });
-                break;
-              case "TestOpIsNull":
-                props.onChange({ ...props.value, op: { type: "TestOpIsNull" } });
-                break;
-              case "TestOpBoolEquals":
-                props.onChange({ ...props.value, op: { type: "TestOpBoolEquals", equals: true } });
-                break;
-              case "TestOpStringEquals":
-                props.onChange({ ...props.value, op: { type: "TestOpStringEquals", equals: "", isCaseInsensitive: false } });
-                break;
-              case "TestOpStringIncludes":
-                props.onChange({ ...props.value, op: { type: "TestOpStringIncludes", includes: "", isCaseInsensitive: false } });
-                break;
-              case "TestOpStringStartsWith":
-                props.onChange({ ...props.value, op: { type: "TestOpStringStartsWith", startsWith: "", isCaseInsensitive: false } });
-                break;
-              case "TestOpStringEndsWith":
-                props.onChange({ ...props.value, op: { type: "TestOpStringEndsWith", endsWith: "", isCaseInsensitive: false } });
-                break;
-              case "TestOpStringMatchesRegex":
-                props.onChange({ ...props.value, op: { type: "TestOpStringMatchesRegex", pattern: "", flags: "gm" } });
-                break;
-              case "TestOpArrayAll": {
-                if (props.value.op.type === "TestOpArrayAny") {
-                  const newOp: TestOpArrayAll = {
-                    ...props.value.op,
-                    type: "TestOpArrayAll"
-                  };
-                  props.onChange({ ...props.value, op: newOp });
-                } else {
-                  props.onChange({
-                    ...props.value,
-                    op: {
-                      type: "TestOpArrayAny",
-                      testItemOp: {
-                        type: "BasicMessageFilterOp",
-                        isEnabled: true,
-                        isNegated: false,
-                        op: { type: "AnyTestOp", op: { type: "TestOpIsDefined" } },
-                        reactKey: uuid()
-                      }
-                    }
-                  });
-                }
-
-                break;
-              }
-
-              case "TestOpArrayAny": {
-                if (props.value.op.type === "TestOpArrayAll") {
-                  const newOp: TestOpArrayAny = {
-                    ...props.value.op,
-                    type: "TestOpArrayAny"
-                  };
-                  props.onChange({ ...props.value, op: newOp });
-                } else {
-                  props.onChange({
-                    ...props.value,
-                    op: {
-                      type: "TestOpArrayAll",
-                      testItemOp: {
-                        type: "BasicMessageFilterOp",
-                        isEnabled: true,
-                        isNegated: false,
-                        op: { type: "AnyTestOp", op: { type: "TestOpIsDefined" } },
-                        reactKey: uuid()
-                      }
-                    }
-                  });
-                }
-
-                break;
-              }
-
-            }
-          }}
+      {props.value.op.type === "TestOpNumberEq" && (
+        <TestOpNumberEqInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
         />
-      </div>
+      )}
+      {props.value.op.type === "TestOpNumberLt" && (
+        <TestOpNumberLtInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberLte" && (
+        <TestOpNumberLteInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberGt" && (
+        <TestOpNumberGtInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpNumberGte" && (
+        <TestOpNumberGteInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
 
-      <div>
-        {props.value.op.type === "TestOpStringEquals" && (
-          <TestOpStringEqualsInput
-            value={props.value.op}
-            onChange={(v) => props.onChange({ ...props.value, op: v })}
-          />
-        )}
-        {props.value.op.type === "TestOpArrayAll" && (
-          <TestOpArrayAllInput
-            value={props.value.op}
-            onChange={(v) => props.onChange({ ...props.value, op: v })}
-          />
-        )}
-        {props.value.op.type === "TestOpArrayAny" && (
-          <TestOpArrayAnyInput
-            value={props.value.op}
-            onChange={(v) => props.onChange({ ...props.value, op: v })}
-          />
-        )}
-      </div>
+      {props.value.op.type === "TestOpStringEquals" && (
+        <TestOpStringEqualsInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpStringIncludes" && (
+        <TestOpStringIncludesInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpStringStartsWith" && (
+        <TestOpStringStartsWithInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpStringEndsWith" && (
+        <TestOpStringEndsWithInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpStringMatchesRegex" && (
+        <TestOpStringMatchesRegexInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+
+      {props.value.op.type === "TestOpArrayAll" && (
+        <TestOpArrayAllInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpArrayAny" && (
+        <TestOpArrayAnyInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
     </div>
   );
 }

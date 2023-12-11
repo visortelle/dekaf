@@ -19,13 +19,16 @@ type AppProps = {
 
 const App: React.FC<AppProps> = (props) => {
   return (
-    <AppContext.DefaultProvider config={props.config}>
-      <I18n.DefaultProvider>
-        <AsyncTasks.DefaultProvider>
-          <_App {...props} />
-        </AsyncTasks.DefaultProvider>
-      </I18n.DefaultProvider>
-    </AppContext.DefaultProvider>
+    <>
+      <AppContext.DefaultProvider config={props.config}>
+        <I18n.DefaultProvider>
+          <AsyncTasks.DefaultProvider>
+            <_App {...props} />
+          </AsyncTasks.DefaultProvider>
+        </I18n.DefaultProvider>
+      </AppContext.DefaultProvider>
+      <Tooltip />
+    </>
   );
 };
 
@@ -49,7 +52,6 @@ const _App: React.FC<AppProps> = (props) => {
             <BrokerConfig.DefaultProvider>
               <HelmetProvider>
                 <Router basename={new URL(props.config.publicBaseUrl).pathname} />
-                <Tooltip />
               </HelmetProvider>
             </BrokerConfig.DefaultProvider>
           </Notifications.DefaultProvider>

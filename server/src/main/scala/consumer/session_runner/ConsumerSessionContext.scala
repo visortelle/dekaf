@@ -121,6 +121,9 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         jsonMessage: JsonValue,
         jsonValue: MessageValueAsJson
     ): ChainTestResult =
+        if !filterChain.isEnabled then
+            return ChainTestResult(isOk = true, results = Vector.empty)
+
         val filterResults = filterChain.filters
             .filter(_.isEnabled)
             .map(f => testMessageFilter(f, jsonMessage, jsonValue))
