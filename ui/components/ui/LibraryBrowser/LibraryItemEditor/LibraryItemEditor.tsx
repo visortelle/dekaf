@@ -158,6 +158,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             libraryContext={props.libraryContext}
             onChange={() => { }}
             value={props.value.metadata.availableForContexts}
+            isReadOnly={props.mode === "viewer"}
           />
         </FormItem>
       </div>

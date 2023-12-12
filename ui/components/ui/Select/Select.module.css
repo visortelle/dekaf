@@ -28,6 +28,16 @@
   height: 28rem;
 }
 
+.ReadOnly .Select {
+  color: var(--text-color);
+  opacity: 1;
+}
+
+.ReadOnly,
+.ReadOnly .Select:hover {
+  cursor: initial;
+}
+
 .NoBorders {
   background-color: transparent;
 }

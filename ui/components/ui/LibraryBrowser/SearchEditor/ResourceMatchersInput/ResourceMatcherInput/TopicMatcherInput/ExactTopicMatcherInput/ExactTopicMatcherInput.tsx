@@ -8,6 +8,7 @@ import { ExactTopicMatcher } from '../../../../../model/resource-matchers';
 export type ExactTopicMatcherInputProps = {
   value: ExactTopicMatcher;
   onChange: (value: ExactTopicMatcher) => void;
+  isReadOnly?: boolean
 };
 
 const ExactTopicMatcherInput: React.FC<ExactTopicMatcherInputProps> = (props) => {
@@ -18,11 +19,16 @@ const ExactTopicMatcherInput: React.FC<ExactTopicMatcherInputProps> = (props) =>
           size='small'
           value={props.value.topic}
           onChange={(v) => props.onChange({ ...props.value, topic: v })}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
 
       <FormItem size='small'>
-        <NamespaceMatcherInput value={props.value.namespace} onChange={(v) => props.onChange({ ...props.value, namespace: v })} />
+        <NamespaceMatcherInput
+          value={props.value.namespace}
+          onChange={(v) => props.onChange({ ...props.value, namespace: v })}
+          isReadOnly={props.isReadOnly}
+        />
       </FormItem>
     </div>
   );

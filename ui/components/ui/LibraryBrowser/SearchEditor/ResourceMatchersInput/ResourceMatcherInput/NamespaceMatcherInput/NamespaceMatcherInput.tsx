@@ -11,6 +11,7 @@ import { v4 as uuid } from 'uuid';
 export type NamespaceMatcherInputProps = {
   value: NamespaceMatcher;
   onChange: (value: NamespaceMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
@@ -51,6 +52,7 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
               { type: 'item', value: 'exact-namespace-matcher', title: 'by exact name' },
               { type: 'item', value: 'regex-namespace-matcher', title: 'by regex' },
             ]}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       </FormItem>
@@ -59,12 +61,14 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
         <ExactNamespaceMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.value.type === 'regex-namespace-matcher' && (
         <RegexNamespaceMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
     </div>

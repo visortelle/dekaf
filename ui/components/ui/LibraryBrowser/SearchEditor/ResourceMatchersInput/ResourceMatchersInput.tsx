@@ -10,12 +10,19 @@ export type ResourceMatchersInputProps = {
   value: ResourceMatcher[];
   onChange: (value: ResourceMatcher[]) => void
   libraryContext: LibraryContext;
+  isReadOnly?: boolean
 };
 
 const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
   return (
-    <div className={s.ResourceMatchersInput}>
+    <div
+      className={`
+        ${s.ResourceMatchersInput}
+        ${props.isReadOnly ? s.ReadOnly : ''}
+      `}
+    >
       <ListInput<ResourceMatcher>
+        isReadOnly={props.isReadOnly}
         value={props.value}
         renderItem={(matcher) => {
           return (
@@ -26,6 +33,7 @@ const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
                   const newMatchers = props.value.map(mt => mt.reactKey === matcher.reactKey ? v : mt);
                   props.onChange(newMatchers);
                 }}
+                isReadOnly={props.isReadOnly}
               />
             </div>
           );

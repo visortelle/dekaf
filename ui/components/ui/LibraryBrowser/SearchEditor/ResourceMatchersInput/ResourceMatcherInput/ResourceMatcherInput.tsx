@@ -10,7 +10,8 @@ import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
 
 export type ResourceMatcherInputProps = {
   value: ResourceMatcher;
-  onChange: (value: ResourceMatcher) => void
+  onChange: (value: ResourceMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const ResourceMatcherInput: React.FC<ResourceMatcherInputProps> = (props) => {
@@ -34,19 +35,32 @@ const ResourceMatcherInput: React.FC<ResourceMatcherInputProps> = (props) => {
               { type: 'item', value: 'namespace-matcher', title: 'Namespace(s)' },
               { type: 'item', value: 'topic-matcher', title: 'Topic(s)' },
             ]}
+            isReadOnly={props.isReadOnly}
           />
         </div>
 
       </FormItem>
 
       {props.value.type === 'tenant-matcher' && (
-        <TenantMatcherInput value={props.value} onChange={props.onChange} />
+        <TenantMatcherInput
+          value={props.value}
+          onChange={props.onChange}
+          isReadOnly={props.isReadOnly}
+        />
       )}
       {props.value.type === 'namespace-matcher' && (
-        <NamespaceMatcherInput value={props.value} onChange={props.onChange} />
+        <NamespaceMatcherInput
+          value={props.value}
+          onChange={props.onChange}
+          isReadOnly={props.isReadOnly}
+        />
       )}
       {props.value.type === 'topic-matcher' && (
-        <TopicMatcherInput value={props.value} onChange={props.onChange} />
+        <TopicMatcherInput
+          value={props.value}
+          onChange={props.onChange}
+          isReadOnly={props.isReadOnly}
+        />
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { ExactTenantMatcher } from '../../../../../model/resource-matchers';
 export type ExactTenantMatcherInputProps = {
   value: ExactTenantMatcher;
   onChange: (value: ExactTenantMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const ExactTenantMatcherInput: React.FC<ExactTenantMatcherInputProps> = (props) => {
@@ -18,6 +19,7 @@ const ExactTenantMatcherInput: React.FC<ExactTenantMatcherInputProps> = (props) 
           size='small'
           value={props.value.tenant}
           onChange={(v) => props.onChange({ ...props.value, tenant: v })}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

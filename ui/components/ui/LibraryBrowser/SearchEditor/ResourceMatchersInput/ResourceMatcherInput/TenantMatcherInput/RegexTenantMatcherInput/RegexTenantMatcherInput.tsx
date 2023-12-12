@@ -8,6 +8,7 @@ import { RegexTenantMatcher } from '../../../../../model/resource-matchers';
 export type RegexTenantMatcherInputProps = {
   value: RegexTenantMatcher;
   onChange: (value: RegexTenantMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const RegexTenantMatcherInput: React.FC<RegexTenantMatcherInputProps> = (props) => {
@@ -19,6 +20,7 @@ const RegexTenantMatcherInput: React.FC<RegexTenantMatcherInputProps> = (props) 
           value={props.value.tenantRegex}
           onChange={(v) => props.onChange({ ...props.value, tenantRegex: v })}
           placeholder='Use .* regex to match all tenants'
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

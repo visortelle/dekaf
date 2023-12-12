@@ -8,6 +8,7 @@ import { ExactNamespaceMatcher } from '../../../../../model/resource-matchers';
 export type ExactNamespaceMatcherInputProps = {
   value: ExactNamespaceMatcher;
   onChange: (value: ExactNamespaceMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const ExactNamespaceMatcherInput: React.FC<ExactNamespaceMatcherInputProps> = (props) => {
@@ -18,10 +19,15 @@ const ExactNamespaceMatcherInput: React.FC<ExactNamespaceMatcherInputProps> = (p
           size='small'
           value={props.value.namespace}
           onChange={(v) => props.onChange({ ...props.value, namespace: v })}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
       <FormItem size='small'>
-        <TenantMatcherInput value={props.value.tenant} onChange={(v) => props.onChange({ ...props.value, tenant: v })} />
+        <TenantMatcherInput
+          value={props.value.tenant}
+          onChange={(v) => props.onChange({ ...props.value, tenant: v })}
+          isReadOnly={props.isReadOnly}
+        />
       </FormItem>
     </div>
   );

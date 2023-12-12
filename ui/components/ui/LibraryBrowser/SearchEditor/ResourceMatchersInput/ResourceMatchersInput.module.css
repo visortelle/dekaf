@@ -5,3 +5,7 @@
   padding-bottom: 12rem;
   flex: 1;
 }
+
+.ReadOnly .ResourceMatcherInput {
+  padding-top: 12rem;
+}

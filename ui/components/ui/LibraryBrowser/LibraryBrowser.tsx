@@ -339,7 +339,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             text={(() => {
               if (props.mode.item.metadata.id === selectedItem?.spec.metadata.id) {
                 const isNewItem = resolvedItemToSave.type === 'not-found';
-                return isNewItem ? 'Create' : 'Update';
+                return isNewItem ? 'Save' : 'Overwrite';
               }
 
               return 'Overwrite';

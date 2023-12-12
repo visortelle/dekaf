@@ -59,6 +59,11 @@
   width: 100%;
 }
 
+.ReadOnly .InputInput {
+  opacity: 1;
+  color: var(--text-color);
+}
+
 .SmallInput .InputInput {
   height: 28rem;
 }

@@ -11,6 +11,7 @@ import { v4 as uuid } from 'uuid';
 export type TenantMatcherInputProps = {
   value: TenantMatcher;
   onChange: (value: TenantMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
@@ -49,6 +50,7 @@ const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
               { type: 'item', value: 'exact-tenant-matcher', title: 'by exact name' },
               { type: 'item', value: 'regex-tenant-matcher', title: 'by regex' },
             ]}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       </FormItem>
@@ -57,12 +59,14 @@ const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
         <ExactTenantMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.value.type === 'regex-tenant-matcher' && (
         <RegexTenantMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
     </div>

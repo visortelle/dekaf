@@ -11,6 +11,7 @@ import { v4 as uuid } from 'uuid';
 export type TopicMatcherInputProps = {
   value: TopicMatcher;
   onChange: (value: TopicMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
@@ -20,6 +21,7 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
         <div style={{ display: 'flex', gap: '4rem', alignItems: 'center' }}>
           <ResourceFormLabel type='topic' />
           <Select<TopicMatcherType>
+            isReadOnly={props.isReadOnly}
             size='small'
             value={props.value.value.type}
             onChange={(v) => {
@@ -61,12 +63,14 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
         <ExactTopicMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.value.type === 'regex-topic-matcher' && (
         <RegexTopicMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
     </div>

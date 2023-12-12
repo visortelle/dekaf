@@ -8,6 +8,7 @@ import { RegexNamespaceMatcher } from '../../../../../model/resource-matchers';
 export type RegexNamespaceMatcherInputProps = {
   value: RegexNamespaceMatcher;
   onChange: (value: RegexNamespaceMatcher) => void;
+  isReadOnly?: boolean;
 };
 
 const RegexNamespaceMatcherInput: React.FC<RegexNamespaceMatcherInputProps> = (props) => {
@@ -19,10 +20,15 @@ const RegexNamespaceMatcherInput: React.FC<RegexNamespaceMatcherInputProps> = (p
           value={props.value.namespaceRegex}
           onChange={(v) => props.onChange({ ...props.value, namespaceRegex: v })}
           placeholder='Use .* regex to match all namespaces'
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
       <FormItem size='small'>
-        <TenantMatcherInput value={props.value.tenant} onChange={(v) => props.onChange({ ...props.value, tenant: v })} />
+        <TenantMatcherInput
+          value={props.value.tenant}
+          onChange={(v) => props.onChange({ ...props.value, tenant: v })}
+          isReadOnly={props.isReadOnly}
+        />
       </FormItem>
     </div>
   );
