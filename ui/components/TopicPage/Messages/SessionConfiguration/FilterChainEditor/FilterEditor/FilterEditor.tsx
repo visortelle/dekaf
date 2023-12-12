@@ -19,6 +19,7 @@ export type FilterEditorProps = {
   value: ManagedMessageFilterValOrRef;
   onChange: (value: ManagedMessageFilterValOrRef) => void;
   libraryContext: LibraryContext;
+  isReadOnly?: boolean;
 };
 
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
@@ -51,6 +52,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     <div className={s.FilterEditor} ref={hoverRef} style={{ filter: cssFilter }}>
       <div style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
+          isReadOnly={props.isReadOnly}
           itemToSave={item}
           itemType='message-filter'
           onPick={(item) => props.onChange({
@@ -72,12 +74,14 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                 <OnOffToggle
                   value={itemSpec.isEnabled}
                   onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
+                  isReadOnly={props.isReadOnly}
                 />
 
                 <InvertedToggle
                   value={itemSpec.isNegated}
                   onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
                   helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
+                  isReadOnly={props.isReadOnly}
                 />
               </div>
             ),
@@ -133,6 +137,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                         return;
                     }
                   }}
+                  isReadOnly={props.isReadOnly}
                 />
               </div>
             )
@@ -150,6 +155,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               isEnabled: itemSpec.isEnabled,
               isNegated: itemSpec.isNegated,
             })}
+            isReadOnly={props.isReadOnly}
           />
         )}
         {itemSpec.type === 'js-message-filter' && (
@@ -161,6 +167,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               isEnabled: itemSpec.isEnabled,
               isNegated: itemSpec.isNegated,
             })}
+            isReadOnly={props.isReadOnly}
           />
         )}
       </div>

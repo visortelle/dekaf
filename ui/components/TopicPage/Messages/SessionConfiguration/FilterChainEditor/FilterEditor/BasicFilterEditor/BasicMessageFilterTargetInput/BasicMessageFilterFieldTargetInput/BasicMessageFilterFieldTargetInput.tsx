@@ -5,7 +5,8 @@ import Input from '../../../../../../../../ui/Input/Input';
 
 export type BasicMessageFilterFieldTargetInputProps = {
   value: BasicMessageFilterFieldTarget,
-  onChange: (v: BasicMessageFilterFieldTarget) => void
+  onChange: (v: BasicMessageFilterFieldTarget) => void,
+  isReadOnly?: boolean
 };
 
 const BasicMessageFilterFieldTargetInput: React.FC<BasicMessageFilterFieldTargetInputProps> = (props) => {
@@ -16,6 +17,7 @@ const BasicMessageFilterFieldTargetInput: React.FC<BasicMessageFilterFieldTarget
         value={props.value.jsonFieldSelector || ''}
         onChange={v => props.onChange({ ...props.value, jsonFieldSelector: v })}
         placeholder='items[42].id'
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

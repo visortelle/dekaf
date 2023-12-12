@@ -6,7 +6,8 @@ import FormItem from '../../../../../../../../../ui/ConfigurationTable/FormItem/
 
 export type TestOpStringStartsWithInputProps = {
   value: TestOpStringStartsWith,
-  onChange: (v: TestOpStringStartsWith) => void
+  onChange: (v: TestOpStringStartsWith) => void,
+  isReadOnly?: boolean
 };
 
 const TestOpStringStartsWithInput: React.FC<TestOpStringStartsWithInputProps> = (props) => {
@@ -19,6 +20,7 @@ const TestOpStringStartsWithInput: React.FC<TestOpStringStartsWithInputProps> = 
           onChange={(v) => props.onChange({ ...props.value, startsWith: v })}
           isMatchCase={!props.value.isCaseInsensitive}
           onIsMatchCaseChange={v => props.onChange({ ...props.value, isCaseInsensitive: !v })}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

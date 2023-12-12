@@ -22,6 +22,7 @@ export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
   onChange: (value: ManagedMessageFilterChainValOrRef) => void;
   libraryContext: LibraryContext;
+  isReadOnly?: boolean;
 };
 
 const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
@@ -77,15 +78,18 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 <OnOffToggle
                   value={itemSpec.isEnabled}
                   onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+                  isReadOnly={props.isReadOnly}
                 />
                 <InvertedToggle
                   value={itemSpec.isNegated}
                   onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
                   helpOverride="Invert result. If enabled, then messages that matches the filter chain will be not passed and vice versa."
+                  isReadOnly={props.isReadOnly}
                 />
               </div>
             )
           }}
+          isReadOnly={props.isReadOnly}
         />
       </div>
 
@@ -113,6 +117,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                     onSpecChange({ ...itemSpec, filters: newFilters });
                   }}
                   libraryContext={props.libraryContext}
+                  isReadOnly={props.isReadOnly}
                 />
               </div>
               {!isLast && (
@@ -175,6 +180,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
         itemName='Filter'
         isHideNothingToShow
         isContentDoesntOverlapRemoveButton
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

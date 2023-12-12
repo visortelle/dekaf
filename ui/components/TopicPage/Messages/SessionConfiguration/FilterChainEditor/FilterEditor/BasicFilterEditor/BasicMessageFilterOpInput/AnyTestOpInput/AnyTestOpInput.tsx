@@ -16,7 +16,8 @@ import TestOpNumberGteInput from './TestOpNumberGteInput/TestOpNumberGteInput';
 
 export type AnyTestOpInputProps = {
   value: AnyTestOp,
-  onChange: (v: AnyTestOp) => void
+  onChange: (v: AnyTestOp) => void,
+  isReadOnly?: boolean
 };
 
 const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
@@ -26,30 +27,35 @@ const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
         <TestOpNumberEqInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpNumberLt" && (
         <TestOpNumberLtInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpNumberLte" && (
         <TestOpNumberLteInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpNumberGt" && (
         <TestOpNumberGtInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpNumberGte" && (
         <TestOpNumberGteInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
 
@@ -57,30 +63,35 @@ const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
         <TestOpStringEqualsInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpStringIncludes" && (
         <TestOpStringIncludesInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpStringStartsWith" && (
         <TestOpStringStartsWithInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpStringEndsWith" && (
         <TestOpStringEndsWithInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpStringMatchesRegex" && (
         <TestOpStringMatchesRegexInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
 
@@ -88,12 +99,14 @@ const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
         <TestOpArrayAllInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
       {props.value.op.type === "TestOpArrayAny" && (
         <TestOpArrayAnyInput
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
+          isReadOnly={props.isReadOnly}
         />
       )}
     </div>

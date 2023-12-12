@@ -6,7 +6,8 @@ import Input from '../../../../../../../../../ui/Input/Input';
 
 export type TestOpNumberEqInputProps = {
   value: TestOpNumberEq,
-  onChange: (v: TestOpNumberEq) => void
+  onChange: (v: TestOpNumberEq) => void,
+  isReadOnly?: boolean
 };
 
 const TestOpNumberEqInput: React.FC<TestOpNumberEqInputProps> = (props) => {
@@ -18,6 +19,7 @@ const TestOpNumberEqInput: React.FC<TestOpNumberEqInputProps> = (props) => {
           value={props.value.eq}
           onChange={(v) => props.onChange({ ...props.value, eq: v })}
           inputProps={{ type: 'number' }}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

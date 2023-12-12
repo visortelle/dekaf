@@ -10,7 +10,8 @@ const multilineAddonId = "a38f403c-b0a1-4491-a5c0-10c9f289accd";
 
 export type TestOpStringMatchesRegexInputProps = {
   value: TestOpStringMatchesRegex,
-  onChange: (v: TestOpStringMatchesRegex) => void
+  onChange: (v: TestOpStringMatchesRegex) => void,
+  isReadOnly?: boolean
 };
 
 const TestOpStringMatchesRegexInput: React.FC<TestOpStringMatchesRegexInputProps> = (props) => {
@@ -45,6 +46,7 @@ const TestOpStringMatchesRegexInput: React.FC<TestOpStringMatchesRegexInputProps
               help: "Case insensitive match"
             }
           ]}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

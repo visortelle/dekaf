@@ -6,7 +6,8 @@ import Input from '../../../../../../../../../ui/Input/Input';
 
 export type TestOpNumberGtInputProps = {
   value: TestOpNumberGt,
-  onChange: (v: TestOpNumberGt) => void
+  onChange: (v: TestOpNumberGt) => void,
+  isReadOnly?: boolean
 };
 
 const TestOpNumberGtInput: React.FC<TestOpNumberGtInputProps> = (props) => {
@@ -18,6 +19,7 @@ const TestOpNumberGtInput: React.FC<TestOpNumberGtInputProps> = (props) => {
           value={props.value.gt}
           onChange={(v) => props.onChange({ ...props.value, gt: v })}
           inputProps={{ type: 'number' }}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

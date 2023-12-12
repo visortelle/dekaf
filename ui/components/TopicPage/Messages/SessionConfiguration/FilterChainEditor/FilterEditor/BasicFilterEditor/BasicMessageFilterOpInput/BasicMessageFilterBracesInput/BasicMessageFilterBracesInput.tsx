@@ -1,7 +1,6 @@
 import React from 'react';
 import s from './BasicMessageFilterBracesInput.module.css'
 import { BasicMessageFilterBraces, BasicMessageFilterOp } from '../../../../../../basic-message-filter-types';
-import Toggle from '../../../../../../../../ui/Toggle/Toggle';
 import ListInput from '../../../../../../../../ui/ConfigurationTable/ListInput/ListInput';
 import BasicMessageFilterOpInput from '../BasicMessageFilterOpInput';
 import { cloneDeep } from 'lodash';
@@ -10,7 +9,8 @@ import IconToggle from '../../../../../../../../ui/IconToggle/IconToggle';
 
 export type BasicMessageFilterBracesInputProps = {
   value: BasicMessageFilterBraces,
-  onChange: (v: BasicMessageFilterBraces) => void
+  onChange: (v: BasicMessageFilterBraces) => void,
+  isReadOnly?: boolean
 };
 
 const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps> = (props) => {
@@ -33,6 +33,7 @@ const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps
                     props.onChange(newValue);
                   }}
                   isShowEnableToggle={true}
+                  isReadOnly={props.isReadOnly}
                 />
                 {!isLast && (
                   <div className={s.Mode}>
@@ -46,6 +47,7 @@ const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps
                         ...props.value,
                         mode: v
                       })}
+                      isReadOnly={props.isReadOnly}
                     />
                   </div>
                 )}
@@ -73,6 +75,7 @@ const BasicMessageFilterBracesInput: React.FC<BasicMessageFilterBracesInputProps
           }}
           onRemove={(v) => props.onChange({ ...props.value, ops: props.value.ops.filter(op => op.reactKey !== v) })}
           onChange={(v) => props.onChange({ ...props.value, ops: v })}
+          isReadOnly={props.isReadOnly}
         />
       </div>
     </div>

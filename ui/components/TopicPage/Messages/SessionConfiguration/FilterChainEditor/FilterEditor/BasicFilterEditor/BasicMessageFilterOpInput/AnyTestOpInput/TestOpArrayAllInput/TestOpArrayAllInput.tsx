@@ -8,7 +8,8 @@ import FormItem from '../../../../../../../../../ui/ConfigurationTable/FormItem/
 
 export type TestOpArrayAllInputProps = {
   value: TestOpArrayAll,
-  onChange: (v: TestOpArrayAll) => void
+  onChange: (v: TestOpArrayAll) => void,
+  isReadOnly?: boolean
 };
 
 const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
@@ -41,6 +42,7 @@ const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
 
                 props.onChange({ ...props.value, itemFieldTarget });
               }}
+              isReadOnly={props.isReadOnly}
             />
           </div>
           {props.value.itemFieldTarget?.type === "BasicMessageFilterFieldTarget" && (
@@ -48,6 +50,7 @@ const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
               <BasicMessageFilterFieldTargetInput
                 value={props.value.itemFieldTarget}
                 onChange={(v) => props.onChange({ ...props.value, itemFieldTarget: v })}
+                isReadOnly={props.isReadOnly}
               />
             </div>
           )}
@@ -57,6 +60,7 @@ const TestOpArrayAllInput: React.FC<TestOpArrayAllInputProps> = (props) => {
         value={props.value.testItemOp}
         onChange={(v) => props.onChange({ ...props.value, testItemOp: v })}
         isShowEnableToggle={false}
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

@@ -15,6 +15,7 @@ export const defaultJsFilterValue: t.JsMessageFilter = {
 export type JsFilterEditorProps = {
   value: t.JsMessageFilter;
   onChange: (value: t.JsMessageFilter) => void;
+  isReadOnly?: boolean;
 };
 
 const JsFilterEditor: React.FC<JsFilterEditorProps> = (props) => {
@@ -28,6 +29,7 @@ const JsFilterEditor: React.FC<JsFilterEditorProps> = (props) => {
           language="javascript"
           // TODO remove the autocomplete configuration, when it will be possible to select\configure it directly in the codeEditor.
           autoCompleteConfig={{ language: 'javascript', match: /msg\./, dependencies: autocomplete.dependencies, kind: 'Function' }}
+          isReadOnly={props.isReadOnly}
         />
       </div>
     </div>

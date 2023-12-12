@@ -6,7 +6,8 @@ import BasicMessageFilterValueTargetInput from './BasicMessageFilterValueTargetI
 
 export type BasicMessageFilterTargetInputProps = {
   value: BasicMessageFilterTarget,
-  onChange: (v: BasicMessageFilterTarget) => void
+  onChange: (v: BasicMessageFilterTarget) => void,
+  isReadOnly?: boolean
 };
 
 type TargetType = BasicMessageFilterTarget['target']['type'];
@@ -27,6 +28,10 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
               <strong
                 style={{ textDecoration: 'underline dotted', cursor: 'pointer' }}
                 onClick={() => {
+                  if (props.isReadOnly) {
+                    return;
+                  }
+
                   if (props.value.target.type === "BasicMessageFilterValueTarget") {
                     const newValue: BasicMessageFilterTarget = {
                       ...props.value,
@@ -69,6 +74,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
                   break;
               }
             }}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       </div>
@@ -79,6 +85,10 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
             <strong
               style={{ textDecoration: 'underline dotted', cursor: 'pointer', fontSize: '12rem' }}
               onClick={() => {
+                if (props.isReadOnly) {
+                  return;
+                }
+
                 if (props.value.target.type === "BasicMessageFilterValueTarget") {
                   const newValue: BasicMessageFilterTarget = {
                     ...props.value,
@@ -94,6 +104,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
             <BasicMessageFilterValueTargetInput
               value={props.value.target}
               onChange={(v) => props.onChange({ ...props.value, target: v })}
+              isReadOnly={props.isReadOnly}
             />
           </div>
         )}

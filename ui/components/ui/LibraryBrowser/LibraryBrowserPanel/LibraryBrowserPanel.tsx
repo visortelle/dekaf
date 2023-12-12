@@ -27,7 +27,8 @@ export type LibraryBrowserPanelProps = {
   extraElements?: {
     preItemType?: React.ReactElement,
     postItemType?: React.ReactElement,
-  }
+  },
+  isReadOnly?: boolean
 };
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
@@ -70,6 +71,10 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           <div
             className={s.ReferenceIcon}
             onClick={() => {
+              if (props.isReadOnly) {
+                return;
+              }
+
               notifySuccess(<>The referenced library item were stored as a part of the parent item value.<br />You can now modify it without affecting other items that use it.</>);
               props.managedItemReference?.onConvertToValue()
             }}
@@ -96,7 +101,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <SvgIcon svg={referenceIcon} />
           </div>
         )}
-        {(isHovered || props.isForceShowButtons) && (
+        {(!props.isReadOnly && (isHovered || props.isForceShowButtons)) && (
           <div className={s.Buttons}>
             <LibraryBrowserButtons
               itemType={props.itemType}

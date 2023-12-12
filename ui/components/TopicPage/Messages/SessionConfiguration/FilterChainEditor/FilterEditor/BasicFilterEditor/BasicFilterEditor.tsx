@@ -7,7 +7,8 @@ import FormItem from '../../../../../../ui/ConfigurationTable/FormItem/FormItem'
 
 export type BasicFilterEditorProps = {
   value: BasicMessageFilter,
-  onChange: (v: BasicMessageFilter) => void
+  onChange: (v: BasicMessageFilter) => void,
+  isReadOnly?: boolean
 };
 
 const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
@@ -17,6 +18,7 @@ const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
         <BasicMessageFilterTargetInput
           value={props.value.target}
           onChange={(v) => props.onChange({ ...props.value, target: v })}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
       <FormItem size='small'>
@@ -24,6 +26,7 @@ const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
           isShowEnableToggle={false}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>

@@ -8,7 +8,8 @@ const defaultIsCaseSensitive = false;
 
 export type AnyTestOpTypeSelectProps = {
   value: AnyTestOp,
-  onChange: (v: AnyTestOp) => void
+  onChange: (v: AnyTestOp) => void,
+  isReadOnly?: boolean
 };
 
 const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
@@ -284,9 +285,9 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
 
               break;
             }
-
           }
         }}
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

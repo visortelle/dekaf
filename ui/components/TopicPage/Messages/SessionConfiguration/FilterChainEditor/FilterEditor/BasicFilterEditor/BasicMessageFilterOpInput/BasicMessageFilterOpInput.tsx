@@ -13,7 +13,8 @@ import AnyTestOpTypeSelect from './AnyTestOpTypeSelect/AnyTestOpTypeSelect';
 export type BasicMessageFilterOpInputProps = {
   value: BasicMessageFilterOp,
   onChange: (v: BasicMessageFilterOp) => void,
-  isShowEnableToggle: boolean
+  isShowEnableToggle: boolean,
+  isReadOnly?: boolean
 };
 
 const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (props) => {
@@ -35,12 +36,14 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
             <OnOffToggle
               value={props.value.isEnabled}
               onChange={(v) => props.onChange({ ...props.value, isEnabled: v })}
+              isReadOnly={props.isReadOnly}
             />
           )}
           <InvertedToggle
             value={props.value.isNegated}
             onChange={(v) => props.onChange({ ...props.value, isNegated: v })}
             helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
+            isReadOnly={props.isReadOnly}
           />
           <IconToggle<boolean>
             items={[
@@ -76,12 +79,14 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
                 return;
               }
             }}
+            isReadOnly={props.isReadOnly}
           />
           {props.value.op.type === "AnyTestOp" && (
             <div style={{ display: 'flex', flex: '1' }}>
               <AnyTestOpTypeSelect
                 value={props.value.op}
                 onChange={(v) => props.onChange({ ...props.value, op: v })}
+                isReadOnly={props.isReadOnly}
               />
             </div>
           )}
@@ -93,12 +98,14 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
           <AnyTestOpInput
             value={props.value.op}
             onChange={(v) => props.onChange({ ...props.value, op: v })}
+            isReadOnly={props.isReadOnly}
           />
         )}
         {props.value.op.type === "BasicMessageFilterBraces" && (
           <BasicMessageFilterBracesInput
             value={props.value.op}
             onChange={(v) => props.onChange({ ...props.value, op: v })}
+            isReadOnly={props.isReadOnly}
           />
         )}
       </div>
