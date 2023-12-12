@@ -2,6 +2,7 @@
 
 .Picker {
   z-index: 999;
+  background-color: #fff !important;
 }
 
 .SvgIcon svg {
@@ -16,9 +17,8 @@
   transition: var(--transition-short);
 }
 
-.DatetimePicker .Picker:global(.react-datetime-picker--disabled),
-.DatetimePicker .Picker:global(.react-datetime-picker--disabled) * {
-  background-color: transparent !important;
+.DatetimePicker:not(.ReadOnly) .Picker:global(.react-datetime-picker--disabled),
+.DatetimePicker:not(.ReadOnly) .Picker:global(.react-datetime-picker--disabled) * {
   color: #aaa !important;
   fill: #aaa !important;
 }

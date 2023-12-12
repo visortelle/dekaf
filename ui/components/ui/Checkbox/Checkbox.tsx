@@ -7,6 +7,7 @@ import uncheckedIcon from './unchecked.svg';
 export type CheckboxProps = {
   onChange: (value: boolean) => void;
   isInline?: boolean;
+  isReadOnly?: boolean;
 } & Omit<InputHTMLAttributes<any>, 'onChange' | 'value'>;
 
 const Checkbox: React.FC<CheckboxProps> = (props) => {
@@ -16,17 +17,30 @@ const Checkbox: React.FC<CheckboxProps> = (props) => {
     className,
     onChange,
     isInline,
+    isReadOnly,
     ...restProps
   } = props;
 
   return (
     <label
-      className={`${s.Checkbox} ${props.checked ? s.Checked : s.Unchecked} ${isInline ? s.InlineCheckbox : ''} ${className || ''}`}
+      className={`
+        ${s.Checkbox}
+        ${props.isReadOnly ? s.ReadOnly : ''}
+        ${props.checked ? s.Checked : s.Unchecked}
+        ${isInline ? s.InlineCheckbox : ''}
+        ${className || ''}
+      `}
       style={style}
     >
       <input
         className={`${s.CheckboxInput}`}
-        onChange={() => onChange(!props.checked)}
+        onChange={() => {
+          if (props.isReadOnly) {
+            return;
+          }
+
+          onChange(!props.checked);
+        }}
         type="checkbox"
         checked={props.checked}
         {...restProps}

@@ -24,8 +24,6 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
   const i18n = I18n.useContext();
   const value = props.value;
 
-  const isReadOnly = props.mode === "viewer";
-
   let descriptorEditor: ReactElement = <></>;
   switch (value.spec.metadata.type) {
     case 'message-filter': {
@@ -43,7 +41,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             props.onChange({ ...props.value, spec: v.val });
           }}
           libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
+          isReadOnly={true}
         />
       );
       break;
@@ -63,7 +61,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             props.onChange({ ...props.value, spec: v.val });
           }}
           libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
+          isReadOnly={true}
         />
       );
       break;
@@ -83,7 +81,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             props.onChange({ ...props.value, spec: v.val });
           }}
           libraryContext={props.libraryContext}
-          isReadOnly={props.mode === "viewer"}
+          isReadOnly={true}
         />
       );
       break;

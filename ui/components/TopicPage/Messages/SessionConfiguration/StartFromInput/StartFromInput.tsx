@@ -18,6 +18,7 @@ export type StartFromInputProps = {
   onChange: (value: ManagedConsumerSessionStartFromValOrRef) => void;
   libraryContext: LibraryContext;
   disabled?: boolean;
+  isReadOnly?: boolean;
 };
 
 type StartFromType = ConsumerSessionStartFrom['type'];
@@ -77,6 +78,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+        isReadOnly={props.isReadOnly}
       />
       <div className={s.TypeSelect}>
         <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
@@ -140,6 +142,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             }
           }}
           disabled={props.disabled}
+          isReadOnly={props.isReadOnly}
         />
       </div>
       {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
@@ -150,6 +153,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
             inputProps={{ disabled: props.disabled, min: 0 }}
             placeholder='n'
+            isReadOnly={props.isReadOnly}
           />
           {worksBestWithNonPartitionedTopic}
         </div>
@@ -162,6 +166,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
             inputProps={{ disabled: props.disabled, min: 0 }}
             placeholder='n'
+            isReadOnly={props.isReadOnly}
           />
           {worksBestWithNonPartitionedTopic}
         </div>
@@ -185,6 +190,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               newItemSpec.startFrom.messageId.val.spec.hexString = v;
               onSpecChange(newItemSpec);
             }}
+            isReadOnly={props.isReadOnly}
           />
           {worksBestWithNonPartitionedTopic}
         </div>
@@ -208,6 +214,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               onSpecChange(newItemSpec);
             }}
             disabled={props.disabled}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       )}
@@ -229,6 +236,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               newItemSpec.startFrom.relativeDateTime.val.spec = v;
               onSpecChange(newItemSpec);
             }}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       )}
