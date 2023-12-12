@@ -17,6 +17,7 @@ const TestOpNumberLtInput: React.FC<TestOpNumberLtInputProps> = (props) => {
           size='small'
           value={props.value.lt}
           onChange={(v) => props.onChange({ ...props.value, lt: v })}
+          inputProps={{ type: 'number' }}
         />
       </FormItem>
     </div>

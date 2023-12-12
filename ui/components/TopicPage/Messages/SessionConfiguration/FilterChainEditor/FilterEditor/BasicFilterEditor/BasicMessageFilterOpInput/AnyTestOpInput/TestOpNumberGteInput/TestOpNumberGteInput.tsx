@@ -17,6 +17,7 @@ const TestOpNumberGteInput: React.FC<TestOpNumberGteInputProps> = (props) => {
           size='small'
           value={props.value.gte}
           onChange={(v) => props.onChange({ ...props.value, gte: v })}
+          inputProps={{ type: 'number' }}
         />
       </FormItem>
     </div>

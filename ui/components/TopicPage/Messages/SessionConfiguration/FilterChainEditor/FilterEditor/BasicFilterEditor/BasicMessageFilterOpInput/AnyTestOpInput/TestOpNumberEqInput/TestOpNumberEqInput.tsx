@@ -17,6 +17,7 @@ const TestOpNumberEqInput: React.FC<TestOpNumberEqInputProps> = (props) => {
           size='small'
           value={props.value.eq}
           onChange={(v) => props.onChange({ ...props.value, eq: v })}
+          inputProps={{ type: 'number' }}
         />
       </FormItem>
     </div>
