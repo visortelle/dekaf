@@ -2,7 +2,6 @@ import React from 'react';
 import s from './RegexNamespaceMatcherInput.module.css'
 import Input from '../../../../../../Input/Input';
 import TenantMatcherInput from '../../TenantMatcherInput/TenantMatcherInput';
-import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
 import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
 import { RegexNamespaceMatcher } from '../../../../../model/resource-matchers';
 
@@ -14,15 +13,15 @@ export type RegexNamespaceMatcherInputProps = {
 const RegexNamespaceMatcherInput: React.FC<RegexNamespaceMatcherInputProps> = (props) => {
   return (
     <div className={s.RegexNamespaceMatcherInput}>
-      <FormItem>
-        <FormLabel content="Namespace Name Regex" />
+      <FormItem size='small'>
         <Input
+          size='small'
           value={props.value.namespaceRegex}
           onChange={(v) => props.onChange({ ...props.value, namespaceRegex: v })}
           placeholder='Use .* regex to match all namespaces'
         />
       </FormItem>
-      <FormItem>
+      <FormItem size='small'>
         <TenantMatcherInput value={props.value.tenant} onChange={(v) => props.onChange({ ...props.value, tenant: v })} />
       </FormItem>
     </div>

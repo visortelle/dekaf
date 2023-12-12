@@ -4,28 +4,40 @@ import TenantMatcherInput from './TenantMatcherInput/TenantMatcherInput';
 import NamespaceMatcherInput from './NamespaceMatcherInput/NamespaceMatcherInput';
 import TopicMatcherInput from './TopicMatcherInput/TopicMatcherInput';
 import { ResourceMatcher } from '../../../model/resource-matchers';
-import SmallButton from '../../../../SmallButton/SmallButton';
-import deleteIcon from './delete.svg';
-import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
+import Select from '../../../../Select/Select';
+import { getDefaultNamespaceMatcher, getDefaultTenantMatcher, getDefaultTopicMatcher } from './default-matchers';
+import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
 
 export type ResourceMatcherInputProps = {
   value: ResourceMatcher;
   onChange: (value: ResourceMatcher) => void
-  onDelete: () => void;
 };
 
 const ResourceMatcherInput: React.FC<ResourceMatcherInputProps> = (props) => {
   return (
     <div className={s.ResourceMatcherInput}>
-      <FormLabel content="Pulsar Resource Matcher" />
-      <div className={s.DeleteButton}>
-        <SmallButton
-          svgIcon={deleteIcon}
-          title='Delete this Matcher'
-          onClick={props.onDelete}
-          type='danger'
-        />
-      </div>
+      <FormItem size='small'>
+        <div style={{ display: 'flex', gap: '4rem', alignItems: 'center' }}>
+          <strong>Select</strong>
+          <Select<ResourceMatcher['type']>
+            size="small"
+            value={props.value.type}
+            onChange={(v) => {
+              switch (v) {
+                case "topic-matcher": props.onChange(getDefaultTopicMatcher()); return;
+                case "namespace-matcher": props.onChange(getDefaultNamespaceMatcher()); return;
+                case "tenant-matcher": props.onChange(getDefaultTenantMatcher()); return;
+              }
+            }}
+            list={[
+              { type: 'item', value: 'tenant-matcher', title: 'Tenant(s)' },
+              { type: 'item', value: 'namespace-matcher', title: 'Namespace(s)' },
+              { type: 'item', value: 'topic-matcher', title: 'Topic(s)' },
+            ]}
+          />
+        </div>
+
+      </FormItem>
 
       {props.value.type === 'tenant-matcher' && (
         <TenantMatcherInput value={props.value} onChange={props.onChange} />

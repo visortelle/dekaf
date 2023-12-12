@@ -13,9 +13,9 @@ export type RegexTenantMatcherInputProps = {
 const RegexTenantMatcherInput: React.FC<RegexTenantMatcherInputProps> = (props) => {
   return (
     <div className={s.RegexTenantMatcherInput}>
-      <FormItem>
-        <FormLabel content="Tenant Name Regex" />
+      <FormItem size='small'>
         <Input
+          size='small'
           value={props.value.tenantRegex}
           onChange={(v) => props.onChange({ ...props.value, tenantRegex: v })}
           placeholder='Use .* regex to match all tenants'

@@ -16,38 +16,41 @@ export type TenantMatcherInputProps = {
 const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
   return (
     <div className={s.TenantMatcherInput}>
-      <FormItem>
-        <ResourceFormLabel type='tenant' />
-        <Select<TenantMatcherType>
-          value={props.value.value.type}
-          onChange={(v) => {
-            if (v === 'exact-tenant-matcher') {
-              props.onChange({
-                type: 'tenant-matcher',
-                value: {
-                  type: 'exact-tenant-matcher',
-                  tenant: '',
+      <FormItem size='small'>
+        <div style={{ display: 'flex', gap: '4rem', alignItems: 'center' }}>
+          <ResourceFormLabel type='tenant' />
+          <Select<TenantMatcherType>
+            size='small'
+            value={props.value.value.type}
+            onChange={(v) => {
+              if (v === 'exact-tenant-matcher') {
+                props.onChange({
+                  type: 'tenant-matcher',
+                  value: {
+                    type: 'exact-tenant-matcher',
+                    tenant: '',
+                    reactKey: uuid()
+                  },
                   reactKey: uuid()
-                },
-                reactKey: uuid()
-              });
-            } else {
-              props.onChange({
-                type: 'tenant-matcher',
-                value: {
-                  type: 'regex-tenant-matcher',
-                  tenantRegex: '',
+                });
+              } else {
+                props.onChange({
+                  type: 'tenant-matcher',
+                  value: {
+                    type: 'regex-tenant-matcher',
+                    tenantRegex: '',
+                    reactKey: uuid()
+                  },
                   reactKey: uuid()
-                },
-                reactKey: uuid()
-              });
-            }
-          }}
-          list={[
-            { type: 'item', value: 'exact-tenant-matcher', title: 'Exact' },
-            { type: 'item', value: 'regex-tenant-matcher', title: 'Regex' },
-          ]}
-        />
+                });
+              }
+            }}
+            list={[
+              { type: 'item', value: 'exact-tenant-matcher', title: 'by exact name' },
+              { type: 'item', value: 'regex-tenant-matcher', title: 'by regex' },
+            ]}
+          />
+        </div>
       </FormItem>
 
       {props.value.value.type === 'exact-tenant-matcher' && (

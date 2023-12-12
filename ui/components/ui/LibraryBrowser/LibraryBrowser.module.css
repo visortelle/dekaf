@@ -12,7 +12,7 @@
 .SearchEditor {
   width: 360rem;
   border-right: 1px solid var(--border-color);
-  padding: 12rem 24rem 48rem 24rem;
+  padding: 12rem 12rem 48rem 24rem;
   overflow: auto;
 }
 

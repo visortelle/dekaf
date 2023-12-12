@@ -14,16 +14,16 @@ export type RegexTopicMatcherInputProps = {
 const RegexTopicMatcherInput: React.FC<RegexTopicMatcherInputProps> = (props) => {
   return (
     <div className={s.RegexTopicMatcherInput}>
-      <FormItem>
-        <FormLabel content="Topic Name Regex" />
+      <FormItem size='small'>
         <Input
+          size='small'
           value={props.value.topicRegex}
           onChange={(v) => props.onChange({ ...props.value, topicRegex: v })}
           placeholder='Use .* regex to match all topics'
         />
       </FormItem>
 
-      <FormItem>
+      <FormItem size='small'>
         <NamespaceMatcherInput value={props.value.namespace} onChange={(v) => props.onChange({ ...props.value, namespace: v })} />
       </FormItem>
     </div>

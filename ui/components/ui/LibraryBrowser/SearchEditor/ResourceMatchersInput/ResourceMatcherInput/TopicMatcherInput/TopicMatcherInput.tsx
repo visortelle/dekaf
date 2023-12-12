@@ -16,42 +16,45 @@ export type TopicMatcherInputProps = {
 const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
   return (
     <div className={s.TopicMatcherInput}>
-      <FormItem>
-        <ResourceFormLabel type='topic' />
-        <Select<TopicMatcherType>
-          value={props.value.value.type}
-          onChange={(v) => {
-            if (v === 'exact-topic-matcher') {
-              props.onChange({
-                type: 'topic-matcher',
-                value: {
-                  type: 'exact-topic-matcher',
-                  namespace: props.value.value.namespace,
-                  persistency: 'any',
-                  topic: '',
+      <FormItem size='small'>
+        <div style={{ display: 'flex', gap: '4rem', alignItems: 'center' }}>
+          <ResourceFormLabel type='topic' />
+          <Select<TopicMatcherType>
+            size='small'
+            value={props.value.value.type}
+            onChange={(v) => {
+              if (v === 'exact-topic-matcher') {
+                props.onChange({
+                  type: 'topic-matcher',
+                  value: {
+                    type: 'exact-topic-matcher',
+                    namespace: props.value.value.namespace,
+                    persistency: 'any',
+                    topic: '',
+                    reactKey: uuid()
+                  },
                   reactKey: uuid()
-                },
-                reactKey: uuid()
-              });
-            } else if (v === 'regex-topic-matcher') {
-              props.onChange({
-                type: 'topic-matcher',
-                value: {
-                  type: 'regex-topic-matcher',
-                  namespace: props.value.value.namespace,
-                  persistency: 'any',
-                  topicRegex: '',
+                });
+              } else if (v === 'regex-topic-matcher') {
+                props.onChange({
+                  type: 'topic-matcher',
+                  value: {
+                    type: 'regex-topic-matcher',
+                    namespace: props.value.value.namespace,
+                    persistency: 'any',
+                    topicRegex: '',
+                    reactKey: uuid()
+                  },
                   reactKey: uuid()
-                },
-                reactKey: uuid()
-              });
-            }
-          }}
-          list={[
-            { type: 'item', value: 'exact-topic-matcher', title: 'Exact' },
-            { type: 'item', value: 'regex-topic-matcher', title: 'Regex' },
-          ]}
-        />
+                });
+              }
+            }}
+            list={[
+              { type: 'item', value: 'exact-topic-matcher', title: 'by exact name' },
+              { type: 'item', value: 'regex-topic-matcher', title: 'by regex' },
+            ]}
+          />
+        </div>
       </FormItem>
 
       {props.value.value.type === 'exact-topic-matcher' && (
