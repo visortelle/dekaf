@@ -12,6 +12,7 @@ import * as I18n from '../../../app/contexts/I18n/I18n';
 import NoData from '../../NoData/NoData';
 import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import StartFromInput from '../../../TopicPage/Messages/SessionConfiguration/StartFromInput/StartFromInput';
+import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
@@ -118,36 +119,33 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
           <div>{i18n.formatDateTime(new Date(value.metadata.updatedAt))}</div>
         </FormItem>
 
-        {props.mode === 'editor' && (
-          <FormItem>
-            <FormLabel content="Name" isRequired />
-            <Input
-              value={value.spec.metadata.name}
-              onChange={v => {
-                const newMetadata = { ...value.spec.metadata, name: v };
-                props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
-              }}
-              focusOnMount
-            />
-          </FormItem>
-        )}
+        <FormItem>
+          <FormLabel content="Name" isRequired />
+          <Input
+            value={value.spec.metadata.name}
+            onChange={v => {
+              const newMetadata = { ...value.spec.metadata, name: v };
+              props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
+            }}
+            focusOnMount
+            isReadOnly={props.mode === "viewer"}
+          />
+        </FormItem>
 
-        {props.mode === 'viewer' && props.value.spec.metadata.descriptionMarkdown && (
-          value.spec.metadata.descriptionMarkdown
-        )}
-
-        {props.mode === 'editor' && (
-          <FormItem>
-            <FormLabel content="Description" />
-            <Input
+        <FormItem>
+          <FormLabel content="Description" />
+          <div className={s.Description}>
+            <MarkdownInput
               value={value.spec.metadata.descriptionMarkdown}
               onChange={v => {
                 const newMetadata = { ...value.spec.metadata, descriptionMarkdown: v };
                 props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
               }}
+              isReadOnly={props.mode === "viewer"}
             />
-          </FormItem>
-        )}
+          </div>
+
+        </FormItem>
       </div>
 
       <div className={s.Editor}>

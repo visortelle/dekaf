@@ -1,0 +1,10 @@
+.MarkdownInput {
+  display: flex;
+  position: relative;
+}
+
+.EditButton {
+  position: absolute;
+  top: 12rem;
+  right: 12rem;
+}

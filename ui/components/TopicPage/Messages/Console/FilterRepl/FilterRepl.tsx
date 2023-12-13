@@ -68,7 +68,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
     >
       <div style={{ padding: '12rem' }}>
         <div>
-          Run any JavaScript expression in the context of the session. Try <code>__dekaf_jsLibs</code> <code>2 + 2</code> or <code>lastMessage</code>.
+          Run any JavaScript expression in the context of the session. Try <code>__dekaf_libs</code> <code>2 + 2</code> or <code>lastMessage</code>.
         </div>
         {!isConsumerCreated && (
           <div style={{ color: 'var(--accent-color-red)' }}>

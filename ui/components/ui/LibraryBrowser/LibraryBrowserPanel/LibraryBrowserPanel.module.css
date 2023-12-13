@@ -5,6 +5,11 @@
 
 .ItemName {}
 
+.ItemDescription {
+  max-height: 240rem;
+  overflow: auto;
+}
+
 .ReferenceIcon {
   width: 16rem;
   height: 16rem;

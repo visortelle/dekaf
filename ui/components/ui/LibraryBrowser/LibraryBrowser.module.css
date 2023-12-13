@@ -30,7 +30,11 @@
 
 .LibraryItemEditor {
   overflow: auto;
-  width: 500rem;
+  width: 800rem;
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
 }
 
 .Footer {

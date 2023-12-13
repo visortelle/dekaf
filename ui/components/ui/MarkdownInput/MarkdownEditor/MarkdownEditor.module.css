@@ -1,0 +1,19 @@
+.MarkdownEditor {
+  display: flex;
+  width: calc(100vw - 96rem);
+  height: calc(100vh - 132rem);
+  gap: 12rem;
+}
+
+.LeftPanel {
+  flex: 1 1;
+  border-right: 1px solid var(--border-color);
+  overflow: auto;
+}
+
+.RightPanel {
+  border-left: 1px solid var(--border-color);
+  flex: 0 1 800rem;
+  overflow: auto;
+  padding: 0 12rem;
+}
