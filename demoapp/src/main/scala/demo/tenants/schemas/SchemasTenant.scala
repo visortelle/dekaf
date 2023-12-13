@@ -5,9 +5,9 @@ import generators.*
 import _root_.client.adminClient
 import demo.tenants.schemas.namespaces
 
-val tenantName = s"schema-types-${java.time.Instant.now().getEpochSecond}"
-
 object SchemasTenant:
+  val tenantName = s"schema-types-${java.time.Instant.now().getEpochSecond}"
+
   def mkTenantPlanGenerator =
       val namespacePlanGenerators = List(
           namespaces.BooleanNamespace.mkPlanGenerator(tenantName),

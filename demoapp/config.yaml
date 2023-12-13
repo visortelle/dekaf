@@ -1,0 +1,2 @@
+brokerServiceUrl: "pulsar://localhost:6650"
+webServiceUrl: "http://localhost:8080"

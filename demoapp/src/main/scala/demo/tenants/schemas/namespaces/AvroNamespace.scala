@@ -60,7 +60,7 @@ object AvroDemoRecord:
     )
 
 object AvroNamespace:
-    def mkPlanGenerator = (tenantName: String) =>
+    def mkPlanGenerator = (tenantName: TenantName) =>
         val namespaceName = "AVRO"
 
         val avroDemoRecordSchema = AvroSchema.of(classOf[AvroDemoRecord])
