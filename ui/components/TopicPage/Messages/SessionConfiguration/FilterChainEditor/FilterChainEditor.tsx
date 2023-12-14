@@ -129,6 +129,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                     ]}
                     value={itemSpec.mode}
                     onChange={v => onSpecChange({ ...itemSpec, mode: v })}
+                    isReadOnly={props.isReadOnly}
                   />
                 </div>
               )}

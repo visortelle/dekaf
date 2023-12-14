@@ -12,7 +12,7 @@ import referenceIcon from './icons/reference.svg';
 import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
-import MarkdownInput from '../../MarkdownInput/MarkdownInput';
+import MarkdownInput from '../../MarkdownEditor/MarkdownInput';
 
 export type LibraryBrowserPanelProps = {
   itemType: ManagedItemType;
@@ -130,7 +130,9 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           <MarkdownInput
             value={props.itemToSave.metadata.descriptionMarkdown}
             onChange={() => undefined}
+            maxHeight={160}
             isReadOnly
+            modalTitle='Description'
           />
         </div>
       )}

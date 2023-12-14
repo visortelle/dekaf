@@ -1,8 +1,3 @@
 .LibraryItemEditor {
   padding: 12rem;
 }
-
-.Description {
-  overflow: auto;
-  max-height: 320rem;
-}

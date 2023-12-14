@@ -7,6 +7,10 @@
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
 }
 
+.IconToggle.ReadOnly {
+  box-shadow: none;
+}
+
 .IconToggle:not(.ReadOnly):hover {
   cursor: pointer;
   opacity: 0.5;

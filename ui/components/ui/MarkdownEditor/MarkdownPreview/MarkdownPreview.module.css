@@ -1,0 +1,53 @@
+.MarkdownPreview {
+  max-width: 800rem;
+}
+
+.MarkdownPreview img,
+.MarkdownPreview svg,
+.MarkdownPreview iframe {
+  max-width: 100%;
+  box-sizing: content-box;
+  background-color: #fff;
+}
+
+.MarkdownPreview h1 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 32rem;
+  margin-bottom: 12rem;
+}
+
+.MarkdownPreview h2 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 24rem;
+  margin-bottom: 12rem;
+}
+
+.MarkdownPreview h3 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 18rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview h4 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 16rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview h5 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 16rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview h6 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 16rem;
+  margin-bottom: 8rem;
+}

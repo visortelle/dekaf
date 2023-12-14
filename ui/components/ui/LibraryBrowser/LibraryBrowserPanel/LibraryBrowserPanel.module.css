@@ -6,8 +6,7 @@
 .ItemName {}
 
 .ItemDescription {
-  max-height: 240rem;
-  overflow: auto;
+  display: flex;
 }
 
 .ReferenceIcon {

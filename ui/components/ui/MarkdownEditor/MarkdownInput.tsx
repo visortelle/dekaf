@@ -8,24 +8,28 @@ import SmallButton from '../SmallButton/SmallButton';
 export type MarkdownInputProps = {
   value: string,
   onChange: (v: string) => void
-  isReadOnly?: boolean
+  maxHeight?: number,
+  isReadOnly?: boolean,
+  modalTitle?: string
 };
 
 const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
   const modals = Modals.useContext();
 
   return (
-    <div className={s.MarkdownInput}>
+    <div
+      className={s.MarkdownInput}
+      style={{ maxHeight: `${props.maxHeight}px` }}
+    >
       <MarkdownPreview markdown={props.value} />
 
-      <div className={s.EditButton}>
-        <SmallButton
-          text='Edit'
-          type='regular'
+      {!props.isReadOnly && (
+        <div
+          className={s.BottomButton}
           onClick={() => {
             modals.push({
               id: 'edit-markdown',
-              title: 'Markdown Editor',
+              title: props.modalTitle || 'Markdown Editor',
               content: (
                 <MarkdownEditorModalHelper
                   value={props.value}
@@ -34,8 +38,26 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
               )
             });
           }}
-        />
-      </div>
+        >
+          <div className={s.BottomButtonText}>Edit</div>
+        </div>
+      )}
+      {props.isReadOnly && (
+        <div
+          className={s.BottomButton}
+          onClick={() => {
+            modals.push({
+              id: 'edit-markdown',
+              title: props.modalTitle || 'Markdown Editor',
+              content: (
+                <MarkdownPreview markdown={props.value} />
+              )
+            });
+          }}
+        >
+          <div className={s.BottomButtonText}>Read More</div>
+        </div>
+      )}
     </div>
   );
 }

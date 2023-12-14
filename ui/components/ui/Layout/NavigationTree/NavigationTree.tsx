@@ -499,7 +499,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             type='regular'
           />
           <SmallButton
-            title="Select Current Resource"
+            title="Show Current Resource"
             svgIcon={focusIcon}
             onClick={() => navigateToPath(props.selectedNodePath)}
             appearance='borderless-semitransparent'

@@ -41,18 +41,12 @@
 }
 
 .ItemName {
-  font-weight: 500;
+  font-weight: var(--font-weight-bold);
   padding: 12rem 12rem;
   padding-left: 8rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.ItemDescription {
-  padding: 2rem 12rem 12rem 12rem;
-  margin-top: -12rem;
-  font-size: 12rem;
 }
 
 .ItemUpdatedAt {

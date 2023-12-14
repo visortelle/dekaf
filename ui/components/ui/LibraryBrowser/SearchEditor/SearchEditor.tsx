@@ -15,8 +15,9 @@ type SearchEditorMode = {
   value: SearchEditorValue;
   onChange: (value: SearchEditorValue) => void;
 } | {
-  type: 'readonly';
+  type: 'search';
   value: SearchEditorValue;
+  onChange: (value: SearchEditorValue) => void;
 }
 
 export type SearchEditorValue = {
@@ -42,12 +43,12 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
           <ManagedItemTypePicker
             value={props.mode.value.itemType}
             onChange={(v) => {
-              if (props.mode.type === 'readonly') {
+              if (props.mode.type === 'search') {
                 return;
               }
               props.mode.onChange({ ...props.mode.value, itemType: v });
             }}
-            readOnly={props.mode.type === 'readonly'}
+            readOnly={true}
           />
         </FormItem>
 
@@ -66,7 +67,7 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
                   <li><code>PROJ-X Infographic</code></li>
                   <li><code>PROJ-X Debug</code></li>
                   <li><code>Test</code></li>
-                  <li><code>Elon Musk's Personal Collection</code></li>
+                  <li><code>Bob's Personal Collection</code></li>
                 </ul>
               </>
             )}
@@ -75,7 +76,7 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
           <TagsPicker
             mode='edit'
             onChange={(v) => {
-              if (props.mode.type === 'readonly') {
+              if (props.mode.type === 'search') {
                 return;
               }
 
@@ -102,10 +103,6 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
           <ResourceMatchersInput
             value={props.mode.value.resourceMatchers}
             onChange={(v) => {
-              if (props.mode.type === 'readonly') {
-                return;
-              }
-
               props.mode.onChange({ ...props.mode.value, resourceMatchers: v })
             }}
             libraryContext={props.libraryContext}

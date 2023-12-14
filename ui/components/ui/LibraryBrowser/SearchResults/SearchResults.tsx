@@ -133,9 +133,6 @@ const Item: React.FC<ItemProps> = (props) => {
       <div className={s.ItemName}>
         {props.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>
-      <div className={s.ItemDescription}>
-        {props.descriptionMarkdown}
-      </div>
       <div className={s.ItemUpdatedAt}>
         Updated at: {i18n.formatDateTime(new Date(props.updatedAt))}
       </div>

@@ -1,0 +1,38 @@
+.MarkdownInput {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.EditButton {
+  position: absolute;
+  top: 12rem;
+  right: 12rem;
+}
+
+.BottomButton {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, #fff 10%, #fff0 100%);
+  height: 50rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  padding-bottom: 4rem;
+}
+
+.BottomButtonText {
+  opacity: 0.6;
+  font-size: 12rem;
+}
+
+.BottomButton:hover {
+  cursor: pointer;
+}
+
+.BottomButton:hover .BottomButtonText {
+  opacity: 1;
+}

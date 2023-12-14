@@ -62,6 +62,7 @@
 .ReadOnly .InputInput {
   opacity: 1;
   color: var(--text-color);
+  box-shadow: none;
 }
 
 .SmallInput .InputInput {

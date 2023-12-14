@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import s from './TopicSelectorInput.module.css'
 import { ManagedTopicSelector, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
@@ -47,6 +47,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     `${props.libraryContext.pulsarResource.topicPersistency}://${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}/${props.libraryContext.pulsarResource.topic}` :
     undefined;
 
+  const topicSelector = useMemo(() => topicSelectorFromManagedSpec(itemSpec, topicFqn), [itemSpec, topicFqn]);
 
   const namespaceFqn = (props.libraryContext.pulsarResource.type === 'namespace' || props.libraryContext.pulsarResource.type === 'topic') ?
     `${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}` :
@@ -72,9 +73,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
 
-      <TopicSelectorInfo
-        topicSelector={topicSelectorFromManagedSpec(itemSpec, topicFqn)}
-      />
+      <TopicSelectorInfo topicSelector={topicSelector} />
 
       <FormItem>
         <Select<ManagedTopicSelectorSpec['topicSelector']['type']>
