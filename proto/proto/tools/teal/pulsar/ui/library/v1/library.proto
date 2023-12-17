@@ -44,7 +44,7 @@ message GetLibraryItemResponse {
 
 message ListLibraryItemsRequest {
   repeated ManagedItemType types = 1;
-  repeated string context_fqns = 2;
+  repeated ResourceMatcher contexts = 2;
   repeated string tags = 3;
 }
 

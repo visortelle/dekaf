@@ -98,13 +98,13 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
         try {
             val filter = ListItemsFilter(
-                types = request.types.map(ManagedItemType.fromPb).toList,
-                tags = request.tags.toList,
-                contextFqns = request.contextFqns.toList
+                types = request.types.map(ManagedItemType.fromPb).toVector,
+                tags = request.tags.toVector,
+                contexts = request.contexts.map(resourceMatcherFromPb).toList
             )
             val libraryItems = library.listItems(filter)
 
-            val libraryItemsPb = libraryItems.map(LibraryItem.toPb).toList
+            val libraryItemsPb = libraryItems.map(LibraryItem.toPb)
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.ListLibraryItemsResponse(status = Some(status), items = libraryItemsPb))

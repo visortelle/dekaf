@@ -6,14 +6,12 @@ message ExactTenantMatcher {
   string tenant = 1;
 }
 
-message RegexTenantMatcher {
-  string tenant_regex = 1;
-}
+message AllTenantMatcher {}
 
 message TenantMatcher {
   oneof matcher {
     ExactTenantMatcher exact = 1;
-    RegexTenantMatcher regex = 2;
+    AllTenantMatcher all = 2;
   }
 }
 
@@ -22,7 +20,7 @@ message ExactNamespaceMatcher {
   string namespace = 2;
 }
 
-message RegexNamespaceMatcher {
+message AllNamespaceMatcher {
   TenantMatcher tenant = 1;
   string namespace_regex = 2;
 }
@@ -30,33 +28,23 @@ message RegexNamespaceMatcher {
 message NamespaceMatcher {
   oneof matcher {
     ExactNamespaceMatcher exact = 1;
-    RegexNamespaceMatcher regex = 2;
+    AllNamespaceMatcher all = 2;
   }
 }
 
-enum TopicPersistency {
-  TOPIC_PERSISTENCY_UNSPECIFIED = 0;
-  TOPIC_PERSISTENCY_NON_PERSISTENT = 1;
-  TOPIC_PERSISTENCY_PERSISTENT = 2;
-  TOPIC_PERSISTENCY_ANY = 3;
-}
-
 message ExactTopicMatcher {
-  TopicPersistency persistency = 1;
-  NamespaceMatcher namespace = 2;
-  string topic = 3;
+  NamespaceMatcher namespace = 1;
+  string topic = 2;
 }
 
-message RegexTopicMatcher {
-  TopicPersistency persistency = 1;
-  NamespaceMatcher namespace = 2;
-  string topic_regex = 3;
+message AllTopicMatcher {
+  NamespaceMatcher namespace = 1;
 }
 
 message TopicMatcher {
   oneof matcher {
     ExactTopicMatcher exact = 1;
-    RegexTopicMatcher regex = 2;
+    AllTopicMatcher all = 2;
   }
 }
 
@@ -67,4 +55,3 @@ message ResourceMatcher {
     TopicMatcher topic = 3;
   }
 }
-

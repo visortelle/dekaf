@@ -11,9 +11,9 @@ type LibraryScanResultEntry = Either[Throwable, LibraryItem]
 type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
-    types: List[ManagedItemType],
-    tags: List[TagName],
-    contextFqns: List[String]
+    types: Vector[ManagedItemType],
+    tags: Vector[TagName],
+    contexts: List[ResourceMatcher]
 )
 
 case class LibraryDb(
@@ -63,8 +63,10 @@ class Library:
         def getItemsByTags(items: List[LibraryItem], tags: List[TagName]): List[LibraryItem] =
             items.filter(item => item.metadata.tags.exists(tag => tags.contains(tag)))
 
-        def getItemsByContextFqns(items: List[LibraryItem], contextFqns: List[String]): List[LibraryItem] =
-            items.filter(item => item.metadata.availableForContexts.exists(resource => contextFqns.exists(fqn => ResourceMatcher.test(resource, fqn))))
+        def getItemsByContexts(items: List[LibraryItem], contexts: List[ResourceMatcher]): List[LibraryItem] =
+            items.filter(item => item.metadata.availableForContexts.exists(availableForContext =>
+                contexts.exists(context => availableForContext.test(context))
+            ))
 
         val dbItems = db.itemsById.values.toList
         val byTypes =
@@ -75,14 +77,14 @@ class Library:
                     val metadata = item.spec.metadata
                     filter.types.contains(metadata.`type`)
                 )
-        val byContextFqns =
-            if filter.contextFqns.isEmpty
+        val byContexts =
+            if filter.contexts.isEmpty
             then byTypes
-            else getItemsByContextFqns(byTypes, filter.contextFqns)
+            else getItemsByContexts(byTypes, filter.contexts)
         val byTags =
             if filter.tags.isEmpty
-            then byContextFqns
-            else getItemsByTags(byContextFqns, filter.tags)
+            then byContexts
+            else getItemsByTags(byContexts, List.empty)
 
         byTags
 
