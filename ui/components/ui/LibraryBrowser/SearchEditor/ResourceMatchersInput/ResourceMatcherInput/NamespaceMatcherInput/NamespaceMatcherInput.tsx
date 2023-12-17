@@ -2,7 +2,7 @@ import React from 'react';
 import s from './NamespaceMatcherInput.module.css';
 import Select from '../../../../../Select/Select';
 import ExactNamespaceMatcherInput from './ExactNamespaceMatcherInput/ExactNamespaceMatcherInput';
-import RegexNamespaceMatcherInput from './RegexNamespaceMatcherInput/RegexNamespaceMatcherInput';
+import AllNamespaceMatcherInput from './AllNamespaceMatcherInput/AllNamespaceMatcherInput';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
 import { NamespaceMatcherType, NamespaceMatcher } from '../../../../model/resource-matchers';
@@ -35,13 +35,12 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
                   },
                   reactKey: uuid()
                 });
-              } else if (v === 'regex-namespace-matcher') {
+              } else if (v === 'all-namespace-matcher') {
                 props.onChange({
                   type: 'namespace-matcher',
                   value: {
-                    type: 'regex-namespace-matcher',
+                    type: 'all-namespace-matcher',
                     tenant: props.value.value.tenant,
-                    namespaceRegex: '',
                     reactKey: uuid()
                   },
                   reactKey: uuid()
@@ -49,8 +48,8 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
               }
             }}
             list={[
-              { type: 'item', value: 'exact-namespace-matcher', title: 'by exact name' },
-              { type: 'item', value: 'regex-namespace-matcher', title: 'by regex' },
+              { type: 'item', value: 'exact-namespace-matcher', title: 'exact name' },
+              { type: 'item', value: 'all-namespace-matcher', title: 'all' },
             ]}
             isReadOnly={props.isReadOnly}
           />
@@ -64,8 +63,8 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
           isReadOnly={props.isReadOnly}
         />
       )}
-      {props.value.value.type === 'regex-namespace-matcher' && (
-        <RegexNamespaceMatcherInput
+      {props.value.value.type === 'all-namespace-matcher' && (
+        <AllNamespaceMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
           isReadOnly={props.isReadOnly}

@@ -8,7 +8,6 @@ export const getDefaultTopicMatcher = (): TopicMatcher => {
       type: "exact-topic-matcher",
       namespace: getDefaultNamespaceMatcher(),
       topic: "",
-      persistency: "any",
       reactKey: uuid()
     },
     reactKey: uuid()

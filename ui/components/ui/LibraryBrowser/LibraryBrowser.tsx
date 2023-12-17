@@ -19,6 +19,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { pulsarResourceToFqn } from '../../pulsar/pulsar-resources';
 import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
 import { getReadableItemType } from './get-readable-item-type';
+import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
 
 export type LibraryBrowserMode = {
   type: 'save';
@@ -146,9 +147,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   async function fetchSearchResults() {
     const req = new pb.ListLibraryItemsRequest();
 
-    const fqns = searchEditorValue.resourceMatchers.map(rm => pulsarResourceToFqn(rm))
+    const contextsList = searchEditorValue.resourceMatchers.map(rm => resourceMatcherToPb(rm))
+    req.setContextsList(contextsList);
 
-    req.setContextFqnsList([]);
     req.setTypesList([managedItemTypeToPb(searchEditorValue.itemType)]);
     req.setTagsList(searchEditorValue.tags);
 

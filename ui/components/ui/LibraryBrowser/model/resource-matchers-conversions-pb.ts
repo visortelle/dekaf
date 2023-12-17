@@ -16,17 +16,15 @@ export function exactTenantMatcherFromPb(matcherPb: pb.ExactTenantMatcher): t.Ex
   };
 }
 
-export function regexTenantMatcherToPb(matcher: t.RegexTenantMatcher): pb.RegexTenantMatcher {
-  const matcherPb = new pb.RegexTenantMatcher();
-  matcherPb.setTenantRegex(matcher.tenantRegex);
+export function allTenantMatcherToPb(matcher: t.AllTenantMatcher): pb.AllTenantMatcher {
+  const matcherPb = new pb.AllTenantMatcher();
   return matcherPb;
 }
 
-export function regexTenantMatcherFromPb(matcherPb: pb.RegexTenantMatcher): t.RegexTenantMatcher {
+export function allTenantMatcherFromPb(matcherPb: pb.AllTenantMatcher): t.AllTenantMatcher {
   return {
     reactKey: uuid(),
-    type: 'regex-tenant-matcher',
-    tenantRegex: matcherPb.getTenantRegex()
+    type: 'all-tenant-matcher',
   };
 }
 
@@ -36,8 +34,8 @@ export function tenantMatcherToPb(matcher: t.TenantMatcher): pb.TenantMatcher {
     case 'exact-tenant-matcher':
       matcherPb.setExact(exactTenantMatcherToPb(matcher.value));
       break;
-    case 'regex-tenant-matcher':
-      matcherPb.setRegex(regexTenantMatcherToPb(matcher.value));
+    case 'all-tenant-matcher':
+      matcherPb.setAll(allTenantMatcherToPb(matcher.value));
       break;
   }
   return matcherPb;
@@ -58,16 +56,16 @@ export function tenantMatcherFromPb(matcherPb: pb.TenantMatcher): t.TenantMatche
       };
     }
 
-    case pb.TenantMatcher.MatcherCase.REGEX: {
-      const regexTenantMatcherPb = matcherPb.getRegex();
-      if (regexTenantMatcherPb === undefined) {
-        throw new Error('Regex tenant matcher is undefined');
+    case pb.TenantMatcher.MatcherCase.ALL: {
+      const allTenantMatcherPb = matcherPb.getAll();
+      if (allTenantMatcherPb === undefined) {
+        throw new Error('All tenant matcher is undefined');
       }
 
       return {
         reactKey: uuid(),
         type: 'tenant-matcher',
-        value: regexTenantMatcherFromPb(regexTenantMatcherPb)
+        value: allTenantMatcherFromPb(allTenantMatcherPb)
       };
     }
 
@@ -96,14 +94,13 @@ export function exactNamespaceMatcherFromPb(matcherPb: pb.ExactNamespaceMatcher)
   };
 }
 
-export function regexNamespaceMatcherToPb(matcher: t.RegexNamespaceMatcher): pb.RegexNamespaceMatcher {
-  const matcherPb = new pb.RegexNamespaceMatcher();
+export function allNamespaceMatcherToPb(matcher: t.AllNamespaceMatcher): pb.AllNamespaceMatcher {
+  const matcherPb = new pb.AllNamespaceMatcher();
   matcherPb.setTenant(tenantMatcherToPb(matcher.tenant));
-  matcherPb.setNamespaceRegex(matcher.namespaceRegex);
   return matcherPb;
 }
 
-export function regexNamespaceMatcherFromPb(matcherPb: pb.RegexNamespaceMatcher): t.RegexNamespaceMatcher {
+export function allNamespaceMatcherFromPb(matcherPb: pb.AllNamespaceMatcher): t.AllNamespaceMatcher {
   const tenantMatcherPb = matcherPb.getTenant();
   if (tenantMatcherPb === undefined) {
     throw new Error('Tenant matcher is undefined');
@@ -111,9 +108,8 @@ export function regexNamespaceMatcherFromPb(matcherPb: pb.RegexNamespaceMatcher)
 
   return {
     reactKey: uuid(),
-    type: 'regex-namespace-matcher',
+    type: 'all-namespace-matcher',
     tenant: tenantMatcherFromPb(tenantMatcherPb),
-    namespaceRegex: matcherPb.getNamespaceRegex()
   };
 }
 
@@ -123,8 +119,8 @@ export function namespaceMatcherToPb(matcher: t.NamespaceMatcher): pb.NamespaceM
     case 'exact-namespace-matcher':
       matcherPb.setExact(exactNamespaceMatcherToPb(matcher.value));
       break;
-    case 'regex-namespace-matcher':
-      matcherPb.setRegex(regexNamespaceMatcherToPb(matcher.value));
+    case 'all-namespace-matcher':
+      matcherPb.setAll(allNamespaceMatcherToPb(matcher.value));
       break;
   }
   return matcherPb;
@@ -145,16 +141,16 @@ export function namespaceMatcherFromPb(matcherPb: pb.NamespaceMatcher): t.Namesp
       };
     }
 
-    case pb.NamespaceMatcher.MatcherCase.REGEX: {
-      const regexNamespaceMatcherPb = matcherPb.getRegex();
-      if (regexNamespaceMatcherPb === undefined) {
-        throw new Error('Regex namespace matcher is undefined');
+    case pb.NamespaceMatcher.MatcherCase.ALL: {
+      const allNamespaceMatcherPb = matcherPb.getAll();
+      if (allNamespaceMatcherPb === undefined) {
+        throw new Error('All namespace matcher is undefined');
       }
 
       return {
         reactKey: uuid(),
         type: 'namespace-matcher',
-        value: regexNamespaceMatcherFromPb(regexNamespaceMatcherPb)
+        value: allNamespaceMatcherFromPb(allNamespaceMatcherPb)
       };
     }
 
@@ -162,33 +158,8 @@ export function namespaceMatcherFromPb(matcherPb: pb.NamespaceMatcher): t.Namesp
   }
 }
 
-export function topicPersistencyToPb(persistency: t.TopicPersistency): pb.TopicPersistency {
-  switch (persistency) {
-    case 'persistent':
-      return pb.TopicPersistency.TOPIC_PERSISTENCY_PERSISTENT;
-    case 'non-persistent':
-      return pb.TopicPersistency.TOPIC_PERSISTENCY_NON_PERSISTENT;
-    case 'any':
-      return pb.TopicPersistency.TOPIC_PERSISTENCY_ANY;
-  }
-}
-
-export function topicPersistencyFromPb(persistencyPb: pb.TopicPersistency): t.TopicPersistency {
-  switch (persistencyPb) {
-    case pb.TopicPersistency.TOPIC_PERSISTENCY_PERSISTENT:
-      return 'persistent';
-    case pb.TopicPersistency.TOPIC_PERSISTENCY_NON_PERSISTENT:
-      return 'non-persistent';
-    case pb.TopicPersistency.TOPIC_PERSISTENCY_ANY:
-      return 'any';
-    default:
-      throw new Error(`Unknown topic persistency: ${persistencyPb}`);
-  }
-}
-
 export function exactTopicMatcherToPb(matcher: t.ExactTopicMatcher): pb.ExactTopicMatcher {
   const matcherPb = new pb.ExactTopicMatcher();
-  matcherPb.setPersistency(topicPersistencyToPb(matcher.persistency));
   matcherPb.setNamespace(namespaceMatcherToPb(matcher.namespace));
   matcherPb.setTopic(matcher.topic);
   return matcherPb;
@@ -203,21 +174,18 @@ export function exactTopicMatcherFromPb(matcherPb: pb.ExactTopicMatcher): t.Exac
   return {
     reactKey: uuid(),
     type: 'exact-topic-matcher',
-    persistency: topicPersistencyFromPb(matcherPb.getPersistency()),
     namespace: namespaceMatcherFromPb(namespaceMatcherPb),
     topic: matcherPb.getTopic()
   };
 }
 
-export function regexTopicMatcherToPb(matcher: t.RegexTopicMatcher): pb.RegexTopicMatcher {
-  const matcherPb = new pb.RegexTopicMatcher();
-  matcherPb.setPersistency(topicPersistencyToPb(matcher.persistency));
+export function allTopicMatcherToPb(matcher: t.AllTopicMatcher): pb.AllTopicMatcher {
+  const matcherPb = new pb.AllTopicMatcher();
   matcherPb.setNamespace(namespaceMatcherToPb(matcher.namespace));
-  matcherPb.setTopicRegex(matcher.topicRegex);
   return matcherPb;
 }
 
-export function regexTopicMatcherFromPb(matcherPb: pb.RegexTopicMatcher): t.RegexTopicMatcher {
+export function allTopicMatcherFromPb(matcherPb: pb.AllTopicMatcher): t.AllTopicMatcher {
   const namespaceMatcherPb = matcherPb.getNamespace();
   if (namespaceMatcherPb === undefined) {
     throw new Error('Namespace matcher is undefined');
@@ -225,10 +193,8 @@ export function regexTopicMatcherFromPb(matcherPb: pb.RegexTopicMatcher): t.Rege
 
   return {
     reactKey: uuid(),
-    type: 'regex-topic-matcher',
-    persistency: topicPersistencyFromPb(matcherPb.getPersistency()),
+    type: 'all-topic-matcher',
     namespace: namespaceMatcherFromPb(namespaceMatcherPb),
-    topicRegex: matcherPb.getTopicRegex()
   };
 }
 
@@ -238,8 +204,8 @@ export function topicMatcherToPb(matcher: t.TopicMatcher): pb.TopicMatcher {
     case 'exact-topic-matcher':
       matcherPb.setExact(exactTopicMatcherToPb(matcher.value));
       break;
-    case 'regex-topic-matcher':
-      matcherPb.setRegex(regexTopicMatcherToPb(matcher.value));
+    case 'all-topic-matcher':
+      matcherPb.setAll(allTopicMatcherToPb(matcher.value));
       break;
   }
   return matcherPb;
@@ -260,16 +226,16 @@ export function topicMatcherFromPb(matcherPb: pb.TopicMatcher): t.TopicMatcher {
       };
     }
 
-    case pb.TopicMatcher.MatcherCase.REGEX: {
-      const regexTopicMatcherPb = matcherPb.getRegex();
-      if (regexTopicMatcherPb === undefined) {
-        throw new Error('Regex topic matcher is undefined');
+    case pb.TopicMatcher.MatcherCase.ALL: {
+      const allTopicMatcherPb = matcherPb.getAll();
+      if (allTopicMatcherPb === undefined) {
+        throw new Error('All topic matcher is undefined');
       }
 
       return {
         reactKey: uuid(),
         type: 'topic-matcher',
-        value: regexTopicMatcherFromPb(regexTopicMatcherPb)
+        value: allTopicMatcherFromPb(allTopicMatcherPb)
       };
     }
 

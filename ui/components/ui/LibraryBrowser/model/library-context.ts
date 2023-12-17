@@ -37,7 +37,6 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
         reactKey: uuid(),
         type: 'exact-topic-matcher',
         namespace: namespaceMatcher,
-        persistency: pulsarResource.topicPersistency,
         topic: pulsarResource.topic
       }
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import s from './TopicMatcherInput.module.css';
 import Select from '../../../../../Select/Select';
 import ExactTopicMatcherInput from './ExactTopicMatcherInput/ExactTopicMatcherInput';
-import RegexTopicMatcherInput from './RegexTopicMatcherInput/RegexTopicMatcherInput';
+import AllTopicMatcherInput from './AllTopicMatcherInput/AllTopicMatcherInput';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
 import { TopicMatcherType, TopicMatcher } from '../../../../model/resource-matchers';
@@ -31,20 +31,17 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
                   value: {
                     type: 'exact-topic-matcher',
                     namespace: props.value.value.namespace,
-                    persistency: 'any',
                     topic: '',
                     reactKey: uuid()
                   },
                   reactKey: uuid()
                 });
-              } else if (v === 'regex-topic-matcher') {
+              } else if (v === 'all-topic-matcher') {
                 props.onChange({
                   type: 'topic-matcher',
                   value: {
-                    type: 'regex-topic-matcher',
+                    type: 'all-topic-matcher',
                     namespace: props.value.value.namespace,
-                    persistency: 'any',
-                    topicRegex: '',
                     reactKey: uuid()
                   },
                   reactKey: uuid()
@@ -52,8 +49,8 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
               }
             }}
             list={[
-              { type: 'item', value: 'exact-topic-matcher', title: 'by exact name' },
-              { type: 'item', value: 'regex-topic-matcher', title: 'by regex' },
+              { type: 'item', value: 'exact-topic-matcher', title: 'exact name' },
+              { type: 'item', value: 'all-topic-matcher', title: 'all' },
             ]}
           />
         </div>
@@ -66,8 +63,8 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
           isReadOnly={props.isReadOnly}
         />
       )}
-      {props.value.value.type === 'regex-topic-matcher' && (
-        <RegexTopicMatcherInput
+      {props.value.value.type === 'all-topic-matcher' && (
+        <AllTopicMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
           isReadOnly={props.isReadOnly}

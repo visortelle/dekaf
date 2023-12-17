@@ -2,7 +2,7 @@ import React from 'react';
 import s from './TenantMatcherInput.module.css';
 import Select from '../../../../../Select/Select';
 import ExactTenantMatcherInput from './ExactTenantMatcherInput/ExactTenantMatcherInput';
-import RegexTenantMatcherInput from './RegexTenantMatcherInput/RegexTenantMatcherInput';
+import AllTenantMatcherInput from './AllTenantMatcherInput/AllTenantMatcherInput';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
 import { TenantMatcherType, TenantMatcher } from '../../../../model/resource-matchers';
@@ -38,8 +38,7 @@ const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
                 props.onChange({
                   type: 'tenant-matcher',
                   value: {
-                    type: 'regex-tenant-matcher',
-                    tenantRegex: '',
+                    type: 'all-tenant-matcher',
                     reactKey: uuid()
                   },
                   reactKey: uuid()
@@ -47,8 +46,8 @@ const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
               }
             }}
             list={[
-              { type: 'item', value: 'exact-tenant-matcher', title: 'by exact name' },
-              { type: 'item', value: 'regex-tenant-matcher', title: 'by regex' },
+              { type: 'item', value: 'exact-tenant-matcher', title: 'exact name' },
+              { type: 'item', value: 'all-tenant-matcher', title: 'all' },
             ]}
             isReadOnly={props.isReadOnly}
           />
@@ -62,8 +61,8 @@ const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
           isReadOnly={props.isReadOnly}
         />
       )}
-      {props.value.value.type === 'regex-tenant-matcher' && (
-        <RegexTenantMatcherInput
+      {props.value.value.type === 'all-tenant-matcher' && (
+        <AllTenantMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
           isReadOnly={props.isReadOnly}
