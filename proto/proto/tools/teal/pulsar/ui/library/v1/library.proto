@@ -8,7 +8,6 @@ import "tools/teal/pulsar/ui/library/v1/managed_items.proto";
 
 message LibraryItemMetadata {
   string updated_at = 4;
-  repeated string tags = 8;
   repeated ResourceMatcher available_for_contexts = 9;
 }
 
@@ -45,7 +44,6 @@ message GetLibraryItemResponse {
 message ListLibraryItemsRequest {
   repeated ManagedItemType types = 1;
   repeated ResourceMatcher contexts = 2;
-  repeated string tags = 3;
 }
 
 message ListLibraryItemsResponse {

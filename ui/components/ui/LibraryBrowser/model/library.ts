@@ -3,7 +3,6 @@ import { ManagedItem } from './user-managed-items';
 
 export type LibraryItemMetadata = {
   updatedAt: string,
-  tags: string[],
   availableForContexts: ResourceMatcher[],
 };
 

@@ -32,7 +32,6 @@
 .BottomButtonText {
   opacity: 0;
   font-size: 12rem;
-  text-shadow: 0 0 0 2rem #fff;
 }
 
 .MarkdownInput:hover .BottomButtonText {

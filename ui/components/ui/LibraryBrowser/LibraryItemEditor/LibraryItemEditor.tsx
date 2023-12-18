@@ -115,18 +115,6 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         </FormItem>
 
         <FormItem>
-          <FormLabel content="Tags" />
-          {value.metadata.tags.length === 0 && (<NoData />)}
-          {value.metadata.tags.length !== 0 && (
-            <div>
-              {value.metadata.tags.map((tag) => (
-                <div key={tag}>{tag}</div>
-              ))}
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem>
           <FormLabel content="Updated at" />
           <div>{i18n.formatDateTime(new Date(value.metadata.updatedAt))}</div>
         </FormItem>

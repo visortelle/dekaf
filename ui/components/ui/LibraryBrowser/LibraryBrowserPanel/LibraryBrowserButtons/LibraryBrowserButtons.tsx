@@ -26,7 +26,7 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
       {props.value.metadata.name.length === 0 && (
         <SmallButton
           type='regular'
-          appearance='borderless'
+          appearance='borderless-semitransparent'
           svgIcon={addNameIcon}
           onClick={() => {
             const newValue = cloneDeep(props.value);
@@ -41,7 +41,7 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
       {props.value.metadata.descriptionMarkdown.length === 0 && (
         <SmallButton
           type='regular'
-          appearance='borderless'
+          appearance='borderless-semitransparent'
           svgIcon={addDescriptionIcon}
           onClick={() => {
             const newValue = cloneDeep(props.value);

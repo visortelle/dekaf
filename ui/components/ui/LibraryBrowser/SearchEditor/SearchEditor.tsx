@@ -6,7 +6,6 @@ import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { ResourceMatcher } from '../model/resource-matchers';
 import { H3 } from '../../H/H';
-import TagsPicker from './TagsPicker/TagsPicker';
 import ResourceMatchersInput from './ResourceMatchersInput/ResourceMatchersInput';
 import { LibraryContext } from '../model/library-context';
 
@@ -49,40 +48,6 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
               props.mode.onChange({ ...props.mode.value, itemType: v });
             }}
             readOnly={true}
-          />
-        </FormItem>
-
-        <br />
-
-        <FormItem>
-          <FormLabel
-            content={<H3>Tags</H3>}
-            help={(
-              <>
-                Each library item can be tagged with one or more tags. Tags are used to organize library items into different groups.
-                <br />
-                <br />
-                Examples:
-                <ul>
-                  <li><code>PROJ-X Infographic</code></li>
-                  <li><code>PROJ-X Debug</code></li>
-                  <li><code>Test</code></li>
-                  <li><code>Bob's Personal Collection</code></li>
-                </ul>
-              </>
-            )}
-          />
-
-          <TagsPicker
-            mode='edit'
-            onChange={(v) => {
-              if (props.mode.type === 'search') {
-                return;
-              }
-
-              props.mode.onChange({ ...props.mode.value, tags: v });
-            }}
-            value={props.mode.value.tags}
           />
         </FormItem>
 

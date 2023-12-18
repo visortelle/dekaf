@@ -12,7 +12,6 @@ type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
     types: Vector[ManagedItemType],
-    tags: Vector[TagName],
     contexts: List[ResourceMatcher]
 )
 
@@ -60,9 +59,6 @@ class Library:
         db.itemsById.get(itemId)
 
     def listItems(filter: ListItemsFilter): List[LibraryItem] =
-        def getItemsByTags(items: List[LibraryItem], tags: List[TagName]): List[LibraryItem] =
-            items.filter(item => item.metadata.tags.exists(tag => tags.contains(tag)))
-
         def getItemsByContexts(items: List[LibraryItem], contexts: List[ResourceMatcher]): List[LibraryItem] =
             items.filter(item => item.metadata.availableForContexts.exists(availableForContext =>
                 contexts.exists(context => availableForContext.test(context))
@@ -81,12 +77,8 @@ class Library:
             if filter.contexts.isEmpty
             then byTypes
             else getItemsByContexts(byTypes, filter.contexts)
-        val byTags =
-            if filter.tags.isEmpty
-            then byContexts
-            else getItemsByTags(byContexts, List.empty)
 
-        byTags
+        byContexts
 
     private def scan(): LibraryScanResults =
         os.list(os.Path(rootDir, os.pwd))

@@ -87,7 +87,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         spec: props.mode.item,
         metadata: {
           availableForContexts: searchEditorValue.resourceMatchers,
-          tags: [],
           updatedAt: new Date().toISOString()
         }
       };
@@ -153,7 +152,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     req.setContextsList(contextsList);
 
     req.setTypesList([managedItemTypeToPb(searchEditorValue.itemType)]);
-    req.setTagsList(searchEditorValue.tags);
 
     const res = await libraryServiceClient.listLibraryItems(req, null)
       .catch(err => {
@@ -324,7 +322,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                 const libraryItemMetadata: LibraryItemMetadata = {
                   ...selectedItem.metadata,
                   availableForContexts: searchEditorValue.resourceMatchers,
-                  tags: searchEditorValue.tags,
                   updatedAt: new Date().toISOString()
                 };
 
