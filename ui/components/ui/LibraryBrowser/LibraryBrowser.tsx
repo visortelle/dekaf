@@ -224,7 +224,10 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const modeType = props.mode.type;
 
-  const itemToSaveMetadata: ManagedItemMetadata | undefined = (resolvedItemToSave && selectedItem) && selectedItem.spec.metadata;
+  const itemToSaveMetadata: ManagedItemMetadata | undefined = (props.mode.type === 'save' && (resolvedItemToSave && selectedItem)) ? {
+    ...selectedItem.spec.metadata,
+    descriptionMarkdown: props.mode.item.metadata.descriptionMarkdown
+  } : undefined;
 
   return (
     <div className={s.LibraryBrowser}>

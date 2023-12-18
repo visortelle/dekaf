@@ -41,7 +41,6 @@
 }
 
 .ItemName {
-  font-weight: var(--font-weight-bold);
   padding: 12rem 12rem;
   padding-left: 8rem;
   white-space: nowrap;
@@ -49,12 +48,21 @@
   text-overflow: ellipsis;
 }
 
+.Item:hover .ItemName {
+  padding-right: 142rem;
+}
+
 .ItemUpdatedAt {
   position: absolute;
   font-size: 12rem;
-  opacity: 0.5;
   right: 12rem;
-  bottom: 4rem;
+  bottom: 2rem;
+  opacity: 0;
+}
+
+.Item:hover .ItemUpdatedAt {
+  opacity: 0.6;
+  transition: var(--transition-short);
 }
 
 .ItemExtraLabel {
@@ -62,7 +70,19 @@
   font-weight: var(--font-weight-bold);
   font-size: 12rem;
   right: 12rem;
-  top: 4rem;
+  top: 2rem;
+}
+
+.DeleteItemButton {
+  position: absolute;
+  top: 0rem;
+  right: 4rem;
+  opacity: 0;
+}
+
+.Item:hover .DeleteItemButton {
+  opacity: 1;
+  transition: var(--transition-short);
 }
 
 .Unnamed {

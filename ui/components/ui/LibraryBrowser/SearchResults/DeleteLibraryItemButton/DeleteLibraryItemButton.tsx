@@ -1,6 +1,5 @@
 import React from 'react';
 import s from './DeleteLibraryItemButton.module.css'
-import deleteIcon from './delete.svg';
 import SmallButton from '../../../SmallButton/SmallButton';
 import * as pb from "../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
@@ -8,11 +7,12 @@ import * as Notifications from '../../../../app/contexts/Notifications';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
 import ConfirmationDialog from '../../../ConfirmationDialog/ConfirmationDialog';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import DeleteButton from '../../../DeleteButton/DeleteButton';
 
 export type DeleteLibraryItemButtonProps = {
   itemId: string | undefined;
   onDeleted: () => void;
-  isDisabled: boolean;
+  isDisabled?: boolean;
 };
 
 const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) => {
@@ -54,15 +54,14 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
           type='danger'
         />
       ),
-      title: 'Delete library item',
+      title: 'Delete Library Item',
       styleMode: 'no-content-padding'
     });
   };
 
   return (
     <div className={s.DeleteLibraryItemButton}>
-      <SmallButton
-        svgIcon={deleteIcon}
+      <DeleteButton
         onClick={() => {
           if (props.itemId === undefined) {
             return;
@@ -70,9 +69,10 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
 
           deleteItem();
         }}
-        disabled={props.itemId === undefined || props.isDisabled}
-        type='danger'
-        title="Delete selected item"
+        type='regular'
+        title="Delete this item"
+        isHideText
+        appearance='borderless-semitransparent'
       />
     </div>
   );
