@@ -47,12 +47,12 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <div style={{ display: 'flex', gap: '8rem' }}>
               {props.extraElements?.preItemType}
               <strong>
-                {props.itemType === 'consumer-session-config' && 'Consumer Session'}
+                {props.itemType === 'consumer-session-config' && 'Consumer Session Config'}
                 {props.itemType === 'message-filter' && 'Filter'}
                 {props.itemType === 'message-filter-chain' && ' Filter Chain'}
                 {props.itemType === 'consumer-session-start-from' && 'Start From'}
                 {props.itemType === 'topic-selector' && 'Topic Selector'}
-                {props.itemType === 'consumer-session-topic' && 'Consumer Target'}
+                {props.itemType === 'consumer-session-target' && 'Consumer Target'}
                 {props.itemType === 'coloring-rule' && 'Coloring Rule'}
                 {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
               </strong>
@@ -65,7 +65,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'message-filter-chain' && help.messageFilterChain}
               {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
               {props.itemType === 'topic-selector' && help.topicSelector}
-              {props.itemType === 'consumer-session-topic' && help.consumerSessionTarget}
+              {props.itemType === 'consumer-session-target' && help.consumerSessionTarget}
               {props.itemType === 'coloring-rule' && help.coloringRule}
               {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
             </div>

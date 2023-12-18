@@ -10,10 +10,11 @@ import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPan
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 
 export type SessionTargetInputProps = {
-  targetIndex: number,
-  value: ManagedConsumerSessionTargetValOrRef;
-  onChange: (v: ManagedConsumerSessionTargetValOrRef) => void;
-  libraryContext: LibraryContext;
+  value: ManagedConsumerSessionTargetValOrRef,
+  onChange: (v: ManagedConsumerSessionTargetValOrRef) => void,
+  libraryContext: LibraryContext,
+  isReadOnly?: boolean,
+  targetIndex?: number,
 };
 
 const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
@@ -40,10 +41,10 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
 
   return (
     <div className={s.SessionTargetInput}>
-      <div className={s.TargetIndex}>Target {props.targetIndex + 1}</div>
+      {props.targetIndex !== undefined && <div className={s.TargetIndex}>Target {props.targetIndex + 1}</div>}
       <div ref={hoverRef}>
         <LibraryBrowserPanel
-          itemType='consumer-session-topic'
+          itemType='consumer-session-target'
           value={item}
           onPick={(item) => props.onChange({
             type: 'reference',
@@ -64,6 +65,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          isReadOnly={props.isReadOnly}
         />
       </div>
 
@@ -71,18 +73,21 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
         value={itemSpec.topicSelector}
         onChange={(v) => onSpecChange({ ...itemSpec, topicSelector: v })}
         libraryContext={props.libraryContext}
+        isReadOnly={props.isReadOnly}
       />
 
       <FilterChainEditor
         value={itemSpec.messageFilterChain}
         onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
         libraryContext={props.libraryContext}
+        isReadOnly={props.isReadOnly}
       />
 
       <ColoringRuleChainInput
         value={itemSpec.coloringRuleChain}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
         libraryContext={props.libraryContext}
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

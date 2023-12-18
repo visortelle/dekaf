@@ -21,6 +21,12 @@ const ManagedItemTypePicker: React.FC<ManagedItemTypePickerProps> = (props) => {
           { type: 'item', title: getReadableItemType('producer-session-config'), value: 'producer-session-config' },
           { type: 'item', title: getReadableItemType('message-filter'), value: 'message-filter' },
           { type: 'item', title: getReadableItemType('message-filter-chain'), value: 'message-filter-chain' },
+          { type: 'item', title: getReadableItemType('consumer-session-start-from'), value: 'consumer-session-start-from' },
+          { type: 'item', title: getReadableItemType('coloring-rule'), value: 'coloring-rule' },
+          { type: 'item', title: getReadableItemType('coloring-rule-chain'), value: 'coloring-rule-chain' },
+          { type: 'item', title: getReadableItemType('markdown-document'), value: 'markdown-document' },
+          { type: 'item', title: getReadableItemType('topic-selector'), value: 'topic-selector' },
+          { type: 'item', title: getReadableItemType('consumer-session-target'), value: 'consumer-session-target' },
         ]}
         isReadOnly={props.readOnly}
       />

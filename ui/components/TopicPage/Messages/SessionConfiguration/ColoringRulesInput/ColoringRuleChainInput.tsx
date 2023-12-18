@@ -9,13 +9,13 @@ import { v4 as uuid } from 'uuid';
 import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
-import Toggle from '../../../../ui/Toggle/Toggle';
 import OnOffToggle from '../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
 
 export type ColoringRuleChainInputProps = {
   value: ManagedColoringRuleChainValOrRef,
   onChange: (value: ManagedColoringRuleChainValOrRef) => void,
   libraryContext: LibraryContext,
+  isReadOnly?: boolean
 };
 
 const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) => {
@@ -75,6 +75,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
               />
             )
           }}
+          isReadOnly={props.isReadOnly}
         />
       </div>
 
@@ -144,6 +145,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         isHideNothingToShow
         isContentDoesntOverlapRemoveButton
         isHasCollapsedRenderer
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

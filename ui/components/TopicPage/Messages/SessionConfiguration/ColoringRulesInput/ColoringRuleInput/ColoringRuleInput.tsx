@@ -5,7 +5,6 @@ import { ManagedColoringRule, ManagedColoringRuleSpec, ManagedColoringRuleValOrR
 import { useHover } from '../../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
 import { colorsByName } from './ColorPickerButton/ColorPicker/color-palette';
-import Toggle from '../../../../../ui/Toggle/Toggle';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 import FilterChainEditor from '../../FilterChainEditor/FilterChainEditor';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
@@ -16,6 +15,7 @@ export type ColoringRuleInputProps = {
   onChange: (value: ManagedColoringRuleValOrRef) => void,
   libraryContext: LibraryContext
   appearance?: 'default' | 'compact';
+  isReadOnly?: boolean
 };
 
 const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
@@ -68,6 +68,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
             isForceShowButtons={isHovered}
             libraryContext={props.libraryContext}
             managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       )}
@@ -76,6 +77,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
         <OnOffToggle
           value={itemSpec.isEnabled}
           onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
+          isReadOnly={props.isReadOnly}
         />
 
         <div className={s.Colors}>
@@ -86,6 +88,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
               width='inherit'
               height='inherit'
               title={<>Foreground Color: {itemSpec.foregroundColor}</>}
+              isReadOnly={props.isReadOnly}
             />
           </div>
 
@@ -96,6 +99,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
               width='inherit'
               height='inherit'
               title={<>Background Color: {itemSpec.backgroundColor}</>}
+              isReadOnly={props.isReadOnly}
             />
           </div>
 
@@ -117,6 +121,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
             value={itemSpec.messageFilterChain}
             onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
             libraryContext={props.libraryContext}
+            isReadOnly={props.isReadOnly}
           />
         </div>
       )}

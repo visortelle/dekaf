@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import s from './SessionConfiguration.module.css'
-import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
 import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
@@ -17,9 +16,11 @@ import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput'
 import Toggle from '../../../ui/Toggle/Toggle';
 
 export type SessionConfigurationProps = {
-  value: ManagedConsumerSessionConfigValOrRef;
-  onChange: (config: ManagedConsumerSessionConfigValOrRef) => void;
-  libraryContext: LibraryContext;
+  value: ManagedConsumerSessionConfigValOrRef,
+  onChange: (config: ManagedConsumerSessionConfigValOrRef) => void,
+  libraryContext: LibraryContext,
+  appearance?: 'regular' | 'within-library-browser',
+  isReadOnly?: boolean
 };
 
 function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
@@ -69,7 +70,12 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   };
 
   return (
-    <div className={s.SessionConfiguration}>
+    <div
+      className={`
+        ${s.SessionConfiguration}
+        ${props.appearance === 'within-library-browser' ? s.WithinLibraryBrowser : ''}
+      `}
+    >
       <div className={s.Columns} ref={columnsRef}>
         <div className={s.GlobalConfig}>
           <div className={s.Title} ref={hoverRef}>
@@ -95,6 +101,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               isForceShowButtons={isHovered}
               libraryContext={props.libraryContext}
               managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+              isReadOnly={props.isReadOnly}
             />
           </div>
 
@@ -102,24 +109,28 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             value={itemSpec.startFrom}
             onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
             libraryContext={props.libraryContext}
+            isReadOnly={props.isReadOnly}
           />
 
           {!isAdvancedConfig && <Toggle
             value={isShowAdvanced}
             onChange={v => setIsShowAdvanced(v)}
             label='Show advanced settings'
+            isReadOnly={props.isReadOnly}
           />}
           {isShowAdvanced && (<>
             <FilterChainEditor
               value={itemSpec.messageFilterChain}
               onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
               libraryContext={props.libraryContext}
+              isReadOnly={props.isReadOnly}
             />
 
             <ColoringRuleChainInput
               value={itemSpec.coloringRuleChain}
               onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
               libraryContext={props.libraryContext}
+              isReadOnly={props.isReadOnly}
             />
           </>)}
 
@@ -151,19 +162,22 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                   onSpecChange({ ...itemSpec, targets: newTargets });
                 }}
                 libraryContext={props.libraryContext}
+                isReadOnly={props.isReadOnly}
               />
-              <div className={s.DeleteTargetButton}>
-                <DeleteButton
-                  title='Remove this Consumer Session Target'
-                  onClick={() => {
-                    const newTargets = [...itemSpec.targets];
-                    newTargets.splice(i, 1);
-                    onSpecChange({ ...itemSpec, targets: newTargets });
-                  }}
-                  appearance="borderless-semitransparent"
-                  isHideText
-                />
-              </div>
+              {!props.isReadOnly && (
+                <div className={s.DeleteTargetButton}>
+                  <DeleteButton
+                    title='Remove this Consumer Session Target'
+                    onClick={() => {
+                      const newTargets = [...itemSpec.targets];
+                      newTargets.splice(i, 1);
+                      onSpecChange({ ...itemSpec, targets: newTargets });
+                    }}
+                    appearance="borderless-semitransparent"
+                    isHideText
+                  />
+                </div>
+              )}
             </div>
           );
         })}

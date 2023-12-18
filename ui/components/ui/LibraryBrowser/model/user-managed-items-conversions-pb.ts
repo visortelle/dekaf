@@ -1056,7 +1056,7 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
       itemPb.setSpecConsumerSessionPauseTriggerChain(managedConsumerSessionPauseTriggerChainToPb(v as t.ManagedConsumerSessionPauseTriggerChain));
       break;
     }
-    case "consumer-session-topic": {
+    case "consumer-session-target": {
       itemPb.setSpecConsumerSessionTarget(managedConsumerSessionTargetToPb(v as t.ManagedConsumerSessionTarget));
       break;
     }

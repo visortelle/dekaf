@@ -29,7 +29,7 @@ export type ManagedItemType =
   "consumer-session-start-from" |
   "consumer-session-event" |
   "consumer-session-pause-trigger-chain" |
-  "consumer-session-topic" |
+  "consumer-session-target" |
   "topic-selector";
 
 export type ManagedItemMetadata = {

@@ -7,11 +7,12 @@ import { tooltipId } from '../../../../../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 export type ColorPickerButtonProps = {
-  value: string;
-  onChange: (value: string) => void;
+  value: string,
+  onChange: (value: string) => void,
   width?: string,
   height?: string
-  title?: React.ReactElement;
+  title?: React.ReactElement,
+  isReadOnly?: boolean
 };
 
 const ColorPickerButton: React.FC<ColorPickerButtonProps> = (props) => {
@@ -26,6 +27,10 @@ const ColorPickerButton: React.FC<ColorPickerButtonProps> = (props) => {
         height: props.height,
       }}
       onClick={() => {
+        if (props.isReadOnly) {
+          return;
+        }
+
         modals.push({
           id: 'color-picker',
           title: 'Pick a Color',

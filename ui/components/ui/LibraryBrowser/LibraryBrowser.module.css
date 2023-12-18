@@ -19,7 +19,7 @@
 }
 
 .SearchResults {
-  width: 480rem;
+  width: 420rem;
   border-right: 1px solid var(--border-color);
   overflow: hidden;
   display: flex;

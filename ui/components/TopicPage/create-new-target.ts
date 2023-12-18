@@ -9,7 +9,7 @@ export function createNewTarget(): ManagedConsumerSessionTargetValOrRef {
         id: uuid(),
         name: '',
         descriptionMarkdown: '',
-        type: 'consumer-session-topic'
+        type: 'consumer-session-target'
       },
       spec: {
         topicSelector: {

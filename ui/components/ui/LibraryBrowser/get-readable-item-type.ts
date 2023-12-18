@@ -7,8 +7,8 @@ export function getReadableItemType(managedItemType: ManagedItemType): string {
     case "consumer-session-config": return "Consumer Session Config";
     case "consumer-session-event": return "Consumer Session Event";
     case "consumer-session-pause-trigger-chain": return "Consumer Session Pause Trigger Chain";
-    case "consumer-session-start-from": return "Consumer Session Start From";
-    case "consumer-session-topic": return "Consumer Session Topic";
+    case "consumer-session-start-from": return "Start From";
+    case "consumer-session-target": return "Consumer Target";
     case "date-time": return "Date Time";
     case "markdown-document": return "Markdown Document";
     case "message-filter": return "Message Filter";

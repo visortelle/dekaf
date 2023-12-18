@@ -1,17 +1,27 @@
 .SessionConfiguration {
   flex: 1 1 auto;
-  overflow: hidden;
+
   display: flex;
   flex-direction: column;
 }
 
 .Columns {
   display: flex;
-  overflow: auto hidden;
+
+  overflow-y: hidden;
+  overflow-x: unset;
+
   scrollbar-width: thin;
   flex: 1 0;
-  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+
+  overscroll-behavior-x: contain;
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-y: contain;
+}
+
+.WithinLibraryBrowser .Columns {
+  overflow-y: unset;
+  overflow-x: unset;
 }
 
 .GlobalConfig {

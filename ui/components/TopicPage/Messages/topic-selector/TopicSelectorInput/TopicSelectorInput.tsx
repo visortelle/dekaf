@@ -16,10 +16,11 @@ import TopicSelectorInfo from './TopicSelectorInfo/TopicSelectorInfo';
 import { topicSelectorFromManagedSpec } from '../../../../ui/LibraryBrowser/model/resolved-items-conversions';
 
 export type TopicsSelectorInputProps = {
-  value: ManagedTopicSelectorValOrRef;
-  onChange: (value: ManagedTopicSelectorValOrRef) => void;
-  onDelete?: () => void;
-  libraryContext: LibraryContext;
+  value: ManagedTopicSelectorValOrRef,
+  onChange: (value: ManagedTopicSelectorValOrRef) => void,
+  onDelete?: () => void,
+  libraryContext: LibraryContext,
+  isReadOnly?: boolean
 };
 
 const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
@@ -77,6 +78,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+        isReadOnly={props.isReadOnly}
       />
 
       <TopicSelectorInfo topicSelector={topicSelector} />
@@ -113,6 +115,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
             }
           }}
           value={itemSpec.topicSelector.type}
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
 
@@ -181,6 +184,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
               return Either.right(undefined);
             }}
             shouldShowError={v => v !== ''}
+            isReadOnly={props.isReadOnly}
           />
         </FormItem>
       )}
@@ -202,6 +206,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
 
                 onSpecChange({ topicSelector: { ...itemSpec.topicSelector, regexSubscriptionMode: v } });
               }}
+              isReadOnly={props.isReadOnly}
             />
           </FormItem>
 
@@ -217,6 +222,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
                 onSpecChange({ topicSelector: { ...itemSpec.topicSelector, namespaceFqn: v } });
               }}
               placeholder='tenant/namespace'
+              isReadOnly={props.isReadOnly}
             />
           </FormItem>
 
@@ -232,6 +238,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
                 onSpecChange({ topicSelector: { ...itemSpec.topicSelector, pattern: v } });
               }}
               placeholder='.*'
+              isReadOnly={props.isReadOnly}
             />
           </FormItem>
         </>
