@@ -63,7 +63,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
   return (
     <div className={s.StartFromInput} ref={hoverRef}>
       <LibraryBrowserPanel
-        itemToSave={item}
+        value={item}
         itemType='consumer-session-start-from'
         onPick={(item) => props.onChange({
           type: 'reference',
@@ -75,6 +75,12 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           ref: item.metadata.id,
           val: item as ManagedConsumerSessionStartFrom
         })}
+        onChange={(item) => {
+          props.onChange({
+            ...props.value,
+            val: item as ManagedConsumerSessionStartFrom
+          });
+        }}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

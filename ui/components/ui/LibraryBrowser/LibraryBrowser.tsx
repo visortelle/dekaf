@@ -16,7 +16,6 @@ import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions'
 import { useLibraryItem } from './useLibraryItem';
 import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { pulsarResourceToFqn } from '../../pulsar/pulsar-resources';
 import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
 import { getReadableItemType } from './get-readable-item-type';
 import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
@@ -92,7 +91,10 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           updatedAt: new Date().toISOString()
         }
       };
-      newResolveItemToSave.spec.metadata.name = `New ${getReadableItemType(props.mode.item.metadata.type)}`;
+
+      if (props.mode.item.metadata.name.length === 0) {
+        newResolveItemToSave.spec.metadata.name = `New ${getReadableItemType(props.mode.item.metadata.type)}`;
+      }
 
       setResolvedItemToSave(newResolveItemToSave);
     }

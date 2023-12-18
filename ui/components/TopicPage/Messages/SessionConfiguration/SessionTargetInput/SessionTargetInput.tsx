@@ -44,7 +44,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='consumer-session-topic'
-          itemToSave={item}
+          value={item}
           onPick={(item) => props.onChange({
             type: 'reference',
             ref: item.metadata.id,
@@ -55,6 +55,12 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
             ref: item.metadata.id,
             val: item as ManagedConsumerSessionTarget
           })}
+          onChange={(item) => {
+            props.onChange({
+              ...props.value,
+              val: item as ManagedConsumerSessionTarget
+            });
+          }}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

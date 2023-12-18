@@ -74,7 +74,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         <div className={s.GlobalConfig}>
           <div className={s.Title} ref={hoverRef}>
             <LibraryBrowserPanel
-              itemToSave={item}
+              value={item}
               itemType='consumer-session-config'
               onPick={(item) => props.onChange({
                 type: 'reference',
@@ -86,6 +86,12 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                 ref: item.metadata.id,
                 val: item as ManagedConsumerSessionConfig
               })}
+              onChange={(item) => {
+                props.onChange({
+                  ...props.value,
+                  val: item as ManagedConsumerSessionConfig
+                });
+              }}
               isForceShowButtons={isHovered}
               libraryContext={props.libraryContext}
               managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

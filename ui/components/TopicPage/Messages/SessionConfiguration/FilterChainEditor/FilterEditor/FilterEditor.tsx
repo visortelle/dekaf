@@ -53,7 +53,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
       <div style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           isReadOnly={props.isReadOnly}
-          itemToSave={item}
+          value={item}
           itemType='message-filter'
           onPick={(item) => props.onChange({
             type: 'reference',
@@ -65,6 +65,12 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             ref: item.metadata.id,
             val: item as ManagedMessageFilter
           })}
+          onChange={(item) => {
+            props.onChange({
+              ...props.value,
+              val: item as ManagedMessageFilter
+            });
+          }}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

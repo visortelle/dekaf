@@ -3,7 +3,6 @@ import s from './MarkdownInput.module.css'
 import MarkdownPreview from './MarkdownPreview/MarkdownPreview';
 import MarkdownEditor from './MarkdownEditor/MarkdownEditor';
 import * as Modals from '../../app/contexts/Modals/Modals';
-import SmallButton from '../SmallButton/SmallButton';
 
 export type MarkdownInputProps = {
   value: string,

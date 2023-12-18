@@ -1,0 +1,33 @@
+.LibraryItemName {
+  display: flex;
+  align-items: center;
+  gap: 8rem;
+}
+
+.Buttons {
+  opacity: 0;
+  display: flex;
+}
+
+.LibraryItemName:hover .Buttons {
+  opacity: 1;
+  transition: var(--transition-short);
+}
+
+.EditNameForm {
+  width: 480rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.EditNameFormContent {
+  padding: 12rem;
+}
+
+.EditNameFormFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8rem;
+  padding: 12rem;
+  border-top: 1px solid var(--border-color);
+}

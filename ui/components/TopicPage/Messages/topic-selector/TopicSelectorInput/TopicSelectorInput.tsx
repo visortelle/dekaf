@@ -56,7 +56,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   return (
     <div className={s.TopicsSelectorsInput} ref={hoverRef}>
       <LibraryBrowserPanel
-        itemToSave={item}
+        value={item}
         itemType='topic-selector'
         onPick={(item) => props.onChange({
           type: 'reference',
@@ -68,6 +68,12 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
           ref: item.metadata.id,
           val: item as ManagedTopicSelector
         })}
+        onChange={(item) => {
+          props.onChange({
+            ...props.value,
+            val: item as ManagedTopicSelector
+          });
+        }}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

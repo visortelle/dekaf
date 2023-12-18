@@ -47,7 +47,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
       <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='coloring-rule-chain'
-          itemToSave={item}
+          value={item}
           onPick={(item) => props.onChange({
             type: 'reference',
             ref: item.metadata.id,
@@ -58,6 +58,12 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
             ref: item.metadata.id,
             val: item as ManagedColoringRuleChain
           })}
+          onChange={(item) => {
+            props.onChange({
+              ...props.value,
+              val: item as ManagedColoringRuleChain
+            });
+          }}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

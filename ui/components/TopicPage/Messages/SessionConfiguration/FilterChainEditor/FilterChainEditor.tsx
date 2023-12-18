@@ -58,7 +58,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
       <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
-          itemToSave={item}
+          value={item}
           onPick={(item) => props.onChange({
             type: 'reference',
             ref: item.metadata.id,
@@ -69,6 +69,12 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             ref: item.metadata.id,
             val: item as ManagedMessageFilterChain
           })}
+          onChange={(item) => {
+            props.onChange({
+              ...props.value,
+              val: item as ManagedMessageFilterChain
+            });
+          }}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

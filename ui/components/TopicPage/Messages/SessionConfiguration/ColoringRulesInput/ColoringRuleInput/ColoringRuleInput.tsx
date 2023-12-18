@@ -48,7 +48,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
         <div ref={hoverRef}>
           <LibraryBrowserPanel
             itemType='coloring-rule'
-            itemToSave={item}
+            value={item}
             onPick={(item) => props.onChange({
               type: 'reference',
               ref: item.metadata.id,
@@ -59,6 +59,12 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
               ref: item.metadata.id,
               val: item as ManagedColoringRule
             })}
+            onChange={(item) => {
+              props.onChange({
+                ...props.value,
+                val: item as ManagedColoringRule
+              });
+            }}
             isForceShowButtons={isHovered}
             libraryContext={props.libraryContext}
             managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}

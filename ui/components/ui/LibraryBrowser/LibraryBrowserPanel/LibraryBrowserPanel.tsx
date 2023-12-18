@@ -2,7 +2,6 @@ import React from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
 import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
-import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
@@ -13,12 +12,16 @@ import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
 import MarkdownInput from '../../MarkdownEditor/MarkdownInput';
+import Input from '../../Input/Input';
+import { cloneDeep } from 'lodash';
+import LibraryItemName from './LibraryItemName/LibraryItemName';
 
 export type LibraryBrowserPanelProps = {
   itemType: ManagedItemType;
-  itemToSave: ManagedItem | undefined;
-  onPick: (item: ManagedItem) => void;
+  value: ManagedItem;
   onSave: (item: ManagedItem) => void;
+  onChange: (item: ManagedItem) => void;
+  onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
   isForceShowButtons?: boolean;
   managedItemReference?: {
@@ -106,10 +109,12 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           <div className={s.Buttons}>
             <LibraryBrowserButtons
               itemType={props.itemType}
-              itemToSave={props.itemToSave}
+              value={props.value}
               onPick={props.onPick}
+              onChange={props.onChange}
               onSave={props.onSave}
               libraryContext={props.libraryContext}
+              isReadOnly={props.isReadOnly}
             />
 
             <div className={s.PostItemType}>
@@ -118,20 +123,31 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           </div>
         )}
       </div>
-      {props.itemToSave?.metadata.name && (
+      {props.value.metadata.name.length !== 0 && (
         <div className={s.ItemName}>
-          <H3>
-            {props.itemToSave === undefined ? 'Unnamed' : props.itemToSave.metadata.name}
-          </H3>
+          <LibraryItemName
+            value={props.value.metadata.name}
+            onChange={(v) => {
+              const newValue = cloneDeep(props.value);
+              newValue.metadata.name = v;
+
+              props.onChange(newValue);
+            }}
+            isReadOnly={props.isReadOnly}
+          />
         </div>
       )}
-      {props.itemToSave?.metadata.descriptionMarkdown && (
+      {props.value.metadata.descriptionMarkdown.length !== 0 && (
         <div className={s.ItemDescription}>
           <MarkdownInput
-            value={props.itemToSave.metadata.descriptionMarkdown}
-            onChange={() => undefined}
+            value={props.value.metadata.descriptionMarkdown || 'abc'}
+            onChange={(v) => {
+              const newValue = cloneDeep(props.value);
+              newValue.metadata.descriptionMarkdown = v;
+
+              props.onChange(newValue);
+            }}
             maxHeight={160}
-            isReadOnly
             modalTitle='Description'
           />
         </div>
