@@ -2,6 +2,7 @@
   display: flex;
   position: relative;
   overflow: hidden;
+  min-height: 28rem;
 }
 
 .EditButton {
@@ -16,17 +17,27 @@
   left: 0;
   right: 0;
   background: linear-gradient(0deg, #fff 10%, #fff0 100%);
-  height: 50rem;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   font-weight: var(--font-weight-bold);
   padding-bottom: 4rem;
+  height: 18rem;
+}
+
+.MarkdownInput:hover .BottomButton {
+  transition: var(--transition-short);
 }
 
 .BottomButtonText {
-  opacity: 0.6;
+  opacity: 0;
   font-size: 12rem;
+  text-shadow: 0 0 0 2rem #fff;
+}
+
+.MarkdownInput:hover .BottomButtonText {
+  opacity: 0.6;
+  transition: var(--transition-short);
 }
 
 .BottomButton:hover {

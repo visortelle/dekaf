@@ -1,5 +1,6 @@
 .MarkdownPreview {
   max-width: 800rem;
+  font-family: 'Fira Code', monospace;
 }
 
 .MarkdownPreview img,
@@ -8,6 +9,14 @@
   max-width: 100%;
   box-sizing: content-box;
   background-color: #fff;
+}
+
+.MarkdownPreview p {
+  margin-top: 0;
+}
+
+.MarkdownPreview p:last-child {
+  margin-bottom: 0;
 }
 
 .MarkdownPreview h1 {

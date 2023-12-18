@@ -132,7 +132,6 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         </FormItem>
       </div>
 
-
     </div>
   );
 }

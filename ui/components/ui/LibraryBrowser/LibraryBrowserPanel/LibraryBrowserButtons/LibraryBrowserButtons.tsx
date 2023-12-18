@@ -5,6 +5,7 @@ import LibraryBrowserPickButton from './LibraryBrowserPickButton/LibraryBrowserP
 import { ManagedItem, ManagedItemType } from '../../model/user-managed-items';
 import { LibraryContext } from '../../model/library-context';
 import addNameIcon from './add-name.svg';
+import addDescriptionIcon from './add-description.svg';
 import SmallButton from '../../../SmallButton/SmallButton';
 import { cloneDeep } from 'lodash';
 import { getReadableItemType } from '../../get-readable-item-type';
@@ -34,6 +35,21 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
             props.onChange(newValue);
           }}
           title="Add name"
+        />
+      )}
+
+      {props.value.metadata.descriptionMarkdown.length === 0 && (
+        <SmallButton
+          type='regular'
+          appearance='borderless'
+          svgIcon={addDescriptionIcon}
+          onClick={() => {
+            const newValue = cloneDeep(props.value);
+            newValue.metadata.descriptionMarkdown = `Library item description.`
+
+            props.onChange(newValue);
+          }}
+          title="Add description"
         />
       )}
 

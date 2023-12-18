@@ -128,8 +128,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
       return;
     }
 
-    console.log('props.preset', props.preset);
-
     const createProducerReq: CreateProducerRequest = new CreateProducerRequest();
     createProducerReq.setProducerName(producerName.current);
     createProducerReq.setTopic(props.preset.topic);

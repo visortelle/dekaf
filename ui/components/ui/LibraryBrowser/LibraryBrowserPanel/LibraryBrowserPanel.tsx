@@ -12,9 +12,9 @@ import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
 import MarkdownInput from '../../MarkdownEditor/MarkdownInput';
-import Input from '../../Input/Input';
 import { cloneDeep } from 'lodash';
 import LibraryItemName from './LibraryItemName/LibraryItemName';
+import DeleteButton from '../../DeleteButton/DeleteButton';
 
 export type LibraryBrowserPanelProps = {
   itemType: ManagedItemType;
@@ -123,35 +123,55 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           </div>
         )}
       </div>
-      {props.value.metadata.name.length !== 0 && (
-        <div className={s.ItemName}>
-          <LibraryItemName
-            value={props.value.metadata.name}
-            onChange={(v) => {
-              const newValue = cloneDeep(props.value);
-              newValue.metadata.name = v;
 
-              props.onChange(newValue);
-            }}
-            isReadOnly={props.isReadOnly}
-          />
+      {(props.value.metadata.name.length !== 0 || props.value.metadata.descriptionMarkdown.length !== 0) && (
+        <div className={s.ItemNameAndDescription}>
+          {props.value.metadata.name.length !== 0 && (
+            <div className={s.ItemName}>
+              <LibraryItemName
+                value={props.value.metadata.name}
+                onChange={(v) => {
+                  const newValue = cloneDeep(props.value);
+                  newValue.metadata.name = v;
+
+                  props.onChange(newValue);
+                }}
+                isReadOnly={props.isReadOnly}
+              />
+            </div>
+          )}
+          {props.value.metadata.descriptionMarkdown.length !== 0 && (
+            <div className={s.ItemDescription}>
+              <MarkdownInput
+                value={props.value.metadata.descriptionMarkdown}
+                onChange={(v) => {
+                  const newValue = cloneDeep(props.value);
+                  newValue.metadata.descriptionMarkdown = v;
+
+                  props.onChange(newValue);
+                }}
+                maxHeight={160}
+                modalTitle='Library Item Description'
+                bottomButtonText='View or edit description'
+              />
+              <div className={s.RemoveDescriptionButton}>
+                <DeleteButton
+                  appearance='borderless-semitransparent'
+                  isHideText
+                  onClick={() => {
+                    const newValue = cloneDeep(props.value);
+                    newValue.metadata.descriptionMarkdown = '';
+
+                    props.onChange(newValue);
+                  }}
+                  title="Remove description"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
-      {props.value.metadata.descriptionMarkdown.length !== 0 && (
-        <div className={s.ItemDescription}>
-          <MarkdownInput
-            value={props.value.metadata.descriptionMarkdown || 'abc'}
-            onChange={(v) => {
-              const newValue = cloneDeep(props.value);
-              newValue.metadata.descriptionMarkdown = v;
 
-              props.onChange(newValue);
-            }}
-            maxHeight={160}
-            modalTitle='Description'
-          />
-        </div>
-      )}
     </div>
   );
 }

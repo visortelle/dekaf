@@ -8,8 +8,10 @@ export type MarkdownInputProps = {
   value: string,
   onChange: (v: string) => void
   maxHeight?: number,
+  minHeight?: number,
   isReadOnly?: boolean,
-  modalTitle?: string
+  modalTitle?: string,
+  bottomButtonText?: string
 };
 
 const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
@@ -18,7 +20,10 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
   return (
     <div
       className={s.MarkdownInput}
-      style={{ maxHeight: `${props.maxHeight}px` }}
+      style={{
+        maxHeight: props.maxHeight === undefined ? undefined : `${props.maxHeight}rem`,
+        minHeight: props.minHeight === undefined ? undefined : `${props.minHeight}rem`
+      }}
     >
       <MarkdownPreview markdown={props.value} />
 
@@ -38,7 +43,7 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
             });
           }}
         >
-          <div className={s.BottomButtonText}>Edit</div>
+          <div className={s.BottomButtonText}>{props.bottomButtonText || 'Edit'}</div>
         </div>
       )}
       {props.isReadOnly && (
@@ -54,7 +59,7 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
             });
           }}
         >
-          <div className={s.BottomButtonText}>Read More</div>
+          <div className={s.BottomButtonText}>{props.bottomButtonText || 'Read More'}</div>
         </div>
       )}
     </div>

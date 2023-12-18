@@ -172,7 +172,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     }
 
     const items = res.getItemsList().map(libraryItemFromPb);
-    console.log('ITEMS', items);
     setSearchResults({ type: 'success', items });
   }
 
@@ -227,14 +226,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const modeType = props.mode.type;
 
-  const itemToSaveMetadata: ManagedItemMetadata | undefined = (resolvedItemToSave && selectedItem) && {
-    ...resolvedItemToSave.spec.metadata,
-    id: selectedItem.spec.metadata.id,
-    name: selectedItem.spec.metadata.name,
-  };
-
-  console.log('resolved item', resolvedItemToSave);
-  console.log('item meta', itemToSaveMetadata);
+  const itemToSaveMetadata: ManagedItemMetadata | undefined = (resolvedItemToSave && selectedItem) && selectedItem.spec.metadata;
 
   return (
     <div className={s.LibraryBrowser}>
