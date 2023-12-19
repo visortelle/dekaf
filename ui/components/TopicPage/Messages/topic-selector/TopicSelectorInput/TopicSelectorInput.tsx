@@ -48,7 +48,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     `${props.libraryContext.pulsarResource.topicPersistency}://${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}/${props.libraryContext.pulsarResource.topic}` :
     undefined;
 
-  const topicSelector = useMemo(() => topicSelectorFromManagedSpec(itemSpec, topicFqn), [itemSpec, topicFqn]);
+  const topicSelector = topicSelectorFromManagedSpec(itemSpec, topicFqn);
 
   const namespaceFqn = (props.libraryContext.pulsarResource.type === 'namespace' || props.libraryContext.pulsarResource.type === 'topic') ?
     `${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}` :

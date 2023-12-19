@@ -37,6 +37,8 @@ import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversio
 export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType {
   switch (v) {
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG: return "consumer-session-config";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET: return "consumer-session-target";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR: return "topic-selector";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM: return "consumer-session-start-from";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN: return "consumer-session-pause-trigger-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
@@ -51,6 +53,8 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
 export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
   switch (v) {
     case "consumer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG;
+    case "consumer-session-target": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET;
+    case "topic-selector": return pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR;
     case "consumer-session-start-from": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM;
     case "consumer-session-pause-trigger-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN;
     case "producer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;

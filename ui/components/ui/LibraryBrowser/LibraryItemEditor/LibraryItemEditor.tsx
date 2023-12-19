@@ -32,141 +32,155 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
   switch (value.spec.metadata.type) {
     case 'message-filter': {
       descriptorEditor = (
-        <FilterEditor
-          value={{
-            type: 'value',
-            val: value.spec as ManagedMessageFilter
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '420rem' }}>
+          <FilterEditor
+            value={{
+              type: 'value',
+              val: value.spec as ManagedMessageFilter
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }
     case 'message-filter-chain': {
       descriptorEditor = (
-        <FilterChainEditor
-          value={{
-            type: 'value',
-            val: value.spec as ManagedMessageFilterChain
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '420rem' }}>
+          <FilterChainEditor
+            value={{
+              type: 'value',
+              val: value.spec as ManagedMessageFilterChain
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }
     case 'consumer-session-start-from': {
       descriptorEditor = (
-        <StartFromInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedConsumerSessionStartFrom
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '420rem' }}>
+          <StartFromInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedConsumerSessionStartFrom
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }
     case 'coloring-rule': {
       descriptorEditor = (
-        <ColoringRuleInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedColoringRule
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '420rem' }}>
+          <ColoringRuleInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedColoringRule
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }
     case 'coloring-rule-chain': {
       descriptorEditor = (
-        <ColoringRuleChainInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedColoringRuleChain
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '420rem' }}>
+          <ColoringRuleChainInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedColoringRuleChain
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }
     case 'topic-selector': {
       descriptorEditor = (
-        <TopicsSelectorInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedTopicSelector
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '420rem' }}>
+          <TopicsSelectorInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedTopicSelector
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }
     case 'consumer-session-target': {
       descriptorEditor = (
-        <SessionTargetInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedConsumerSessionTarget
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ width: '480rem' }}>
+          <SessionTargetInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedConsumerSessionTarget
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+          />
+        </div>
       );
       break;
     }

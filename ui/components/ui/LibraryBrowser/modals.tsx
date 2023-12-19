@@ -6,7 +6,7 @@ const ModalContent: React.FC<{ children: React.ReactNode }> = (props) => {
   return (
     <div
       style={{
-        maxWidth: 'calc(100vw - 48rem)',
+        width: 'calc(100vw - 32rem)',
         maxHeight: 'inherit',
         overflow: 'hidden',
         display: 'flex',

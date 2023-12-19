@@ -1,3 +1,9 @@
 .LibraryItemEditor {
   padding: 12rem;
 }
+
+.Info {
+  padding-bottom: 12rem;
+  margin-bottom: 12rem;
+  border-bottom: 1px solid var(--border-color);
+}

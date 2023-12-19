@@ -22,7 +22,6 @@ type SearchEditorMode = {
 export type SearchEditorValue = {
   itemType: ManagedItemType;
   resourceMatchers: ResourceMatcher[];
-  tags: string[];
 }
 
 export type SearchEditorProps = {

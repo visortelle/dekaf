@@ -53,7 +53,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({
     itemType,
-    tags: [],
     resourceMatchers: [resourceMatcherFromContext(props.libraryContext)],
   });
   const [searchResults, setSearchResults] = useState<SearchResultsState>({ type: 'pending' });
@@ -111,7 +110,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       if (resolvedItemToSaveResult.type === 'not-found' && props.mode.type === 'save') {
         const itemToSaveMetadata = {
           availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
-          tags: [],
           updatedAt: new Date().toISOString()
         };
 
@@ -286,7 +284,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           )}
           {!selectedItemId && (
             <div style={{ padding: '12rem' }}>
-              <NothingToShow content='Select an item to view or edit it.' />
+              <NothingToShow content='No items selected.' />
             </div>
           )}
         </div>
