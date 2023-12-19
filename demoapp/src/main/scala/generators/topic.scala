@@ -5,7 +5,7 @@ import org.apache.pulsar.client.api.{MessageRoutingMode, SubscriptionType}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import monocle.syntax.all.*
 import _root_.client.{adminClient, pulsarClient}
-import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
+import org.apache.pulsar.client.impl.schema.{AutoProduceBytesSchema, JSONSchema}
 
 type TopicName = String
 type TopicIndex = Int

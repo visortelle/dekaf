@@ -1,2 +1,7 @@
 brokerServiceUrl: "pulsar://localhost:6650"
 webServiceUrl: "http://localhost:8080"
+
+loadConfig:
+  enableNonPersistentTopics: false
+  producerLoadMultiplier:
+    baseMultiplier: 0.5

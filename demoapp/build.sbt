@@ -17,8 +17,6 @@ scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/
 
 run / javaOptions ++= Seq("-Xmx8G")
 
-scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
-
 lazy val root = project
     .enablePlugins(ClasspathJarPlugin)
     .enablePlugins(BuildInfoPlugin)
@@ -38,6 +36,7 @@ lazy val root = project
             "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-avro" % jacksonVersion,
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % jacksonVersion,
+            "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion,
             "com.google.protobuf" % "protobuf-java" % "3.23.3",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
             "com.lihaoyi" %% "pprint" % "0.8.1",

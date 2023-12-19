@@ -1,16 +1,16 @@
 package generators
 
-import org.apache.avro.Schema
-import com.fasterxml.jackson.dataformat.avro.{AvroFactory, AvroMapper}
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper
-import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility
+import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.avro.AvroMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.google.protobuf.GeneratedMessageV3
 
 object Encoders:
   def toJson[T](value: T): Array[Byte] =
     val mapper = new ObjectMapper()
+    mapper.registerModule(new JavaTimeModule())
     mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
     mapper.writeValueAsBytes(value)
 
