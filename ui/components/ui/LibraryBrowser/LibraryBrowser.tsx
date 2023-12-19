@@ -13,11 +13,9 @@ import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 import { ManagedItem, ManagedItemMetadata, ManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
-import { useLibraryItem } from './useLibraryItem';
 import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
-import { getReadableItemType } from './get-readable-item-type';
 import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
 
 export type LibraryBrowserMode = {
@@ -56,10 +54,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     resourceMatchers: [resourceMatcherFromContext(props.libraryContext)],
   });
   const [searchResults, setSearchResults] = useState<SearchResultsState>({ type: 'pending' });
-  const resolvedItemToSaveResult = useLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
-  const [resolvedItemToSave, setResolvedItemToSave] = useState<LibraryItem | undefined>(undefined);
   const [itemToSave, setItemToSave] = useState<LibraryItem | undefined>(undefined);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
+  const [isNewItem, setIsNewItem] = useState(false);
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
   const modals = Modals.useContext();
@@ -67,81 +64,61 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    async function fetchLibraryItem() {
+      if (!(props.mode.type === 'save' && (props.mode.item.metadata.id !== itemToSave?.spec.metadata.id))) {
+        return;
+      }
+
+      const req = new pb.GetLibraryItemRequest();
+      req.setId(props.mode.item.metadata.id);
+
+      const res = await libraryServiceClient.getLibraryItem(req, null);
+
+      const resCode = res.getStatus()?.getCode();
+      if (!((resCode === Code.OK) || (resCode === Code.NOT_FOUND))) {
+        notifyError(`Unable to fetch library item metadata. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      if (resCode === Code.NOT_FOUND) {
+        setIsNewItem(true);
+        setItemToSave({
+          spec: props.mode.item,
+          metadata: {
+            availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+            updatedAt: new Date().toISOString()
+          }
+        });
+        setSelectedItemId(props.mode.item.metadata.id);
+
+        return;
+      }
+
+      if (resCode === Code.OK) {
+        setIsNewItem(false);
+
+        const existingItem = libraryItemFromPb(res.getItem()!);
+
+        setItemToSave({
+          metadata: existingItem.metadata,
+          spec: props.mode.item
+        });
+
+        setSelectedItemId(props.mode.item.metadata.id);
+        return;
+      }
+    }
+
+    fetchLibraryItem();
+  }, [props.mode]);
+
+  console.log('iitem to save', itemToSave);
+
+  useEffect(() => {
     if (editorRef.current) {
       editorRef.current.scrollTo({ top: 0 });
     }
   }, [selectedItemId]);
-
-  useEffect(() => {
-    if (props.mode.type !== 'save') {
-      return;
-    }
-
-    if (resolvedItemToSaveResult.type === 'success') {
-      setResolvedItemToSave(resolvedItemToSaveResult.value);
-    }
-
-    if (resolvedItemToSaveResult.type === 'not-found' && itemToSave === undefined) {
-      const newResolveItemToSave: LibraryItem = {
-        spec: props.mode.item,
-        metadata: {
-          availableForContexts: searchEditorValue.resourceMatchers,
-          updatedAt: new Date().toISOString()
-        }
-      };
-
-      if (props.mode.item.metadata.name.length === 0) {
-        newResolveItemToSave.spec.metadata.name = `New ${getReadableItemType(props.mode.item.metadata.type)}`;
-      }
-
-      setResolvedItemToSave(newResolveItemToSave);
-    }
-
-  }, [resolvedItemToSaveResult, searchEditorValue]);
-
-  useEffect(() => {
-    function updateItemToSave() {
-      if (props.mode.type !== 'save') {
-        return;
-      }
-
-      let itemToSave: LibraryItem | undefined = undefined;
-
-      if (resolvedItemToSaveResult.type === 'not-found' && props.mode.type === 'save') {
-        const itemToSaveMetadata = {
-          availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
-          updatedAt: new Date().toISOString()
-        };
-
-        itemToSave = {
-          metadata: itemToSaveMetadata,
-          spec: props.mode.item
-        };
-      }
-
-      if (resolvedItemToSaveResult.type === 'success') {
-        const itemToSaveMetadata = {
-          ...resolvedItemToSaveResult.value.metadata,
-          updatedAt: new Date().toISOString()
-        };
-
-        itemToSave = {
-          metadata: itemToSaveMetadata,
-          spec: props.mode.item
-        };
-      }
-
-      if (itemToSave === undefined) {
-        return;
-      }
-
-      setItemToSave(itemToSave);
-      setSelectedItemId(itemToSave.spec.metadata.id);
-      setSearchEditorValue((v) => ({ ...v, resourceMatcher: resourceMatcherFromContext(props.libraryContext) }));
-    }
-
-    updateItemToSave();
-  }, [resolvedItemToSaveResult, props.mode]);
 
   async function fetchSearchResults() {
     const req = new pb.ListLibraryItemsRequest();
@@ -212,20 +189,22 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     .concat(searchResults.type === 'success' ?
       searchResults.items.filter(it => it.spec.metadata.id !== itemToSave?.spec.metadata.id) : []
     );
-
   const selectedItem = items.find((item) => item.spec.metadata.id === selectedItemId);
 
   let isOverwriteExistingItem = false;
-  if (props.mode.type === 'save' && (props.mode.item.metadata.id !== selectedItem?.spec.metadata.id)) {
+  if (props.mode.type === 'save' && (props.mode.item.metadata.id !== selectedItemId)) {
     isOverwriteExistingItem = true;
   }
 
   const modeType = props.mode.type;
 
-  const itemToSaveMetadata: ManagedItemMetadata | undefined = (props.mode.type === 'save' && (resolvedItemToSave && selectedItem)) ? {
-    ...selectedItem.spec.metadata,
-    descriptionMarkdown: props.mode.item.metadata.descriptionMarkdown
-  } : undefined;
+  const itemToSaveMetadata: ManagedItemMetadata | undefined = (props.mode.type === 'save' && (itemToSave && selectedItemId)) ?
+    {
+      ...itemToSave.spec.metadata,
+      id: selectedItemId,
+      name: selectedItem?.spec.metadata.name || '',
+    } :
+    undefined;
 
   return (
     <div className={s.LibraryBrowser}>
@@ -260,7 +239,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             <SearchResults
               items={items}
               selectedItemId={selectedItemId}
-              onSelect={(itemId) => setSelectedItemId(itemId)}
+              onSelect={(itemId) => {
+                setSelectedItemId(itemId);
+              }}
               onDeleted={() => {
                 setSelectedItemId(undefined);
                 fetchSearchResults();
@@ -274,10 +255,10 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         </div>
 
         <div className={s.LibraryItemEditor} ref={editorRef}>
-          {((modeType === 'save' && resolvedItemToSave && itemToSaveMetadata) || (modeType === 'pick' && selectedItem)) && (
+          {((modeType === 'save' && itemToSave && itemToSaveMetadata) || (modeType === 'pick' && selectedItemId)) && (
             <LibraryItemEditor
               mode={modeType === 'save' ? 'editor' : 'viewer'}
-              value={modeType === 'save' ? { ...resolvedItemToSave!, spec: { ...itemToSave?.spec!, metadata: itemToSaveMetadata! } } : selectedItem!}
+              value={modeType === 'save' ? { ...itemToSave!, spec: { ...itemToSave?.spec!, metadata: itemToSaveMetadata! } } : selectedItem!}
               onChange={setItemToSave}
               libraryContext={props.libraryContext}
             />
@@ -301,9 +282,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             disabled={!selectedItemId}
             onClick={() => {
               if (props.mode.type !== 'pick') return;
-              if (selectedItem === undefined) return;
+              if (selectedItemId === undefined) return;
 
-              props.mode.onPick(selectedItem.spec)
+              props.mode.onPick(selectedItem!.spec)
             }}
             type='primary'
             text='Select'
@@ -311,17 +292,16 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         )}
         {props.mode.type === 'save' && (
           <Button
-            disabled={!selectedItem || !selectedItem.spec.metadata.name}
+            disabled={!selectedItemId || !selectedItem?.spec.metadata.name}
             onClick={() => {
               const save = async () => {
                 if (props.mode.type !== 'save') return;
-                if (selectedItem === undefined) return;
-                if (resolvedItemToSave === undefined) return;
+                if (selectedItemId === undefined) return;
                 if (itemToSaveMetadata === undefined) return;
                 if (itemToSave === undefined) return;
 
                 const libraryItemMetadata: LibraryItemMetadata = {
-                  ...selectedItem.metadata,
+                  ...selectedItem!.metadata,
                   availableForContexts: searchEditorValue.resourceMatchers,
                   updatedAt: new Date().toISOString()
                 };
@@ -371,7 +351,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             type={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'primary' : 'danger'}
             text={(() => {
               if (props.mode.item.metadata.id === selectedItem?.spec.metadata.id) {
-                const isNewItem = resolvedItemToSaveResult.type === 'not-found';
                 return isNewItem ? 'Save' : 'Overwrite';
               }
 
