@@ -73,12 +73,14 @@ object AvroNamespace:
                     mkName = _ => s"records",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ =>
+                            mkMessage = _ =>
                                 _ =>
+                                  Message(
                                     Encoders.toAvro(
-                                        avroDemoRecordSchema.getSchemaInfo.getSchema,
-                                        AvroDemoRecord.random()
+                                      avroDemoRecordSchema.getSchemaInfo.getSchema,
+                                      AvroDemoRecord.random()
                                     )
+                                  )
                         ),
                     mkSchemaInfos = _ => List(avroDemoRecordSchema.getSchemaInfo)
                 ),

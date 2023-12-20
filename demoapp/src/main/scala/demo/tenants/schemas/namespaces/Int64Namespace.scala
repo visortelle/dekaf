@@ -18,7 +18,8 @@ object Int64Namespace:
                     mkName = _ => s"zeros",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int64ToBytes(0)
+                            mkMessage = _ => _ => 
+                              Message(int64ToBytes(0))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -28,7 +29,8 @@ object Int64Namespace:
 //                    mkName = _ => s"zeros-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => int64ToBytes(0),
+//                            mkMessage = _ => _ => 
+//                              Message(int64ToBytes(0)),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -39,7 +41,8 @@ object Int64Namespace:
                     mkName = _ => s"max-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int64ToBytes(Long.MaxValue)
+                            mkMessage = _ => _ => 
+                              Message(int64ToBytes(Long.MaxValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -49,7 +52,8 @@ object Int64Namespace:
                     mkName = _ => s"min-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int64ToBytes(Long.MinValue)
+                            mkMessage = _ => _ => 
+                              Message(int64ToBytes(Long.MinValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -59,7 +63,8 @@ object Int64Namespace:
                     mkName = _ => s"linear",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => int64ToBytes(messageIndex)
+                            mkMessage = _ => messageIndex => 
+                              Message(int64ToBytes(messageIndex))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -69,7 +74,8 @@ object Int64Namespace:
 //                    mkName = _ => s"linear-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => messageIndex => int64ToBytes(messageIndex),
+//                            mkMessage = _ => messageIndex => 
+//                              Message(int64ToBytes(messageIndex)),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -80,8 +86,8 @@ object Int64Namespace:
                     mkName = _ => s"random",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ =>
-                                _ => int64ToBytes(faker.random.nextLong(Long.MinValue, Long.MaxValue))
+                            mkMessage = _ => _ => 
+                              Message(int64ToBytes(faker.random.nextLong(Long.MinValue, Long.MaxValue)))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -91,8 +97,8 @@ object Int64Namespace:
 //                    mkName = _ => s"random-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ =>
-//                                _ => int64ToBytes(faker.random.nextLong(Long.MinValue, Long.MaxValue)),
+//                            mkMessage = _ => _ => 
+//                              Message(int64ToBytes(faker.random.nextLong(Long.MinValue, Long.MaxValue))),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos

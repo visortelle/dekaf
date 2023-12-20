@@ -1,4 +1,4 @@
-package demo.tenants.schemas.namespaces.exampleShop
+package demo.tenants.schemas.namespaces.exampleShop.namespaces
 
 import _root_.demo.tenants.schemas.namespaces.TopicConfig
 import demo.tenants.schemas.namespaces.exampleShop.commands.Account.*

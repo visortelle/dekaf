@@ -7,10 +7,11 @@ import org.apache.pulsar.client.impl.schema.JSONSchema
 
 import java.util.UUID
 
-case class CreateAccount(firstName: String, lastName: String, email: String) extends Command
+case class CreateAccount(id: UUID, firstName: String, lastName: String, email: String) extends Command
 
 object CreateAccount extends Randomizable[CreateAccount] with Schemable[CreateAccount]:
   override def random: CreateAccount = CreateAccount(
+    id = UUID.randomUUID(),
     firstName = faker.name().firstName(),
     lastName = faker.name().lastName(),
     email = faker.internet().emailAddress()

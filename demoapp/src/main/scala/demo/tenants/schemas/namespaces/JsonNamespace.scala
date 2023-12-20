@@ -50,7 +50,8 @@ object JsonNamespace:
                     mkName = _ => s"objects",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Encoders.toJson(JsonDemoObject.random())
+                            mkMessage = _ => _ => 
+                              Message(Encoders.toJson(JsonDemoObject.random()))
                         ),
                     mkSchemaInfos = _ => List(jsonDemoObjectSchema.getSchemaInfo)
                 ),
@@ -60,7 +61,8 @@ object JsonNamespace:
 //                    mkName = _ => s"objects-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => Encoders.toJson(JsonDemoObject.random()),
+//                            mkMessage = _ => _ => 
+//                              Message(Encoders.toJson(JsonDemoObject.random())),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = _ => List(jsonDemoObjectSchema.getSchemaInfo)

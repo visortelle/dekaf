@@ -1,5 +1,6 @@
 package demo.tenants.schemas
 
+import demo.tenants.schemas.namespaces.exampleShop.namespaces.{AccountNamespace, CatalogNamespace, CommunicationNamespace, IdentityNamespace, OrderNamespace, PaymentNamespace, ShoppingCartNamespace, WarehouseNamespace}
 import generators.{TenantPlan, TenantPlanGenerator}
 import zio.Task
 
@@ -8,14 +9,14 @@ object EventsTenant:
 
   def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
     val namespacePlanGenerators = List(
-      namespaces.exampleShop.AccountNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.CatalogNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.CommunicationNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.IdentityNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.OrderNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.PaymentNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.ShoppingCartNamespace.Events.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.WarehouseNamespace.Events.mkPlanGenerator(tenantName),
+      AccountNamespace.Events.mkPlanGenerator(tenantName),
+      CatalogNamespace.Events.mkPlanGenerator(tenantName),
+      CommunicationNamespace.Events.mkPlanGenerator(tenantName),
+      IdentityNamespace.Events.mkPlanGenerator(tenantName),
+      OrderNamespace.Events.mkPlanGenerator(tenantName),
+      PaymentNamespace.Events.mkPlanGenerator(tenantName),
+      ShoppingCartNamespace.Events.mkPlanGenerator(tenantName),
+      WarehouseNamespace.Events.mkPlanGenerator(tenantName),
     )
 
     TenantPlanGenerator.make(

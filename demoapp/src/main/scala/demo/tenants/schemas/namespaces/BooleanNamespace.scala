@@ -16,7 +16,7 @@ object BooleanNamespace:
                     mkName = _ => s"trues",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(1.toByte)
+                            mkMessage = _ => _ => Message(Array(1.toByte))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -26,7 +26,7 @@ object BooleanNamespace:
 //                    mkName = _ => s"trues-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => Array(1.toByte),
+//                            mkMessage = _ => _ => Message(Array(1.toByte),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -37,7 +37,7 @@ object BooleanNamespace:
                     mkName = _ => s"falses",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(0.toByte)
+                            mkMessage = _ => _ => Message(Array(0.toByte))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -47,7 +47,7 @@ object BooleanNamespace:
 //                    mkName = _ => s"falses-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => Array(0.toByte),
+//                            mkMessage = _ => _ => Message(Array(0.toByte),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -58,7 +58,8 @@ object BooleanNamespace:
                     mkName = _ => s"tic-tak",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => Array((messageIndex % 2).toByte)
+                            mkMessage = _ => 
+                              messageIndex => Message(Array((messageIndex % 2).toByte))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -81,7 +82,7 @@ object BooleanNamespace:
                     mkName = _ => s"random",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte)
+                            mkMessage = _ => _ => Message(if faker.bool().bool then Array(1.toByte) else Array(0.toByte))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -91,7 +92,7 @@ object BooleanNamespace:
 //                    mkName = _ => s"random-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte),
+//                            mkMessage = _ => _ => Message(if faker.bool().bool then Array(1.toByte) else Array(0.toByte),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos

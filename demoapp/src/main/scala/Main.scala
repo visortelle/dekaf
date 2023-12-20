@@ -2,19 +2,23 @@ import zio.*
 import generators.*
 import demo.tenants.schemas.{CommandsTenant, EventsTenant, SchemasTenant}
 import client.{adminClient, pulsarClient}
+import demo.tenants.schemas.namespaces.exampleShop.DemoappTenant
 
 import scala.jdk.CollectionConverters.*
 
 object DekafDemoApp extends ZIOAppDefault:
     private def appLogic = for {
-        schemasTenantPlan <- SchemasTenant.mkTenantPlan
+/*        schemasTenantPlan <- SchemasTenant.mkTenantPlan
         commandsTenantPlan <- CommandsTenant.mkTenantPlan
-        eventsTenantPlan <- EventsTenant.mkTenantPlan
+        eventsTenantPlan <- EventsTenant.mkTenantPlan*/
+
+        demoapp <- DemoappTenant.mkTenantPlan
 
         tenantPlans = List(
-          schemasTenantPlan,
+          /*schemasTenantPlan,
           commandsTenantPlan,
-          eventsTenantPlan
+          eventsTenantPlan*/
+          demoapp
         )
 
         _ <- ZIO.logInfo("Starting app...")

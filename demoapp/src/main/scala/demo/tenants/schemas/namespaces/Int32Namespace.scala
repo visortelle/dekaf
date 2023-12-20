@@ -18,7 +18,8 @@ object Int32Namespace:
                     mkName = _ => s"zeros",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int32ToBytes(0)
+                            mkMessage = _ => _ => 
+                              Message(int32ToBytes(0))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -28,7 +29,8 @@ object Int32Namespace:
 //                    mkName = _ => s"zeros-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => int32ToBytes(0),
+//                            mkMessage = _ => _ => 
+//                              Message(int32ToBytes(0)),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -39,7 +41,8 @@ object Int32Namespace:
                     mkName = _ => s"max-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int32ToBytes(Int.MaxValue)
+                            mkMessage = _ => _ => 
+                              Message(int32ToBytes(Int.MaxValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -49,7 +52,8 @@ object Int32Namespace:
                     mkName = _ => s"min-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int32ToBytes(Int.MinValue)
+                            mkMessage = _ => _ => 
+                              Message(int32ToBytes(Int.MinValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -59,7 +63,8 @@ object Int32Namespace:
                     mkName = _ => s"linear",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => int32ToBytes(messageIndex.toInt)
+                            mkMessage = _ => messageIndex => 
+                              Message(int32ToBytes(messageIndex.toInt))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -69,7 +74,8 @@ object Int32Namespace:
 //                    mkName = _ => s"linear-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => messageIndex => int32ToBytes(messageIndex.toInt),
+//                            mkMessage = _ => messageIndex => 
+//                              Message(int32ToBytes(messageIndex.toInt)),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -80,8 +86,8 @@ object Int32Namespace:
                     mkName = _ => s"random",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ =>
-                                _ => int32ToBytes(faker.number().numberBetween(Int.MinValue, Int.MaxValue))
+                            mkMessage = _ => _ => 
+                              Message(int32ToBytes(faker.number().numberBetween(Int.MinValue, Int.MaxValue)))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -91,8 +97,8 @@ object Int32Namespace:
 //                    mkName = _ => s"random-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ =>
-//                                _ => int32ToBytes(faker.number().numberBetween(Int.MinValue, Int.MaxValue)),
+//                            mkMessage = _ => _ => 
+//                              Message(int32ToBytes(faker.number().numberBetween(Int.MinValue, Int.MaxValue))),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos

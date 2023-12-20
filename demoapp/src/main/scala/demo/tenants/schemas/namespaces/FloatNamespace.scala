@@ -18,7 +18,8 @@ object FloatNamespace:
                     mkName = _ => s"zeros",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => float32ToBytes(0)
+                            mkMessage = _ => _ => 
+                              Message(float32ToBytes(0))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -28,7 +29,8 @@ object FloatNamespace:
 //                    mkName = _ => s"zeros-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => float32ToBytes(0),
+//                            mkPayload = _ => _ => 
+//                              Message(float32ToBytes(0)),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -39,7 +41,8 @@ object FloatNamespace:
                     mkName = _ => s"max-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => float32ToBytes(Float.MaxValue)
+                            mkMessage = _ => _ => 
+                              Message(float32ToBytes(Float.MaxValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -49,7 +52,8 @@ object FloatNamespace:
                     mkName = _ => s"min-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => float32ToBytes(Float.MinValue)
+                            mkMessage = _ => _ => 
+                              Message(float32ToBytes(Float.MinValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -59,8 +63,8 @@ object FloatNamespace:
                     mkName = _ => s"linear",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex =>
-                              float32ToBytes(messageIndex.toFloat / 1000)
+                            mkMessage = _ => messageIndex =>
+                              Message(float32ToBytes(messageIndex.toFloat / 1000))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -70,8 +74,8 @@ object FloatNamespace:
 //                    mkName = _ => s"linear-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => messageIndex =>
-//                              float32ToBytes(messageIndex.toFloat / 1000),
+//                            mkMessage = _ => messageIndex =>
+//                              Message(float32ToBytes(messageIndex.toFloat / 1000)),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -82,8 +86,8 @@ object FloatNamespace:
                     mkName = _ => s"random",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ =>
-                                _ => float32ToBytes(faker.random.nextFloat())
+                            mkMessage = _ => _ => 
+                              Message(float32ToBytes(faker.random.nextFloat()))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -93,8 +97,8 @@ object FloatNamespace:
 //                    mkName = _ => s"random-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ =>
-//                                _ => float32ToBytes(faker.random().nextFloat()),
+//                            mkMessage = _ => _ => 
+//                              Message(float32ToBytes(faker.random.nextFloat())),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos

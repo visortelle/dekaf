@@ -1,5 +1,6 @@
 package demo.tenants.schemas
 
+import demo.tenants.schemas.namespaces.exampleShop.namespaces.{AccountNamespace, CatalogNamespace, CommunicationNamespace, IdentityNamespace, OrderNamespace, PaymentNamespace, ShoppingCartNamespace, WarehouseNamespace}
 import generators.{TenantPlan, TenantPlanGenerator}
 import zio.Task
 object CommandsTenant:
@@ -7,14 +8,14 @@ object CommandsTenant:
 
   def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
     val namespacePlanGenerators = List(
-      namespaces.exampleShop.AccountNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.CatalogNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.CommunicationNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.IdentityNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.OrderNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.PaymentNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.ShoppingCartNamespace.Commands.mkPlanGenerator(tenantName),
-      namespaces.exampleShop.WarehouseNamespace.Commands.mkPlanGenerator(tenantName),
+      AccountNamespace.Commands.mkPlanGenerator(tenantName),
+      CatalogNamespace.Commands.mkPlanGenerator(tenantName),
+      CommunicationNamespace.Commands.mkPlanGenerator(tenantName),
+      IdentityNamespace.Commands.mkPlanGenerator(tenantName),
+      OrderNamespace.Commands.mkPlanGenerator(tenantName),
+      PaymentNamespace.Commands.mkPlanGenerator(tenantName),
+      ShoppingCartNamespace.Commands.mkPlanGenerator(tenantName),
+      WarehouseNamespace.Commands.mkPlanGenerator(tenantName),
     )
 
     TenantPlanGenerator.make(

@@ -2,20 +2,19 @@ package demo.tenants.schemas.namespaces.exampleShop.shared
 
 import _root_.demo.tenants.schemas.namespaces.{TopicConfig, mkDefaultPersistency, mkDefaultTopicPartitioning}
 import _root_.generators.*
-import demo.tenants.schemas.namespaces.exampleShop.shared.{Message, Randomizable, Schemable}
+import demo.tenants.schemas.namespaces.exampleShop.shared.{Message as MessageDto, Randomizable, Schemable}
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.schema.SchemaInfo
 import zio.{Duration, Schedule}
 
-def mkConfigurableTopicPlanGenerator[T <: Message](
+def mkConfigurableTopicPlanGenerator[T <: MessageDto](
   mkTenant: () => TenantName = () => "dekaf_default",
   mkNamespace: () => NamespaceName = () => "dekaf_default",
   mkName: TopicIndex => TopicName = i => s"topic-$i",
   mkLoadType: TopicIndex => TopicConfig.LoadType,
   mkSubscriptionType: SubscriptionIndex => SubscriptionType,
 )(using rn: Randomizable[T], sch: Schemable[T]) =
-  val payloadMessage = Message.random[T]
-  val schemaInfo = Message.schema[T].getSchemaInfo
+  val schemaInfo = MessageDto.schema[T].getSchemaInfo
 
   TopicPlanGenerator.make(
     mkTenant = mkTenant,
@@ -30,7 +29,7 @@ def mkConfigurableTopicPlanGenerator[T <: Message](
     mkProducerGenerator = _ =>
       ProducerPlanGenerator.make(
         mkName = i => s"${mkName(i)}Producer-$i",
-        mkPayload = _ => _ => Encoders.toJson(payloadMessage),
+        mkMessage = _ => _ => Message(Encoders.toJson(MessageDto.random[T])),
         mkSchedule = i => Schedule.fixed(
           Duration.fromMillis(
             mkLoadType(i) match

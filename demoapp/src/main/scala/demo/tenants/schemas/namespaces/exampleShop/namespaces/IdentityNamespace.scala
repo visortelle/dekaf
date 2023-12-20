@@ -1,58 +1,65 @@
-package demo.tenants.schemas.namespaces.exampleShop
+package demo.tenants.schemas.namespaces.exampleShop.namespaces
 
 import demo.tenants.schemas.namespaces.TopicConfig
-import demo.tenants.schemas.namespaces.exampleShop.commands.Communication.*
-import demo.tenants.schemas.namespaces.exampleShop.events.Communication.*
-import generators.{NamespacePlanGenerator, TenantName}
+import demo.tenants.schemas.namespaces.exampleShop.commands.Identity.*
+import demo.tenants.schemas.namespaces.exampleShop.events.Identity.*
 import demo.tenants.schemas.namespaces.exampleShop.shared.mkConfigurableTopicPlanGenerator
+import generators.{NamespacePlanGenerator, TenantName}
 import org.apache.pulsar.client.api.SubscriptionType
 
-object CommunicationNamespace:
+object IdentityNamespace:
   object Commands:
     def mkPlanGenerator(tenantName: TenantName) =
-      val namespaceName = "CommunicationCommands"
+      val namespaceName = "IdentityCommands"
 
       val topicPlanGenerators = List(
-        mkConfigurableTopicPlanGenerator[RequestNotification](
+        mkConfigurableTopicPlanGenerator[ChangeEmail](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "RequestNotification",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[EmitNotificationMethod](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "EmitNotificationMethod",
+          mkName = _ => "ChangeEmail",
           mkLoadType = _ => TopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[FailNotificationMethod](
+        mkConfigurableTopicPlanGenerator[ConfirmEmail](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "FailNotificationMethod",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Failover,
-        ),
-        mkConfigurableTopicPlanGenerator[CancelNotificationMethod](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "CancelNotificationMethod",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[SendNotificationMethod](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "SendNotificationMethod",
+          mkName = _ => "ConfirmEmail",
           mkLoadType = _ => TopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[ResetNotificationMethod](
+        mkConfigurableTopicPlanGenerator[ExpiryEmail](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "ResetNotificationMethod",
+          mkName = _ => "ExpiryEmail",
           mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[RegisterUser](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "RegisterUser",
+          mkLoadType = _ => TopicConfig.Overloaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[ChangePassword](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "ChangePassword",
+          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[DefinePrimaryEmail](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "DefinePrimaryEmail",
+          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[DeleteUser](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "DeleteUser",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )
@@ -67,41 +74,55 @@ object CommunicationNamespace:
 
   object Events:
     def mkPlanGenerator(tenantName: TenantName) =
-      val namespaceName = "CommunicationEvents"
+      val namespaceName = "IdentityEvents"
 
       val topicPlanGenerators = List(
-        mkConfigurableTopicPlanGenerator[NotificationRequested](
+        mkConfigurableTopicPlanGenerator[UserDeleted](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "NotificationRequested",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[NotificationMethodFailed](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "NotificationMethodFailed",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Failover,
-        ),
-        mkConfigurableTopicPlanGenerator[NotificationMethodSent](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "NotificationMethodSent",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[NotificationMethodCancelled](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "NotificationMethodCancelled",
+          mkName = _ => "UserDeleted",
           mkLoadType = _ => TopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[NotificationMethodReset](
+        mkConfigurableTopicPlanGenerator[UserRegistered](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "NotificationMethodReset",
+          mkName = _ => "UserRegistered",
+          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[EmailChanged](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "EmailChanged",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[UserPasswordChanged](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "UserPasswordChanged",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[EmailConfirmed](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "EmailConfirmed",
+          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[EmailExpired](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "EmailExpired",
+          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[PrimaryEmailDefined](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "PrimaryEmailDefined",
           mkLoadType = _ => TopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),

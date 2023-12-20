@@ -1,10 +1,10 @@
-package demo.tenants.schemas.namespaces.exampleShop
+package demo.tenants.schemas.namespaces.exampleShop.namespaces
 
 import _root_.demo.tenants.schemas.namespaces.TopicConfig
 import demo.tenants.schemas.namespaces.exampleShop.commands.Catalog.*
 import demo.tenants.schemas.namespaces.exampleShop.events.Catalog.*
-import generators.{NamespacePlanGenerator, TenantName, TopicPlanGenerator}
 import demo.tenants.schemas.namespaces.exampleShop.shared.mkConfigurableTopicPlanGenerator
+import generators.{NamespacePlanGenerator, TenantName, TopicPlanGenerator}
 import org.apache.pulsar.client.api.SubscriptionType
 
 object CatalogNamespace:

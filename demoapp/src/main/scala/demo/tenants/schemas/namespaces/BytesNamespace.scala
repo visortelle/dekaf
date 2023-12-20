@@ -62,7 +62,7 @@ object BytesNamespace:
                     mkName = _ => s"empty-bytes",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array()
+                            mkMessage = _ => _ => Message(Array())
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -72,7 +72,7 @@ object BytesNamespace:
                     mkName = _ => s"min-value",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(Byte.MinValue)
+                            mkMessage = _ => _ => Message(Array(Byte.MinValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -82,7 +82,7 @@ object BytesNamespace:
                     mkName = _ => s"max-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(Byte.MaxValue)
+                            mkMessage = _ => _ => Message(Array(Byte.MaxValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -92,7 +92,7 @@ object BytesNamespace:
                     mkName = _ => s"random-1B",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(1)
+                            mkMessage = _ => _ => Message(mkRandomBytes(1))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -102,7 +102,7 @@ object BytesNamespace:
 //                    mkName = _ => s"random-1B-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => mkRandomBytes(1),
+//                            mkMessage =  = _ => _ => Message(mkRandomBytes(1),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -113,7 +113,7 @@ object BytesNamespace:
                     mkName = _ => s"random-1KB",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(KB)
+                            mkMessage = _ => _ => Message(mkRandomBytes(KB))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -123,7 +123,7 @@ object BytesNamespace:
 //                    mkName = _ => s"random-1KB-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => mkRandomBytes(KB),
+//                            mkMessage =  = _ => _ => Message(mkRandomBytes(KB),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -134,7 +134,7 @@ object BytesNamespace:
 //                    mkName = _ => s"random-1KB-10k-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => mkRandomBytes(KB),
+//                            mkMessage =  = _ => _ => Message(mkRandomBytes(KB),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromNanos(100_000))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -145,7 +145,7 @@ object BytesNamespace:
 //                    mkName = _ => s"random-10KB-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => mkRandomBytes(TenKB),
+//                            mkMessage =  = _ => _ => Message(mkRandomBytes(TenKB),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -156,7 +156,7 @@ object BytesNamespace:
 //                    mkName = _ => s"random-100KB-10-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => mkRandomBytes(HundredKB),
+//                            mkMessage =  = _ => _ => Message(mkRandomBytes(HundredKB),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -167,7 +167,7 @@ object BytesNamespace:
                     mkName = _ => s"random-1MB",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(MB)
+                            mkMessage = _ => _ => Message(mkRandomBytes(MB))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -177,7 +177,7 @@ object BytesNamespace:
                     mkName = _ => s"random-5MB",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(MB * 5)
+                            mkMessage = _ => _ => Message(mkRandomBytes(MB * 5))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )

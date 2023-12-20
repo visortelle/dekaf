@@ -92,7 +92,8 @@ object ProtobufNativeNamespace:
                     mkName = _ => s"messages",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Encoders.toProto(ProtobufNativeDemoMessage.random())
+                            mkMessage = _ => _ => 
+                              Message(Encoders.toProto(ProtobufNativeDemoMessage.random()))
                         ),
                     mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)
                 ),
@@ -102,7 +103,8 @@ object ProtobufNativeNamespace:
 //                    mkName = _ => s"messages-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => Encoders.toProto(ProtobufNativeDemoMessage.random()),
+//                            mkMessage = _ => _ => 
+//                              Message(Encoders.toProto(ProtobufNativeDemoMessage.random())),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)

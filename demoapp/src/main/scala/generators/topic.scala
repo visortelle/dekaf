@@ -6,6 +6,7 @@ import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import monocle.syntax.all.*
 import _root_.client.{adminClient, pulsarClient}
 import org.apache.pulsar.client.impl.schema.{AutoProduceBytesSchema, JSONSchema}
+import scala.jdk.CollectionConverters._
 
 type TopicName = String
 type TopicIndex = Int
@@ -164,12 +165,17 @@ object TopicPlanExecutor:
                 _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")
                 _ <- producerPlan.messageIndex
                     .update { messageIndex =>
-                        val payload = producerPlan.mkPayload(messageIndex)
+                        val message = producerPlan.mkMessage(messageIndex)
 
-                        val msg = producer.newMessage
-                        producerPlan.mkKey(messageIndex).foreach(msg.key)
+                        val messageBuilder = producer.newMessage
 
-                        msg.value(payload).sendAsync
+                        message.key.foreach(messageBuilder.key)
+                        messageBuilder.value(message.payload)
+                        message.properties.foreach(properties =>
+                            messageBuilder.properties(properties.asJava)
+                        )
+
+                        messageBuilder.sendAsync
 
                         messageIndex + 1
                     }

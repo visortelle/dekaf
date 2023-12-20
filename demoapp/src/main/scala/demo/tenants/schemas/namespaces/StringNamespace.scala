@@ -18,7 +18,8 @@ object StringNamespace:
                     mkName = _ => s"empty-strings",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => "".getBytes("UTF-8")
+                            mkMessage = _ => _ => 
+                              Message("".getBytes("UTF-8"))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -28,7 +29,8 @@ object StringNamespace:
                     mkName = _ => s"visible-utf-8-chars",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => VisibleUtf8CharsAsBytes(messageIndex.toInt)
+                            mkMessage = _ => messageIndex => 
+                              Message(VisibleUtf8CharsAsBytes(messageIndex.toInt))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -38,7 +40,8 @@ object StringNamespace:
                     mkName = _ => s"random-characters",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => charsToBytes(Array(faker.lorem().character()))
+                            mkMessage = _ => _ => 
+                              Message(charsToBytes(Array(faker.lorem().character())))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -48,7 +51,8 @@ object StringNamespace:
                     mkName = _ => s"random-words",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.lorem().word().getBytes("UTF-8")
+                            mkMessage = _ => _ => 
+                              Message(faker.lorem().word().getBytes("UTF-8"))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -58,7 +62,8 @@ object StringNamespace:
 //                    mkName = _ => s"random-words-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => faker.lorem().word().getBytes("UTF-8"),
+//                            mkMessage = _ => _ => 
+//                              Message(faker.lorem().word().getBytes("UTF-8")),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -69,7 +74,8 @@ object StringNamespace:
                     mkName = _ => s"random-sentences",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.lorem().sentence().getBytes("UTF-8")
+                            mkMessage = _ => _ => 
+                              Message(faker.lorem().sentence().getBytes("UTF-8"))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -79,7 +85,8 @@ object StringNamespace:
                     mkName = _ => s"random-paragraphs",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.lorem().paragraph().getBytes("UTF-8")
+                            mkMessage = _ => _ => 
+                              Message(faker.lorem().paragraph().getBytes("UTF-8"))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -89,8 +96,8 @@ object StringNamespace:
                     mkName = _ => s"random-texts",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload =
-                                _ => _ => faker.lorem().paragraphs(10).asScala.mkString("\n\n").getBytes("UTF-8")
+                            mkMessage = _ => _ => 
+                              Message(faker.lorem().paragraphs(10).asScala.mkString("\n\n").getBytes("UTF-8"))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -100,8 +107,8 @@ object StringNamespace:
                     mkName = _ => s"random-big-texts",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload =
-                                _ => _ => faker.lorem().paragraphs(100).asScala.mkString("\n\n").getBytes("UTF-8")
+                            mkMessage = _ => _ => 
+                              Message(faker.lorem().paragraphs(100).asScala.mkString("\n\n").getBytes("UTF-8"))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )

@@ -1,65 +1,51 @@
-package demo.tenants.schemas.namespaces.exampleShop
+package demo.tenants.schemas.namespaces.exampleShop.namespaces
 
 import demo.tenants.schemas.namespaces.TopicConfig
-import demo.tenants.schemas.namespaces.exampleShop.commands.Identity.*
-import demo.tenants.schemas.namespaces.exampleShop.events.Identity.*
-import generators.{NamespacePlanGenerator, TenantName}
+import demo.tenants.schemas.namespaces.exampleShop.commands.Warehouse.*
+import demo.tenants.schemas.namespaces.exampleShop.events.Warehouse.*
 import demo.tenants.schemas.namespaces.exampleShop.shared.mkConfigurableTopicPlanGenerator
+import generators.{NamespacePlanGenerator, TenantName}
 import org.apache.pulsar.client.api.SubscriptionType
 
-object IdentityNamespace:
+object WarehouseNamespace:
   object Commands:
     def mkPlanGenerator(tenantName: TenantName) =
-      val namespaceName = "IdentityCommands"
+      val namespaceName = "WarehouseCommands"
 
       val topicPlanGenerators = List(
-        mkConfigurableTopicPlanGenerator[ChangeEmail](
+        mkConfigurableTopicPlanGenerator[ReceiveInventoryItem](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "ChangeEmail",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[ConfirmEmail](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "ConfirmEmail",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[ExpiryEmail](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "ExpiryEmail",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[RegisterUser](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "RegisterUser",
+          mkName = _ => "ReceiveInventoryItem",
           mkLoadType = _ => TopicConfig.Overloaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[ChangePassword](
+        mkConfigurableTopicPlanGenerator[IncreaseInventoryAdjust](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "ChangePassword",
+          mkName = _ => "IncreaseInventoryAdjust",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[DecreaseInventoryAdjust](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "DecreaseInventoryAdjust",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[ReserveInventoryItem](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "ReserveInventoryItem",
           mkLoadType = _ => TopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[DefinePrimaryEmail](
+        mkConfigurableTopicPlanGenerator[CreateInventory](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "DefinePrimaryEmail",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[DeleteUser](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "DeleteUser",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkName = _ => "CreateInventory",
+          mkLoadType = _ => TopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )
@@ -74,56 +60,77 @@ object IdentityNamespace:
 
   object Events:
     def mkPlanGenerator(tenantName: TenantName) =
-      val namespaceName = "IdentityEvents"
+      val namespaceName = "WarehouseEvents"
 
       val topicPlanGenerators = List(
-        mkConfigurableTopicPlanGenerator[UserDeleted](
+        mkConfigurableTopicPlanGenerator[InventoryCreated](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "UserDeleted",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
-          mkSubscriptionType = _ => SubscriptionType.Shared,
-        ),
-        mkConfigurableTopicPlanGenerator[UserRegistered](
-          mkTenant = () => tenantName,
-          mkNamespace = () => namespaceName,
-          mkName = _ => "UserRegistered",
+          mkName = _ => "InventoryCreated",
           mkLoadType = _ => TopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[EmailChanged](
+        mkConfigurableTopicPlanGenerator[InventoryItemReceived](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "EmailChanged",
+          mkName = _ => "InventoryItemReceived",
+          mkLoadType = _ => TopicConfig.Overloaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[InventoryAdjustmentIncreased](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "InventoryAdjustmentIncreased",
           mkLoadType = _ => TopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[UserPasswordChanged](
+        mkConfigurableTopicPlanGenerator[InventoryAdjustmentDecreased](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "UserPasswordChanged",
+          mkName = _ => "InventoryAdjustmentDecreased",
           mkLoadType = _ => TopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[EmailConfirmed](
+        mkConfigurableTopicPlanGenerator[InventoryAdjustmentNotDecreased](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "EmailConfirmed",
+          mkName = _ => "InventoryAdjustmentNotDecreased",
+          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[InventoryReserved](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "InventoryReserved",
           mkLoadType = _ => TopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[EmailExpired](
+        mkConfigurableTopicPlanGenerator[StockDepleted](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "EmailExpired",
+          mkName = _ => "StockDepleted",
           mkLoadType = _ => TopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[PrimaryEmailDefined](
+        mkConfigurableTopicPlanGenerator[InventoryNotReserved](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
-          mkName = _ => "PrimaryEmailDefined",
+          mkName = _ => "InventoryNotReserved",
           mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[InventoryItemIncreased](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "InventoryItemIncreased",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkSubscriptionType = _ => SubscriptionType.Shared,
+        ),
+        mkConfigurableTopicPlanGenerator[InventoryItemDecreased](
+          mkTenant = () => tenantName,
+          mkNamespace = () => namespaceName,
+          mkName = _ => "InventoryItemDecreased",
+          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )

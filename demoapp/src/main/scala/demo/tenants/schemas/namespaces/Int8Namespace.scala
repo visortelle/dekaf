@@ -18,7 +18,7 @@ object Int8Namespace:
                     mkName = _ => s"zeros",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int8ToBytes(0)
+                            mkMessage = _ => _ => Message(int8ToBytes(0))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -28,7 +28,7 @@ object Int8Namespace:
 //                    mkName = _ => s"zeros-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => _ => int8ToBytes(0),
+//                            mkMessage = _ => _ => Message(int8ToBytes(0),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -39,7 +39,7 @@ object Int8Namespace:
                     mkName = _ => s"max-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int8ToBytes(Byte.MaxValue)
+                          mkMessage = _ => _ => Message(int8ToBytes(Byte.MaxValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -49,7 +49,7 @@ object Int8Namespace:
                     mkName = _ => s"min-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => int8ToBytes(Byte.MinValue)
+                          mkMessage = _ => _ => Message(int8ToBytes(Byte.MinValue))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -59,7 +59,7 @@ object Int8Namespace:
                     mkName = _ => s"linear",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => int8ToBytes(messageIndex.toByte)
+                          mkMessage = _ => messageIndex => Message(int8ToBytes(messageIndex.toByte))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -69,7 +69,7 @@ object Int8Namespace:
 //                    mkName = _ => s"linear-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ => messageIndex => int8ToBytes(messageIndex.toByte),
+//                            mkMessage = _ => messageIndex => Message(int8ToBytes(messageIndex.toByte),
 //                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
@@ -80,8 +80,8 @@ object Int8Namespace:
                     mkName = _ => s"random",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload =
-                                _ => _ => int8ToBytes(faker.number().numberBetween(Byte.MinValue, Byte.MaxValue).toByte)
+                          mkMessage = _ => _ => 
+                            Message(int8ToBytes(faker.number().numberBetween(Byte.MinValue, Byte.MaxValue).toByte))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -91,9 +91,9 @@ object Int8Namespace:
 //                    mkName = _ => s"random-100-mps",
 //                    mkProducerGenerator = _ =>
 //                        ProducerPlanGenerator.make(
-//                            mkPayload = _ =>
-//                                _ => int8ToBytes(faker.number().numberBetween(Byte.MinValue, Byte.MaxValue).toByte),
-//                                mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                            mkMessage = _ => _ =>
+//                              Message(int8ToBytes(faker.number().numberBetween(Byte.MinValue, Byte.MaxValue).toByte))
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
 //                        ),
 //                    mkSchemaInfos = mkSchemaInfos
 //                )
