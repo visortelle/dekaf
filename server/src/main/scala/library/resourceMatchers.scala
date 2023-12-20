@@ -48,3 +48,4 @@ case class ResourceMatcher(matcher: TenantMatcher | NamespaceMatcher | TopicMatc
         case  (m: TenantMatcher,  t: TenantMatcher) => m.test(t)
         case (m: NamespaceMatcher, t: NamespaceMatcher) => m.test(t)
         case (m: TopicMatcher, t: TopicMatcher) => m.test(t)
+        case _ => false

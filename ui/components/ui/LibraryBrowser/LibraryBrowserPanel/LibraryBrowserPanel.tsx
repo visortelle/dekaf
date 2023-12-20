@@ -164,7 +164,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
 
                     props.onChange(newValue);
                   }}
-                  title="Remove description"
+                  title="Remove library item description"
                 />
               </div>
             </div>

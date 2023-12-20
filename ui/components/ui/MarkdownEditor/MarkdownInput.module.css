@@ -2,7 +2,7 @@
   display: flex;
   position: relative;
   overflow: hidden;
-  min-height: 28rem;
+  min-height: 30rem;
 }
 
 .EditButton {
@@ -31,11 +31,15 @@
 
 .BottomButtonText {
   opacity: 0;
+  background-color: #fff;
   font-size: 12rem;
+  border-radius: 12rem;
+  box-shadow: 0 0 4rem rgba(0, 0, 0, 0.17);
+  padding: 2rem 12rem;
 }
 
 .MarkdownInput:hover .BottomButtonText {
-  opacity: 0.6;
+  opacity: 1;
   transition: var(--transition-short);
 }
 
