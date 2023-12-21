@@ -17,6 +17,7 @@ import JsonView from "../../ui/JsonView/JsonView";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
 import { mapToObject } from '../../../proto-utils/proto-utils';
+import Library from './Library/Library';
 
 export type OverviewProps = {
   tenant: string;
@@ -115,91 +116,96 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-      <div className={s.Section}>
-        <table className={st.Table}>
-          <tbody>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Topic Name</td>
-              <Td>{props.topic}</Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Topic FQN</td>
-              <Td>{topicFqn}</Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Persistency</td>
-              <Td>{props.topicPersistency}</Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Partitioning</td>
-              <Td>
-                {partitioning}
-                {partitionsCount === undefined ? undefined : <span> (<strong>{partitionsCount}</strong> partitions)</span>}
-              </Td>
-            </tr>
-            {partitioning === 'partitioned' && (
-              <tr>
-                <td className={st.HighlightedCell}>Deleted</td>
+      <div className={s.LeftPanel}>
+        <div className={s.Section}>
+          <table className={st.Table}>
+            <tbody>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Topic Name</td>
+                <Td>{props.topic}</Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Topic FQN</td>
+                <Td>{topicFqn}</Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Persistency</td>
+                <Td>{props.topicPersistency}</Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Partitioning</td>
                 <Td>
-                  {(() => {
-                    const deleted = partitionedTopicMetadata?.getDeleted()?.getValue();
-                    return <div>{deleted === undefined ? undefined : i18n.formatBoolean(deleted)}</div>
-                  })()}
+                  {partitioning}
+                  {partitionsCount === undefined ? undefined : <span> (<strong>{partitionsCount}</strong> partitions)</span>}
                 </Td>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              {partitioning === 'partitioned' && (
+                <tr>
+                  <td className={st.HighlightedCell}>Deleted</td>
+                  <Td>
+                    {(() => {
+                      const deleted = partitionedTopicMetadata?.getDeleted()?.getValue();
+                      return <div>{deleted === undefined ? undefined : i18n.formatBoolean(deleted)}</div>
+                    })()}
+                  </Td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      <div style={{ marginBottom: '24rem' }}>
-        <strong>Properties</strong>
-        <div className={s.JsonViewer}>
-          <KeyValueEditor
-            value={properties === undefined ? [] : recordToIndexedKv(mapToObject(properties))}
-            mode='readonly'
-            onChange={() => { }}
-            height='240rem'
-          />
+        <div style={{ marginBottom: '24rem' }}>
+          <strong>Properties</strong>
+          <div className={s.JsonViewer}>
+            <KeyValueEditor
+              value={properties === undefined ? [] : recordToIndexedKv(mapToObject(properties))}
+              mode='readonly'
+              onChange={() => { }}
+              height='240rem'
+            />
+          </div>
+        </div>
+
+        <div className={s.Section}>
+          <div className={s.Tabs}>
+            <Tabs<TabKey>
+              activeTab={activeTab}
+              onActiveTabChange={setActiveTab}
+              tabs={{
+                'stats': {
+                  title: 'Statistics',
+                  render: () => (
+                    <div className={s.Tab}>
+                      <Statistics
+                        tenant={props.tenant}
+                        namespace={props.namespace}
+                        topic={props.topic}
+                        topicPersistency={props.topicPersistency}
+                        topicsStatsRes={statsResponse}
+                      />
+                    </div>
+                  )
+                },
+                'stats-internal': {
+                  title: 'Internal Statistics',
+                  render: () => (
+                    <div className={s.Tab}>
+                      <InternalStatistics
+                        tenant={props.tenant}
+                        namespace={props.namespace}
+                        topic={props.topic}
+                        topicPersistency={props.topicPersistency}
+                      />
+                    </div>
+                  )
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
-
-      <div className={s.Section}>
-        <div className={s.Tabs}>
-          <Tabs<TabKey>
-            activeTab={activeTab}
-            onActiveTabChange={setActiveTab}
-            tabs={{
-              'stats': {
-                title: 'Statistics',
-                render: () => (
-                  <div className={s.Tab}>
-                    <Statistics
-                      tenant={props.tenant}
-                      namespace={props.namespace}
-                      topic={props.topic}
-                      topicPersistency={props.topicPersistency}
-                      topicsStatsRes={statsResponse}
-                    />
-                  </div>
-                )
-              },
-              'stats-internal': {
-                title: 'Internal Statistics',
-                render: () => (
-                  <div className={s.Tab}>
-                    <InternalStatistics
-                      tenant={props.tenant}
-                      namespace={props.namespace}
-                      topic={props.topic}
-                      topicPersistency={props.topicPersistency}
-                    />
-                  </div>
-                )
-              }
-            }}
-          />
-        </div>
+      <div className={s.RightPanel}>
+        <Library />
       </div>
     </div>
   );

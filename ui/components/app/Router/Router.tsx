@@ -150,7 +150,10 @@ const prepareRoutes = (): {
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .overview._.path,
-        element: withLayout(<RoutedTopicPage view="overview" />, withLayoutProps),
+        element: withLayout(
+          <RoutedTopicPage view="overview" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic

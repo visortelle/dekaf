@@ -59,3 +59,15 @@
   font-size: 16rem;
   margin-bottom: 8rem;
 }
+
+.MarkdownPreview table,
+.MarkdownPreview th,
+.MarkdownPreview td {
+  border: 1px solid var(--border-color);
+  border-collapse: collapse;
+}
+
+.MarkdownPreview th,
+.MarkdownPreview td {
+  padding: 4rem 12rem;
+}

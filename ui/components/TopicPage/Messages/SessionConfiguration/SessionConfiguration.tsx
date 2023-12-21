@@ -41,7 +41,7 @@ function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): bool
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
-  const columnsRef = React.useRef<HTMLDivElement>(null);
+  const ref = React.useRef<HTMLDivElement>(null);
   const [isShowAdvanced, setIsShowAdvanced] = useState(detectAdvancedConfig(props.value));
   const isAdvancedConfig = detectAdvancedConfig(props.value);
 
@@ -76,7 +76,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         ${props.appearance === 'within-library-browser' ? s.WithinLibraryBrowser : ''}
       `}
     >
-      <div className={s.Columns} ref={columnsRef}>
+      <div className={s.Columns} ref={ref}>
         <div className={s.GlobalConfig}>
           <div className={s.Title} ref={hoverRef}>
             <LibraryBrowserPanel
@@ -191,7 +191,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               onSpecChange({ ...itemSpec, targets: newTargets });
 
               setTimeout(() => {
-                columnsRef.current?.scrollTo({ left: columnsRef.current.scrollWidth, behavior: 'smooth' });
+                ref.current?.scrollTo({ left: ref.current.scrollWidth, behavior: 'smooth' });
               }, 100);
             }}
           />

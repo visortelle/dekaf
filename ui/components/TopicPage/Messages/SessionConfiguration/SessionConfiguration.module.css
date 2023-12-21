@@ -3,6 +3,9 @@
 
   display: flex;
   flex-direction: column;
+
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .Columns {
@@ -17,6 +20,11 @@
   overscroll-behavior-x: contain;
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-y: contain;
+}
+
+.WithinLibraryBrowser {
+  overflow-x: unset;
+  overflow-y: unset;
 }
 
 .WithinLibraryBrowser .Columns {

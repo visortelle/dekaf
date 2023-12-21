@@ -80,8 +80,8 @@ export const TabContent: React.FC<TabContentProps> = (props) => {
   return (
     <div style={{
       display: props.isShow ? 'flex' : 'none',
-      flex: '1',
-      overflow: 'hidden',
+      flex: '1 1',
+      overflowX: 'hidden',
       flexDirection: props.direction === 'row' ? 'row' : 'column'
     }}>
       {props.children}

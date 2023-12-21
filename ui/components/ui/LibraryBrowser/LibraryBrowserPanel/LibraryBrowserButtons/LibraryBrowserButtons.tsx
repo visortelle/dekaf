@@ -23,6 +23,18 @@ export type LibraryBrowserButtonsProps = {
 const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
   return (
     <div className={s.LibraryBrowserButtons}>
+      <LibraryBrowserPickButton
+        itemType={props.itemType}
+        onPick={props.onPick}
+        libraryContext={props.libraryContext}
+      />
+
+      <LibraryBrowserSaveButton
+        itemToSave={props.value}
+        libraryContext={props.libraryContext}
+        onSave={props.onSave}
+      />
+
       {props.value.metadata.name.length === 0 && (
         <SmallButton
           type='regular'
@@ -52,18 +64,6 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
           title="Add description"
         />
       )}
-
-      <LibraryBrowserPickButton
-        itemType={props.itemType}
-        onPick={props.onPick}
-        libraryContext={props.libraryContext}
-      />
-
-      <LibraryBrowserSaveButton
-        itemToSave={props.value}
-        libraryContext={props.libraryContext}
-        onSave={props.onSave}
-      />
     </div>
   );
 }
