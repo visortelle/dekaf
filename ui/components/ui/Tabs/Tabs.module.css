@@ -12,7 +12,11 @@
   display: flex;
   position: relative;
   overflow: auto hidden;
-  flex: 0 0 auto;
+  flex: 1 0;
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
 }
 
 .CloseTabs {
@@ -46,14 +50,35 @@
   background-color: var(--surface-color);
   display: flex;
   align-items: center;
-  justify-content: center;
   text-align: center;
   border-top: 1px solid var(--border-color);
+  min-width: 140rem;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .Tab:hover:not(.ActiveTab) {
   opacity: 0.5;
   cursor: pointer;
+}
+
+.Small .Tab {
+  padding: 4rem 8rem;
+}
+
+.TabTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.NewTabButton {
+  border-left: 2px solid var(--border-color);
+}
+
+.CloseTab svg {
+  width: 16rem;
+  height: 16rem;
 }
 
 .ActiveTab {

@@ -13,17 +13,18 @@ import Tabs from '../../ui/Tabs/Tabs';
 import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
-import JsonView from "../../ui/JsonView/JsonView";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
 import { mapToObject } from '../../../proto-utils/proto-utils';
 import Library from './Library/Library';
+import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 export type OverviewProps = {
   tenant: string;
   namespace: string;
   topic: string;
   topicPersistency: PulsarTopicPersistency;
+  libraryContext: LibraryContext;
 };
 
 type TabKey = 'stats' | 'stats-internal';
@@ -205,7 +206,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
       </div>
       <div className={s.RightPanel}>
-        <Library />
+        <Library libraryContext={props.libraryContext} />
       </div>
     </div>
   );

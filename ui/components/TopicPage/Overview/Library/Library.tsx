@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import s from './Library.module.css'
 import Tabs from '../../../ui/Tabs/Tabs';
 import Notes from './Notes/Notes';
+import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 
-export type LibraryProps = {};
+export type LibraryProps = {
+  libraryContext: LibraryContext
+};
 
 type TabKey = 'markdown-document' |
   'sessions' |
@@ -20,9 +23,7 @@ const Library: React.FC<LibraryProps> = (props) => {
           'markdown-document': {
             title: 'Notes 🗒️',
             render: () => (
-              <div>
-                <Notes />
-              </div>
+              <Notes libraryContext={props.libraryContext} />
             )
           },
           'favorites': {

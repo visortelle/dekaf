@@ -213,6 +213,17 @@ export type ManagedConsumerSessionConfig = {
 
 export type ManagedConsumerSessionConfigValOrRef = ValOrRef<ManagedConsumerSessionConfig>;
 
+export type ManagedMarkdownDocumentSpec = {
+  markdown: string,
+};
+
+export type ManagedMarkdownDocument = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMarkdownDocumentSpec,
+};
+
+export type ManagedMarkdownDocumentValOrRef = ValOrRef<ManagedMarkdownDocument>;
+
 export type ManagedItem = ManagedMessageFilter |
   ManagedMessageFilterChain |
   ManagedConsumerSessionStartFrom |
@@ -227,4 +238,5 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedColoringRule |
   ManagedColoringRuleChain |
   ManagedConsumerSessionTarget |
-  ManagedMessageId;
+  ManagedMessageId |
+  ManagedMarkdownDocument;

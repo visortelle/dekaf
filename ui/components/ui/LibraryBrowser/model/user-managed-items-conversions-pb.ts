@@ -46,6 +46,7 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN: return "message-filter-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE: return "coloring-rule";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN: return "coloring-rule-chain";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT: return "markdown-document";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -62,6 +63,7 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "message-filter-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN;
     case "coloring-rule": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE;
     case "coloring-rule-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN;
+    case "markdown-document": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -980,6 +982,65 @@ export function managedConsumerSessionConfigValOrRefToPb(v: t.ManagedConsumerSes
   return idPb;
 }
 
+export function managedMarkdownDocumentSpecFromPb(v: pb.ManagedMarkdownDocumentSpec): t.ManagedMarkdownDocumentSpec {
+  return {
+    markdown: v.getMarkdown()
+  };
+}
+
+export function managedMarkdownDocumentSpecToPb(v: t.ManagedMarkdownDocumentSpec): pb.ManagedMarkdownDocumentSpec {
+  const specPb = new pb.ManagedMarkdownDocumentSpec();
+  specPb.setMarkdown(v.markdown);
+
+  return specPb;
+}
+
+export function managedMarkdownDocumentFromPb(v: pb.ManagedMarkdownDocument): t.ManagedMarkdownDocument {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedMarkdownDocumentSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedMarkdownDocumentToPb(v: t.ManagedMarkdownDocument): pb.ManagedMarkdownDocument {
+  const configPb = new pb.ManagedMarkdownDocument();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedMarkdownDocumentSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedMarkdownDocumentValOrRefFromPb(v: pb.ManagedMarkdownDocumentValOrRef): t.ManagedMarkdownDocumentValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMarkdownDocumentValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedMarkdownDocumentFromPb(v.getVal()!)
+      };
+    case pb.ManagedMarkdownDocumentValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedMarkdownDocumentValOrRef: ${v}`);
+  }
+}
+
+export function managedMarkdownDocumentValOrRefToPb(v: t.ManagedMarkdownDocumentValOrRef): pb.ManagedMarkdownDocumentValOrRef {
+  const idPb = new pb.ManagedMarkdownDocumentValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedMarkdownDocumentToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedMarkdownDocumentValOrRef: ${v}`);
+  }
+  return idPb;
+}
+
 export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
   switch (v.getSpecCase()) {
     case pb.ManagedItem.SpecCase.SPEC_MESSAGE_ID:
@@ -1008,6 +1069,8 @@ export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
       return managedConsumerSessionTargetFromPb(v.getSpecConsumerSessionTarget()!);
     case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_CONFIG:
       return managedConsumerSessionConfigFromPb(v.getSpecConsumerSessionConfig()!);
+    case pb.ManagedItem.SpecCase.SPEC_MARKDOWN_DOCUMENT:
+      return managedMarkdownDocumentFromPb(v.getSpecMarkdownDocument()!);
     default:
       throw new Error(`Unknown ManagedItem: ${v}`);
   }
@@ -1066,6 +1129,10 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
     }
     case "consumer-session-config": {
       itemPb.setSpecConsumerSessionConfig(managedConsumerSessionConfigToPb(v as t.ManagedConsumerSessionConfig));
+      break;
+    }
+    case "markdown-document": {
+      itemPb.setSpecMarkdownDocument(managedMarkdownDocumentToPb(v as t.ManagedMarkdownDocument));
       break;
     }
   }

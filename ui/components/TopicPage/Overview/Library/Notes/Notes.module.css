@@ -1,3 +1,15 @@
 .Notes {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.MarkdownPreview {
   padding: 12rem;
+  overflow: auto;
+}
+
+.NoteTabs {
+  display: flex;
+  overflow: hidden;
 }

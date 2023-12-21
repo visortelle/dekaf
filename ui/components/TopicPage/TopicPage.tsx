@@ -19,6 +19,7 @@ import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
 import { createNewTarget } from "./create-new-target";
 import * as GrpcClient from '../app/contexts/GrpcClient/GrpcClient';
 import * as pb from "../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
+import { LibraryContext } from "../ui/LibraryBrowser/model/library-context";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -200,6 +201,16 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     },
   ]);
 
+  const libraryContext: LibraryContext = {
+    pulsarResource: {
+      type: 'topic',
+      topicPersistency: props.topicPersistency,
+      tenant: props.tenant,
+      namespace: props.namespace,
+      topic: props.topic,
+    }
+  };
+
   return (
     <div className={s.Page}>
       <BreadCrumbsAtPageTop
@@ -232,15 +243,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       {props.view.type === "messages" && (
         <Session
           key={key}
-          libraryContext={{
-            pulsarResource: {
-              type: 'topic',
-              topicPersistency: props.topicPersistency,
-              tenant: props.tenant,
-              namespace: props.namespace,
-              topic: props.topic,
-            }
-          }}
+          libraryContext={libraryContext}
           initialConfig={{
             type: 'value',
             val: {
@@ -347,7 +350,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         />
       )}
       {props.view.type === "overview" && (
-        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} />
       )}
       {props.view.type === "policies" && (
         <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />

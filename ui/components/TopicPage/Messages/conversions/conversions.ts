@@ -444,8 +444,6 @@ export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFil
   return chainPb;
 }
 
-
-
 export function messageIdFromPb(v: pb.MessageId): MessageId {
   return {
     messageId: v.getMessageId_asU8(),
