@@ -35,8 +35,10 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (focusOnMount) {
-      inputRef?.current?.focus();
+    if (inputRef.current && focusOnMount) {
+      setTimeout(() => {
+        inputRef?.current?.focus();
+      });
     }
   }, [inputRef.current]);
 

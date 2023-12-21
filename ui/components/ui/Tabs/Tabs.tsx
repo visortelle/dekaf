@@ -6,24 +6,24 @@ import newTabIcon from './new-tab.svg';
 import SmallButton from '../SmallButton/SmallButton';
 
 export type Tab = {
-  title: string;
+  title: string | React.ReactElement;
   render: () => React.ReactNode;
   isRenderAlways?: boolean;
   onClose?: () => void;
+  extraControls?: React.ReactElement
 }
 
 export type TabsProps<TK extends string> = {
   tabs: Record<TK, Tab>;
   activeTab: TK;
   onActiveTabChange: (tab: TK) => void;
-  onClose?: () => void;
   closeTitle?: string,
   size?: 'regular' | 'small';
   newTab?: {
     onNewTab: () => void,
     title: string
   }
-  scrollToTabId?: string
+  scrollToTabId?: string,
 };
 
 function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
@@ -54,6 +54,12 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
               >
                 <div className={s.TabTitle}>{tab.title}</div>
 
+                {tab.extraControls && (
+                  <div className={s.TabExtraControls}>
+                    {tab.extraControls}
+                  </div>
+                )}
+
                 {tab.onClose && (
                   <div className={s.CloseTab} title={props.closeTitle || "Close this tab"} onClick={tab.onClose}>
                     <SvgIcon svg={closeIcon} />
@@ -63,12 +69,6 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
             );
           })}
         </div>
-
-        {props.onClose && (
-          <div className={s.CloseTabs} title="Close" onClick={props.onClose}>
-            <SvgIcon svg={closeIcon} />
-          </div>
-        )}
 
         {props.newTab && (
           <div className={s.NewTabButton}>

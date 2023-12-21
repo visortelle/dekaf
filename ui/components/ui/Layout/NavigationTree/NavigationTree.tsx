@@ -483,7 +483,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           value={filterQuery}
           onChange={v => setFilterQuery(v)}
           clearable={true}
-          focusOnMount={true}
         />
       </div>
       <div className={s.TreeControlButtons}>
