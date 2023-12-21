@@ -1,62 +1,61 @@
 package library.managed_items
 
+import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
-import _root_.consumer.start_from.MessageId
-import _root_.library.{ManagedItemMetadata, ManagedItemTrait, ManagedItemReference}
 
-case class ManagedMessageIdSpec(
-    messageId: MessageId
+case class ManagedMarkdownDocumentSpec(
+    markdown: String
 )
 
-object ManagedMessageIdSpec:
-    def fromPb(v: pb.ManagedMessageIdSpec): ManagedMessageIdSpec =
-        ManagedMessageIdSpec(messageId = MessageId.fromPb(v.messageId.get))
-    def toPb(v: ManagedMessageIdSpec): pb.ManagedMessageIdSpec =
-        pb.ManagedMessageIdSpec(messageId = Some(MessageId.toPb(v.messageId)))
+object ManagedMarkdownDocumentSpec:
+    def fromPb(v: pb.ManagedMarkdownDocumentSpec): ManagedMarkdownDocumentSpec =
+        ManagedMarkdownDocumentSpec(markdown = v.markdown)
+    def toPb(v: ManagedMarkdownDocumentSpec): pb.ManagedMarkdownDocumentSpec =
+        pb.ManagedMarkdownDocumentSpec(markdown = v.markdown)
 
-case class ManagedMessageId(
+case class ManagedMarkdownDocument(
     metadata: ManagedItemMetadata,
-    spec: ManagedMessageIdSpec
+    spec: ManagedMarkdownDocumentSpec
 ) extends ManagedItemTrait
 
-object ManagedMessageId:
-    def fromPb(v: pb.ManagedMessageId): ManagedMessageId =
-        ManagedMessageId(
+object ManagedMarkdownDocument:
+    def fromPb(v: pb.ManagedMarkdownDocument): ManagedMarkdownDocument =
+        ManagedMarkdownDocument(
             metadata = ManagedItemMetadata.fromPb(v.metadata.get),
-            spec = ManagedMessageIdSpec.fromPb(v.spec.get)
+            spec = ManagedMarkdownDocumentSpec.fromPb(v.spec.get)
         )
-    def toPb(v: ManagedMessageId): pb.ManagedMessageId =
-        pb.ManagedMessageId(
+    def toPb(v: ManagedMarkdownDocument): pb.ManagedMarkdownDocument =
+        pb.ManagedMarkdownDocument(
             metadata = Some(ManagedItemMetadata.toPb(v.metadata)),
-            spec = Some(ManagedMessageIdSpec.toPb(v.spec))
+            spec = Some(ManagedMarkdownDocumentSpec.toPb(v.spec))
         )
 
-case class ManagedMessageIdValOrRef(
-    value: Option[ManagedMessageId],
+case class ManagedMarkdownDocumentValOrRef(
+    value: Option[ManagedMarkdownDocument],
     reference: Option[ManagedItemReference]
 )
 
-object ManagedMessageIdValOrRef:
-    def fromPb(v: pb.ManagedMessageIdValOrRef): ManagedMessageIdValOrRef =
+object ManagedMarkdownDocumentValOrRef:
+    def fromPb(v: pb.ManagedMarkdownDocumentValOrRef): ManagedMarkdownDocumentValOrRef =
         v.valOrRef match
-            case pb.ManagedMessageIdValOrRef.ValOrRef.Val(v) =>
-                ManagedMessageIdValOrRef(
-                    value = Some(ManagedMessageId.fromPb(v)),
+            case pb.ManagedMarkdownDocumentValOrRef.ValOrRef.Val(v) =>
+                ManagedMarkdownDocumentValOrRef(
+                    value = Some(ManagedMarkdownDocument.fromPb(v)),
                     reference = None
                 )
-            case pb.ManagedMessageIdValOrRef.ValOrRef.Ref(v) =>
-                ManagedMessageIdValOrRef(
+            case pb.ManagedMarkdownDocumentValOrRef.ValOrRef.Ref(v) =>
+                ManagedMarkdownDocumentValOrRef(
                     value = None,
                     reference = Some(v)
                 )
 
-    def toPb(v: ManagedMessageIdValOrRef): pb.ManagedMessageIdValOrRef =
+    def toPb(v: ManagedMarkdownDocumentValOrRef): pb.ManagedMarkdownDocumentValOrRef =
         v.value match
             case Some(v) =>
-                pb.ManagedMessageIdValOrRef(
-                    valOrRef = pb.ManagedMessageIdValOrRef.ValOrRef.Val(ManagedMessageId.toPb(v))
+                pb.ManagedMarkdownDocumentValOrRef(
+                    valOrRef = pb.ManagedMarkdownDocumentValOrRef.ValOrRef.Val(ManagedMarkdownDocument.toPb(v))
                 )
             case None =>
-                pb.ManagedMessageIdValOrRef(
-                    valOrRef = pb.ManagedMessageIdValOrRef.ValOrRef.Ref(v.reference.get)
+                pb.ManagedMarkdownDocumentValOrRef(
+                    valOrRef = pb.ManagedMarkdownDocumentValOrRef.ValOrRef.Ref(v.reference.get)
                 )

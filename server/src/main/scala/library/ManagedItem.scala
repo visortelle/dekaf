@@ -13,7 +13,8 @@ import _root_.library.managed_items.{
     ManagedMessageFilterChain,
     ManagedMessageId,
     ManagedRelativeDateTime,
-    ManagedTopicSelector
+    ManagedTopicSelector,
+    ManagedMarkdownDocument
 }
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
@@ -30,7 +31,8 @@ type ManagedItem =
     ManagedMessageFilterChain |
     ManagedMessageId |
     ManagedRelativeDateTime |
-    ManagedTopicSelector
+    ManagedTopicSelector |
+    ManagedMarkdownDocument
 
 object ManagedItem:
     def fromPb(v: pb.ManagedItem): ManagedItem =
@@ -48,6 +50,7 @@ object ManagedItem:
             case it: pb.ManagedItem.Spec.SpecMessageId => ManagedMessageId.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecRelativeDateTime => ManagedRelativeDateTime.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecTopicSelector => ManagedTopicSelector.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecMarkdownDocument => ManagedMarkdownDocument.fromPb(it.value)
             case _ => throw new IllegalArgumentException("Unknown ManagedItem type")
 
     def toPb(v: ManagedItem): pb.ManagedItem =
@@ -91,3 +94,6 @@ object ManagedItem:
             case it: ManagedTopicSelector =>
                 val itPb = ManagedTopicSelector.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecTopicSelector(itPb))
+            case it: ManagedMarkdownDocument =>
+                val itPb = ManagedMarkdownDocument.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecMarkdownDocument(itPb))
