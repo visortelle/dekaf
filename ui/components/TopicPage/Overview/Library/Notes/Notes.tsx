@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import s from './Notes.module.css'
-import MarkdownPreview from '../../../../ui/MarkdownEditor/MarkdownPreview/MarkdownPreview';
 import { LibraryContext, resourceMatcherFromContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
@@ -16,8 +15,8 @@ import { v4 as uuid } from 'uuid';
 import Tabs, { Tab } from '../../../../ui/Tabs/Tabs';
 import ConfirmationButton from '../../../../ui/ConfirmationButton/ConfirmationButton';
 import deleteIcon from './delete.svg';
-import { defaultNote } from './default-note';
-import Input from '../../../../ui/Input/Input';
+import { helpNote } from './help-note';
+import defaultMarkdown from './default.md';
 import RenameButton from '../../../../ui/RenameButton/RenameButton';
 import { cloneDeep } from 'lodash';
 import MarkdownInput from '../../../../ui/MarkdownEditor/MarkdownInput';
@@ -31,7 +30,7 @@ const Notes: React.FC<NotesProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [notes, setNotes] = useState<ManagedMarkdownDocument[]>([]);
-  const [selectedNoteId, setSelectedNoteId] = useState<string>(defaultNote.metadata.id);
+  const [selectedNoteId, setSelectedNoteId] = useState<string>(helpNote.metadata.id);
   const modals = Modals.useContext();
 
   const fetchNotes = async () => {
@@ -57,13 +56,29 @@ const Notes: React.FC<NotesProps> = (props) => {
 
     const newNotes = res.getItemsList()
       .map(it => libraryItemFromPb(it))
-      .map(it => (it.spec as ManagedMarkdownDocument));
+      .map(it => (it.spec as ManagedMarkdownDocument))
+      .sort((a, b) => {
+        const nameA = a.metadata.name;
+        const nameB = b.metadata.name;
+
+        if (nameA === nameB) {
+          return a.metadata.id.localeCompare(b.metadata.id, 'en', { numeric: true })
+        }
+
+        return nameA.localeCompare(nameB, 'en', { numeric: true });
+      });
+
+
+
+    if (notes.length === 0 && newNotes.length > 0) {
+      setSelectedNoteId(newNotes[0].metadata.id);
+    }
 
     setNotes(newNotes);
     props.onCount(newNotes.length);
   }
 
-  const saveLibraryItem = async (markdownDocument: ManagedMarkdownDocument) => {
+  const createNote = async (markdownDocument: ManagedMarkdownDocument) => {
     const req = new pb.SaveLibraryItemRequest();
 
     const newNote: LibraryItem = {
@@ -87,13 +102,81 @@ const Notes: React.FC<NotesProps> = (props) => {
       notifyError(`Unable to save a note. ${res.getStatus()?.getMessage()}`);
       return;
     }
+
+    setSelectedNoteId(markdownDocument.metadata.id);
+  }
+
+  const updateNote = async (markdownDocument: ManagedMarkdownDocument) => {
+    const getLibItemReq = new pb.GetLibraryItemRequest();
+    getLibItemReq.setId(markdownDocument.metadata.id);
+    const getLibItemRes = await libraryServiceClient.getLibraryItem(getLibItemReq, null)
+      .catch(err => notifyError(`Unable to get library item ${markdownDocument.metadata.id}. ${err}`));
+
+    if (getLibItemRes === undefined) {
+      return;
+    }
+
+    if (getLibItemRes.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to get library item ${markdownDocument.metadata.id}. ${getLibItemRes.getStatus()?.getMessage()}`)
+    }
+
+    const libraryItem = libraryItemFromPb(getLibItemRes.getItem()!);
+    libraryItem.spec = markdownDocument;
+
+    const req = new pb.SaveLibraryItemRequest();
+    const updatedLibraryItemPb = libraryItemToPb(libraryItem);
+    req.setItem(updatedLibraryItemPb);
+
+    const res = await libraryServiceClient.saveLibraryItem(req, null)
+      .catch(err => notifyError(`Unable to save library item. ${err}`));
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`)
+    }
+
+    setNotes(v => {
+      const newNotes = cloneDeep(v);
+      const itemIndex = newNotes.findIndex(note => note.metadata.id === libraryItem.spec.metadata.id);
+      newNotes[itemIndex] = markdownDocument;
+
+      return newNotes;
+    });
+  }
+
+  const deleteNote = async (id: string) => {
+    const req = new pb.DeleteLibraryItemRequest();
+    req.setId(id);
+
+    const res = await libraryServiceClient.deleteLibraryItem(req, null)
+      .catch(err => notifyError(`Unable to delete library item. ${err}`));
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to delete library item. ${res.getStatus()?.getMessage()}`);
+      return
+    }
+
+    setNotes(v => {
+      const newNotes = v.filter(nt => nt.metadata.id !== id);
+
+      setSelectedNoteId(newNotes.length > 0 ? newNotes[0].metadata.id : helpNote.metadata.id);
+
+      return newNotes;
+    });
   }
 
   useEffect(() => {
     fetchNotes();
   }, [props.libraryContext]);
 
-  const notesToShow = notes.concat([defaultNote]);
+  const notesToShow = notes.concat([helpNote]);
   const selectedNote = notesToShow?.find(note => note.metadata.id === selectedNoteId);
 
   return (
@@ -109,13 +192,18 @@ const Notes: React.FC<NotesProps> = (props) => {
                   {selectedNote && (
                     <MarkdownInput
                       value={selectedNote.spec.markdown}
-                      onChange={() => { }}
-                      isReadOnly={note.metadata.id === defaultNote.metadata.id}
+                      onChange={async (v) => {
+                        const newNote = cloneDeep(note);
+                        newNote.spec.markdown = v;
+
+                        await updateNote(newNote);
+                      }}
+                      isReadOnly={note.metadata.id === helpNote.metadata.id}
                     />
                   )}
                 </div>
               ),
-              extraControls: note.metadata.id === defaultNote.metadata.id ? undefined : (
+              extraControls: note.metadata.id === helpNote.metadata.id ? undefined : (
                 <div style={{ display: 'flex' }}>
                   <RenameButton
                     modal={{
@@ -127,44 +215,10 @@ const Notes: React.FC<NotesProps> = (props) => {
                     }}
                     initialValue={note.metadata.name}
                     onConfirm={async (v) => {
-                      const getLibItemReq = new pb.GetLibraryItemRequest();
-                      getLibItemReq.setId(note.metadata.id);
-                      const getLibItemRes = await libraryServiceClient.getLibraryItem(getLibItemReq, null)
-                        .catch(err => notifyError(`Unable to get library item ${note.metadata.id}. ${err}`));
+                      const newNote = cloneDeep(note);
+                      newNote.metadata.name = v;
 
-                      if (getLibItemRes === undefined) {
-                        return;
-                      }
-
-                      if (getLibItemRes.getStatus()?.getCode() !== Code.OK) {
-                        notifyError(`Unable to get library item ${note.metadata.id}. ${getLibItemRes.getStatus()?.getMessage()}`)
-                      }
-
-                      const libraryItem = libraryItemFromPb(getLibItemRes.getItem()!);
-                      libraryItem.spec.metadata.name = v;
-
-                      const req = new pb.SaveLibraryItemRequest();
-                      const updatedLibraryItemPb = libraryItemToPb(libraryItem);
-                      req.setItem(updatedLibraryItemPb);
-
-                      const res = await libraryServiceClient.saveLibraryItem(req, null)
-                        .catch(err => notifyError(`Unable to save library item. ${err}`));
-
-                      if (res === undefined) {
-                        return;
-                      }
-
-                      if (res.getStatus()?.getCode() !== Code.OK) {
-                        notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`)
-                      }
-
-                      setNotes(v => {
-                        const newNotes = cloneDeep(v);
-                        const itemIndex = newNotes.findIndex(note => note.metadata.id === libraryItem.spec.metadata.id);
-                        newNotes[itemIndex].metadata.name = libraryItem.spec.metadata.name;
-
-                        return newNotes;
-                      });
+                      await updateNote(newNote);
                     }}
                   />
 
@@ -178,22 +232,7 @@ const Notes: React.FC<NotesProps> = (props) => {
                     dialog={{
                       content: <>Are you sure that you want to delete this markdown document?</>,
                       onConfirm: async () => {
-                        const req = new pb.DeleteLibraryItemRequest();
-                        req.setId(note.metadata.id);
-
-                        const res = await libraryServiceClient.deleteLibraryItem(req, null)
-                          .catch(err => notifyError(`Unable to delete library item. ${err}`));
-
-                        if (res === undefined) {
-                          return;
-                        }
-
-                        if (res.getStatus()?.getCode() !== Code.OK) {
-                          notifyError(`Unable to delete library item. ${res.getStatus()?.getMessage()}`);
-                          return
-                        }
-
-                        setNotes(v => v.filter(nt => nt.metadata.id !== note.metadata.id));
+                        await deleteNote(note.metadata.id);
                         modals.pop();
                       },
                       type: 'danger'
@@ -217,17 +256,16 @@ const Notes: React.FC<NotesProps> = (props) => {
                 metadata: {
                   id: uuid(),
                   descriptionMarkdown: '',
-                  name: 'New Note',
+                  name: `Note ${notes.length + 1}`,
                   type: "markdown-document"
                 },
                 spec: {
-                  markdown: 'Write something meaningful here.'
+                  markdown: defaultMarkdown
                 }
               };
 
-              await saveLibraryItem(newMarkdownDocument);
+              await createNote(newMarkdownDocument);
               await fetchNotes();
-              setSelectedNoteId(newMarkdownDocument.metadata.id);
             },
             title: "Create new note"
           }}

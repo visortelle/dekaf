@@ -68,11 +68,8 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
   const [renderedMarkdown, setRenderedMarkdown] = useState('');
 
   useEffect(() => {
-    // Yep, sanitize it two times.
-    const sanitizedMarkdown = sanitizeHtml(props.markdown, sanitizeOptions);
-    const html = md.render(sanitizedMarkdown);
-    const sanitizedHtml = sanitizeHtml(html, sanitizeOptions);
-    setRenderedMarkdown(sanitizedHtml);
+    const safeHtml = sanitizeHtml(md.render(props.markdown), sanitizeOptions);
+    setRenderedMarkdown(safeHtml);
   }, [markdownDebounced]);
 
   useEffect(() => {

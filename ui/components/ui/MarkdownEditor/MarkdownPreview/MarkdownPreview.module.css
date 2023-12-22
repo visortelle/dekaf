@@ -71,3 +71,12 @@
 .MarkdownPreview td {
   padding: 4rem 12rem;
 }
+
+
+.MarkdownPreview blockquote {
+  border-left: 4rem solid #aaa;
+  color: #777;
+  margin: 0;
+  margin-bottom: 12rem;
+  padding: 0 12rem;
+}
