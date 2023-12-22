@@ -151,8 +151,6 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
                   props.onChange(newValue);
                 }}
                 maxHeight={160}
-                modalTitle='Library Item Description'
-                bottomButtonText='View or edit description'
               />
               <div className={s.RemoveDescriptionButton}>
                 <DeleteButton

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import s from './RenameButton.module.css'
 import * as Modals from '../../app/contexts/Modals/Modals';
-import SmallButton from '../SmallButton/SmallButton';
+import SmallButton, { SmallButtonProps } from '../SmallButton/SmallButton';
 import Input from '../Input/Input';
 import Button from '../Button/Button';
 import renameIcon from './rename.svg';
@@ -56,6 +56,7 @@ export type RenameButtonProps = {
     id: string,
     title: string
   },
+  button?: Partial<SmallButtonProps>,
   initialValue: string,
   onConfirm: (v: string) => void,
 };
@@ -84,6 +85,7 @@ const RenameButton: React.FC<RenameButtonProps> = (props) => {
           styleMode: 'no-content-padding'
         });
       }}
+      {...props.button}
     />
   );
 }

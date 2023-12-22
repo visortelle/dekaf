@@ -40,19 +40,23 @@ const Library: React.FC<LibraryProps> = (props) => {
                 libraryContext={props.libraryContext}
                 onCount={(v) => setItemsCount(ic => ({ ...ic, notes: v }))}
               />
-            )
+            ),
+            isRenderAlways: true,
           },
           'favorites': {
             title: '⭐️ Favorites',
-            render: () => <>favorites</>
+            render: () => <>favorites</>,
+            isRenderAlways: true,
           },
           'sessions': {
             title: '🎬 Sessions',
-            render: () => <>sessions</>
+            render: () => <>sessions</>,
+            isRenderAlways: true,
           },
           'library': {
             title: '📚 Library',
-            render: () => <>library</>
+            render: () => <>library</>,
+            isRenderAlways: true,
           }
         }}
         activeTab={activeTab}

@@ -20,6 +20,7 @@ import { defaultNote } from './default-note';
 import Input from '../../../../ui/Input/Input';
 import RenameButton from '../../../../ui/RenameButton/RenameButton';
 import { cloneDeep } from 'lodash';
+import MarkdownInput from '../../../../ui/MarkdownEditor/MarkdownInput';
 
 export type NotesProps = {
   libraryContext: LibraryContext,
@@ -105,17 +106,24 @@ const Notes: React.FC<NotesProps> = (props) => {
               isRenderAlways: true,
               render: () => (
                 <div className={s.MarkdownPreview}>
-                  {selectedNote && <MarkdownPreview
-                    markdown={selectedNote.spec.markdown}
-                  />}
+                  {selectedNote && (
+                    <MarkdownInput
+                      value={selectedNote.spec.markdown}
+                      onChange={() => { }}
+                      isReadOnly={note.metadata.id === defaultNote.metadata.id}
+                    />
+                  )}
                 </div>
               ),
-              extraControls: (
+              extraControls: note.metadata.id === defaultNote.metadata.id ? undefined : (
                 <div style={{ display: 'flex' }}>
                   <RenameButton
                     modal={{
                       id: 'rename-markdown-document',
                       title: 'Rename Markdown Document'
+                    }}
+                    button={{
+                      title: 'Rename this markdown document'
                     }}
                     initialValue={note.metadata.name}
                     onConfirm={async (v) => {
@@ -164,7 +172,7 @@ const Notes: React.FC<NotesProps> = (props) => {
                     button={{
                       type: 'regular',
                       appearance: 'borderless-semitransparent',
-                      title: 'Delete this note',
+                      title: 'Delete this markdown document',
                       svgIcon: deleteIcon
                     }}
                     dialog={{

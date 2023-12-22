@@ -55,9 +55,11 @@
   min-width: 140rem;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
 }
 
-.Tab:hover:not(.ActiveTab) {
+.Tab:hover {
   opacity: 0.5;
   cursor: pointer;
 }
@@ -105,6 +107,18 @@
   flex: 1 1 auto;
   display: flex;
   overflow: auto;
+  text-overflow: ellipsis;
 }
 
-.TabExtraControls {}
+.TabExtraControls {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--surface-color);
+}
+
+.Tab:hover .TabExtraControls {
+  opacity: 1;
+  transition: var(--transition-short);
+}

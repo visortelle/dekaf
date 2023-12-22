@@ -1,17 +1,12 @@
 .MarkdownInput {
   display: flex;
+  flex-direction: column;
   position: relative;
   overflow: hidden;
   min-height: 30rem;
 }
 
-.EditButton {
-  position: absolute;
-  top: 12rem;
-  right: 12rem;
-}
-
-.BottomButton {
+.ViewFullScreen {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -25,11 +20,11 @@
   height: 18rem;
 }
 
-.MarkdownInput:hover .BottomButton {
+.MarkdownInput:hover .ViewFullScreen {
   transition: var(--transition-short);
 }
 
-.BottomButtonText {
+.ViewFullScreenText {
   opacity: 0;
   background-color: #fff;
   font-size: 12rem;
@@ -38,15 +33,49 @@
   padding: 2rem 12rem;
 }
 
-.MarkdownInput:hover .BottomButtonText {
+.MarkdownInput:hover .ViewFullScreenText {
   opacity: 1;
   transition: var(--transition-short);
 }
 
-.BottomButton:hover {
+.ViewFullScreen:hover {
   cursor: pointer;
 }
 
-.BottomButton:hover .BottomButtonText {
+.ViewFullScreen:hover .ViewFullScreenText {
   opacity: 1;
+}
+
+.Buttons {
+  position: absolute;
+  top: -4rem;
+  right: 32rem;
+  opacity: 0;
+  z-index: 1;
+}
+
+.MarkdownInput:hover .Buttons {
+  opacity: 1;
+  transition: var(--transition-short);
+}
+
+.ModalDialog {
+  height: calc(100vh - 120rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ModalDialogFooter {
+  padding: 12rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.MarkdownPreview {
+  width: 800rem;
+  height: calc(100vh - 120rem);
+  padding: 12rem
 }
