@@ -2,6 +2,11 @@
   max-width: 800rem;
 }
 
+.MarkdownPreview svg {
+  /* Fix whole document blinking after rendering Mermaid diagram. */
+  animation: fade-in 0.4s ease-in-out;
+}
+
 .MarkdownPreview img,
 .MarkdownPreview svg,
 .MarkdownPreview iframe {
@@ -72,11 +77,20 @@
   padding: 4rem 12rem;
 }
 
-
 .MarkdownPreview blockquote {
   border-left: 4rem solid #aaa;
   color: #777;
   margin: 0;
   margin-bottom: 12rem;
   padding: 0 12rem;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

@@ -30,6 +30,7 @@ const Notes: React.FC<NotesProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [notes, setNotes] = useState<ManagedMarkdownDocument[]>([]);
+  const [fetchCount, setFetchCount] = useState(0);
   const [selectedNoteId, setSelectedNoteId] = useState<string>(helpNote.metadata.id);
   const modals = Modals.useContext();
 
@@ -75,6 +76,7 @@ const Notes: React.FC<NotesProps> = (props) => {
     }
 
     setNotes(newNotes);
+    setFetchCount(v => v + 1);
     props.onCount(newNotes.length);
   }
 
@@ -179,6 +181,10 @@ const Notes: React.FC<NotesProps> = (props) => {
   const notesToShow = notes.concat([helpNote]);
   const selectedNote = notesToShow?.find(note => note.metadata.id === selectedNoteId);
 
+  if (fetchCount === 0) {
+    return <div style={{ padding: '12rem' }}>Loading...</div>;
+  }
+
   return (
     <div className={s.Notes}>
       <div className={s.NoteTabs}>
@@ -186,7 +192,6 @@ const Notes: React.FC<NotesProps> = (props) => {
           tabs={Object.fromEntries(notesToShow.map(note => {
             const tab: Tab = {
               title: note.metadata.name,
-              isRenderAlways: true,
               render: () => (
                 <div className={s.MarkdownPreview}>
                   {selectedNote && (
