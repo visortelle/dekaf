@@ -22,6 +22,7 @@ export type LibraryBrowserMode = {
   type: 'save';
   item: ManagedItem;
   onSave: (item: ManagedItem) => void;
+  appearance?: 'save' | 'create' | 'edit'
 } | {
   type: 'pick';
   itemType: ManagedItemType;
@@ -111,8 +112,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
     fetchLibraryItem();
   }, [props.mode]);
-
-  console.log('iitem to save', itemToSave);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -224,35 +223,37 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           />
         </div>
 
-        <div className={s.SearchResults}>
-          {searchResults.type === 'pending' && (
-            <div className={s.SearchResultsNothingToShow}>
-              <NothingToShow reason='loading-in-progress' />
-            </div>
-          )}
-          {searchResults.type === 'error' && (
-            <div className={s.SearchResultsNothingToShow}>
-              <NothingToShow reason='error' content={<div><p>Unable to load search results.</p><p>{searchResults.error}</p></div>} />)
-            </div>
-          )}
-          {searchResults.type === 'success' && (
-            <SearchResults
-              items={items}
-              selectedItemId={selectedItemId}
-              onSelect={(itemId) => {
-                setSelectedItemId(itemId);
-              }}
-              onDeleted={() => {
-                setSelectedItemId(undefined);
-                fetchSearchResults();
-              }}
-              extraLabels={{
-                [itemToSave?.spec.metadata.id ?? '']: { text: newItemLabel, color: 'var(--accent-color-blue)' }
-              }}
-              itemsToKeepAtTop={itemToSave === undefined ? [] : [itemToSave.spec.metadata.id]}
-            />
-          )}
-        </div>
+        {!(props.mode.type === "save" && (props.mode.appearance === "create" || props.mode.appearance === "edit")) && (
+          <div className={s.SearchResults}>
+            {searchResults.type === 'pending' && (
+              <div className={s.SearchResultsNothingToShow}>
+                <NothingToShow reason='loading-in-progress' />
+              </div>
+            )}
+            {searchResults.type === 'error' && (
+              <div className={s.SearchResultsNothingToShow}>
+                <NothingToShow reason='error' content={<div><p>Unable to load search results.</p><p>{searchResults.error}</p></div>} />)
+              </div>
+            )}
+            {searchResults.type === 'success' && (
+              <SearchResults
+                items={items}
+                selectedItemId={selectedItemId}
+                onSelect={(itemId) => {
+                  setSelectedItemId(itemId);
+                }}
+                onDeleted={() => {
+                  setSelectedItemId(undefined);
+                  fetchSearchResults();
+                }}
+                extraLabels={{
+                  [itemToSave?.spec.metadata.id ?? '']: { text: newItemLabel, color: 'var(--accent-color-blue)' }
+                }}
+                itemsToKeepAtTop={itemToSave === undefined ? [] : [itemToSave.spec.metadata.id]}
+              />
+            )}
+          </div>
+        )}
 
         <div className={s.LibraryItemEditor} ref={editorRef}>
           {((modeType === 'save' && itemToSave && itemToSaveMetadata) || (modeType === 'pick' && selectedItemId)) && (

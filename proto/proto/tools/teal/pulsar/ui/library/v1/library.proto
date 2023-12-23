@@ -3,8 +3,8 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.library.v1;
 
 import "google/rpc/status.proto";
-import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
 import "tools/teal/pulsar/ui/library/v1/managed_items.proto";
+import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
 
 message LibraryItemMetadata {
   string updated_at = 4;
@@ -49,6 +49,20 @@ message ListLibraryItemsRequest {
 message ListLibraryItemsResponse {
   google.rpc.Status status = 1;
   repeated LibraryItem items = 2; // resource spec is omitted in response to reduce it's size
+}
+
+message GetLibraryItemsCountRequest {
+  repeated ManagedItemType include_types = 1;
+}
+
+message LibraryItemsCount {
+  ManagedItemType item_type = 1;
+  int64 item_count = 2;
+}
+
+message GetLibraryItemsCountResponse {
+  google.rpc.Status status = 1;
+  repeated LibraryItemsCount item_count_per_type = 2;
 }
 
 service LibraryService {

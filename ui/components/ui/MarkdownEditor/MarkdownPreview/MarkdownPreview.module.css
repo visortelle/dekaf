@@ -72,6 +72,10 @@
   border-collapse: collapse;
 }
 
+.MarkdownPreview table {
+  margin-bottom: 12rem;
+}
+
 .MarkdownPreview th,
 .MarkdownPreview td {
   padding: 4rem 12rem;

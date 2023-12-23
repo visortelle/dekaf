@@ -16,7 +16,7 @@ import InternalStatistics from './InternalStatistics/InternalStatistics';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
 import { mapToObject } from '../../../proto-utils/proto-utils';
-import Library from './Library/Library';
+import LibrarySidebar from './Library/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 export type OverviewProps = {
@@ -206,7 +206,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
       </div>
       <div className={s.RightPanel}>
-        <Library libraryContext={props.libraryContext} />
+        <LibrarySidebar libraryContext={props.libraryContext} />
       </div>
     </div>
   );

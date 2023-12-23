@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import s from './Library.module.css'
+import s from './LibrarySidebar.module.css'
 import Tabs from '../../../ui/Tabs/Tabs';
 import Notes from './Notes/Notes';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
+import Library from './Library/Library';
 
-export type LibraryProps = {
+export type LibrarySidebarProps = {
   libraryContext: LibraryContext
 };
 
@@ -20,7 +21,7 @@ type ItemsCount = {
   library: number
 }
 
-const Library: React.FC<LibraryProps> = (props) => {
+const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('markdown-document');
   const [itemsCount, setItemsCount] = useState<ItemsCount>({
     notes: 0,
@@ -55,7 +56,7 @@ const Library: React.FC<LibraryProps> = (props) => {
           },
           'library': {
             title: '📚 Library',
-            render: () => <>library</>,
+            render: () => <Library libraryContext={props.libraryContext} />,
             isRenderAlways: true,
           }
         }}
@@ -66,4 +67,4 @@ const Library: React.FC<LibraryProps> = (props) => {
   );
 }
 
-export default Library;
+export default LibrarySidebar;

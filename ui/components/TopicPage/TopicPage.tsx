@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
 import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
-import { v4 as uuid } from 'uuid';
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import Session from "./Messages/Messages";
@@ -16,10 +15,11 @@ import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
 import { matchPath, useLocation } from 'react-router-dom';
 import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
-import { createNewTarget } from "./create-new-target";
 import * as GrpcClient from '../app/contexts/GrpcClient/GrpcClient';
 import * as pb from "../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
 import { LibraryContext } from "../ui/LibraryBrowser/model/library-context";
+import { getDefaultManagedItem } from "../ui/LibraryBrowser/default-library-items";
+import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-managed-items";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -246,75 +246,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           libraryContext={libraryContext}
           initialConfig={{
             type: 'value',
-            val: {
-              metadata: {
-                id: uuid(),
-                name: '',
-                descriptionMarkdown: '',
-                type: 'consumer-session-config'
-              },
-              spec: {
-                pauseTriggerChain: {
-                  type: 'value',
-                  val: {
-                    metadata: {
-                      id: uuid(),
-                      name: '',
-                      descriptionMarkdown: '',
-                      type: 'consumer-session-pause-trigger-chain'
-                    },
-                    spec: {
-                      events: [],
-                      mode: 'all'
-                    }
-                  }
-                },
-                targets: [createNewTarget()],
-                coloringRuleChain: {
-                  type: 'value',
-                  val: {
-                    metadata: {
-                      id: uuid(),
-                      name: '',
-                      descriptionMarkdown: '',
-                      type: 'coloring-rule-chain'
-                    },
-                    spec: {
-                      isEnabled: true,
-                      coloringRules: []
-                    }
-                  }
-                },
-                messageFilterChain: {
-                  type: 'value',
-                  val: {
-                    metadata: {
-                      id: uuid(),
-                      name: '',
-                      descriptionMarkdown: '',
-                      type: 'message-filter-chain'
-                    },
-                    spec: {
-                      filters: [], mode: "all", isEnabled: true, isNegated: false
-                    }
-                  }
-                },
-                startFrom: {
-                  type: 'value',
-                  val: {
-                    metadata: {
-                      id: uuid(),
-                      name: '',
-                      descriptionMarkdown: '',
-                      type: 'consumer-session-start-from'
-                    },
-                    spec: {
-                      startFrom: { type: 'earliestMessage' }
-                    }
-                  }
-                }
-              },
-            }
+            val: getDefaultManagedItem("consumer-session-config") as ManagedConsumerSessionConfig
           }}
         />
       )}

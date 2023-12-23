@@ -4,16 +4,16 @@ import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import s from './SessionConfiguration.module.css'
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionTarget, ManagedConsumerSessionTargetValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
 import SessionTargetInput from './SessionTargetInput/SessionTargetInput';
 import AddButton from '../../../ui/AddButton/AddButton';
-import { createNewTarget } from '../../create-new-target';
 import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
 import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
 import Toggle from '../../../ui/Toggle/Toggle';
+import { getDefaultManagedItem } from '../../../ui/LibraryBrowser/default-library-items';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -186,7 +186,10 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           <AddButton
             text='Add Target'
             onClick={() => {
-              const newTarget = createNewTarget();
+              const newTarget: ManagedConsumerSessionTargetValOrRef = {
+                type: "value",
+                val: getDefaultManagedItem("consumer-session-target") as ManagedConsumerSessionTarget
+              };
               const newTargets = itemSpec.targets.concat([newTarget]);
               onSpecChange({ ...itemSpec, targets: newTargets });
 

@@ -26,8 +26,6 @@ gantt
 | Row B | A B      | B B      | C B      | D B      |
 | Row C | A C      | B C      | C C      | D C      |
 
-- ...etc.
-
 📘 [Markdown language reference](https://github.github.com/gfm/)
 
 > We don't support uploading images yet, but you can refer external image by it's URL.
