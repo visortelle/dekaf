@@ -10,6 +10,8 @@ import SmallButton from '../../../SmallButton/SmallButton';
 import { cloneDeep } from 'lodash';
 import { getReadableItemType } from '../../get-readable-item-type';
 
+export type HidableElement = 'save-button';
+
 export type LibraryBrowserButtonsProps = {
   itemType: ManagedItemType;
   value: ManagedItem;
@@ -17,7 +19,8 @@ export type LibraryBrowserButtonsProps = {
   onSave: (item: ManagedItem) => void;
   onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
-  isReadOnly?: boolean
+  isReadOnly?: boolean;
+  hiddenElements?: HidableElement[];
 };
 
 const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
@@ -29,11 +32,13 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
         libraryContext={props.libraryContext}
       />
 
-      <LibraryBrowserSaveButton
-        itemToSave={props.value}
-        libraryContext={props.libraryContext}
-        onSave={props.onSave}
-      />
+      {!props.hiddenElements?.includes('save-button') && (
+        <LibraryBrowserSaveButton
+          itemToSave={props.value}
+          libraryContext={props.libraryContext}
+          onSave={props.onSave}
+        />
+      )}
 
       {props.value.metadata.name.length === 0 && (
         <SmallButton

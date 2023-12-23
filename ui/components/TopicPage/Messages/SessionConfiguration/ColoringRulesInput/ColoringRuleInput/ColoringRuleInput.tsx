@@ -7,7 +7,7 @@ import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../
 import { colorsByName } from './ColorPickerButton/ColorPicker/color-palette';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 import FilterChainEditor from '../../FilterChainEditor/FilterChainEditor';
-import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import OnOffToggle from '../../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
 
 export type ColoringRuleInputProps = {
@@ -15,7 +15,8 @@ export type ColoringRuleInputProps = {
   onChange: (value: ManagedColoringRuleValOrRef) => void,
   libraryContext: LibraryContext
   appearance?: 'default' | 'compact';
-  isReadOnly?: boolean
+  isReadOnly?: boolean;
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>;
 };
 
 const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
@@ -69,6 +70,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
             libraryContext={props.libraryContext}
             managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
             isReadOnly={props.isReadOnly}
+            {...props.libraryBrowserPanel}
           />
         </div>
       )}

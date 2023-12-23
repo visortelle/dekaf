@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import s from './SessionConfiguration.module.css'
-import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
 import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionTarget, ManagedConsumerSessionTargetValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
@@ -20,7 +20,8 @@ export type SessionConfigurationProps = {
   onChange: (config: ManagedConsumerSessionConfigValOrRef) => void,
   libraryContext: LibraryContext,
   appearance?: 'regular' | 'within-library-browser',
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
@@ -102,6 +103,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               libraryContext={props.libraryContext}
               managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
               isReadOnly={props.isReadOnly}
+              {...props.libraryBrowserPanel}
             />
           </div>
 

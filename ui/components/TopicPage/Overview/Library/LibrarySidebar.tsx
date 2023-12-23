@@ -9,7 +9,7 @@ export type LibrarySidebarProps = {
   libraryContext: LibraryContext
 };
 
-type TabKey = 'markdown-document' |
+type TabKey = 'notes' |
   'sessions' |
   'favorites' |
   'library';
@@ -22,7 +22,7 @@ type ItemsCount = {
 }
 
 const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
-  const [activeTab, setActiveTab] = useState<TabKey>('markdown-document');
+  const [activeTab, setActiveTab] = useState<TabKey>('notes');
   const [itemsCount, setItemsCount] = useState<ItemsCount>({
     notes: 0,
     favorites: 0,
@@ -34,7 +34,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
     <div className={s.Library}>
       <Tabs<TabKey>
         tabs={{
-          'markdown-document': {
+          'notes': {
             title: <span>🗒 Notes <strong>{itemsCount.notes}</strong></span>,
             render: () => (
               <Notes
@@ -44,21 +44,26 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
             ),
             isRenderAlways: true,
           },
-          'favorites': {
-            title: '⭐️ Favorites',
-            render: () => <>favorites</>,
-            isRenderAlways: true,
-          },
           'sessions': {
             title: '🎬 Sessions',
             render: () => <>sessions</>,
             isRenderAlways: true,
           },
           'library': {
-            title: '📚 Library',
-            render: () => <Library libraryContext={props.libraryContext} />,
+            title: <span>📚 Library <strong>{itemsCount.library}</strong></span>,
+            render: () => (
+              <Library
+                libraryContext={props.libraryContext}
+                onCount={(v) => setItemsCount(ic => ({ ...ic, library: v }))}
+              />
+            ),
             isRenderAlways: true,
-          }
+          },
+          'favorites': {
+            title: '⭐️ Favorites',
+            render: () => <>favorites</>,
+            isRenderAlways: true,
+          },
         }}
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}

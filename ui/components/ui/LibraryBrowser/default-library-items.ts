@@ -1,3 +1,4 @@
+import { themeBackgroundColorName, themeForegroundColorName } from "../../TopicPage/Messages/SessionConfiguration/ColoringRulesInput/ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette";
 import { LibraryItem } from "./model/library";
 import { LibraryContext, resourceMatcherFromContext } from "./model/library-context";
 import { ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedTopicSelector } from "./model/user-managed-items";
@@ -147,8 +148,8 @@ export function getDefaultManagedItem(itemType: ManagedItemType): ManagedItem {
         metadata,
         spec: {
           isEnabled: true,
-          backgroundColor: "",
-          foregroundColor: "",
+          backgroundColor: themeBackgroundColorName,
+          foregroundColor: themeForegroundColorName,
           messageFilterChain: {
             type: "value",
             val: getDefaultManagedItem("message-filter-chain") as ManagedMessageFilterChain

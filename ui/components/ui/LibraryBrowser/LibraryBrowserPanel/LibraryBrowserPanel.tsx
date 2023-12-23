@@ -11,10 +11,12 @@ import referenceIcon from './icons/reference.svg';
 import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
-import MarkdownInput from '../../MarkdownEditor/MarkdownInput';
+import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 import { cloneDeep } from 'lodash';
 import LibraryItemName from './LibraryItemName/LibraryItemName';
 import DeleteButton from '../../DeleteButton/DeleteButton';
+
+export type HidableElement = 'save-button';
 
 export type LibraryBrowserPanelProps = {
   itemType: ManagedItemType;
@@ -23,6 +25,7 @@ export type LibraryBrowserPanelProps = {
   onChange: (item: ManagedItem) => void;
   onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
+  hiddenElements?: HidableElement[];
   isForceShowButtons?: boolean;
   managedItemReference?: {
     id: string;
@@ -55,6 +58,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
                 {props.itemType === 'consumer-session-target' && 'Consumer Target'}
                 {props.itemType === 'coloring-rule' && 'Coloring Rule'}
                 {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
+                {props.itemType === 'markdown-document' && 'Markdown Document'}
               </strong>
             </div>
           )}
@@ -68,6 +72,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'consumer-session-target' && help.consumerSessionTarget}
               {props.itemType === 'coloring-rule' && help.coloringRule}
               {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
+              {props.itemType === 'markdown-document' && help.markdownDocument}
             </div>
           )}
         />
@@ -115,6 +120,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               onSave={props.onSave}
               libraryContext={props.libraryContext}
               isReadOnly={props.isReadOnly}
+              hiddenElements={props.hiddenElements}
             />
 
             <div className={s.PostItemType}>

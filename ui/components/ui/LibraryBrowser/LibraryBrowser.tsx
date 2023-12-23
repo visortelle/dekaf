@@ -205,9 +205,16 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     } :
     undefined;
 
+  const isHideSearchResults = (props.mode.type === "save" && (props.mode.appearance === "create" || props.mode.appearance === "edit"));
+
   return (
     <div className={s.LibraryBrowser}>
-      <div className={s.Content}>
+      <div
+        className={s.Content}
+        style={{
+          gridTemplateColumns: isHideSearchResults ? `400rem auto` : `400rem 400rem auto`
+        }}
+      >
         <div className={s.SearchEditor}>
           <SearchEditor
             mode={props.mode.type === 'save' ? {
@@ -223,7 +230,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           />
         </div>
 
-        {!(props.mode.type === "save" && (props.mode.appearance === "create" || props.mode.appearance === "edit")) && (
+        {!isHideSearchResults && (
           <div className={s.SearchResults}>
             {searchResults.type === 'pending' && (
               <div className={s.SearchResultsNothingToShow}>
@@ -262,6 +269,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               value={modeType === 'save' ? { ...itemToSave!, spec: { ...itemToSave?.spec!, metadata: itemToSaveMetadata! } } : selectedItem!}
               onChange={setItemToSave}
               libraryContext={props.libraryContext}
+              libraryBrowserPanel={(props.mode.type === "save" && (props.mode.appearance === "create" || props.mode.appearance === "edit")) ? { hiddenElements: ["save-button"] } : undefined}
             />
           )}
           {!selectedItemId && (

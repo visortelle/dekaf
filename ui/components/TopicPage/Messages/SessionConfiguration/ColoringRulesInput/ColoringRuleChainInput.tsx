@@ -1,21 +1,21 @@
 import React from 'react';
 import s from './ColoringRuleChainInput.module.css'
 import ColoringRuleInput from './ColoringRuleInput/ColoringRuleInput';
-import { ManagedColoringRuleChain, ManagedColoringRuleChainSpec, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedColoringRule, ManagedColoringRuleChain, ManagedColoringRuleChainSpec, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
-import { v4 as uuid } from 'uuid';
-import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette';
-import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import OnOffToggle from '../../../../ui/IconToggle/OnOffToggle/OnOffToggle';
+import { getDefaultManagedItem } from '../../../../ui/LibraryBrowser/default-library-items';
 
 export type ColoringRuleChainInputProps = {
   value: ManagedColoringRuleChainValOrRef,
   onChange: (value: ManagedColoringRuleChainValOrRef) => void,
   libraryContext: LibraryContext,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) => {
@@ -76,6 +76,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
             )
           }}
           isReadOnly={props.isReadOnly}
+          {...props.libraryBrowserPanel}
         />
       </div>
 
@@ -103,36 +104,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         onAdd={(v, { addUncollapsedItem }) => {
           const newRule: ManagedColoringRuleValOrRef = {
             type: 'value',
-            val: {
-              metadata: {
-                id: uuid(),
-                name: '',
-                descriptionMarkdown: '',
-                type: 'coloring-rule',
-              },
-              spec: {
-                isEnabled: true,
-                backgroundColor: themeBackgroundColorName,
-                foregroundColor: themeForegroundColorName,
-                messageFilterChain: {
-                  type: 'value',
-                  val: {
-                    metadata: {
-                      id: uuid(),
-                      name: '',
-                      descriptionMarkdown: '',
-                      type: 'message-filter-chain',
-                    },
-                    spec: {
-                      isEnabled: true,
-                      isNegated: false,
-                      filters: [],
-                      mode: 'all'
-                    }
-                  }
-                }
-              }
-            }
+            val: getDefaultManagedItem("coloring-rule") as ManagedColoringRule
           };
           const newRules = itemSpec.coloringRules.concat([newRule]);
           onSpecChange({ ...itemSpec, coloringRules: newRules });

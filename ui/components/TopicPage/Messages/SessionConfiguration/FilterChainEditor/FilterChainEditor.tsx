@@ -5,7 +5,7 @@ import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, M
 import FilterEditor from './FilterEditor/FilterEditor';
 
 import s from './FilterChainEditor.module.css';
-import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
@@ -23,6 +23,7 @@ export type FilterChainEditorProps = {
   onChange: (value: ManagedMessageFilterChainValOrRef) => void;
   libraryContext: LibraryContext;
   isReadOnly?: boolean;
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
@@ -96,6 +97,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             )
           }}
           isReadOnly={props.isReadOnly}
+          {...props.libraryBrowserPanel}
         />
       </div>
 

@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpec, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
-import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { cloneDeep } from 'lodash';
 
@@ -19,6 +19,7 @@ export type StartFromInputProps = {
   libraryContext: LibraryContext;
   disabled?: boolean;
   isReadOnly?: boolean;
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 type StartFromType = ConsumerSessionStartFrom['type'];
@@ -85,6 +86,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
         isReadOnly={props.isReadOnly}
+        {...props.libraryBrowserPanel}
       />
       <div className={s.TypeSelect}>
         <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>

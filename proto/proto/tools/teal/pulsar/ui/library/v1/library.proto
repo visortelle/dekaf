@@ -52,7 +52,8 @@ message ListLibraryItemsResponse {
 }
 
 message GetLibraryItemsCountRequest {
-  repeated ManagedItemType include_types = 1;
+  repeated ManagedItemType types = 1;
+  repeated ResourceMatcher contexts = 2;
 }
 
 message LibraryItemsCount {
@@ -70,4 +71,5 @@ service LibraryService {
   rpc DeleteLibraryItem(DeleteLibraryItemRequest) returns (DeleteLibraryItemResponse);
   rpc GetLibraryItem(GetLibraryItemRequest) returns (GetLibraryItemResponse);
   rpc ListLibraryItems(ListLibraryItemsRequest) returns (ListLibraryItemsResponse);
+  rpc GetLibraryItemsCount(GetLibraryItemsCountRequest) returns (GetLibraryItemsCountResponse);
 }

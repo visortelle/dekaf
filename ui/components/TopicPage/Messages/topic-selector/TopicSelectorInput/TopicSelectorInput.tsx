@@ -4,7 +4,7 @@ import { ManagedTopicSelector, ManagedTopicSelectorSpec, ManagedTopicSelectorVal
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
-import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import Select from '../../../../ui/Select/Select';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import Input from '../../../../ui/Input/Input';
@@ -20,7 +20,8 @@ export type TopicsSelectorInputProps = {
   onChange: (value: ManagedTopicSelectorValOrRef) => void,
   onDelete?: () => void,
   libraryContext: LibraryContext,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
@@ -79,6 +80,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
         isReadOnly={props.isReadOnly}
+        {...props.libraryBrowserPanel}
       />
 
       <TopicSelectorInfo topicSelector={topicSelector} />

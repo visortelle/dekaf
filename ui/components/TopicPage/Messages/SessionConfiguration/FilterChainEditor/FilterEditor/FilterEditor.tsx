@@ -3,7 +3,7 @@ import s from './FilterEditor.module.css'
 import * as t from '../../../types';
 import JsFilterEditor, { defaultJsFilterValue } from './JsFilterEditor/JsFilterEditor';
 import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
-import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
@@ -20,6 +20,7 @@ export type FilterEditorProps = {
   onChange: (value: ManagedMessageFilterValOrRef) => void;
   libraryContext: LibraryContext;
   isReadOnly?: boolean;
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
@@ -148,6 +149,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               </div>
             )
           }}
+          {...props.libraryBrowserPanel}
         />
       </div>
 

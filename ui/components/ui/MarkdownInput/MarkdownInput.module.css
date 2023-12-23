@@ -48,7 +48,7 @@
 
 .Buttons {
   position: absolute;
-  top: -4rem;
+  top: 0rem;
   right: 32rem;
   opacity: 0;
   z-index: 1;
@@ -78,4 +78,15 @@
   width: 800rem;
   height: calc(100vh - 120rem);
   padding: 12rem
+}
+
+.EmptyMarkdown {
+  height: 32rem;
+  border-radius: 2rem;
+  background-color: var(--surface-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: var(--font-weight-bold);
+  color: #777;
 }

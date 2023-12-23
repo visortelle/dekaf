@@ -19,7 +19,7 @@ import { helpNote } from './help-note';
 import defaultMarkdown from './default.md';
 import RenameButton from '../../../../ui/RenameButton/RenameButton';
 import { cloneDeep } from 'lodash';
-import MarkdownInput from '../../../../ui/MarkdownEditor/MarkdownInput';
+import MarkdownInput from '../../../../ui/MarkdownInput/MarkdownInput';
 
 export type NotesProps = {
   libraryContext: LibraryContext,

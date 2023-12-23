@@ -5,7 +5,7 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedMessageFilter, ManagedMessageFilterChain, ManagedTopicSelector } from '../model/user-managed-items';
+import { ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedMarkdownDocument, ManagedMessageFilter, ManagedMessageFilterChain, ManagedTopicSelector } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
@@ -15,12 +15,16 @@ import ColoringRuleChainInput from '../../../TopicPage/Messages/SessionConfigura
 import TopicsSelectorInput from '../../../TopicPage/Messages/topic-selector/TopicSelectorInput/TopicSelectorInput';
 import SessionTargetInput from '../../../TopicPage/Messages/SessionConfiguration/SessionTargetInput/SessionTargetInput';
 import SessionConfiguration from '../../../TopicPage/Messages/SessionConfiguration/SessionConfiguration';
+import { LibraryBrowserPanelProps } from '../LibraryBrowserPanel/LibraryBrowserPanel';
+import MarkdownInput from '../../MarkdownInput/MarkdownInput';
+import MarkdownDocumentEditor from '../../MarkdownDocumentEditor/MarkdownDocumentEditor';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
   onChange: (value: LibraryItem) => void;
   mode: 'editor' | 'viewer';
   libraryContext: LibraryContext;
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
@@ -47,6 +51,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -69,6 +74,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -91,6 +97,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -113,6 +120,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -135,6 +143,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -157,6 +166,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -179,6 +189,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             }}
             libraryContext={props.libraryContext}
             isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
           />
         </div>
       );
@@ -201,6 +212,28 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
           libraryContext={props.libraryContext}
           appearance='within-library-browser'
           isReadOnly={isReadOnly}
+          libraryBrowserPanel={props.libraryBrowserPanel}
+        />
+      );
+      break;
+    }
+    case 'markdown-document': {
+      descriptorEditor = (
+        <MarkdownDocumentEditor
+          value={{
+            type: 'value',
+            val: value.spec as ManagedMarkdownDocument
+          }}
+          onChange={v => {
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.val });
+          }}
+          libraryContext={props.libraryContext}
+          isReadOnly={isReadOnly}
+          libraryBrowserPanel={props.libraryBrowserPanel}
         />
       );
       break;

@@ -1,15 +1,12 @@
 .LibraryBrowser {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
   height: calc(100vh - 120rem);
-  flex: 1;
+  display: grid;
+  grid-template-rows: 1fr max-content;
 }
 
 .Content {
-  display: flex;
   overflow: hidden;
-  flex: 1;
+  display: grid;
 }
 
 .SearchEditor {
@@ -33,7 +30,7 @@
 
 .LibraryItemEditor {
   overflow: auto;
-  min-width: 600rem;
+  min-width: 480rem;
 
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-x: contain;

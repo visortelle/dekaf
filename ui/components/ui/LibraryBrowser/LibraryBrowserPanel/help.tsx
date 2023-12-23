@@ -103,5 +103,10 @@ export const help = {
         You can save it to <strong>Library</strong> and reuse later.
       </p>
     </div>
+  ),
+  markdownDocument: (
+    <p>
+      <a target="_blank" href="https://github.github.com/gfm/">Markdown language reference</a>
+    </p>
   )
 } as const;

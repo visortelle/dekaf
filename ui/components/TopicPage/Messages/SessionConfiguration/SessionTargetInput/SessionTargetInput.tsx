@@ -6,7 +6,7 @@ import FilterChainEditor from '../FilterChainEditor/FilterChainEditor';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, ManagedConsumerSessionTargetValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
-import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 
 export type SessionTargetInputProps = {
@@ -15,6 +15,7 @@ export type SessionTargetInputProps = {
   libraryContext: LibraryContext,
   isReadOnly?: boolean,
   targetIndex?: number,
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
@@ -66,6 +67,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
           isReadOnly={props.isReadOnly}
+          {...props.libraryBrowserPanel}
         />
       </div>
 

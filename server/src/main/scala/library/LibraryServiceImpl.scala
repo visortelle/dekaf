@@ -9,6 +9,8 @@ import com.tools.teal.pulsar.ui.library.v1.library.{
     DeleteLibraryItemResponse,
     GetLibraryItemRequest,
     GetLibraryItemResponse,
+    GetLibraryItemsCountRequest,
+    GetLibraryItemsCountResponse,
     ListLibraryItemsRequest,
     ListLibraryItemsResponse,
     SaveLibraryItemRequest,
@@ -17,7 +19,6 @@ import com.tools.teal.pulsar.ui.library.v1.library.{
 import pulsar_auth.RequestContext
 import _root_.config.{readConfigAsync, Config}
 import com.fasterxml.uuid.Generators.timeBasedEpochGenerator as uuidV7
-
 import io.circe.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
@@ -112,4 +113,36 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
                 logger.warn(s"Failed to list library items: ${e.getMessage}")
                 val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to list library items. ${e.getMessage}")
                 Future.successful(pb.ListLibraryItemsResponse(status = Some(status)))
+        }
+
+    override def getLibraryItemsCount(request: GetLibraryItemsCountRequest): Future[GetLibraryItemsCountResponse] =
+        logger.debug(s"Getting library items count")
+
+        try {
+            val filter = ListItemsFilter(
+                types = request.types.map(ManagedItemType.fromPb).toVector,
+                contexts = request.contexts.map(resourceMatcherFromPb).toList
+            )
+
+            val libraryItems = library.listItems(filter)
+
+            val itemCountPerType = libraryItems
+                .groupBy(item => item.spec.metadata.`type`)
+                .map(t =>
+                    pb.LibraryItemsCount(
+                        itemType = ManagedItemType.toPb(t._1),
+                        itemCount = t._2.size
+                    )
+                ).toVector
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetLibraryItemsCountResponse(
+                status = Some(status),
+                itemCountPerType = itemCountPerType
+            ))
+        } catch {
+            case e: Exception =>
+                logger.warn(s"Failed to get library items count: ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library items count. ${e.getMessage}")
+                Future.successful(pb.GetLibraryItemsCountResponse(status = Some(status)))
         }

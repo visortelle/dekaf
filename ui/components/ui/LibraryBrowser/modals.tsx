@@ -11,7 +11,7 @@ const ModalContent: React.FC<{ children: React.ReactNode, style?: CSSProperties 
         width: 'calc(100vw - 32rem)',
         maxHeight: 'inherit',
         overflow: 'hidden',
-        display: 'flex',
+        display: 'grid',
         ...props.style
       }}
     >
@@ -39,7 +39,7 @@ export const mkLibraryBrowserModal: (props: MkLibraryBrowserModalProps) => Modal
     id: 'library-browser',
     content: (
       <ModalContent
-        style={(props.libraryBrowserProps.mode.type === "save" && (props.libraryBrowserProps.mode.appearance === "create" || props.libraryBrowserProps.mode.appearance === "edit")) ? { width: 'unset' } : undefined}
+        style={(props.libraryBrowserProps.mode.type === "save" && props.libraryBrowserProps.mode.item.metadata.type !== "consumer-session-config" && (props.libraryBrowserProps.mode.appearance === "create" || props.libraryBrowserProps.mode.appearance === "edit")) ? { width: 'unset', maxWidth: 'calc(100vw - 32rem)' } : undefined}
       >
         <LibraryBrowser {...props.libraryBrowserProps} />
       </ModalContent>
