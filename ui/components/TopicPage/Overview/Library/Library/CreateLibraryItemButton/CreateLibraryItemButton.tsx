@@ -29,7 +29,8 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
       }}
       appearance="create"
       button={{
-        text: 'Create'
+        text: 'Create',
+        title: undefined
       }}
     />
   );

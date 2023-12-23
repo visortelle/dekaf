@@ -9,15 +9,14 @@ export type LibrarySidebarProps = {
   libraryContext: LibraryContext
 };
 
-type TabKey = 'notes' |
-  'sessions' |
-  'favorites' |
-  'library';
+type TabKey =
+  'notes' |
+  'library' |
+  'favorites';
 
 type ItemsCount = {
   notes: number,
   favorites: number,
-  sessions: number,
   library: number
 }
 
@@ -27,7 +26,6 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
     notes: 0,
     favorites: 0,
     library: 0,
-    sessions: 0
   });
 
   return (
@@ -42,11 +40,6 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
                 onCount={(v) => setItemsCount(ic => ({ ...ic, notes: v }))}
               />
             ),
-            isRenderAlways: true,
-          },
-          'sessions': {
-            title: '🎬 Sessions',
-            render: () => <>sessions</>,
             isRenderAlways: true,
           },
           'library': {

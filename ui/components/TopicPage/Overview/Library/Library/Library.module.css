@@ -1,0 +1,32 @@
+.Library {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.Help {
+  padding: 12rem 24rem;
+  margin: 12rem;
+  border-radius: 8rem;
+  background-color: var(--surface-color);
+}
+
+.ItemType {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  gap: 24rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ItemTypeHeader {
+  padding: 8rem 12rem;
+  display: grid;
+  gap: 12rem;
+  grid-template-columns: 200rem 4ch 1fr;
+  justify-items: flex-end;
+  align-items: center;
+}
+
+.ItemHeaderButtons {
+  margin-left: 12rem;
+}

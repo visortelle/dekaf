@@ -6,13 +6,14 @@ import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/lib
 import { LibraryContext, resourceMatcherFromContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import CreateLibraryItemButton from './CreateLibraryItemButton/CreateLibraryItemButton';
 import { ManagedItemType } from '../../../../ui/LibraryBrowser/model/user-managed-items';
-import { H3 } from '../../../../ui/H/H';
 import { getReadableItemType } from '../../../../ui/LibraryBrowser/get-readable-item-type';
 import { managedItemTypeToPb } from '../../../../ui/LibraryBrowser/model/user-managed-items-conversions-pb';
 import { resourceMatcherToPb } from '../../../../ui/LibraryBrowser/model/resource-matchers-conversions-pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import { itemCountPerTypeFromPb } from '../../../../ui/LibraryBrowser/item-count-per-type';
 import NoData from '../../../../ui/NoData/NoData';
+import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import { help } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/help';
 
 export type LibraryProps = {
   libraryContext: LibraryContext,
@@ -20,7 +21,6 @@ export type LibraryProps = {
 };
 
 const itemTypes: ManagedItemType[] = [
-  "markdown-document",
   "consumer-session-config",
   "consumer-session-target",
   "topic-selector",
@@ -28,7 +28,8 @@ const itemTypes: ManagedItemType[] = [
   "message-filter-chain",
   "consumer-session-start-from",
   "coloring-rule",
-  "coloring-rule-chain"
+  "coloring-rule-chain",
+  "markdown-document"
 ];
 
 const Library: React.FC<LibraryProps> = (props) => {
@@ -68,22 +69,42 @@ const Library: React.FC<LibraryProps> = (props) => {
 
   return (
     <div className={s.Library}>
-      {itemTypes.map(itemType => {
-        return (
-          <div key={itemType}>
-            <H3>
-              {getReadableItemType(itemType)}
-            </H3>
-            {itemCountPerType[itemType] || <NoData />}
+      <div className={s.Help}>
+        Library allows you to create and reuse various objects.
+      </div>
 
-            <CreateLibraryItemButton
-              itemType={itemType}
-              libraryContext={props.libraryContext}
-            />
-          </div>
-        );
-      })}
-    </div>
+      <div>
+        {
+          itemTypes.map(itemType => {
+            const itemCount = itemCountPerType[itemType];
+
+            return (
+              <div key={itemType}>
+                <div className={s.ItemType}>
+                  <div className={s.ItemTypeHeader}>
+                    <div>
+                      <FormLabel
+                        content={getReadableItemType(itemType)}
+                        help={help[itemType]}
+                      />
+                    </div>
+                    {itemCount === undefined ? <NoData /> : <strong>{itemCount}</strong>}
+
+                    <div className={s.ItemHeaderButtons}>
+                      <CreateLibraryItemButton
+                        itemType={itemType}
+                        libraryContext={props.libraryContext}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        }
+      </div>
+
+    </div >
   );
 }
 

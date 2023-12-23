@@ -1,8 +1,11 @@
-export const help = {
-  consumerSessionConfig: (
+import { ReactElement } from "react";
+import { ManagedItemType } from "../model/user-managed-items";
+
+export const help: Partial<Record<ManagedItemType, ReactElement>> = {
+  "consumer-session-config": (
     <div>
       <p>
-        <strong>Consumer Session Config</strong> is a set of configuration parameters like:
+        <strong>Consumer Session</strong> is a set of configuration parameters like:
       </p>
 
       <ul>
@@ -16,7 +19,7 @@ export const help = {
       </p>
     </div>
   ),
-  messageFilter: (
+  "message-filter": (
     <div>
       <p>
         <strong>Message Filter</strong> allows you to find messages in a topic.
@@ -38,7 +41,7 @@ export const help = {
       </p>
     </div>
   ),
-  consumerSessionStartFrom: (
+  "consumer-session-start-from": (
     <div>
       <p>
         <strong>Start From</strong> allows you to specify the starting point for a consumer session.
@@ -49,7 +52,7 @@ export const help = {
       </p>
     </div>
   ),
-  messageFilterChain: (
+  "message-filter-chain": (
     <div>
       <p>
         <strong>Message Filter Chain</strong> is a list of filters that are sequentially applied to each message.
@@ -60,7 +63,7 @@ export const help = {
       </p>
     </div>
   ),
-  topicSelector: (
+  "topic-selector": (
     <div>
       <p>
         <strong>Topic Selector</strong> allows to select one or more topics.
@@ -73,14 +76,14 @@ export const help = {
       </p>
     </div>
   ),
-  consumerSessionTarget: (
+  "consumer-session-target": (
     <div>
       <p>
         Consumer Session Topic(s)
       </p>
     </div>
   ),
-  coloringRule: (
+  "coloring-rule": (
     <div>
       <p>
         <strong>Coloring Rule</strong> allows you to highlight messages that match a certain condition.
@@ -90,7 +93,7 @@ export const help = {
       </p>
     </div>
   ),
-  coloringRuleChain: (
+  "coloring-rule-chain": (
     <div>
       <p>
         <strong>Coloring Rule Chain</strong> is a list of coloring rules that are sequentially applied to each message.
@@ -104,7 +107,7 @@ export const help = {
       </p>
     </div>
   ),
-  markdownDocument: (
+  "markdown-document": (
     <p>
       <a target="_blank" href="https://github.github.com/gfm/">Markdown language reference</a>
     </p>

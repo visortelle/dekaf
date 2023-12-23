@@ -163,7 +163,7 @@ export function consumerSessionPauseTriggerChainFromValOrRef(v: ManagedConsumerS
 
 export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfigValOrRef, currentTopicFqn: string | undefined): ConsumerSessionConfig {
   if (v.val === undefined) {
-    throw new Error('Consumer session config reference can\'t be converted to value');
+    throw new Error('Consumer session reference can\'t be converted to value');
   }
 
   const spec = v.val.spec;

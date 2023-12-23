@@ -50,7 +50,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <div style={{ display: 'flex', gap: '8rem' }}>
               {props.extraElements?.preItemType}
               <strong>
-                {props.itemType === 'consumer-session-config' && 'Consumer Session Config'}
+                {props.itemType === 'consumer-session-config' && 'Consumer Session'}
                 {props.itemType === 'message-filter' && 'Filter'}
                 {props.itemType === 'message-filter-chain' && ' Filter Chain'}
                 {props.itemType === 'consumer-session-start-from' && 'Start From'}
@@ -64,15 +64,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           )}
           help={(
             <div>
-              {props.itemType === 'consumer-session-config' && help.consumerSessionConfig}
-              {props.itemType === 'message-filter' && help.messageFilter}
-              {props.itemType === 'message-filter-chain' && help.messageFilterChain}
-              {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
-              {props.itemType === 'topic-selector' && help.topicSelector}
-              {props.itemType === 'consumer-session-target' && help.consumerSessionTarget}
-              {props.itemType === 'coloring-rule' && help.coloringRule}
-              {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
-              {props.itemType === 'markdown-document' && help.markdownDocument}
+              {help[props.itemType] || undefined}
             </div>
           )}
         />
