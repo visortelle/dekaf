@@ -12,6 +12,7 @@ import { HelmetProvider } from "react-helmet-async";
 import InstanceColor from "./instance-color/InstanceColor";
 import * as HealthCheckContext from './contexts/HealthCheckContext/HealthCheckContext';
 import React from "react";
+import './detect-platform';
 
 type AppProps = {
   config: AppContext.Config;
