@@ -112,8 +112,9 @@
   flex: 1;
   overflow: auto;
   padding-bottom: 24rem;
-  overscroll-behavior-x: contain;
+
   /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
   overscroll-behavior-y: contain;
 }
 

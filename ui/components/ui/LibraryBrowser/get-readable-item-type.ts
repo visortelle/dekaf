@@ -10,7 +10,7 @@ export function getReadableItemType(managedItemType: ManagedItemType): string {
     case "consumer-session-start-from": return "Start From";
     case "consumer-session-target": return "Consumer Target";
     case "date-time": return "Date Time";
-    case "markdown-document": return "Markdown Document";
+    case "markdown-document": return "Note";
     case "message-filter": return "Message Filter";
     case "message-filter-chain": return "Message Filter Chain";
     case "message-id": return "Message ID";

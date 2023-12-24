@@ -28,5 +28,6 @@
 }
 
 .ItemHeaderButtons {
+  display: flex;
   margin-left: 12rem;
 }

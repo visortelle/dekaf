@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './LibraryBrowserPickButton.module.css'
-import SmallButton from '../../../../SmallButton/SmallButton';
+import SmallButton, { SmallButtonProps } from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
 import pickIcon from './pick.svg';
@@ -11,6 +11,7 @@ export type LibraryBrowserPickButtonProps = {
   itemType: ManagedItemType;
   onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
+  button?: Partial<SmallButtonProps>
 };
 
 const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props) => {
@@ -31,7 +32,6 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
                 itemType: props.itemType,
                 onPick: (item) => {
                   props.onPick(item);
-                  modals.pop();
                 },
               },
               onCancel: modals.pop,
@@ -41,6 +41,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
 
           modals.push(modal);
         }}
+        {...props.button}
       />
     </div>
   );

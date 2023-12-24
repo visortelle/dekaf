@@ -3,6 +3,7 @@ import { ModalStackEntry } from "../../app/contexts/Modals/Modals";
 import LibraryBrowser, { LibraryBrowserProps } from "./LibraryBrowser";
 import { getReadableItemType } from "./get-readable-item-type";
 import { capitalize } from "lodash";
+import { v4 as uuid } from 'uuid';
 
 const ModalContent: React.FC<{ children: React.ReactNode, style?: CSSProperties }> = (props) => {
   return (
@@ -36,7 +37,7 @@ export const mkLibraryBrowserModal: (props: MkLibraryBrowserModalProps) => Modal
   }
 
   return {
-    id: 'library-browser',
+    id: `library-browser-${uuid()}`,
     content: (
       <ModalContent
         style={(props.libraryBrowserProps.mode.type === "save" && props.libraryBrowserProps.mode.item.metadata.type !== "consumer-session-config" && (props.libraryBrowserProps.mode.appearance === "create" || props.libraryBrowserProps.mode.appearance === "edit")) ? { width: 'unset', maxWidth: 'calc(100vw - 32rem)' } : undefined}

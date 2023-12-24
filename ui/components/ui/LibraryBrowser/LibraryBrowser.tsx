@@ -359,6 +359,14 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             }}
             type={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'primary' : 'danger'}
             text={(() => {
+              if (props.mode.appearance === 'create') {
+                return 'Create';
+              }
+
+              if (props.mode.appearance === 'edit') {
+                return 'Save';
+              }
+
               if (props.mode.item.metadata.id === selectedItem?.spec.metadata.id) {
                 return isNewItem ? 'Save' : 'Overwrite';
               }

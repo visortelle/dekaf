@@ -28,7 +28,7 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
       }}
     >
       <MarkdownPreview markdown={props.value} />
-      {props.value === '' && <div className={s.EmptyMarkdown}>No content :(</div>}
+      {props.value === '' && <div className={s.EmptyMarkdown}>No content</div>}
 
       <div className={s.Buttons}>
         {!props.isReadOnly && (

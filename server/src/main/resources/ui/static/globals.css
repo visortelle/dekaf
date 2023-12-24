@@ -56,11 +56,11 @@ It doesn't work in Firefox yet. */
 }
 
 ::-webkit-scrollbar:vertical {
-    width: 7px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar:horizontal {
-    height: 7px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {

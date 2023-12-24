@@ -14,6 +14,7 @@ import { itemCountPerTypeFromPb } from '../../../../ui/LibraryBrowser/item-count
 import NoData from '../../../../ui/NoData/NoData';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import { help } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/help';
+import BrowseLibraryButton from './BrowseLibraryItemButton/BrowseLibraryButton';
 
 export type LibraryProps = {
   libraryContext: LibraryContext,
@@ -91,6 +92,10 @@ const Library: React.FC<LibraryProps> = (props) => {
                     {itemCount === undefined ? <NoData /> : <strong>{itemCount}</strong>}
 
                     <div className={s.ItemHeaderButtons}>
+                      <BrowseLibraryButton
+                        itemType={itemType}
+                        libraryContext={props.libraryContext}
+                      />
                       <CreateLibraryItemButton
                         itemType={itemType}
                         libraryContext={props.libraryContext}
@@ -103,7 +108,6 @@ const Library: React.FC<LibraryProps> = (props) => {
           })
         }
       </div>
-
     </div >
   );
 }
