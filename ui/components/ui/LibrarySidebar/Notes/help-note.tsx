@@ -1,4 +1,4 @@
-import { ManagedMarkdownDocument } from "../../../../ui/LibraryBrowser/model/user-managed-items";
+import { ManagedMarkdownDocument } from "../../../ui/LibraryBrowser/model/user-managed-items";
 import helpNoteMd from './help.md';
 
 export const helpNote: ManagedMarkdownDocument = {

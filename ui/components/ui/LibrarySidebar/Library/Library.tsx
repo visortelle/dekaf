@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import s from './Library.module.css'
-import * as Notifications from '../../../../app/contexts/Notifications';
-import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import { LibraryContext, resourceMatcherFromContext } from '../../../../ui/LibraryBrowser/model/library-context';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
+import { LibraryContext, resourceMatcherFromContext } from '../../LibraryBrowser/model/library-context';
 import CreateLibraryItemButton from './CreateLibraryItemButton/CreateLibraryItemButton';
-import { ManagedItemType } from '../../../../ui/LibraryBrowser/model/user-managed-items';
-import { getReadableItemType } from '../../../../ui/LibraryBrowser/get-readable-item-type';
-import { managedItemTypeToPb } from '../../../../ui/LibraryBrowser/model/user-managed-items-conversions-pb';
-import { resourceMatcherToPb } from '../../../../ui/LibraryBrowser/model/resource-matchers-conversions-pb';
-import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
-import { itemCountPerTypeFromPb } from '../../../../ui/LibraryBrowser/item-count-per-type';
-import NoData from '../../../../ui/NoData/NoData';
-import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
-import { help } from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/help';
+import { ManagedItemType } from '../../LibraryBrowser/model/user-managed-items';
+import { getReadableItemType } from '../../LibraryBrowser/get-readable-item-type';
+import { managedItemTypeToPb } from '../../LibraryBrowser/model/user-managed-items-conversions-pb';
+import { resourceMatcherToPb } from '../../LibraryBrowser/model/resource-matchers-conversions-pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { itemCountPerTypeFromPb } from '../../LibraryBrowser/item-count-per-type';
+import NoData from '../../NoData/NoData';
+import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
+import { help } from '../../LibraryBrowser/LibraryBrowserPanel/help';
 import BrowseLibraryButton from './BrowseLibraryItemButton/BrowseLibraryButton';
 
 export type LibraryProps = {

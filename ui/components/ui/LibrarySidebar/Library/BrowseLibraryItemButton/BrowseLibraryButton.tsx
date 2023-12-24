@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
-import { ManagedItemType } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import LibraryBrowserPickButton from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserPickButton/LibraryBrowserPickButton';
-import * as Modals from '../../../../../app/contexts/Modals/Modals';
-import { mkLibraryBrowserModal } from '../../../../../ui/LibraryBrowser/modals';
+import React from 'react';
+import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
+import { ManagedItemType } from '../../../LibraryBrowser/model/user-managed-items';
+import LibraryBrowserPickButton from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserPickButton/LibraryBrowserPickButton';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
+import { mkLibraryBrowserModal } from '../../../LibraryBrowser/modals';
 
 export type BrowseLibraryButtonProps = {
   itemType: ManagedItemType,

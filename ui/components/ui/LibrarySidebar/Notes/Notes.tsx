@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import s from './Notes.module.css'
-import { LibraryContext, resourceMatcherFromContext } from '../../../../ui/LibraryBrowser/model/library-context';
-import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../../../../app/contexts/Notifications';
-import * as Modals from '../../../../app/contexts/Modals/Modals';
-import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import * as mipb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/managed_items_pb';
-import { ManagedMarkdownDocument } from '../../../../ui/LibraryBrowser/model/user-managed-items';
-import { resourceMatcherToPb } from '../../../../ui/LibraryBrowser/model/resource-matchers-conversions-pb';
-import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
-import { libraryItemFromPb, libraryItemToPb } from '../../../../ui/LibraryBrowser/model/library-conversions';
-import { LibraryItem } from '../../../../ui/LibraryBrowser/model/library';
+import { LibraryContext, resourceMatcherFromContext } from '../../LibraryBrowser/model/library-context';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as Modals from '../../../app/contexts/Modals/Modals';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
+import * as mipb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/managed_items_pb';
+import { ManagedMarkdownDocument } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { resourceMatcherToPb } from '../../../ui/LibraryBrowser/model/resource-matchers-conversions-pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { libraryItemFromPb, libraryItemToPb } from '../../../ui/LibraryBrowser/model/library-conversions';
+import { LibraryItem } from '../../../ui/LibraryBrowser/model/library';
 import { v4 as uuid } from 'uuid';
-import Tabs, { Tab } from '../../../../ui/Tabs/Tabs';
-import ConfirmationButton from '../../../../ui/ConfirmationButton/ConfirmationButton';
+import Tabs, { Tab } from '../../../ui/Tabs/Tabs';
+import ConfirmationButton from '../../../ui/ConfirmationButton/ConfirmationButton';
 import deleteIcon from './delete.svg';
 import { helpNote } from './help-note';
 import defaultMarkdown from './default.md';
-import RenameButton from '../../../../ui/RenameButton/RenameButton';
+import RenameButton from '../../../ui/RenameButton/RenameButton';
 import { cloneDeep } from 'lodash';
-import MarkdownInput from '../../../../ui/MarkdownInput/MarkdownInput';
+import MarkdownInput from '../../../ui/MarkdownInput/MarkdownInput';
 
 export type NotesProps = {
   libraryContext: LibraryContext,

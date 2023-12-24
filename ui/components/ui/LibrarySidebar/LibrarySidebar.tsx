@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import s from './LibrarySidebar.module.css'
-import Tabs from '../../../ui/Tabs/Tabs';
+import Tabs from '../Tabs/Tabs';
 import Notes from './Notes/Notes';
-import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
+import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import Library from './Library/Library';
 
 export type LibrarySidebarProps = {

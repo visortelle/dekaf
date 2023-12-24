@@ -12,6 +12,7 @@ import { routes } from '../routes';
 import { matchPath, useLocation } from 'react-router-dom';
 
 import s from './TenantPage.module.css'
+import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
 
 export type TenantPageView = 'overview' | 'namespaces' | 'create-namespace';
 export type TenantPageProps = {
@@ -32,6 +33,13 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
   } else if (matchPath(routes.tenants.tenant.createNamespace._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-namespace', value: 'New Namespace' }]
   }
+
+  const libraryContext: LibraryContext = {
+    pulsarResource: {
+      type: 'tenant',
+      tenant: props.tenant,
+    }
+  };
 
   return (
     <div className={s.Page}>
@@ -92,7 +100,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
       </div>
 
       {props.view === 'namespaces' && <Namespaces tenant={props.tenant} />}
-      {props.view === 'overview' && <Overview tenant={props.tenant} />}
+      {props.view === 'overview' && <Overview tenant={props.tenant} libraryContext={libraryContext} />}
       {props.view === 'create-namespace' && <CreateNamespace tenant={props.tenant} />}
     </div>
   );

@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
-import { ManagedItemType } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { getReadableItemType } from '../../../../../ui/LibraryBrowser/get-readable-item-type';
-import { getDefaultManagedItem } from '../../../../../ui/LibraryBrowser/default-library-items';
-import LibraryBrowserSaveButton from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserSaveButton/LibraryBrowserSaveButton';
+import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
+import { ManagedItemType } from '../../../LibraryBrowser/model/user-managed-items';
+import { getReadableItemType } from '../../../LibraryBrowser/get-readable-item-type';
+import { getDefaultManagedItem } from '../../../LibraryBrowser/default-library-items';
+import LibraryBrowserSaveButton from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserSaveButton/LibraryBrowserSaveButton';
 
 export type CreateLibraryItemButtonProps = {
   itemType: ManagedItemType,

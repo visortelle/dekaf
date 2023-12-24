@@ -16,7 +16,7 @@ import InternalStatistics from './InternalStatistics/InternalStatistics';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
 import { mapToObject } from '../../../proto-utils/proto-utils';
-import LibrarySidebar from './Library/LibrarySidebar';
+import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 export type OverviewProps = {
