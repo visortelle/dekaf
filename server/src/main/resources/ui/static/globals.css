@@ -46,52 +46,6 @@ body {
   font-size: 14rem;
 }
 
-/* SCROLL FIX START
-MacOS hides scrollbars by default.
-Our app heavily uses them and it's good to know if an element is scrollable.
-This CSS forces to show scrollbar always.
-It doesn't work in Firefox yet. */
-body.MacOS ::-webkit-scrollbar {
-    -webkit-appearance: none;
-    background: #f5f5f5;
-}
-
-body.MacOS ::-webkit-scrollbar:vertical {
-    width: 11px;
-    padding: 0 1px;
-    border-left: 1px solid #ededed;
-    border-right: 1px solid #ededed;
-}
-
-body.MacOS ::-webkit-scrollbar:horizontal {
-    height: 11px;
-    padding: 1px 0;
-    border-top: 1px solid #ededed;
-    border-bottom: 1px solid #ededed;
-}
-
-body.MacOS ::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    background-color: #c1c1c1;
-}
-
-body.MacOS ::-webkit-scrollbar-thumb:hover {
-  background-color: #7e7e7e;
-}
-
-body.MacOS ::-webkit-scrollbar-thumb:vertical {
-  border: 2px solid #ededed;
-  border-top: none;
-  border-bottom: none;
-}
-
-body.MacOS ::-webkit-scrollbar-thumb:horizontal {
-  border: 2px solid #ededed;
-  border-left: none;
-  border-right: none;
-}
-/* SCROLL FIX END */
-
 input,
 textarea,
 button,
