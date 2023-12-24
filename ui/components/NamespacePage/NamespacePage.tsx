@@ -15,6 +15,7 @@ import { matchPath, useLocation } from 'react-router-dom';
 
 import s from './NamespacePage.module.css'
 import Overview from './Overview/Overview';
+import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
 
 export type NamespacePageView = 'overview' | 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic';
 export type NamespacePageProps = {
@@ -42,6 +43,14 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'Create Topic' }]
   }
+
+  const libraryContext: LibraryContext = {
+    pulsarResource: {
+      type: 'namespace',
+      tenant: props.tenant,
+      namespace: props.namespace,
+    }
+  };
 
   return (
     <div className={s.Page}>
@@ -125,7 +134,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       />
 
       {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}

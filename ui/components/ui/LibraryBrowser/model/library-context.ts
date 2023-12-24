@@ -23,6 +23,30 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
     return tenantMatcher;
   }
 
+  if (pulsarResource.type === 'namespace') {
+    const tenantMatcher: m.TenantMatcher = {
+      reactKey: uuid(),
+      type: 'tenant-matcher',
+      value: {
+        reactKey: uuid(),
+        type: 'exact-tenant-matcher',
+        tenant: pulsarResource.tenant
+      }
+    };
+    const namespaceMatcher: m.NamespaceMatcher = {
+      reactKey: uuid(),
+      type: 'namespace-matcher',
+      value: {
+        reactKey: uuid(),
+        type: 'exact-namespace-matcher',
+        tenant: tenantMatcher,
+        namespace: pulsarResource.namespace
+      },
+    };
+
+    return namespaceMatcher;
+  }
+
   if (pulsarResource.type === 'topic') {
     const tenantMatcher: m.TenantMatcher = {
       reactKey: uuid(),
@@ -58,5 +82,5 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
     return topicMatcher;
   }
 
-  throw new Error(`Unsupported Pulsar resource type: ${pulsarResource.type}`);
+  throw new Error(`Unsupported Pulsar resource type: ${(pulsarResource as PulsarResource).type}`);
 }
