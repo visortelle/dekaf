@@ -112,16 +112,16 @@ export const routes = {
             },
             anyTopicPersistency: {
               topic: {
-                messages: {
+                consumerSession: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/messages",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/consumer-session",
                     get: (props: {
                       tenant: string;
                       namespace: string;
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/messages`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/consumer-session`,
                   },
                 },
                 producers: {

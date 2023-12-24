@@ -22,7 +22,7 @@ import { getDefaultManagedItem } from "../ui/LibraryBrowser/default-library-item
 import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-managed-items";
 
 export type TopicPageView =
-  | { type: "messages" }
+  | { type: "consumer-session", managedConsumerSessionId?: string }
   | { type: "overview" }
   | { type: "producers" }
   | { type: "schema-initial-screen" }
@@ -80,8 +80,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     }] :
     [];
 
-  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname)) {
-    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'messages', value: 'Messages' }]);
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname)) {
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'overview', value: 'Overview' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname)) {
@@ -110,16 +110,16 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname))
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
         topicPersistency: props.topicPersistency,
       }),
-      text: "Messages",
+      text: "Consumer Session",
       onClick: () => { },
       type: "regular",
-      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname))
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
     },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
@@ -240,13 +240,16 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       />
       <Toolbar buttons={buttons} />
 
-      {props.view.type === "messages" && (
+      {props.view.type === "consumer-session" && (
         <Session
           key={key}
           libraryContext={libraryContext}
-          initialConfig={{
+          initialConfig={props.view.managedConsumerSessionId === undefined ? {
             type: 'value',
             val: getDefaultManagedItem("consumer-session-config") as ManagedConsumerSessionConfig
+          } : {
+            type: 'reference',
+            ref: props.view.managedConsumerSessionId
           }}
         />
       )}

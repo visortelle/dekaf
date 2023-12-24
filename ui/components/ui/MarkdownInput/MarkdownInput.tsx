@@ -27,7 +27,9 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
         minHeight: props.minHeight === undefined ? undefined : `${props.minHeight}rem`
       }}
     >
-      <MarkdownPreview markdown={props.value} />
+      <div style={{ marginBottom: '8rem' }}>
+        <MarkdownPreview markdown={props.value} />
+      </div>
       {props.value === '' && <div className={s.EmptyMarkdown}>No content</div>}
 
       <div className={s.Buttons}>

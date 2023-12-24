@@ -15,7 +15,7 @@
 
 .RemoveDescriptionButton {
   position: absolute;
-  top: -4rem;
+  top: 0;
   right: 8rem;
 
   opacity: 0;

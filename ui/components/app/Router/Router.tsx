@@ -11,6 +11,7 @@ import {
   useNavigate,
   Params,
   Navigate,
+  useSearchParams,
 } from "react-router-dom";
 import * as Modals from "../contexts/Modals/Modals";
 
@@ -141,9 +142,9 @@ const prepareRoutes = (): {
       /* Topics */
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
-          .messages._.path,
+          .consumerSession._.path,
         element: withLayout(
-          <RoutedTopicPage view="messages" />,
+          <RoutedTopicPage view="consumer-session" />,
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
@@ -380,10 +381,16 @@ const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
 
 const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
   const { tenant, namespace, topic, topicPersistency, schemaVersion } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   let view: TopicPageView;
   switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
     case "schema-initial-screen":
       view = { type: "schema-initial-screen" };
       break;
