@@ -5,6 +5,7 @@ import Notes from './Notes/Notes';
 import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import Library from './Library/Library';
 import objectHash from 'object-hash';
+import NoData from '../NoData/NoData';
 
 export type LibrarySidebarProps = {
   libraryContext: LibraryContext
@@ -15,17 +16,17 @@ type TabKey =
   'library';
 
 type ItemsCount = {
-  notes: number,
-  favorites: number,
-  library: number
+  notes: number | undefined,
+  favorites: number | undefined,
+  library: number | undefined
 }
 
 const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('notes');
   const [itemsCount, setItemsCount] = useState<ItemsCount>({
-    notes: 0,
-    favorites: 0,
-    library: 0,
+    notes: undefined,
+    favorites: undefined,
+    library: undefined,
   });
 
   const reactKey = useMemo(() => objectHash(props.libraryContext), [props.libraryContext]);
@@ -35,7 +36,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
       <Tabs<TabKey>
         tabs={{
           'notes': {
-            title: <span>🗒 Notes <strong>{itemsCount.notes}</strong></span>,
+            title: <span>🗒 Notes{itemsCount.notes === undefined ? <NoData /> : <>&nbsp;<strong>{itemsCount.notes}</strong></>}</span>,
             render: () => (
               <Notes
                 key={reactKey}
@@ -46,7 +47,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
             isRenderAlways: true,
           },
           'library': {
-            title: <span>📚 Library <strong>{itemsCount.library}</strong></span>,
+            title: <span>📚 Library{itemsCount.library === undefined ? <NoData /> : <>&nbsp;<strong>{itemsCount.library}</strong></>}</span>,
             render: () => (
               <Library
                 key={reactKey}
