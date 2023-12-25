@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import s from './MarkdownPreview.module.css'
 import mermaid from 'mermaid';
 import markdownit from 'markdown-it';
@@ -66,6 +66,7 @@ export type MarkdownPreviewProps = {
 const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
   const [markdownDebounced] = useDebounce(props.markdown, 350);
   const [renderedMarkdown, setRenderedMarkdown] = useState('');
+  const mermaidRerenderTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     const safeHtml = sanitizeHtml(md.render(props.markdown), sanitizeOptions);
@@ -73,7 +74,16 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
   }, [markdownDebounced]);
 
   useEffect(() => {
-    mermaid.contentLoaded();
+    if (mermaidRerenderTimeout.current !== undefined) {
+      clearTimeout(mermaidRerenderTimeout.current);
+      mermaidRerenderTimeout.current = undefined;
+    }
+
+    // XXX - Timeout here is a fix of broken mermaid rendering in case
+    // we display the markdown preview component inside a modal dialog.
+    mermaidRerenderTimeout.current = setTimeout(() => {
+      mermaid.contentLoaded();
+    }, 300);
   }, [renderedMarkdown]);
 
   return (

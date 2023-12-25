@@ -52,11 +52,11 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
             ),
             isRenderAlways: true,
           },
-          'favorites': {
-            title: '⭐️ Favorites',
-            render: () => <>favorites</>,
-            isRenderAlways: true,
-          },
+          // 'favorites': {
+          //   title: '⭐️ Favorites',
+          //   render: () => <>favorites</>,
+          //   isRenderAlways: true,
+          // },
         }}
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}
