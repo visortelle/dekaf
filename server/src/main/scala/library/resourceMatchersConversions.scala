@@ -2,6 +2,12 @@ package library
 
 import com.tools.teal.pulsar.ui.library.v1.resource_matchers as pb
 
+def instanceMatcherFromPb(v: pb.InstanceMatcher): InstanceMatcher =
+    InstanceMatcher()
+
+def instanceMatcherToPb(v: InstanceMatcher): pb.InstanceMatcher =
+    pb.InstanceMatcher()
+
 def exactTenantMatcherFromPb(v: pb.ExactTenantMatcher): ExactTenantMatcher =
     ExactTenantMatcher(tenant = v.tenant)
 
@@ -75,7 +81,7 @@ def allTopicMatcherFromPb(v: pb.AllTopicMatcher): AllTopicMatcher =
 
 def allTopicMatcherToPb(v: AllTopicMatcher): pb.AllTopicMatcher =
     pb.AllTopicMatcher(
-        namespace = Some(namespaceMatcherToPb(v.namespace)),
+        namespace = Some(namespaceMatcherToPb(v.namespace))
     )
 
 def topicMatcherFromPb(v: pb.TopicMatcher): TopicMatcher =
@@ -87,21 +93,24 @@ def topicMatcherFromPb(v: pb.TopicMatcher): TopicMatcher =
 def topicMatcherToPb(v: TopicMatcher): pb.TopicMatcher =
     v.matcher match
         case v: ExactTopicMatcher => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.Exact(exactTopicMatcherToPb(v)))
-        case v: AllTopicMatcher => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.All(allTopicMatcherToPb(v)))
-        case _                                           => throw new IllegalArgumentException("Unknown matcher type")
+        case v: AllTopicMatcher   => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.All(allTopicMatcherToPb(v)))
+        case _                    => throw new IllegalArgumentException("Unknown matcher type")
 
 def resourceMatcherFromPb(v: pb.ResourceMatcher): ResourceMatcher =
     v.matcher match
-        case pb.ResourceMatcher.Matcher.Tenant(tenantMatcher) => ResourceMatcher(matcher = tenantMatcherFromPb(tenantMatcher))
-        case pb.ResourceMatcher.Matcher.Namespace(namespace)  => ResourceMatcher(matcher = namespaceMatcherFromPb(namespace))
-        case pb.ResourceMatcher.Matcher.Topic(topicMatcher)   => ResourceMatcher(matcher = topicMatcherFromPb(topicMatcher))
-        case _                                                => throw new IllegalArgumentException("Unknown matcher type")
+        case pb.ResourceMatcher.Matcher.Instance(instanceMatcher) => ResourceMatcher(matcher = instanceMatcherFromPb(instanceMatcher))
+        case pb.ResourceMatcher.Matcher.Tenant(tenantMatcher)     => ResourceMatcher(matcher = tenantMatcherFromPb(tenantMatcher))
+        case pb.ResourceMatcher.Matcher.Namespace(namespace)      => ResourceMatcher(matcher = namespaceMatcherFromPb(namespace))
+        case pb.ResourceMatcher.Matcher.Topic(topicMatcher)       => ResourceMatcher(matcher = topicMatcherFromPb(topicMatcher))
+        case _                                                    => throw new IllegalArgumentException("Unknown matcher type")
 
 def resourceMatcherToPb(v: ResourceMatcher): pb.ResourceMatcher =
     v.matcher match
+        case v: InstanceMatcher =>
+            pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Instance(instanceMatcherToPb(v)))
         case v: TenantMatcher =>
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Tenant(tenantMatcherToPb(v)))
         case v: NamespaceMatcher =>
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Namespace(namespaceMatcherToPb(v)))
         case v: TopicMatcher => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(v)))
-        case _                                               => throw new IllegalArgumentException("Unknown matcher type")
+        case _               => throw new IllegalArgumentException("Unknown matcher type")

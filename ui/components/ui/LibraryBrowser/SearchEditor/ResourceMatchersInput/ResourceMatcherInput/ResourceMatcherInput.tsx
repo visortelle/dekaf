@@ -5,7 +5,7 @@ import NamespaceMatcherInput from './NamespaceMatcherInput/NamespaceMatcherInput
 import TopicMatcherInput from './TopicMatcherInput/TopicMatcherInput';
 import { ResourceMatcher } from '../../../model/resource-matchers';
 import Select from '../../../../Select/Select';
-import { getDefaultNamespaceMatcher, getDefaultTenantMatcher, getDefaultTopicMatcher } from './default-matchers';
+import { getDefaultInstanceMatcher, getDefaultNamespaceMatcher, getDefaultTenantMatcher, getDefaultTopicMatcher } from './default-matchers';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
 
 export type ResourceMatcherInputProps = {
@@ -25,12 +25,14 @@ const ResourceMatcherInput: React.FC<ResourceMatcherInputProps> = (props) => {
             value={props.value.type}
             onChange={(v) => {
               switch (v) {
+                case "instance-matcher": props.onChange(getDefaultInstanceMatcher()); return;
                 case "topic-matcher": props.onChange(getDefaultTopicMatcher()); return;
                 case "namespace-matcher": props.onChange(getDefaultNamespaceMatcher()); return;
                 case "tenant-matcher": props.onChange(getDefaultTenantMatcher()); return;
               }
             }}
             list={[
+              { type: 'item', value: 'instance-matcher', title: 'Instance' },
               { type: 'item', value: 'tenant-matcher', title: 'Tenant(s)' },
               { type: 'item', value: 'namespace-matcher', title: 'Namespace(s)' },
               { type: 'item', value: 'topic-matcher', title: 'Topic(s)' },

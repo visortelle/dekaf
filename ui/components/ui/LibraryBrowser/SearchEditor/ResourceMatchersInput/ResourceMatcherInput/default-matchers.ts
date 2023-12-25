@@ -1,5 +1,12 @@
-import { NamespaceMatcher, TenantMatcher, TopicMatcher } from "../../../model/resource-matchers";
+import { InstanceMatcher, NamespaceMatcher, TenantMatcher, TopicMatcher } from "../../../model/resource-matchers";
 import { v4 as uuid } from 'uuid';
+
+export const getDefaultInstanceMatcher = (): InstanceMatcher => {
+  return {
+    type: "instance-matcher",
+    reactKey: uuid()
+  }
+}
 
 export const getDefaultTopicMatcher = (): TopicMatcher => {
   return {

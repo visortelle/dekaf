@@ -1,5 +1,9 @@
 type WithReactKey = { reactKey: string };
 
+export type InstanceMatcher = WithReactKey & {
+  type: "instance-matcher"
+}
+
 export type ExactTenantMatcher = WithReactKey & {
   type: 'exact-tenant-matcher',
   tenant: string;
@@ -51,4 +55,4 @@ export type TopicMatcher = WithReactKey & {
 
 export type TopicMatcherType = TopicMatcher['value']['type'];
 
-export type ResourceMatcher = WithReactKey & (TopicMatcher | NamespaceMatcher | TenantMatcher);
+export type ResourceMatcher = WithReactKey & (InstanceMatcher | TopicMatcher | NamespaceMatcher | TenantMatcher);

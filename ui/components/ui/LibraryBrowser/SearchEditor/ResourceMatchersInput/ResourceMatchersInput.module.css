@@ -1,4 +1,6 @@
-.ResourceMatchersInput {}
+.ResourceMatchersInput {
+  max-width: 480rem;
+}
 
 .ResourceMatcherInput {
   padding-top: 36rem;

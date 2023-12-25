@@ -1,5 +1,8 @@
 package library
 
+case class InstanceMatcher():
+    def test(target: InstanceMatcher): Boolean = true
+
 case class ExactTenantMatcher(tenant: String):
     def test(target: TenantMatcher): Boolean = target.matcher match
         case t: AllTenantMatcher   => true
@@ -43,9 +46,10 @@ case class TopicMatcher(matcher: AllTopicMatcher | ExactTopicMatcher):
         case m: ExactTopicMatcher  => m.test(target)
         case m: AllTopicMatcher => m.test(target)
 
-case class ResourceMatcher(matcher: TenantMatcher | NamespaceMatcher | TopicMatcher):
+case class ResourceMatcher(matcher: InstanceMatcher | TenantMatcher | NamespaceMatcher | TopicMatcher):
     def test(target: ResourceMatcher): Boolean = (matcher, target.matcher) match
-        case  (m: TenantMatcher,  t: TenantMatcher) => m.test(t)
+        case  (m: InstanceMatcher, t: InstanceMatcher) => m.test(t)
+        case  (m: TenantMatcher, t: TenantMatcher) => m.test(t)
         case (m: NamespaceMatcher, t: NamespaceMatcher) => m.test(t)
         case (m: TopicMatcher, t: TopicMatcher) => m.test(t)
         case _ => false

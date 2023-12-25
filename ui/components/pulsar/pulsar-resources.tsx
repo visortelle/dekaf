@@ -1,6 +1,10 @@
 export type PulsarTopicPersistency = 'persistent' | 'non-persistent';
 export type PulsarTopicPartitioning = 'partitioned' | 'non-partitioned';
 
+export type PulsarInstanceResource = {
+  type: 'instance'
+};
+
 export type PulsarTopicResource = {
   type: 'topic',
   tenant: string,
@@ -21,6 +25,7 @@ export type PulsarTenantResource = {
 }
 
 export type PulsarResource =
+  PulsarInstanceResource |
   PulsarTenantResource |
   PulsarNamespaceResource |
   PulsarTopicResource;

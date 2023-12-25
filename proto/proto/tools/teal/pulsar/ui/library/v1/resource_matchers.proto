@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package tools.teal.pulsar.ui.library.v1;
 
+message InstanceMatcher {}
+
 message ExactTenantMatcher {
   string tenant = 1;
 }
@@ -50,6 +52,7 @@ message TopicMatcher {
 
 message ResourceMatcher {
   oneof matcher {
+    InstanceMatcher instance = 4;
     TenantMatcher tenant = 1;
     NamespaceMatcher namespace = 2;
     TopicMatcher topic = 3;

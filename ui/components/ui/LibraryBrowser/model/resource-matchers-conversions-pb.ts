@@ -2,6 +2,18 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/resour
 import * as t from "./resource-matchers";
 import { v4 as uuid } from 'uuid';
 
+export function instanceMatcherToPb(matcher: t.InstanceMatcher): pb.InstanceMatcher {
+  const matcherPb = new pb.InstanceMatcher();
+  return matcherPb;
+}
+
+export function instanceMatcherFromPb(matcherPb: pb.InstanceMatcher): t.InstanceMatcher {
+  return {
+    reactKey: uuid(),
+    type: 'instance-matcher',
+  };
+}
+
 export function exactTenantMatcherToPb(matcher: t.ExactTenantMatcher): pb.ExactTenantMatcher {
   const matcherPb = new pb.ExactTenantMatcher();
   matcherPb.setTenant(matcher.tenant);
@@ -246,6 +258,9 @@ export function topicMatcherFromPb(matcherPb: pb.TopicMatcher): t.TopicMatcher {
 export function resourceMatcherToPb(matcher: t.ResourceMatcher): pb.ResourceMatcher {
   const matcherPb = new pb.ResourceMatcher();
   switch (matcher.type) {
+    case 'instance-matcher':
+      matcherPb.setInstance(instanceMatcherToPb(matcher));
+      break;
     case 'tenant-matcher':
       matcherPb.setTenant(tenantMatcherToPb(matcher));
       break;
@@ -261,13 +276,23 @@ export function resourceMatcherToPb(matcher: t.ResourceMatcher): pb.ResourceMatc
 
 export function resourceMatcherFromPb(matcherPb: pb.ResourceMatcher): t.ResourceMatcher {
   switch (matcherPb.getMatcherCase()) {
+    case pb.ResourceMatcher.MatcherCase.INSTANCE: {
+      const instanceMatcherPb = matcherPb.getInstance();
+      if (instanceMatcherPb === undefined) {
+        throw new Error('Instance matcher is undefined');
+      }
+
+      const instanceMatcher = instanceMatcherFromPb(instanceMatcherPb);
+      return { ...instanceMatcher, reactKey: uuid() };
+    }
+
     case pb.ResourceMatcher.MatcherCase.TENANT: {
       const tenantMatcherPb = matcherPb.getTenant();
       if (tenantMatcherPb === undefined) {
         throw new Error('Tenant matcher is undefined');
       }
 
-      const tenantMatcher = tenantMatcherFromPb(tenantMatcherPb);
+      const tenantMatcher = instanceMatcherFromPb(tenantMatcherPb);
       return { ...tenantMatcher, reactKey: uuid() };
     }
 

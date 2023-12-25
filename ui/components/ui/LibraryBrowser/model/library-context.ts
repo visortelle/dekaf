@@ -9,6 +9,15 @@ export type LibraryContext = {
 export function resourceMatcherFromContext(context: LibraryContext): m.ResourceMatcher {
   const pulsarResource = context.pulsarResource;
 
+  if (pulsarResource.type === 'instance') {
+    const instanceMatcher: m.InstanceMatcher = {
+      reactKey: uuid(),
+      type: 'instance-matcher'
+    };
+
+    return instanceMatcher;
+  }
+
   if (pulsarResource.type === 'tenant') {
     const tenantMatcher: m.TenantMatcher = {
       reactKey: uuid(),

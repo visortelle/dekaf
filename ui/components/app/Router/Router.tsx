@@ -83,7 +83,7 @@ const prepareRoutes = (): {
         path: routes.instance.overview._.path,
         element: withLayout(
           <InstancePage view={{ type: "overview" }} />,
-          withLayoutProps
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
