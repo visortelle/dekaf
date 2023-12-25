@@ -4,10 +4,12 @@ import { ManagedItemType } from '../../../LibraryBrowser/model/user-managed-item
 import LibraryBrowserPickButton from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserPickButton/LibraryBrowserPickButton';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../LibraryBrowser/modals';
+import { ResourceMatcher } from '../../../LibraryBrowser/model/resource-matchers';
 
 export type BrowseLibraryButtonProps = {
   itemType: ManagedItemType,
-  libraryContext: LibraryContext
+  libraryContext: LibraryContext,
+  resourceMatchers: ResourceMatcher[]
 };
 
 const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
@@ -17,8 +19,10 @@ const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
     <LibraryBrowserPickButton
       itemType={props.itemType}
       libraryContext={props.libraryContext}
+      libraryBrowser={{
+        initialResourceMatchersOverride: props.resourceMatchers
+      }}
       onPick={(v) => {
-        console.log('pick', v);
         const modal = mkLibraryBrowserModal({
           libraryBrowserProps: {
             mode: {
@@ -30,11 +34,10 @@ const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
               appearance: 'edit'
             },
             onCancel: modals.pop,
-            libraryContext: props.libraryContext,
+            libraryContext: props.libraryContext
           }
         });
 
-        console.log('MODAL', modal);
         modals.push(modal);
       }}
       button={{

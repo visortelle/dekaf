@@ -6,12 +6,14 @@ import { mkLibraryBrowserModal } from '../../../modals';
 import pickIcon from './pick.svg';
 import { ManagedItem, ManagedItemType } from '../../../model/user-managed-items';
 import { LibraryContext } from '../../../model/library-context';
+import { LibraryBrowserProps } from '../../../LibraryBrowser';
 
 export type LibraryBrowserPickButtonProps = {
   itemType: ManagedItemType;
   onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
-  button?: Partial<SmallButtonProps>
+  button?: Partial<SmallButtonProps>,
+  libraryBrowser?: Partial<LibraryBrowserProps>
 };
 
 const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props) => {
@@ -36,6 +38,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
               },
               onCancel: modals.pop,
               libraryContext: props.libraryContext,
+              ...props.libraryBrowser
             }
           });
 

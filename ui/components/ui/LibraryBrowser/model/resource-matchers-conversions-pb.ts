@@ -257,6 +257,7 @@ export function topicMatcherFromPb(matcherPb: pb.TopicMatcher): t.TopicMatcher {
 
 export function resourceMatcherToPb(matcher: t.ResourceMatcher): pb.ResourceMatcher {
   const matcherPb = new pb.ResourceMatcher();
+
   switch (matcher.type) {
     case 'instance-matcher':
       matcherPb.setInstance(instanceMatcherToPb(matcher));
@@ -271,6 +272,7 @@ export function resourceMatcherToPb(matcher: t.ResourceMatcher): pb.ResourceMatc
       matcherPb.setTopic(topicMatcherToPb(matcher));
       break;
   }
+
   return matcherPb;
 }
 
@@ -292,7 +294,7 @@ export function resourceMatcherFromPb(matcherPb: pb.ResourceMatcher): t.Resource
         throw new Error('Tenant matcher is undefined');
       }
 
-      const tenantMatcher = instanceMatcherFromPb(tenantMatcherPb);
+      const tenantMatcher = tenantMatcherFromPb(tenantMatcherPb);
       return { ...tenantMatcher, reactKey: uuid() };
     }
 

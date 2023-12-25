@@ -15,6 +15,9 @@ import NoData from '../../NoData/NoData';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from '../../LibraryBrowser/LibraryBrowserPanel/help';
 import BrowseLibraryButton from './BrowseLibraryItemButton/BrowseLibraryButton';
+import { ResourceMatcher } from '../../LibraryBrowser/model/resource-matchers';
+import ResourceMatchersInput from '../../LibraryBrowser/SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
+import { H3 } from '../../H/H';
 
 export type LibraryProps = {
   libraryContext: LibraryContext,
@@ -37,15 +40,15 @@ const Library: React.FC<LibraryProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
   const [itemCountPerType, setItemCountPerType] = useState<Partial<Record<ManagedItemType, number>>>({});
+  const [resourceMatchers, setResourceMatchers] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
 
   useEffect(() => {
     async function fetchItemCount() {
       const req = new pb.GetLibraryItemsCountRequest();
       req.setTypesList(itemTypes.map(managedItemTypeToPb));
 
-      const resourceMatcher = resourceMatcherFromContext(props.libraryContext);
-      const resourceMatcherPb = resourceMatcherToPb(resourceMatcher);
-      req.setContextsList([resourceMatcherPb]);
+      const resourceMatchersPb = resourceMatchers.map(resourceMatcherToPb);
+      req.setContextsList(resourceMatchersPb);
 
       const res = await libraryServiceClient.getLibraryItemsCount(req, null)
         .catch(err => notifyError(`Unable to fetch library items count. ${err}`));
@@ -66,7 +69,7 @@ const Library: React.FC<LibraryProps> = (props) => {
     }
 
     fetchItemCount();
-  }, [props.libraryContext]);
+  }, [resourceMatchers]);
 
   return (
     <div className={s.Library}>
@@ -95,6 +98,7 @@ const Library: React.FC<LibraryProps> = (props) => {
                       <BrowseLibraryButton
                         itemType={itemType}
                         libraryContext={props.libraryContext}
+                        resourceMatchers={resourceMatchers}
                       />
                       <CreateLibraryItemButton
                         itemType={itemType}
@@ -108,7 +112,17 @@ const Library: React.FC<LibraryProps> = (props) => {
           })
         }
       </div>
-    </div >
+
+      <div className={s.ResourceMatchers}>
+        <H3>Resource Matchers</H3>
+
+        <ResourceMatchersInput
+          value={resourceMatchers}
+          onChange={setResourceMatchers}
+          libraryContext={props.libraryContext}
+        />
+      </div>
+    </div>
   );
 }
 

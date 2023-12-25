@@ -17,6 +17,7 @@ import { LibraryContext, resourceMatcherFromContext } from './model/library-cont
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
 import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
+import { ResourceMatcher } from './model/resource-matchers';
 
 export type LibraryBrowserMode = {
   type: 'save';
@@ -33,6 +34,7 @@ export type LibraryBrowserProps = {
   mode: LibraryBrowserMode;
   onCancel: () => void;
   libraryContext: LibraryContext;
+  initialResourceMatchersOverride?: ResourceMatcher[]
 };
 
 type SearchResultsState = {
@@ -52,7 +54,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({
     itemType,
-    resourceMatchers: [resourceMatcherFromContext(props.libraryContext)],
+    resourceMatchers: props.initialResourceMatchersOverride === undefined ?
+      [resourceMatcherFromContext(props.libraryContext)] :
+      props.initialResourceMatchersOverride
   });
   const [searchResults, setSearchResults] = useState<SearchResultsState>({ type: 'pending' });
   const [itemToSave, setItemToSave] = useState<LibraryItem | undefined>(undefined);
