@@ -123,6 +123,22 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             testId: "namespace-page-delete-button"
           },
           {
+            linkTo: '',
+            text: "Consume",
+            onClick: () => { },
+            type: "regular",
+            position: "right",
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
+          },
+          {
+            linkTo: '',
+            text: "Produce",
+            onClick: () => { },
+            type: "regular",
+            position: "right",
+            active: false
+          },
+          {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Create Topic',
             onClick: () => { },

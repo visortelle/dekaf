@@ -40,7 +40,11 @@ const Library: React.FC<LibraryProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
   const [itemCountPerType, setItemCountPerType] = useState<Partial<Record<ManagedItemType, number>>>({});
-  const [resourceMatchers, setResourceMatchers] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
+  const [resourceMatchers, setResourceMatchers] = useState<ResourceMatcher[]>([]);
+
+  useEffect(() => {
+    setResourceMatchers([resourceMatcherFromContext(props.libraryContext)]);
+  }, [props.libraryContext]);
 
   useEffect(() => {
     async function fetchItemCount() {

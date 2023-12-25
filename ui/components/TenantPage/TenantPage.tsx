@@ -88,6 +88,22 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
               testId: 'tenant-page-delete-button',
             },
             {
+              linkTo: '',
+              text: "Consume",
+              onClick: () => { },
+              type: "regular",
+              position: "right",
+              active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
+            },
+            {
+              linkTo: '',
+              text: "Produce",
+              onClick: () => { },
+              type: "regular",
+              position: "right",
+              active: false
+            },
+            {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
               text: 'Create Namespace',
               onClick: () => { },

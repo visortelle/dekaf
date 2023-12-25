@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import s from './LibrarySidebar.module.css'
 import Tabs from '../Tabs/Tabs';
 import Notes from './Notes/Notes';
 import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import Library from './Library/Library';
+import objectHash from 'object-hash';
 
 export type LibrarySidebarProps = {
   libraryContext: LibraryContext
@@ -11,8 +12,7 @@ export type LibrarySidebarProps = {
 
 type TabKey =
   'notes' |
-  'library' |
-  'favorites';
+  'library';
 
 type ItemsCount = {
   notes: number,
@@ -28,6 +28,8 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
     library: 0,
   });
 
+  const reactKey = useMemo(() => objectHash(props.libraryContext), [props.libraryContext]);
+
   return (
     <div className={s.Library}>
       <Tabs<TabKey>
@@ -36,6 +38,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
             title: <span>🗒 Notes <strong>{itemsCount.notes}</strong></span>,
             render: () => (
               <Notes
+                key={reactKey}
                 libraryContext={props.libraryContext}
                 onCount={(v) => setItemsCount(ic => ({ ...ic, notes: v }))}
               />
@@ -46,6 +49,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
             title: <span>📚 Library <strong>{itemsCount.library}</strong></span>,
             render: () => (
               <Library
+                key={reactKey}
                 libraryContext={props.libraryContext}
                 onCount={(v) => setItemsCount(ic => ({ ...ic, library: v }))}
               />

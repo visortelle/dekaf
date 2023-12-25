@@ -69,8 +69,6 @@ const Notes: React.FC<NotesProps> = (props) => {
         return nameA.localeCompare(nameB, 'en', { numeric: true });
       });
 
-
-
     if (notes.length === 0 && newNotes.length > 0) {
       setSelectedNoteId(newNotes[0].metadata.id);
     }

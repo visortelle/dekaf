@@ -81,7 +81,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     [];
 
   if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname)) {
-    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]);
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'consumer-session', value: 'Messages' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'overview', value: 'Overview' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname)) {
@@ -108,18 +108,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       onClick: () => { },
       type: "regular",
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname))
-    },
-    {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicPersistency: props.topicPersistency,
-      }),
-      text: "Consumer Session",
-      onClick: () => { },
-      type: "regular",
-      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
     },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
@@ -156,7 +144,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       onClick: () => { },
       type: "regular",
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
-    },
+    }
   ];
 
   // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.11.0)
@@ -198,6 +186,32 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           ),
           styleMode: "no-content-padding",
         }),
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Consume",
+      onClick: () => { },
+      type: "regular",
+      position: "right",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Produce",
+      onClick: () => { },
+      type: "regular",
+      position: "right",
+      active: false
     },
   ]);
 
