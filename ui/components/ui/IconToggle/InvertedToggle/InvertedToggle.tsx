@@ -4,8 +4,9 @@ import invertedIcon from './inverted.svg';
 
 export type InvertedToggleProps = {
   value: boolean,
-  onChange: (v: boolean) => void
-  helpOverride?: React.ReactElement | string
+  onChange: (v: boolean) => void,
+  helpOverride?: React.ReactElement | string,
+  isReadOnly?: boolean
 };
 
 const InvertedToggle: React.FC<InvertedToggleProps> = (props) => {
@@ -31,6 +32,7 @@ const InvertedToggle: React.FC<InvertedToggleProps> = (props) => {
       ]}
       value={props.value}
       onChange={props.onChange}
+      isReadOnly={props.isReadOnly}
     />
   );
 }

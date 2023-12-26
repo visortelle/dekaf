@@ -1,6 +1,6 @@
 import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from "./user-managed-items";
-import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
-import { TopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
+import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../ConsumerSession/types";
+import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -163,7 +163,7 @@ export function consumerSessionPauseTriggerChainFromValOrRef(v: ManagedConsumerS
 
 export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfigValOrRef, currentTopicFqn: string | undefined): ConsumerSessionConfig {
   if (v.val === undefined) {
-    throw new Error('Consumer session config reference can\'t be converted to value');
+    throw new Error('Consumer session reference can\'t be converted to value');
   }
 
   const spec = v.val.spec;

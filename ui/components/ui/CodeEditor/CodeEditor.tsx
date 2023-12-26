@@ -19,6 +19,7 @@ export type AutoCompleteConfig = {
 }
 export type CodeEditorProps = EditorProps & {
   autoCompleteConfig?: AutoCompleteConfig,
+  isReadOnly?: boolean
 };
 
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
@@ -94,6 +95,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
           addAutoCompletion(monaco);
         }}
         options={{
+          readOnly: props.isReadOnly,
           minimap: { enabled: false },
           scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false, verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
           theme: 'vs',

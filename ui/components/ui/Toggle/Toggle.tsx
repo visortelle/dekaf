@@ -4,15 +4,22 @@ import { tooltipId } from "../Tooltip/Tooltip";
 import { renderToStaticMarkup } from "react-dom/server";
 
 export type ToggleProps = {
-  value: boolean;
-  onChange: (value: boolean) => void;
-  label?: string;
-  help?: React.ReactElement | string;
+  value: boolean,
+  onChange: (value: boolean) => void,
+  label?: string,
+  help?: React.ReactElement | string,
+  isReadOnly?: boolean
 };
 
 const Toggle: React.FC<ToggleProps> = (props) => {
   const bodyRef = React.useRef<HTMLDivElement>(null);
-  const toggle = () => props.onChange(!props.value);
+  const toggle = () => {
+    if (props.isReadOnly) {
+      return;
+    }
+
+    props.onChange(!props.value)
+  };
 
   return (
     <div

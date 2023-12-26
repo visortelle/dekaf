@@ -7,7 +7,7 @@ import s from "./ConfirmationDialog.module.css";
 import Checkbox from "../Checkbox/Checkbox";
 import Input from "../Input/Input";
 
-type Props = {
+export type ConfirmationDialogProps = {
   content: ReactNode;
   onConfirm: () => void;
   isConfirmDisabled?: boolean;
@@ -19,7 +19,7 @@ type Props = {
   type?: 'normal' | 'danger',
 }
 
-const ConfirmationDialog = (props: Props) => {
+const ConfirmationDialog = (props: ConfirmationDialogProps) => {
   const { switchForceDelete, forceDelete } = props;
 
   const [guard, setGuard] = useState("");
@@ -54,7 +54,7 @@ const ConfirmationDialog = (props: Props) => {
         <div className={s.ActionButtons}>
           <Button type="regular" text={`Cancel`} onClick={() => props.onCancel()} />
           <Button
-            type={props.type === 'danger' ? 'danger': 'primary'}
+            type={props.type === 'danger' ? 'danger' : 'primary'}
             text={`Confirm`}
             onClick={() => props.onConfirm()}
             disabled={(props.guard !== undefined && props.guard !== guard) || props.isConfirmDisabled}
