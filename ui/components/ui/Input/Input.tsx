@@ -28,14 +28,17 @@ export type InputProps = {
   placeholder?: string,
   testId?: string,
   appearance?: 'default' | 'no-borders',
-  addons?: InputAddon[]
+  addons?: InputAddon[],
+  isReadOnly?: boolean
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, clearable, onChange, focusOnMount, type, size, inputProps, testId, annotation, appearance, addons }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, clearable, onChange, focusOnMount, type, size, inputProps, testId, annotation, appearance, addons, isReadOnly }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (focusOnMount) {
-      inputRef?.current?.focus();
+    if (inputRef.current && focusOnMount) {
+      setTimeout(() => {
+        inputRef?.current?.focus();
+      });
     }
   }, [inputRef.current]);
 
@@ -52,13 +55,19 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
         ${size === 'small' ? s.SmallInput : ''}
         ${annotation ? s.InputAnnotation : ''}
         ${appearance === 'no-borders' ? s.NoBorders : ''}
+        ${isReadOnly ? s.ReadOnly : ''}
       `}
     >
       {annotation && <span className={s.Annotation}>{annotation}</span>}
       <input
         ref={inputRef}
         style={{ paddingRight: `${paddingRightRem}rem` }}
-        className={`${s.InputInput} ${isError ? s.InputInputWithError : ''} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
+        className={`
+          ${s.InputInput}
+          ${isError ? s.InputInputWithError : ''}
+          ${iconSvg ? s.InputInputWithIcon : ''}
+          ${clearable ? s.InputInputClearable : ''}
+        `}
         type={type || 'text'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -69,7 +78,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
             inputRef?.current?.blur();
           }
         }}
-        disabled={inputProps?.disabled}
+        disabled={inputProps?.disabled || isReadOnly}
         {...inputProps}
         data-testid={testId}
       />

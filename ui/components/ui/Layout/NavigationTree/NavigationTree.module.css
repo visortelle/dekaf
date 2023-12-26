@@ -45,6 +45,7 @@
   align-items: center;
   padding-right: 5ch;
 }
+
 .NodeLink:hover {
   opacity: 1;
 }
@@ -59,7 +60,8 @@
   text-overflow: ellipsis;
   padding-left: 0.6ch;
 
-  padding-bottom: 1px; /* Otherwise some letters like "g" aren't fully visible. */
+  padding-bottom: 1px;
+  /* Otherwise some letters like "g" aren't fully visible. */
   padding-top: 1px;
 }
 
@@ -95,7 +97,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.TreeControlButtons > * {
+.TreeControlButtons>* {
   margin-right: 8rem;
 }
 
@@ -109,9 +111,10 @@
 .TreeScrollParent {
   flex: 1;
   overflow: auto;
-  scrollbar-width: thin;
   padding-bottom: 24rem;
-  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
   overscroll-behavior-y: contain;
 }
 
@@ -129,11 +132,11 @@
   padding: 12rem;
 }
 
-.Loading > * {
+.Loading>* {
   margin-bottom: 12rem;
 }
 
-.Loading > *:last-child {
+.Loading>*:last-child {
   margin-bottom: 0;
 }
 
@@ -141,6 +144,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

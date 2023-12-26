@@ -278,6 +278,22 @@ message ManagedConsumerSessionConfigValOrRef {
   }
 }
 
+message ManagedMarkdownDocumentSpec {
+  string markdown = 1;
+}
+
+message ManagedMarkdownDocument {
+  ManagedItemMetadata metadata = 1;
+  ManagedMarkdownDocumentSpec spec = 2;
+}
+
+message ManagedMarkdownDocumentValOrRef {
+  oneof val_or_ref {
+    ManagedMarkdownDocument val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedItem {
   ManagedItemMetadata metadata = 1;
   ManagedItemType item_type = 2;
@@ -295,6 +311,7 @@ message ManagedItem {
     ManagedMessageId spec_message_id = 13;
     ManagedRelativeDateTime spec_relative_date_time = 14;
     ManagedTopicSelector spec_topic_selector = 15;
+    ManagedMarkdownDocument spec_markdown_document = 16;
   }
 }
 

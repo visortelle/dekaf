@@ -9,6 +9,10 @@ import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
 import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
 import { matchPath, useLocation } from 'react-router-dom';
+import ConsumerSession from '../ui/ConsumerSession/ConsumerSession';
+import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
+import { getDefaultManagedItem } from '../ui/LibraryBrowser/default-library-items';
+import { ManagedConsumerSessionConfig } from '../ui/LibraryBrowser/model/user-managed-items';
 
 export type InstancePageView =
   { type: 'overview' } |
@@ -17,7 +21,11 @@ export type InstancePageView =
   { type: 'create-tenant' } |
   { type: 'resource-groups' } |
   { type: 'create-resource-group' } |
-  { type: 'edit-resource-group', groupName: string };
+  { type: 'edit-resource-group', groupName: string } |
+  {
+    type: 'consumer-session',
+    managedConsumerSessionId: string | undefined
+  };
 
 export type InstancePageProps = {
   view: InstancePageView;
@@ -36,7 +44,11 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
     extraCrumbs = [{ type: 'link', id: 'create-tenant', value: 'Create Tenant' }]
   } else if (matchPath(routes.instance.resourceGroups._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'resource-groups', value: 'Resource Groups' }]
+  } else if (matchPath(routes.instance.consumerSession._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]
   }
+
+  const libraryContext: LibraryContext = { pulsarResource: { type: 'instance' } };
 
   return (
     <div className={s.Page}>
@@ -82,6 +94,22 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               active: Boolean(matchPath(routes.instance.resourceGroups._.path, pathname))
             },
             {
+              linkTo: '',
+              text: "Produce",
+              onClick: () => { },
+              type: "regular",
+              position: "right",
+              active: false
+            },
+            {
+              linkTo: '',
+              text: "Consume",
+              onClick: () => { },
+              type: "regular",
+              position: "right",
+              active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
+            },
+            {
               linkTo: routes.instance.createTenant._.get(),
               text: 'Create Tenant',
               onClick: () => { },
@@ -100,6 +128,19 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
       {props.view.type === 'resource-groups' && <ResourceGroups view={{ type: 'show-all-groups' }} />}
       {props.view.type === 'create-resource-group' && <ResourceGroups view={{ type: 'create' }} />}
       {props.view.type === 'edit-resource-group' && <ResourceGroups view={{ type: 'edit', groupName: props.view.groupName }} />}
+      {props.view.type === "consumer-session" && (
+        <ConsumerSession
+          key={props.view.managedConsumerSessionId}
+          libraryContext={libraryContext}
+          initialConfig={props.view.managedConsumerSessionId === undefined ? {
+            type: 'value',
+            val: getDefaultManagedItem("consumer-session-config", libraryContext) as ManagedConsumerSessionConfig
+          } : {
+            type: 'reference',
+            ref: props.view.managedConsumerSessionId
+          }}
+        />
+      )}
     </div>
   );
 }

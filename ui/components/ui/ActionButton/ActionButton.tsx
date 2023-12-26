@@ -26,7 +26,7 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
   let tooltipHtml: undefined | string | ReactElement;
   if (props.title === undefined) {
     tooltipHtml = undefined;
- } else if (typeof props.title === 'string') {
+  } else if (typeof props.title === 'string') {
     tooltipHtml = props.title;
   } else {
     tooltipHtml = renderToStaticMarkup(props.title);

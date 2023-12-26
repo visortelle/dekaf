@@ -15,8 +15,22 @@ import { matchPath, useLocation } from 'react-router-dom';
 
 import s from './NamespacePage.module.css'
 import Overview from './Overview/Overview';
+import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
+import ConsumerSession from '../ui/ConsumerSession/ConsumerSession';
+import { getDefaultManagedItem } from '../ui/LibraryBrowser/default-library-items';
+import { ManagedConsumerSessionConfig } from '../ui/LibraryBrowser/model/user-managed-items';
 
-export type NamespacePageView = 'overview' | 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic';
+export type NamespacePageView =
+  { type: 'overview' } |
+  { type: 'topics' } |
+  { type: 'policies' } |
+  { type: 'permissions' } |
+  { type: 'subscription-permissions' } |
+  { type: 'create-topic' } |
+  {
+    type: 'consumer-session',
+    managedConsumerSessionId: string | undefined
+  };
 export type NamespacePageProps = {
   view: NamespacePageView;
   tenant: string;
@@ -41,7 +55,19 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
     extraCrumbs = [{ type: 'link', id: 'subscription-permissions', value: 'Subscription Permissions' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'Create Topic' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.consumerSession._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]
   }
+
+  const libraryContext: LibraryContext = {
+    pulsarResource: {
+      type: 'namespace',
+      tenant: props.tenant,
+      namespace: props.namespace,
+    }
+  };
+
+  const key = `${props.tenant}-${props.namespace}`;
 
   return (
     <div className={s.Page}>
@@ -114,6 +140,22 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             testId: "namespace-page-delete-button"
           },
           {
+            linkTo: '',
+            text: "Produce",
+            onClick: () => { },
+            type: "regular",
+            position: "right",
+            active: false
+          },
+          {
+            linkTo: '',
+            text: "Consume",
+            onClick: () => { },
+            type: "regular",
+            position: "right",
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
+          },
+          {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Create Topic',
             onClick: () => { },
@@ -124,12 +166,25 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
+      {props.view.type === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === "consumer-session" && (
+        <ConsumerSession
+          key={key + props.view.managedConsumerSessionId}
+          libraryContext={libraryContext}
+          initialConfig={props.view.managedConsumerSessionId === undefined ? {
+            type: 'value',
+            val: getDefaultManagedItem("consumer-session-config", libraryContext) as ManagedConsumerSessionConfig
+          } : {
+            type: 'reference',
+            ref: props.view.managedConsumerSessionId
+          }}
+        />
+      )}
     </div>
   );
 }

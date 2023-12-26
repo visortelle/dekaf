@@ -11,9 +11,8 @@ type LibraryScanResultEntry = Either[Throwable, LibraryItem]
 type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
-    types: List[ManagedItemType],
-    tags: List[TagName],
-    contextFqns: List[String]
+    types: Vector[ManagedItemType],
+    contexts: List[ResourceMatcher]
 )
 
 case class LibraryDb(
@@ -37,19 +36,19 @@ class Library:
 
         if item.spec.metadata.name.isEmpty then throw new Exception(s"Library item $itemId should have a name.")
 
-        val fileName = s"$itemId.json"
+        val fileName = s"$itemId.binpb"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
-        val itemAsJson: String = LibraryItem.toJson(item)
+        val itemAsBinary = LibraryItem.toPb(item).toByteArray
 
         os.write.over(
             target = filePath,
-            data = itemAsJson
+            data = itemAsBinary
         )
 
         refreshDb()
 
     def deleteItem(itemId: LibraryItemId): Unit =
-        val fileName = s"$itemId.json"
+        val fileName = s"$itemId.binpb"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
 
         os.remove(filePath)
@@ -60,39 +59,40 @@ class Library:
         db.itemsById.get(itemId)
 
     def listItems(filter: ListItemsFilter): List[LibraryItem] =
-        def getItemsByTags(items: List[LibraryItem], tags: List[TagName]): List[LibraryItem] =
-            items.filter(item => item.metadata.tags.exists(tag => tags.contains(tag)))
-
-        def getItemsByContextFqns(items: List[LibraryItem], contextFqns: List[String]): List[LibraryItem] =
-            items.filter(item => item.metadata.availableForContexts.exists(resource => contextFqns.exists(fqn => ResourceMatcher.test(resource, fqn))))
-
-        val dbItems = db.itemsById.values.toList
-        val byTypes =
-            if filter.types.isEmpty
-            then dbItems
-            else
-                dbItems.filter(item =>
-                    val metadata = item.spec.metadata
-                    filter.types.contains(metadata.`type`)
+        def getItemsByContexts(items: List[LibraryItem], contexts: List[ResourceMatcher]): List[LibraryItem] =
+            items.filter(item =>
+                item.metadata.availableForContexts.exists(availableForContext =>
+                    contexts.exists(context => availableForContext.test(context))
                 )
-        val byContextFqns =
-            if filter.contextFqns.isEmpty
-            then byTypes
-            else getItemsByContextFqns(byTypes, filter.contextFqns)
-        val byTags =
-            if filter.tags.isEmpty
-            then byContextFqns
-            else getItemsByTags(byContextFqns, filter.tags)
+            )
 
-        byTags
+        filter.contexts match
+            case List() => List.empty
+            case _ =>
+                val dbItems = db.itemsById.values.toList
+                val byTypes =
+                    if filter.types.isEmpty
+                    then dbItems
+                    else
+                        dbItems.filter(item =>
+                            val metadata = item.spec.metadata
+                            filter.types.contains(metadata.`type`)
+                        )
+                val byContexts =
+                    if filter.contexts.isEmpty
+                    then byTypes
+                    else getItemsByContexts(byTypes, filter.contexts)
+
+                byContexts
 
     private def scan(): LibraryScanResults =
         os.list(os.Path(rootDir, os.pwd))
-            .filter(f => os.isFile(f) && f.ext == "json")
+            .filter(f => os.isFile(f) && f.ext == "binpb")
             .map { path =>
                 val fileName = path.last
-                val fileContent = os.read(path)
-                val scanResultEntry = Try(LibraryItem.fromJson(fileContent)).toEither
+                val fileContent = os.read.bytes(path)
+                val scanResultEntryA = Try(LibraryItem.fromPb(pb.LibraryItem.parseFrom(fileContent)))
+                val scanResultEntry = scanResultEntryA.toEither
 
                 val libraryItemIdFromFileName = fileName.split('.').head
                 scanResultEntry match

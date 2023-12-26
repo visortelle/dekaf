@@ -3,7 +3,28 @@
   position: relative;
 }
 
+.ItemNameAndDescription {
+  margin-top: 12rem;
+}
+
 .ItemName {}
+
+.ItemDescription {
+  position: relative;
+}
+
+.RemoveDescriptionButton {
+  position: absolute;
+  top: 0;
+  right: 8rem;
+
+  opacity: 0;
+}
+
+.ItemDescription:hover .RemoveDescriptionButton {
+  opacity: 1;
+  transition: var(--transition-short);
+}
 
 .ReferenceIcon {
   width: 16rem;

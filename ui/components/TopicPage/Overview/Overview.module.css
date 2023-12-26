@@ -1,18 +1,19 @@
 .Overview {
-  padding: 24rem 12rem 0 12rem;
   display: flex;
-  min-height: 100%;
-  flex-direction: column;
+  overflow: hidden;
 }
 
 .LeftPanel {
   flex: 1 0 50%;
+  padding: 24rem 12rem 0 12rem;
+  overflow: auto;
 }
 
 .RightPanel {
-  flex: 1 0 50%;
-  border-left: 1px solid var(--border-color);
   background-color: var(--surface-color);
+  flex: 1 0 50%;
+  overflow: hidden;
+  display: flex;
 }
 
 .Section {

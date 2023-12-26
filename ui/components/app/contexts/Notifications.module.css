@@ -25,7 +25,6 @@
   padding: 0 !important;
   margin: 0 !important;
   overflow: auto !important;
-  scrollbar-width: thin;
   max-height: 640rem !important;
 }
 

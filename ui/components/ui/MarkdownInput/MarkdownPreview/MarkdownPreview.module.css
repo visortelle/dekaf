@@ -1,0 +1,100 @@
+.MarkdownPreview {
+  max-width: 800rem;
+}
+
+.MarkdownPreview svg {
+  /* Fix whole document blinking after rendering Mermaid diagram. */
+  animation: fade-in 0.4s ease-in-out;
+}
+
+.MarkdownPreview img,
+.MarkdownPreview svg,
+.MarkdownPreview iframe {
+  max-width: 100%;
+  box-sizing: content-box;
+  background-color: #fff;
+}
+
+.MarkdownPreview p {
+  margin-top: 0;
+}
+
+.MarkdownPreview p:last-child {
+  margin-bottom: 0;
+}
+
+.MarkdownPreview h1 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 32rem;
+  margin-bottom: 12rem;
+}
+
+.MarkdownPreview h2 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 24rem;
+  margin-bottom: 12rem;
+}
+
+.MarkdownPreview h3 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 18rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview h4 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 16rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview h5 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 16rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview h6 {
+  margin-top: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 16rem;
+  margin-bottom: 8rem;
+}
+
+.MarkdownPreview table,
+.MarkdownPreview th,
+.MarkdownPreview td {
+  border: 1px solid var(--border-color);
+  border-collapse: collapse;
+}
+
+.MarkdownPreview table {
+  margin-bottom: 12rem;
+}
+
+.MarkdownPreview th,
+.MarkdownPreview td {
+  padding: 4rem 12rem;
+}
+
+.MarkdownPreview blockquote {
+  border-left: 4rem solid #aaa;
+  color: #777;
+  margin: 0;
+  margin-bottom: 12rem;
+  padding: 0 12rem;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

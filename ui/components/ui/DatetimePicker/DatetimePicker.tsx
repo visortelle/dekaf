@@ -13,11 +13,17 @@ export type DatetimePickerProps = {
   onChange: (v: Date | undefined) => void,
   disabled?: boolean,
   clearable?: boolean,
+  isReadOnly?: boolean
 };
 
 const DatetimePicker: React.FC<DatetimePickerProps> = (props) => {
   return (
-    <div className={s.DatetimePicker}>
+    <div
+      className={`
+        ${s.DatetimePicker}
+        ${props.isReadOnly ? s.ReadOnly : ''}
+      `}
+    >
       <Picker
         value={props.value}
         onChange={(v: Date | null) => props.onChange(v || undefined)}
@@ -29,7 +35,7 @@ const DatetimePicker: React.FC<DatetimePickerProps> = (props) => {
         use12Hours={false}
         showLeadingZeros={true}
         maxDetail="second"
-        disabled={props.disabled}
+        disabled={props.disabled || props.isReadOnly}
       />
     </div>
   );
