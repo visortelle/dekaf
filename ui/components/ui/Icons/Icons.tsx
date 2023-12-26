@@ -15,6 +15,7 @@ export type NodeIconsProps = {
   addon?: string;
   title?: string;
   svgIcon?: string;
+  size?: 'regular' | 'small'
 }
 export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
   const style = props.isGray ? {
@@ -28,7 +29,13 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
   return (
     <div
       style={{ ...style }}
-      className={`${s.NodeIcon} ${props.isExpanded ? s.NodeIconExpanded : ''} ${props.isExpandable ? s.NodeIconExpandable : ''} ${props.className || ''}`}
+      className={`
+        ${s.NodeIcon}
+        ${props.isExpanded ? s.NodeIconExpanded : ''}
+        ${props.isExpandable ? s.NodeIconExpandable : ''}
+        ${props.className || ''}
+        ${props.size === 'small' ? s.NodeIconSmall : ''}
+      `}
       onClick={props.onClick}
     >
       {props.title}
@@ -50,6 +57,7 @@ export type TopicIconProps = {
   isGray?: boolean;
   isPartitioned?: boolean;
   topicPersistency?: PulsarTopicPersistency;
+  size?: NodeIconsProps['size']
 }
 export const TopicIcon: React.FC<TopicIconProps> = (props) => {
   let backgroundColor = 'initial';
@@ -74,6 +82,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
       isGray={props.isGray}
       style={style}
       addon={props.isPartitioned ? 'P' : undefined}
+      size={props.size}
     />
   );
 }
@@ -84,6 +93,7 @@ export type NamespaceIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
+  size?: NodeIconsProps['size'];
 }
 export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
   return <NodeIcon
@@ -95,6 +105,7 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
     isExpandable={props.isExpandable}
     className={props.className}
     isGray={props.isGray}
+    size={props.size}
   />
 }
 
@@ -104,6 +115,7 @@ export type TenantIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
+  size?: NodeIconsProps['size'];
 }
 export const TenantIcon: React.FC<TenantIconProps> = (props) => {
   return <NodeIcon
@@ -115,6 +127,7 @@ export const TenantIcon: React.FC<TenantIconProps> = (props) => {
     isExpandable={props.isExpandable}
     className={props.className}
     isGray={props.isGray}
+    size={props.size}
   />
 }
 
@@ -124,6 +137,7 @@ export type InstanceIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
+  size?: NodeIconsProps['size'];
 }
 export const InstanceIcon: React.FC<InstanceIconProps> = (props) => {
   return <NodeIcon
@@ -135,6 +149,7 @@ export const InstanceIcon: React.FC<InstanceIconProps> = (props) => {
     isExpandable={props.isExpandable}
     className={props.className}
     isGray={props.isGray}
+    size={props.size}
   />
 }
 
@@ -144,6 +159,7 @@ export type SubscriptionIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
+  size?: NodeIconsProps['size'];
 }
 export const SubscriptionIcon: React.FC<SubscriptionIconProps> = (props) => {
   return <NodeIcon
@@ -155,6 +171,7 @@ export const SubscriptionIcon: React.FC<SubscriptionIconProps> = (props) => {
     isExpandable={props.isExpandable}
     className={props.className}
     isGray={props.isGray}
+    size={props.size}
   />
 }
 

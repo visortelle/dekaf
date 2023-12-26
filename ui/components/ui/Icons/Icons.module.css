@@ -15,6 +15,13 @@
   cursor: initial;
 }
 
+.NodeIconSmall {
+  width: 22rem;
+  height: 22rem;
+  font-size: 12rem;
+  padding: 0;
+}
+
 .NodeIconExpandable:hover {
   opacity: 0.5;
   transition: var(--transition-short);

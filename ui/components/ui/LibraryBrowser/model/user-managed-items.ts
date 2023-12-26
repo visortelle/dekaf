@@ -1,5 +1,5 @@
-import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
-import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
+import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../ConsumerSession/types";
+import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -17,6 +17,7 @@ export type ValOrRef<ValueT> = {
 
 export type ManagedItemType =
   "consumer-session-config" |
+  "consumer-session-target" |
   "producer-session-config" |
   "markdown-document" |
   "message-filter-chain" |
@@ -29,7 +30,6 @@ export type ManagedItemType =
   "consumer-session-start-from" |
   "consumer-session-event" |
   "consumer-session-pause-trigger-chain" |
-  "consumer-session-topic" |
   "topic-selector";
 
 export type ManagedItemMetadata = {
@@ -213,6 +213,17 @@ export type ManagedConsumerSessionConfig = {
 
 export type ManagedConsumerSessionConfigValOrRef = ValOrRef<ManagedConsumerSessionConfig>;
 
+export type ManagedMarkdownDocumentSpec = {
+  markdown: string,
+};
+
+export type ManagedMarkdownDocument = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMarkdownDocumentSpec,
+};
+
+export type ManagedMarkdownDocumentValOrRef = ValOrRef<ManagedMarkdownDocument>;
+
 export type ManagedItem = ManagedMessageFilter |
   ManagedMessageFilterChain |
   ManagedConsumerSessionStartFrom |
@@ -227,4 +238,5 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedColoringRule |
   ManagedColoringRuleChain |
   ManagedConsumerSessionTarget |
-  ManagedMessageId;
+  ManagedMessageId |
+  ManagedMarkdownDocument;

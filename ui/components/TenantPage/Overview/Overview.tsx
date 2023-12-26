@@ -18,13 +18,15 @@ import {
   TenantInfo,
   UpdateTenantRequest,
 } from "../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb";
-import { H1, H2 } from "../../ui/H/H";
 import A from "../../ui/A/A";
 import TooltipElement from "../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../ui/help";
+import { help } from "../../ui/help";
+import LibrarySidebar from "../../ui/LibrarySidebar/LibrarySidebar";
+import { LibraryContext } from "../../ui/LibraryBrowser/model/library-context";
 
 export type ConfigurationProps = {
   tenant: string;
+  libraryContext: LibraryContext;
 };
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
@@ -258,39 +260,46 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-      <ConfigurationTable
-        fields={[
-          {
-            id: "allowedClusters",
-            title: "Allowed clusters",
-            description: (
-              <span>List of clusters to which the configuration of this <TooltipElement tooltipHelp={help["tenant"]} link="https://pulsar.apache.org/docs/3.1.x/concepts-multi-tenancy/">tenant</TooltipElement> applies.</span>
-            ),
-            input: allowedClustersInput,
-            isRequired: true,
-          },
-          {
-            id: "adminRoles",
-            title: "Admin roles",
-            description: (
-              <span>
-                Here you could manage authenticated admin roles (or "principal") that allowed to manage this tenant.
-                <br/>
-                A client with the admin role (or "principal") token can then create, modify and destroy namespaces, and grant and revoke permissions to other role tokens on those namespaces.
-                <ul>
-                  <li>
-                    <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-overview/">More about Pulsar security</A>
-                  </li>
-                  <li>
-                    <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-authorization/">More about authorization in Pulsar</A>
-                  </li>
-                </ul>
-              </span>
-            ),
-            input: adminRolesInput,
-          },
-        ]}
-      />
+      <div className={s.LeftPanel}>
+        <ConfigurationTable
+          fields={[
+            {
+              id: "allowedClusters",
+              title: "Allowed clusters",
+              description: (
+                <span>List of clusters to which the configuration of this <TooltipElement tooltipHelp={help["tenant"]} link="https://pulsar.apache.org/docs/3.1.x/concepts-multi-tenancy/">tenant</TooltipElement> applies.</span>
+              ),
+              input: allowedClustersInput,
+              isRequired: true,
+            },
+            {
+              id: "adminRoles",
+              title: "Admin roles",
+              description: (
+                <span>
+                  Here you could manage authenticated admin roles (or "principal") that allowed to manage this tenant.
+                  <br />
+                  A client with the admin role (or "principal") token can then create, modify and destroy namespaces, and grant and revoke permissions to other role tokens on those namespaces.
+                  <ul>
+                    <li>
+                      <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-overview/">More about Pulsar security</A>
+                    </li>
+                    <li>
+                      <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-authorization/">More about authorization in Pulsar</A>
+                    </li>
+                  </ul>
+                </span>
+              ),
+              input: adminRolesInput,
+            },
+          ]}
+        />
+      </div>
+      <div className={s.RightPanel}>
+        <LibrarySidebar
+          libraryContext={props.libraryContext}
+        />
+      </div>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import com.tools.teal.pulsar.ui.library.v1.managed_items.ManagedItemType
 enum ManagedItemType:
     case ConsumerSessionConfig,
+    ConsumerSessionTarget,
     ConsumerSessionStartFrom,
     ConsumerSessionPauseTriggerChain,
     ProducerSessionConfig,
@@ -21,6 +22,7 @@ object ManagedItemType:
     def fromPb(v: pb.ManagedItemType): ManagedItemType =
         v match
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG => ManagedItemType.ConsumerSessionConfig
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET => ManagedItemType.ConsumerSessionTarget
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM => ManagedItemType.ConsumerSessionStartFrom
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN => ManagedItemType.ConsumerSessionPauseTriggerChain
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG => ManagedItemType.ProducerSessionConfig
@@ -35,6 +37,7 @@ object ManagedItemType:
     def toPb(v: ManagedItemType): pb.ManagedItemType =
         v match
             case ManagedItemType.ConsumerSessionConfig => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
+            case ManagedItemType.ConsumerSessionTarget => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET
             case ManagedItemType.ConsumerSessionStartFrom => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM
             case ManagedItemType.ConsumerSessionPauseTriggerChain => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN
             case ManagedItemType.ProducerSessionConfig => pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG

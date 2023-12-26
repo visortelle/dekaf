@@ -23,6 +23,7 @@ require("esbuild")
     bundle: true,
     loader: {
       ".svg": "text",
+      ".md": "text",
       ".png": "base64",
     },
     minify: !isDevelopment,

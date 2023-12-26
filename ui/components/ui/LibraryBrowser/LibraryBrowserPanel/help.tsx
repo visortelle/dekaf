@@ -1,58 +1,40 @@
-export const help = {
-  consumerSessionConfig: (
+import { ReactElement } from "react";
+import { ManagedItemType } from "../model/user-managed-items";
+import { getReadableItemType } from "../get-readable-item-type";
+
+export const help: Partial<Record<ManagedItemType, ReactElement>> = {
+  "consumer-session-config": (
     <div>
       <p>
-        <strong>Consumer Session Config</strong> is a set of configuration parameters like:
+        <strong>{getReadableItemType("consumer-session-config")}</strong> allows to define one or multiple targets to consume.
       </p>
-
-      <ul>
-        <li>Start From</li>
-        <li>Message Filter Chain</li>
-        <li>etc...</li>
-      </ul>
-
       <p>
-        You can save it to <strong>Library</strong> and reuse later.
+        Each target is a set of one or multiple topics, plus related objects like message filters and coloring rules.
       </p>
     </div>
   ),
-  messageFilter: (
+  "message-filter": (
     <div>
       <p>
-        <strong>Message Filter</strong> allows you to find messages in a topic.
+        <strong>{getReadableItemType("message-filter")}</strong> allows you to find messages in a topic.
 
         <ul>
           <li>
-            Use <strong>Basic Filter</strong> if you aren't familiar with writing code, or just want to filter messages by a simple condition.
+            Use <strong>basic</strong> filter if you aren't familiar with writing code, or just want to filter messages by a simple condition.
           </li>
           <li>
-            Use <strong>JavaScript Filter</strong> for complex filtering.
+            Use <strong>JavaScript</strong> filter for complex filtering.
             <br /><br />
-            Additionally, JavaScript filters support the <strong>Consumer Session State</strong> feature. It allows you to accumulate data from messages and make simple calculations. For example, you may want to calculate the median value of all new orders over last week; or count failure events grouped by it's reason.
+            Additionally, by JavaScript filters, you can modify {getReadableItemType("consumer-session-config")} state. It allows you to accumulate data from messages and make simple calculations. For example, you may want to calculate the median value of all new orders over last week, or count failed events.
           </li>
         </ul>
       </p>
-
-      <p>
-        You can save it to <strong>Library</strong> and reuse later.
-      </p>
     </div>
   ),
-  consumerSessionStartFrom: (
+  "consumer-session-start-from": (
     <div>
       <p>
-        <strong>Start From</strong> allows you to specify the starting point for a consumer session.
-      </p>
-
-      <p>
-        You can save it to <strong>Library</strong> and reuse later.
-      </p>
-    </div>
-  ),
-  messageFilterChain: (
-    <div>
-      <p>
-        <strong>Message Filter Chain</strong> is a list of filters that are sequentially applied to each message.
+        <strong>{getReadableItemType("consumer-session-start-from")}</strong> allows you to specify the starting point for a consumer session.
       </p>
 
       <p>
@@ -60,47 +42,60 @@ export const help = {
       </p>
     </div>
   ),
-  topicSelector: (
+  "message-filter-chain": (
     <div>
       <p>
-        <strong>Topic Selector</strong> allows to select one or more topics.
+        <strong>{getReadableItemType("message-filter-chain")}</strong> is a list of filters that are sequentially applied to each message.
+      </p>
+    </div>
+  ),
+  "topic-selector": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("topic-selector")}</strong> allows to select one or more topics.
       </p>
       <p>
         Analyzing multiple topics simultaneously can be valuable to identify message patterns that may be difficult to notice by inspecting each topic in isolation.
       </p>
+    </div>
+  ),
+  "consumer-session-target": (
+    <div>
       <p>
-        You can save it to <strong>Library</strong> and reuse later.
+        <strong>{getReadableItemType("consumer-session-target")}</strong> allows to group topic(s) and related objects like message filter chain and coloring rule chain.
+      </p>
+      <p>
+        Each <strong>{getReadableItemType("consumer-session-config")}</strong> can have one or more targets.
       </p>
     </div>
   ),
-  consumerSessionTarget: (
+  "coloring-rule": (
     <div>
       <p>
-        Consumer Session Topic(s)
+        <strong>{getReadableItemType("coloring-rule")}</strong> allows you to highlight messages that match a certain condition.
       </p>
     </div>
   ),
-  coloringRule: (
+  "coloring-rule-chain": (
     <div>
       <p>
-        <strong>Coloring Rule</strong> allows you to highlight messages that match a certain condition.
-      </p>
-      <p>
-        You can save it to <strong>Library</strong> and reuse later.
-      </p>
-    </div>
-  ),
-  coloringRuleChain: (
-    <div>
-      <p>
-        <strong>Coloring Rule Chain</strong> is a list of coloring rules that are sequentially applied to each message.
+        <strong>{getReadableItemType("coloring-rule-chain")}</strong> is a list of coloring rules that are sequentially applied to each message.
       </p>
       <p>
         First rule that matches the message will be applied.
       </p>
-
+    </div>
+  ),
+  "markdown-document": (
+    <div>
       <p>
-        You can save it to <strong>Library</strong> and reuse later.
+        <strong>{getReadableItemType("markdown-document")}</strong> allows to attach any useful information in markdown format to Pulsar resources like tenant, namespace, or topic.
+      </p>
+      <p>
+        It may be a resource description, documentation, responsible person contact info, etc.
+      </p>
+      <p>
+        <a target="_blank" href="https://github.github.com/gfm/">Markdown reference</a>
       </p>
     </div>
   )

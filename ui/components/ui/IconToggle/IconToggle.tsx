@@ -27,7 +27,8 @@ function getNextValue<T>(currentValue: T, items: IconToggleItem<T>[]): T {
 export type IconToggleProps<T> = {
   value: T,
   onChange: (v: T) => void,
-  items: IconToggleItem<T>[]
+  items: IconToggleItem<T>[],
+  isReadOnly?: boolean
 };
 
 function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
@@ -35,8 +36,16 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
 
   return (
     <div
-      className={`${s.IconToggle} ${currentItem?.label ? s.IconToggleWithLabel : ''}`}
+      className={`
+        ${s.IconToggle}
+        ${currentItem?.label ? s.IconToggleWithLabel : ''}
+        ${props.isReadOnly ? s.ReadOnly : ''}
+      `}
       onClick={() => {
+        if (props.isReadOnly) {
+          return;
+        }
+
         const nextValue = getNextValue<T>(props.value, props.items);
         props.onChange(nextValue);
       }}
