@@ -13,8 +13,18 @@ import { matchPath, useLocation } from 'react-router-dom';
 
 import s from './TenantPage.module.css'
 import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
+import ConsumerSession from '../ui/ConsumerSession/ConsumerSession';
+import { getDefaultManagedItem } from '../ui/LibraryBrowser/default-library-items';
+import { ManagedConsumerSessionConfig } from '../ui/LibraryBrowser/model/user-managed-items';
 
-export type TenantPageView = 'overview' | 'namespaces' | 'create-namespace';
+export type TenantPageView =
+  { type: 'overview' } |
+  { type: 'namespaces' } |
+  { type: 'create-namespace' } |
+  {
+    type: 'consumer-session',
+    managedConsumerSessionId: string | undefined
+  };
 export type TenantPageProps = {
   view: TenantPageView;
   tenant: string;
@@ -32,6 +42,8 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
     extraCrumbs = [{ type: 'link', id: 'namespaces', value: 'Namespaces' }]
   } else if (matchPath(routes.tenants.tenant.createNamespace._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-namespace', value: 'New Namespace' }]
+  } else if (matchPath(routes.tenants.tenant.consumerSession._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]
   }
 
   const libraryContext: LibraryContext = {
@@ -40,6 +52,8 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
       tenant: props.tenant,
     }
   };
+
+  const key = `${props.tenant}`;
 
   return (
     <div className={s.Page}>
@@ -115,9 +129,22 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         />
       </div>
 
-      {props.view === 'namespaces' && <Namespaces tenant={props.tenant} />}
-      {props.view === 'overview' && <Overview tenant={props.tenant} libraryContext={libraryContext} />}
-      {props.view === 'create-namespace' && <CreateNamespace tenant={props.tenant} />}
+      {props.view.type === 'namespaces' && <Namespaces tenant={props.tenant} />}
+      {props.view.type === 'overview' && <Overview tenant={props.tenant} libraryContext={libraryContext} />}
+      {props.view.type === 'create-namespace' && <CreateNamespace tenant={props.tenant} />}
+      {props.view.type === "consumer-session" && (
+        <ConsumerSession
+          key={key + props.view.managedConsumerSessionId}
+          libraryContext={libraryContext}
+          initialConfig={props.view.managedConsumerSessionId === undefined ? {
+            type: 'value',
+            val: getDefaultManagedItem("consumer-session-config", libraryContext) as ManagedConsumerSessionConfig
+          } : {
+            type: 'reference',
+            ref: props.view.managedConsumerSessionId
+          }}
+        />
+      )}
     </div>
   );
 }

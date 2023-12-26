@@ -63,6 +63,7 @@ const prepareRoutes = (): {
     withLayoutProps: WithLayoutProps;
   }) => RouteObject[];
 } => {
+  const [searchParams] = useSearchParams();
   const getRoutes = ({
     withLayout,
     withLayoutProps,
@@ -136,6 +137,13 @@ const prepareRoutes = (): {
             )}
           </WithParams>,
           withLayoutProps
+        ),
+      },
+      {
+        path: routes.instance.consumerSession._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "consumer-session", managedConsumerSessionId: searchParams.get('id') || undefined }} />,
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
 
@@ -246,6 +254,13 @@ const prepareRoutes = (): {
           withLayoutProps
         ),
       },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.consumerSession._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="consumer-session" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
       /* Subscriptions */
       {
@@ -278,6 +293,15 @@ const prepareRoutes = (): {
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
+      {
+        path: routes.tenants.tenant.consumerSession._.path,
+        element: withLayout(
+          <RoutedTenantPage view="consumer-session" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+
+      /* Misc */
       {
         path: "*",
         element: withLayout(
@@ -367,9 +391,21 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 };
 
-const RoutedTenantPage = (props: { view: TenantPageView }) => {
+const RoutedTenantPage = (props: { view: TenantPageView['type'] }) => {
   const { tenant } = useParams();
-  return <TenantPage tenant={tenant!} view={props.view} />;
+  const [searchParams] = useSearchParams();
+
+  let view: TenantPageView;
+  switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
+    default: view = { type: props.view };
+  }
+
+  return <TenantPage tenant={tenant!} view={view} />;
 };
 
 const RoutedNamespacePage = (props: { view: NamespacePageView['type'] }) => {

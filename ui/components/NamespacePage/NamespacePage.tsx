@@ -7,7 +7,6 @@ import CreateTopic from './CreateTopic/CreateTopic';
 import Permissions from './Permissions/Permissions';
 import DeleteDialog from './DeleteDialog/DeleteDialog'
 import SubscriptionPermissions from './SubscriptionPermissions/SubscriptionPermissions';
-// import Session from "../";
 import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import * as Modals from '../app/contexts/Modals/Modals';
@@ -17,6 +16,9 @@ import { matchPath, useLocation } from 'react-router-dom';
 import s from './NamespacePage.module.css'
 import Overview from './Overview/Overview';
 import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
+import ConsumerSession from '../ui/ConsumerSession/ConsumerSession';
+import { getDefaultManagedItem } from '../ui/LibraryBrowser/default-library-items';
+import { ManagedConsumerSessionConfig } from '../ui/LibraryBrowser/model/user-managed-items';
 
 export type NamespacePageView =
   { type: 'overview' } |
@@ -53,6 +55,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
     extraCrumbs = [{ type: 'link', id: 'subscription-permissions', value: 'Subscription Permissions' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'Create Topic' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.consumerSession._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]
   }
 
   const libraryContext: LibraryContext = {
@@ -62,6 +66,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       namespace: props.namespace,
     }
   };
+
+  const key = `${props.tenant}-${props.namespace}`;
 
   return (
     <div className={s.Page}>
@@ -167,8 +173,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       {props.view.type === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === "consumer-session" && (
-        <Session
-          key={key}
+        <ConsumerSession
+          key={key + props.view.managedConsumerSessionId}
           libraryContext={libraryContext}
           initialConfig={props.view.managedConsumerSessionId === undefined ? {
             type: 'value',
@@ -179,8 +185,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           }}
         />
       )}
-
-
     </div>
   );
 }

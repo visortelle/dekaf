@@ -4,7 +4,7 @@ import * as Modals from "../app/contexts/Modals/Modals";
 import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
-import ConsumerSession from "./ConsumerSession/ConsumerSession";
+import ConsumerSession from "../ui/ConsumerSession/ConsumerSession";
 import Schema from "./Schema/Schema";
 import Policies from "./Policies/Policies";
 import Subscriptions from './Subscriptions/Subscriptions';
@@ -81,7 +81,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     [];
 
   if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname)) {
-    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'consumer-session', value: 'Messages' }]);
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'consumer-session', value: 'Consumer Session' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'overview', value: 'Overview' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname)) {
@@ -257,7 +257,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
       {props.view.type === "consumer-session" && (
         <ConsumerSession
-          key={key}
+          key={key + props.view.managedConsumerSessionId}
           libraryContext={libraryContext}
           initialConfig={props.view.managedConsumerSessionId === undefined ? {
             type: 'value',

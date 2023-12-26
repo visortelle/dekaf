@@ -1,5 +1,5 @@
-import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/ConsumerSession/types";
-import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../../TopicPage/ConsumerSession/topic-selector/topic-selector";
+import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../ConsumerSession/types";
+import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 
 export type ValOrRef<ValueT> = {
   type: 'value',

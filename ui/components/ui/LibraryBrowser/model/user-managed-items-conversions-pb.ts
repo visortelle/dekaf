@@ -30,7 +30,7 @@ import {
   consumerSessionEventUnexpectedErrorOccurredToPb,
   consumerSessionPauseTriggerChainModeFromPb,
   consumerSessionPauseTriggerChainModeToPb,
-} from "../../../TopicPage/ConsumerSession/conversions/conversions";
+} from "../../ConsumerSession/conversions/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
 

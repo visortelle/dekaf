@@ -1,5 +1,5 @@
 import * as t from "./user-managed-items";
-import { MessageFilter, MessageFilterChain } from "../../../TopicPage/ConsumerSession/types";
+import { MessageFilter, MessageFilterChain } from "../../ConsumerSession/types";
 
 export function managedMessageFilterSpecToMessageFilter(v: t.ManagedMessageFilterSpec): MessageFilter {
   return v;

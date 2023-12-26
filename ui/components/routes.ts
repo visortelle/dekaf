@@ -48,7 +48,8 @@ export const routes = {
     consumerSession: {
       _: {
         path: "/consumer-session",
-        get: () => `/consumer-session`,
+        get: (props: { managedConsumerSessionId: string | undefined }) =>
+          `/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
       },
     },
   },
@@ -72,9 +73,10 @@ export const routes = {
         _: {
           path: "tenants/:tenant/consumer-session",
           get: (props: {
-            tenant: string;
+            tenant: string,
+            managedConsumerSessionId: string | undefined
           }) =>
-            `/tenants/${props.tenant}/consumer-session`,
+            `/tenants/${props.tenant}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
         },
       },
       namespaces: {
@@ -125,8 +127,9 @@ export const routes = {
               get: (props: {
                 tenant: string;
                 namespace: string;
+                managedConsumerSessionId?: string
               }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/consumer-session`,
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
             },
           },
           topics: {
@@ -145,8 +148,9 @@ export const routes = {
                       namespace: string;
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
+                      managedConsumerSessionId?: string
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/consumer-session`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
                   },
                 },
                 producers: {

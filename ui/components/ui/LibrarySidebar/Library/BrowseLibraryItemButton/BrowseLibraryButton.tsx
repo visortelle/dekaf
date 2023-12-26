@@ -8,6 +8,8 @@ import SmallButton from '../../../SmallButton/SmallButton';
 import { v4 as uuid } from 'uuid';
 import LibraryBrowser, { LibraryBrowserProps } from '../../../LibraryBrowser/LibraryBrowser';
 import browseIcon from './browse.svg';
+import { useNavigate } from 'react-router';
+import { routes } from '../../../../routes';
 
 export type BrowseLibraryButtonProps = {
   itemType: ManagedItemType,
@@ -41,6 +43,7 @@ const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
 export const BrowseLibraryButtonModal: React.FC<BrowseLibraryButtonProps> = (props) => {
   const modals = Modals.useContext();
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
+  const navigate = useNavigate();
 
   let extraButtons: LibraryBrowserProps['extraButtons'] = [{
     id: 'edit',
@@ -80,7 +83,38 @@ export const BrowseLibraryButtonModal: React.FC<BrowseLibraryButtonProps> = (pro
           disabled: selectedItemId === undefined
         },
         onClick: (v) => {
+          if (props.libraryContext.pulsarResource.type === 'instance') {
+            navigate(routes.instance.consumerSession._.get({
+              managedConsumerSessionId: v.spec.metadata.id
+            }));
+          }
 
+          if (props.libraryContext.pulsarResource.type === 'tenant') {
+            navigate(routes.tenants.tenant.consumerSession._.get({
+              tenant: props.libraryContext.pulsarResource.tenant,
+              managedConsumerSessionId: v.spec.metadata.id
+            }));
+          }
+
+          if (props.libraryContext.pulsarResource.type === 'namespace') {
+            navigate(routes.tenants.tenant.namespaces.namespace.consumerSession._.get({
+              tenant: props.libraryContext.pulsarResource.tenant,
+              namespace: props.libraryContext.pulsarResource.namespace,
+              managedConsumerSessionId: v.spec.metadata.id
+            }));
+          }
+
+          if (props.libraryContext.pulsarResource.type === 'topic') {
+            navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
+              tenant: props.libraryContext.pulsarResource.tenant,
+              namespace: props.libraryContext.pulsarResource.namespace,
+              topic: props.libraryContext.pulsarResource.topic,
+              topicPersistency: props.libraryContext.pulsarResource.topicPersistency,
+              managedConsumerSessionId: v.spec.metadata.id
+            }));
+          }
+
+          modals.pop();
         }
       }
     ]);
