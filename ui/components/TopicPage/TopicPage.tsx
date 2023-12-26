@@ -4,7 +4,7 @@ import * as Modals from "../app/contexts/Modals/Modals";
 import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
-import Session from "./Messages/Messages";
+import ConsumerSession from "./ConsumerSession/ConsumerSession";
 import Schema from "./Schema/Schema";
 import Policies from "./Policies/Policies";
 import Subscriptions from './Subscriptions/Subscriptions';
@@ -256,7 +256,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       <Toolbar buttons={buttons} />
 
       {props.view.type === "consumer-session" && (
-        <Session
+        <ConsumerSession
           key={key}
           libraryContext={libraryContext}
           initialConfig={props.view.managedConsumerSessionId === undefined ? {

@@ -7,6 +7,7 @@ import CreateTopic from './CreateTopic/CreateTopic';
 import Permissions from './Permissions/Permissions';
 import DeleteDialog from './DeleteDialog/DeleteDialog'
 import SubscriptionPermissions from './SubscriptionPermissions/SubscriptionPermissions';
+// import Session from "../";
 import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import * as Modals from '../app/contexts/Modals/Modals';
@@ -17,7 +18,17 @@ import s from './NamespacePage.module.css'
 import Overview from './Overview/Overview';
 import { LibraryContext } from '../ui/LibraryBrowser/model/library-context';
 
-export type NamespacePageView = 'overview' | 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic';
+export type NamespacePageView =
+  { type: 'overview' } |
+  { type: 'topics' } |
+  { type: 'policies' } |
+  { type: 'permissions' } |
+  { type: 'subscription-permissions' } |
+  { type: 'create-topic' } |
+  {
+    type: 'consumer-session',
+    managedConsumerSessionId: string | undefined
+  };
 export type NamespacePageProps = {
   view: NamespacePageView;
   tenant: string;
@@ -149,12 +160,27 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
-      {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
+      {props.view.type === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === "consumer-session" && (
+        <Session
+          key={key}
+          libraryContext={libraryContext}
+          initialConfig={props.view.managedConsumerSessionId === undefined ? {
+            type: 'value',
+            val: getDefaultManagedItem("consumer-session-config", libraryContext) as ManagedConsumerSessionConfig
+          } : {
+            type: 'reference',
+            ref: props.view.managedConsumerSessionId
+          }}
+        />
+      )}
+
+
     </div>
   );
 }

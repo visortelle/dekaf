@@ -3,7 +3,7 @@ import s from './Chart.module.css'
 import _BarChart from './charts/BarChart/BarChart';
 import { MessageDescriptor, SessionState } from '../../../types';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
-import MessageDetails from '../../../../Messages/Message/MessageDetails/MessageDetails';
+import MessageDetails from '../../../Message/MessageDetails/MessageDetails';
 
 export type ChartProps = {
   type: 'bar',

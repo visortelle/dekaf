@@ -372,10 +372,22 @@ const RoutedTenantPage = (props: { view: TenantPageView }) => {
   return <TenantPage tenant={tenant!} view={props.view} />;
 };
 
-const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
+const RoutedNamespacePage = (props: { view: NamespacePageView['type'] }) => {
   const { tenant, namespace } = useParams();
+  const [searchParams] = useSearchParams();
+
+  let view: NamespacePageView;
+  switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
+    default: view = { type: props.view };
+  }
+
   return (
-    <NamespacePage tenant={tenant!} namespace={namespace!} view={props.view} />
+    <NamespacePage tenant={tenant!} namespace={namespace!} view={view} />
   );
 };
 

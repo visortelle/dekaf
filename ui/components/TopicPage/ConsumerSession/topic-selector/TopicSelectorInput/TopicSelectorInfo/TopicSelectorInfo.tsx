@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import s from './TopicSelectorInfo.module.css'
 import { TopicSelector } from '../../topic-selector';
-import * as GrpcClient from '../.../../../../../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../.../../../../../../app/contexts/Notifications';
+import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../../../app/contexts/Notifications';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { useDebounce } from 'use-debounce';
 import { topicSelectorToPb } from '../../../conversions/conversions';

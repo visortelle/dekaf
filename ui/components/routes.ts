@@ -45,6 +45,12 @@ export const routes = {
         get: () => `/instance/create-tenant`,
       },
     },
+    consumerSession: {
+      _: {
+        path: "/consumer-session",
+        get: () => `/consumer-session`,
+      },
+    },
   },
   tenants: {
     tenant: {
@@ -60,6 +66,15 @@ export const routes = {
           path: "tenants/:tenant/overview",
           get: (props: { tenant: string }) =>
             `/tenants/${props.tenant}/overview`,
+        },
+      },
+      consumerSession: {
+        _: {
+          path: "tenants/:tenant/consumer-session",
+          get: (props: {
+            tenant: string;
+          }) =>
+            `/tenants/${props.tenant}/consumer-session`,
         },
       },
       namespaces: {
@@ -102,6 +117,16 @@ export const routes = {
               path: "/tenants/:tenant/namespaces/:namespace/subscription-permissions",
               get: (props: { tenant: string; namespace: string }) =>
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/subscription-permissions`,
+            },
+          },
+          consumerSession: {
+            _: {
+              path: "tenants/:tenant/namespaces/:namespace/consumer-session",
+              get: (props: {
+                tenant: string;
+                namespace: string;
+              }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/consumer-session`,
             },
           },
           topics: {

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import s from './Messages.module.css'
+import s from './ConsumerSession.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import {
@@ -16,7 +16,6 @@ import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
-import * as I18n from '../../app/contexts/I18n/I18n';
 import { ItemContent, TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../proto-utils/proto-utils';
@@ -38,7 +37,6 @@ import { ManagedConsumerSessionConfigValOrRef } from '../../ui/LibraryBrowser/mo
 import { consumerSessionConfigFromValOrRef } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 import { getColoring } from './coloring';
-import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -453,11 +451,11 @@ const Session: React.FC<SessionProps> = (props) => {
   );
 }
 
-type SessionControllerProps = {
+type ConsumerSessionProps = {
   initialConfig: ManagedConsumerSessionConfigValOrRef;
   libraryContext: LibraryContext;
 };
-const SessionController: React.FC<SessionControllerProps> = (props) => {
+const ConsumerSession: React.FC<ConsumerSessionProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<ManagedConsumerSessionConfigValOrRef>(props.initialConfig);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
@@ -477,4 +475,4 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
   );
 }
 
-export default SessionController;
+export default ConsumerSession;

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import s from './RelativeDateTimePicker.module.css'
-import { DateTimeUnit, RelativeDateTime } from '../../TopicPage/Messages/types';
+import { DateTimeUnit, RelativeDateTime } from '../../TopicPage/ConsumerSession/types';
 import Select from '../Select/Select';
 import Checkbox from '../Checkbox/Checkbox';
 import Input from '../Input/Input';
