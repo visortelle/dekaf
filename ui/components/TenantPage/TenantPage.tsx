@@ -89,19 +89,19 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
             },
             {
               linkTo: '',
-              text: "Consume",
-              onClick: () => { },
-              type: "regular",
-              position: "right",
-              active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
-            },
-            {
-              linkTo: '',
               text: "Produce",
               onClick: () => { },
               type: "regular",
               position: "right",
               active: false
+            },
+            {
+              linkTo: '',
+              text: "Consume",
+              onClick: () => { },
+              type: "regular",
+              position: "right",
+              active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),

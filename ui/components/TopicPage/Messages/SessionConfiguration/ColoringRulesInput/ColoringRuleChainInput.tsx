@@ -104,7 +104,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         onAdd={(v, { addUncollapsedItem }) => {
           const newRule: ManagedColoringRuleValOrRef = {
             type: 'value',
-            val: getDefaultManagedItem("coloring-rule") as ManagedColoringRule
+            val: getDefaultManagedItem("coloring-rule", props.libraryContext) as ManagedColoringRule
           };
           const newRules = itemSpec.coloringRules.concat([newRule]);
           onSpecChange({ ...itemSpec, coloringRules: newRules });

@@ -124,19 +124,19 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           },
           {
             linkTo: '',
-            text: "Consume",
-            onClick: () => { },
-            type: "regular",
-            position: "right",
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
-          },
-          {
-            linkTo: '',
             text: "Produce",
             onClick: () => { },
             type: "regular",
             position: "right",
             active: false
+          },
+          {
+            linkTo: '',
+            text: "Consume",
+            onClick: () => { },
+            type: "regular",
+            position: "right",
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),

@@ -4,7 +4,7 @@ import { LibraryItem, LibraryItemMetadata } from './model/library';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
-import Button from '../Button/Button';
+import Button, { ButtonProps } from '../Button/Button';
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -27,14 +27,16 @@ export type LibraryBrowserMode = {
 } | {
   type: 'pick';
   itemType: ManagedItemType;
-  onPick: (item: ManagedItem) => void;
+  onPick?: (item: ManagedItem) => void;
 };
 
 export type LibraryBrowserProps = {
   mode: LibraryBrowserMode;
   onCancel: () => void;
   libraryContext: LibraryContext;
+  extraButtons?: { id: string, button: Omit<ButtonProps, 'onClick'>, onClick: (v: LibraryItem) => void }[],
   initialResourceMatchersOverride?: ResourceMatcher[]
+  onSelectedItemIdChange?: (id: string | undefined) => void
 };
 
 type SearchResultsState = {
@@ -67,6 +69,12 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const modals = Modals.useContext();
 
   const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (props.onSelectedItemIdChange !== undefined) {
+      props.onSelectedItemIdChange(selectedItemId);
+    }
+  }, [selectedItemId]);
 
   useEffect(() => {
     async function fetchLibraryItem() {
@@ -290,11 +298,15 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           onClick={props.onCancel}
           text='Cancel'
         />
-        {props.mode.type === 'pick' && (
+        {props.extraButtons?.map(({ id, button, onClick }) => (
+          <Button key={id} {...button} onClick={() => onClick(selectedItem!)} />
+        ))}
+        {props.mode.type === 'pick' && props.mode.onPick !== undefined && (
           <Button
             disabled={!selectedItemId}
             onClick={() => {
               if (props.mode.type !== 'pick') return;
+              if (props.mode.onPick === undefined) return;
               if (selectedItemId === undefined) return;
 
               props.mode.onPick(selectedItem!.spec)

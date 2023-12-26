@@ -190,7 +190,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             onClick={() => {
               const newTarget: ManagedConsumerSessionTargetValOrRef = {
                 type: "value",
-                val: getDefaultManagedItem("consumer-session-target") as ManagedConsumerSessionTarget
+                val: getDefaultManagedItem("consumer-session-target", props.libraryContext) as ManagedConsumerSessionTarget
               };
               const newTargets = itemSpec.targets.concat([newTarget]);
               onSpecChange({ ...itemSpec, targets: newTargets });

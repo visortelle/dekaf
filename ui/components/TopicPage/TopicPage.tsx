@@ -110,6 +110,30 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname))
     },
     {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Consume",
+      onClick: () => { },
+      type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Produce",
+      onClick: () => { },
+      type: "regular",
+      active: false
+    },
+    {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
         tenant: props.tenant,
         namespace: props.namespace,
@@ -133,18 +157,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       type: "regular",
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname))
     },
-    {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicPersistency: props.topicPersistency,
-      }),
-      text: "Schema",
-      onClick: () => { },
-      type: "regular",
-      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
-    }
   ];
 
   // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.11.0)
@@ -159,6 +171,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         }),
         text: "Policies",
         onClick: () => { },
+        position: 'right',
         type: "regular",
         testId: "topic-policies-button",
         active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
@@ -168,8 +181,22 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   buttons = buttons.concat([
     {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Schema",
+      onClick: () => { },
+      type: "regular",
+      position: 'right',
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
+    },
+    {
       text: "Delete",
       type: "danger",
+      position: 'right',
       testId: "topic-page-delete-button",
       onClick: () =>
         modals.push({
@@ -186,33 +213,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           ),
           styleMode: "no-content-padding",
         }),
-    },
-    {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicPersistency: props.topicPersistency,
-      }),
-      text: "Consume",
-      onClick: () => { },
-      type: "regular",
-      position: "right",
-      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
-    },
-    {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicPersistency: props.topicPersistency,
-      }),
-      text: "Produce",
-      onClick: () => { },
-      type: "regular",
-      position: "right",
-      active: false
-    },
+    }
   ]);
 
   const libraryContext: LibraryContext = {
@@ -260,7 +261,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           libraryContext={libraryContext}
           initialConfig={props.view.managedConsumerSessionId === undefined ? {
             type: 'value',
-            val: getDefaultManagedItem("consumer-session-config") as ManagedConsumerSessionConfig
+            val: getDefaultManagedItem("consumer-session-config", libraryContext) as ManagedConsumerSessionConfig
           } : {
             type: 'reference',
             ref: props.view.managedConsumerSessionId

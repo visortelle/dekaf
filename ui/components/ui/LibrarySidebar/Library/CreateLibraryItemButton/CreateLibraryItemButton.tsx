@@ -14,7 +14,7 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
   const [nextItemKey, setNextItemKey] = useState(0);
 
   const itemToSave = useMemo(() => {
-    const v = getDefaultManagedItem(props.itemType);
+    const v = getDefaultManagedItem(props.itemType, props.libraryContext);
     v.metadata.name = `New ${getReadableItemType(props.itemType)}`
 
     return v;

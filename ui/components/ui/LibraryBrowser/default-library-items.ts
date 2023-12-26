@@ -13,7 +13,7 @@ export function getDefaultManagedItemMetadata(itemType: ManagedItemType): Manage
   }
 }
 
-export function getDefaultManagedItem(itemType: ManagedItemType): ManagedItem {
+export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext: LibraryContext): ManagedItem {
   const metadata = getDefaultManagedItemMetadata(itemType);
 
   switch (itemType) {
@@ -24,20 +24,20 @@ export function getDefaultManagedItem(itemType: ManagedItemType): ManagedItem {
           targets: [
             {
               type: "value",
-              val: getDefaultManagedItem("consumer-session-target") as ManagedConsumerSessionTarget
+              val: getDefaultManagedItem("consumer-session-target", libraryContext) as ManagedConsumerSessionTarget
             }
           ],
           coloringRuleChain: {
             type: "value",
-            val: getDefaultManagedItem("coloring-rule-chain") as ManagedColoringRuleChain
+            val: getDefaultManagedItem("coloring-rule-chain", libraryContext) as ManagedColoringRuleChain
           },
           messageFilterChain: {
             type: "value",
-            val: getDefaultManagedItem("message-filter-chain") as ManagedMessageFilterChain
+            val: getDefaultManagedItem("message-filter-chain", libraryContext) as ManagedMessageFilterChain
           },
           startFrom: {
             type: "value",
-            val: getDefaultManagedItem("consumer-session-start-from") as ManagedConsumerSessionStartFrom
+            val: getDefaultManagedItem("consumer-session-start-from", libraryContext) as ManagedConsumerSessionStartFrom
           },
           pauseTriggerChain: {
             type: "value",
@@ -60,15 +60,15 @@ export function getDefaultManagedItem(itemType: ManagedItemType): ManagedItem {
         spec: {
           topicSelector: {
             type: "value",
-            val: getDefaultManagedItem("topic-selector") as ManagedTopicSelector
+            val: getDefaultManagedItem("topic-selector", libraryContext) as ManagedTopicSelector
           },
           coloringRuleChain: {
             type: "value",
-            val: getDefaultManagedItem("coloring-rule-chain") as ManagedColoringRuleChain
+            val: getDefaultManagedItem("coloring-rule-chain", libraryContext) as ManagedColoringRuleChain
           },
           messageFilterChain: {
             type: "value",
-            val: getDefaultManagedItem("message-filter-chain") as ManagedMessageFilterChain
+            val: getDefaultManagedItem("message-filter-chain", libraryContext) as ManagedMessageFilterChain
           },
         }
       }
@@ -134,9 +134,14 @@ export function getDefaultManagedItem(itemType: ManagedItemType): ManagedItem {
     case "topic-selector": {
       const v: ManagedTopicSelector = {
         metadata,
-        spec: {
+        spec: libraryContext.pulsarResource.type === 'topic' ? {
           topicSelector: {
             type: "current-topic"
+          }
+        } : {
+          topicSelector: {
+            type: "multi-topic-selector",
+            topicFqns: []
           }
         }
       };
@@ -152,7 +157,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType): ManagedItem {
           foregroundColor: themeForegroundColorName,
           messageFilterChain: {
             type: "value",
-            val: getDefaultManagedItem("message-filter-chain") as ManagedMessageFilterChain
+            val: getDefaultManagedItem("message-filter-chain", libraryContext) as ManagedMessageFilterChain
           }
         }
       }
@@ -191,6 +196,6 @@ export function getDefaultLibraryItem(itemType: ManagedItemType, libraryContext:
       availableForContexts: [resourceMatcherFromContext(libraryContext)],
       updatedAt: new Date().toISOString()
     },
-    spec: getDefaultManagedItem(itemType)
+    spec: getDefaultManagedItem(itemType, libraryContext)
   }
 }
