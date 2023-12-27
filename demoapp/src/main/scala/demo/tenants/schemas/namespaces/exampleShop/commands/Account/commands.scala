@@ -19,22 +19,22 @@ object CreateAccount extends Randomizable[CreateAccount] with Schemable[CreateAc
 
   override def schema: JSONSchema[CreateAccount] =
     JSONSchema.of(classOf[CreateAccount])
-    
+
   given Randomizable[CreateAccount] = this
   given Schemable[CreateAccount] = this
 
-case class ActiveAccount(accountId: UUID) extends Command
+case class ActivateAccount(accountId: UUID) extends Command
 
-object ActiveAccount extends Randomizable[ActiveAccount] with Schemable[ActiveAccount]:
-  override def random: ActiveAccount = ActiveAccount(
+object ActivateAccount extends Randomizable[ActivateAccount] with Schemable[ActivateAccount]:
+  override def random: ActivateAccount = ActivateAccount(
     accountId = UUID.randomUUID()
   )
 
-  override def schema: JSONSchema[ActiveAccount] =
-    JSONSchema.of(classOf[ActiveAccount])
-    
-  given Randomizable[ActiveAccount] = this
-  given Schemable[ActiveAccount] = this
+  override def schema: JSONSchema[ActivateAccount] =
+    JSONSchema.of(classOf[ActivateAccount])
+
+  given Randomizable[ActivateAccount] = this
+  given Schemable[ActivateAccount] = this
 
 
 case class AddBillingAddress(accountId: UUID, address: Address) extends Command
@@ -47,7 +47,7 @@ object AddBillingAddress extends Randomizable[AddBillingAddress] with Schemable[
 
   override def schema: JSONSchema[AddBillingAddress] =
     JSONSchema.of(classOf[AddBillingAddress])
-    
+
   given Randomizable[AddBillingAddress] = this
   given Schemable[AddBillingAddress] = this
 
@@ -61,7 +61,7 @@ object AddShippingAddress extends Randomizable[AddShippingAddress] with Schemabl
 
   override def schema: JSONSchema[AddShippingAddress] =
     JSONSchema.of(classOf[AddShippingAddress])
-    
+
   given Randomizable[AddShippingAddress] = this
   given Schemable[AddShippingAddress] = this
 
@@ -74,7 +74,7 @@ object DeleteAccount extends Randomizable[DeleteAccount] with Schemable[DeleteAc
 
   override def schema: JSONSchema[DeleteAccount] =
     JSONSchema.of(classOf[DeleteAccount])
-    
+
   given Randomizable[DeleteAccount] = this
   given Schemable[DeleteAccount] = this
 
@@ -88,7 +88,7 @@ object DeleteBillingAddress extends Randomizable[DeleteBillingAddress] with Sche
 
   override def schema: JSONSchema[DeleteBillingAddress] =
     JSONSchema.of(classOf[DeleteBillingAddress])
-    
+
   given Randomizable[DeleteBillingAddress] = this
   given Schemable[DeleteBillingAddress] = this
 
@@ -102,7 +102,7 @@ object DeleteShippingAddress extends Randomizable[DeleteShippingAddress] with Sc
 
   override def schema: JSONSchema[DeleteShippingAddress] =
     JSONSchema.of(classOf[DeleteShippingAddress])
-    
+
   given Randomizable[DeleteShippingAddress] = this
   given Schemable[DeleteShippingAddress] = this
 
@@ -116,7 +116,7 @@ object PreferShippingAddress extends Randomizable[PreferShippingAddress] with Sc
 
   override def schema: JSONSchema[PreferShippingAddress] =
     JSONSchema.of(classOf[PreferShippingAddress])
-    
+
   given Randomizable[PreferShippingAddress] = this
   given Schemable[PreferShippingAddress] = this
 
@@ -130,6 +130,6 @@ object PreferBillingAddress extends Randomizable[PreferBillingAddress] with Sche
 
   override def schema: JSONSchema[PreferBillingAddress] =
     JSONSchema.of(classOf[PreferBillingAddress])
-    
+
   given Randomizable[PreferBillingAddress] = this
   given Schemable[PreferBillingAddress] = this

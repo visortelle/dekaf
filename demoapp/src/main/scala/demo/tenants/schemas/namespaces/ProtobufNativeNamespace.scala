@@ -93,7 +93,7 @@ object ProtobufNativeNamespace:
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkMessage = _ => _ => 
-                              Message(Encoders.toProto(ProtobufNativeDemoMessage.random()))
+                              Message(Serde.toProto(ProtobufNativeDemoMessage.random()))
                         ),
                     mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)
                 ),

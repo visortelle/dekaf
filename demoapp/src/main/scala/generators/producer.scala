@@ -1,6 +1,11 @@
 package generators
 
+import client.pulsarClient
+import org.apache.pulsar.client.api.Producer
+import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import zio.*
+
+import scala.jdk.CollectionConverters.*
 
 type ProducerIndex = Int
 type ProducerName = String
@@ -13,10 +18,10 @@ case class Message(
 object Message:
   def apply(key: String, payload: Array[Byte], properties: Map[String, String]): Message =
     Message(Some(key), payload, Some(properties))
-    
+
   def apply(key: String, payload: Array[Byte]): Message =
     Message(Some(key), payload, None)
-    
+
   def apply(payload: Array[Byte]): Message =
     Message(None, payload, None)
 
@@ -28,6 +33,15 @@ case class ProducerPlan(
 )
 
 object ProducerPlan:
+    def make: Task[ProducerPlan] = for {
+      ref <- Ref.make[MessageIndex](0)
+    } yield ProducerPlan(
+      "dekaf_default_producer",
+      Schedule.forever,
+      _ => Message(Array.emptyByteArray),
+      ref
+    )
+
     def make(generator: ProducerPlanGenerator, producerIndex: ProducerIndex): Task[ProducerPlan] = for {
         messageIndex <- Ref.make[MessageIndex](0)
         producerPlan <- ZIO.attempt {
@@ -58,3 +72,77 @@ object ProducerPlanGenerator:
             mkSchedule = mkSchedule
         )
         ZIO.succeed(producerPlanGenerator)
+
+object ProducerPlanExecutor:
+  def createProducer(producerName: ProducerName, topicPlan: TopicPlan): Task[Producer[Array[Byte]]] =
+    val topicFqn = topicPlan.mkTopicFqn
+
+    ZIO.attempt {
+      val schema = new AutoProduceBytesSchema[Array[Byte]]
+      pulsarClient
+        .newProducer(schema)
+        .producerName(producerName)
+        .topic(topicFqn)
+        .create
+    }
+
+  def startProduce(producerPlan: ProducerPlan, topicPlan: TopicPlan): Task[Unit] =
+    for {
+      producer <- createProducer(producerPlan.name, topicPlan)
+      _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topicPlan.name}")
+      _ <- producerPlan.messageIndex
+        .update { messageIndex =>
+          val message = producerPlan.mkMessage(messageIndex)
+
+          val messageBuilder = producer.newMessage
+
+          message.key.foreach(messageBuilder.key)
+          messageBuilder.value(message.payload)
+          message.properties.foreach(properties =>
+            messageBuilder.properties(properties.asJava)
+          )
+
+          messageBuilder.sendAsync
+
+          messageIndex + 1
+        }
+        .repeat(producerPlan.schedule)
+    } yield ()
+
+  def startProduce(topic: TopicPlan): Task[Unit] =
+    ZIO.foreachParDiscard(topic.producers.values) { producerPlan =>
+      startProduce(producerPlan, topic)
+    }
+
+  def startMultiTopicProducer(producerPlan: ProducerPlan, topicPlans: List[TopicPlan]): Task[Unit] =
+    for {
+      producers <- ZIO.foreachPar(topicPlans) { topicPlan =>
+        ZIO.attempt {
+          val schema = new AutoProduceBytesSchema[Array[Byte]]
+          pulsarClient
+            .newProducer(schema)
+            .producerName(producerPlan.name)
+            .topic(topicPlan.mkTopicFqn)
+            .create
+        }
+      }
+      _ <- ZIO.logInfo(s"Started producers ${producerPlan.name} for topics ${topicPlans.map(_.name).mkString(", ")}")
+      _ <- producerPlan.messageIndex
+        .update { messageIndex =>
+          val message = producerPlan.mkMessage(messageIndex)
+
+          producers.foreach { producer =>
+            val messageBuilder = producer.newMessage
+
+            message.key.foreach(messageBuilder.key)
+            messageBuilder.value(message.payload)
+            message.properties.foreach(properties =>
+              messageBuilder.properties(properties.asJava)
+            )
+
+            messageBuilder.sendAsync
+          }
+
+          messageIndex + 1
+        }.repeat(producerPlan.schedule)
+    } yield ()

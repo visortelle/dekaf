@@ -10,8 +10,8 @@ import org.apache.pulsar.client.api.SubscriptionType
 object AccountNamespace:
   object Commands:
     def mkPlanGenerator = (tenantName: TenantName) =>
-      val namespaceName = "AccountCommands"      
-        
+      val namespaceName = "AccountCommands"
+
       val topicPlanGenerators = List(
         mkConfigurableTopicPlanGenerator[CreateAccount](
           mkTenant = () => tenantName,
@@ -69,7 +69,7 @@ object AccountNamespace:
           mkLoadType = _ => TopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Failover,
         ),
-        mkConfigurableTopicPlanGenerator[ActiveAccount](
+        mkConfigurableTopicPlanGenerator[ActivateAccount](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ActiveAccount",

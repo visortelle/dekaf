@@ -51,7 +51,7 @@ object JsonNamespace:
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkMessage = _ => _ => 
-                              Message(Encoders.toJson(JsonDemoObject.random()))
+                              Message(Serde.toJsonBytes(JsonDemoObject.random()))
                         ),
                     mkSchemaInfos = _ => List(jsonDemoObjectSchema.getSchemaInfo)
                 ),

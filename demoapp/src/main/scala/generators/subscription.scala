@@ -14,6 +14,17 @@ case class SubscriptionPlan(
 )
 
 object SubscriptionPlan:
+    def make: Task[SubscriptionPlan] = 
+      for {
+        consumerPlan <- ConsumerPlan.make
+      } yield SubscriptionPlan(
+        name = "dekaf_default_subscription",
+        subscriptionType = SubscriptionType.Exclusive,
+        consumers = Map(
+          "dekaf_default_consumer" -> consumerPlan
+        )
+      )
+    
     def make(generator: SubscriptionPlanGenerator, subscriptionIndex: SubscriptionIndex): Task[SubscriptionPlan] = for {
         consumerGenerators <- ZIO.foreach(List.range(0, generator.mkConsumersCount(subscriptionIndex))) {
             consumerIndex => generator.mkConsumerGenerator(consumerIndex)

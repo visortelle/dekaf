@@ -38,9 +38,26 @@ case class TopicPlan(
     producers: Map[ProducerName, ProducerPlan],
     subscriptions: Map[SubscriptionName, SubscriptionPlan],
     afterAllocation: TopicPlan => Unit
-)
+):
+  def mkTopicFqn: String = persistency match
+    case Persistent() => s"persistent://${tenant}/${namespace}/${name}"
+    case NonPersistent() => s"non-persistent://${tenant}/${namespace}/${name}"
 
 object TopicPlan:
+    def make: Task[TopicPlan] = ZIO.succeed(
+      TopicPlan(
+        tenant = "dekaf_default",
+        namespace = "dekaf_default",
+        name = "dekaf_default",
+        schemaInfos = List.empty,
+        persistency = Persistent(),
+        partitioning = Partitioned(partitions = 3),
+        producers = Map.empty,
+        subscriptions = Map.empty,
+        afterAllocation = _ => ()
+      )
+    )
+    
     def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): Task[TopicPlan] = for {
         producerGenerators <- ZIO.foreach(0 until generator.mkProducersCount(topicIndex)) { producerIndex =>
             generator.mkProducerGenerator(producerIndex)
@@ -137,7 +154,7 @@ object TopicPlanExecutor:
     def allocateResources(topicPlan: TopicPlan): Task[TopicPlan] =
         for {
             _ <- ZIO.logInfo(s"Allocating resources for topic ${topicPlan.name}")
-            topicFqn <- ZIO.attempt(mkTopicFqn(topicPlan))
+            topicFqn <- ZIO.attempt(topicPlan.mkTopicFqn)
             _ <- ZIO.attempt {
                 topicPlan.partitioning match
                     case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
@@ -150,41 +167,8 @@ object TopicPlanExecutor:
             _ <- ZIO.attempt(topicPlan.afterAllocation(topicPlan))
         } yield topicPlan
 
-    private def startProduce(topic: TopicPlan): Task[Unit] =
-        val topicFqn = mkTopicFqn(topic)
-        ZIO.foreachParDiscard(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
-            for {
-                producer <- ZIO.attempt {
-                    val schema = new AutoProduceBytesSchema[Array[Byte]]
-                    pulsarClient
-                        .newProducer(schema)
-                        .producerName(producerPlan.name)
-                        .topic(topicFqn)
-                        .create
-                }
-                _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")
-                _ <- producerPlan.messageIndex
-                    .update { messageIndex =>
-                        val message = producerPlan.mkMessage(messageIndex)
-
-                        val messageBuilder = producer.newMessage
-
-                        message.key.foreach(messageBuilder.key)
-                        messageBuilder.value(message.payload)
-                        message.properties.foreach(properties =>
-                            messageBuilder.properties(properties.asJava)
-                        )
-
-                        messageBuilder.sendAsync
-
-                        messageIndex + 1
-                    }
-                    .repeat(producerPlan.schedule)
-            } yield ()
-        }
-
     private def startConsume(topic: TopicPlan): Task[Unit] =
-        val topicFqn = mkTopicFqn(topic)
+        val topicFqn = topic.mkTopicFqn
 
         def makeConsumers(subscription: SubscriptionPlan) = subscription.consumers.map { case (_, consumer) =>
             pulsarClient.newConsumer
@@ -208,7 +192,7 @@ object TopicPlanExecutor:
 
     def start(topicPlan: TopicPlan): Task[Unit] = for {
         _ <- ZIO.logInfo(s"Starting topic ${topicPlan.name}")
-        produceFib <- TopicPlanExecutor.startProduce(topicPlan).fork
+        produceFib <- ProducerPlanExecutor.startProduce(topicPlan).fork
         _ <- TopicPlanExecutor.startConsume(topicPlan).fork
         _ <- produceFib.join
     } yield ()

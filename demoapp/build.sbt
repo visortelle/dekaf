@@ -37,6 +37,7 @@ lazy val root = project
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-avro" % jacksonVersion,
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % jacksonVersion,
             "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion,
+            "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
             "com.google.protobuf" % "protobuf-java" % "3.23.3",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
             "com.lihaoyi" %% "pprint" % "0.8.1",
@@ -54,6 +55,7 @@ lazy val root = project
 
             "dev.optics" %% "monocle-core" % "3.2.0",
             "net.datafaker" % "datafaker" % "2.0.1",
-            "org.scalameta" %% "munit" % "0.7.29" % Test
+            "org.scalameta" %% "munit" % "0.7.29" % Test,
+            "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
         )
     )

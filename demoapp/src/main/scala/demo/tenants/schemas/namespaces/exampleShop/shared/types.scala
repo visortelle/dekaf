@@ -2,6 +2,10 @@ package demo.tenants.schemas.namespaces.exampleShop.shared
 
 import org.apache.pulsar.client.impl.schema.JSONSchema
 
+trait Convertible[A, B] {
+  def convert(a: A): B
+}
+
 trait Randomizable[T]:
   def random: T
 

@@ -76,7 +76,7 @@ object AvroNamespace:
                             mkMessage = _ =>
                                 _ =>
                                   Message(
-                                    Encoders.toAvro(
+                                    Serde.toAvro(
                                       avroDemoRecordSchema.getSchemaInfo.getSchema,
                                       AvroDemoRecord.random()
                                     )

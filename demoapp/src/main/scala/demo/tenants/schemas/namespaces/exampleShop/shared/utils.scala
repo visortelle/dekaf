@@ -1,11 +1,15 @@
 package demo.tenants.schemas.namespaces.exampleShop.shared
 
-import _root_.demo.tenants.schemas.namespaces.{TopicConfig, mkDefaultPersistency, mkDefaultTopicPartitioning}
 import _root_.generators.*
-import demo.tenants.schemas.namespaces.exampleShop.shared.{Message as MessageDto, Randomizable, Schemable}
+import demo.tenants.schemas.namespaces.exampleShop.commands.Account.*
+import demo.tenants.schemas.namespaces.exampleShop.events.Account.*
+import demo.tenants.schemas.namespaces.exampleShop.shared.Message as MessageDto
+import _root_.demo.tenants.schemas.namespaces.{TopicConfig, faker, mkDefaultPersistency, mkDefaultTopicPartitioning}
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.schema.SchemaInfo
 import zio.{Duration, Schedule}
+
+import java.util.UUID
 
 def mkConfigurableTopicPlanGenerator[T <: MessageDto](
   mkTenant: () => TenantName = () => "dekaf_default",
@@ -29,7 +33,7 @@ def mkConfigurableTopicPlanGenerator[T <: MessageDto](
     mkProducerGenerator = _ =>
       ProducerPlanGenerator.make(
         mkName = i => s"${mkName(i)}Producer-$i",
-        mkMessage = _ => _ => Message(Encoders.toJson(MessageDto.random[T])),
+        mkMessage = _ => _ => Message(Serde.toJsonBytes(MessageDto.random[T])),
         mkSchedule = i => Schedule.fixed(
           Duration.fromMillis(
             mkLoadType(i) match
@@ -102,3 +106,105 @@ def mkKeySharedTopicPlanGenerator(
       )
     )
   )
+
+object ConverterMappings:
+  given commandToEvent: Convertible[Command, Event] with {
+    def convert(a: Command): Event = a match
+      case c: CreateAccount => createAccountToAccountCreated.convert(c)
+      case c: AddShippingAddress => addShippingAddressToShippingAddressAdded.convert(c)
+  }
+  
+  given createAccountToAccountCreated: Convertible[CreateAccount, AccountCreated] with {
+    def convert(a: CreateAccount): AccountCreated = {
+      AccountCreated(
+        accountId = a.id,
+        firstName = a.firstName,
+        lastName = a.lastName,
+        email = a.email,
+        status = faker.lorem().word(),
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+
+  given addShippingAddressToShippingAddressAdded: Convertible[AddShippingAddress, ShippingAddressAdded] with {
+    def convert(a: AddShippingAddress): ShippingAddressAdded = {
+      ShippingAddressAdded(
+        accountId = a.accountId,
+        addressId = UUID.randomUUID(),
+        address = a.address,
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given addBillingAddressToBillingAddressAdded: Convertible[AddBillingAddress, BillingAddressAdded] with {
+    def convert(a: AddBillingAddress): BillingAddressAdded = {
+      BillingAddressAdded(
+        accountId = a.accountId,
+        addressId = UUID.randomUUID(),
+        address = a.address,
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given deleteAccountToAccountDeleted: Convertible[DeleteAccount, AccountDeleted] with {
+    def convert(a: DeleteAccount): AccountDeleted = {
+      AccountDeleted(
+        accountId = a.accountId,
+        status = "Deleted",
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given deleteShippingAddressToShippingAddressDeleted: Convertible[DeleteShippingAddress, ShippingAddressDeleted] with {
+    def convert(a: DeleteShippingAddress): ShippingAddressDeleted = {
+      ShippingAddressDeleted(
+        accountId = a.accountId,
+        addressId = a.addressId,
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given deleteBillingAddressToBillingAddressDeleted: Convertible[DeleteBillingAddress, BillingAddressDeleted] with {
+    def convert(a: DeleteBillingAddress): BillingAddressDeleted = {
+      BillingAddressDeleted(
+        accountId = a.accountId,
+        addressId = a.addressId,
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given preferShippingAddressToShippingAddressPreferred: Convertible[PreferShippingAddress, ShippingAddressPreferred] with {
+    def convert(a: PreferShippingAddress): ShippingAddressPreferred = {
+      ShippingAddressPreferred(
+        accountId = a.accountId,
+        addressId = a.addressId,
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given preferBillingAddressToBillingAddressPreferred: Convertible[PreferBillingAddress, BillingAddressPreferred] with {
+    def convert(a: PreferBillingAddress): BillingAddressPreferred = {
+      BillingAddressPreferred(
+        accountId = a.accountId,
+        addressId = a.addressId,
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
+  
+  given activeAccountToAccountActivated: Convertible[ActivateAccount, AccountActivated] with {
+    def convert(a: ActivateAccount): AccountActivated = {
+      AccountActivated(
+        accountId = a.accountId,
+        status = faker.lorem().word(),
+        version = faker.number().numberBetween(1, 100)
+      )
+    }
+  }
