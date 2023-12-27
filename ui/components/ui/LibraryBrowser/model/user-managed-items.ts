@@ -1,5 +1,6 @@
 import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../ConsumerSession/types";
 import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
+import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -30,7 +31,9 @@ export type ManagedItemType =
   "consumer-session-start-from" |
   "consumer-session-event" |
   "consumer-session-pause-trigger-chain" |
-  "topic-selector";
+  "topic-selector" |
+  "value-projection" |
+  "value-projection-list";
 
 export type ManagedItemMetadata = {
   type: ManagedItemType,
@@ -128,6 +131,30 @@ export type ManagedTopicSelector = {
 
 export type ManagedTopicSelectorValOrRef = ValOrRef<ManagedTopicSelector>;
 
+export type ManagedValueProjectionSpec = {
+  target: BasicMessageFilterTarget,
+  shortName: string,
+  displayCharsCount: number | undefined
+};
+
+export type ManagedValueProjection = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedValueProjectionSpec,
+};
+
+export type ManagedValueProjectionValOrRef = ValOrRef<ManagedValueProjection>;
+
+export type ManagedValueProjectionListSpec = {
+  projections: ManagedValueProjectionValOrRef[]
+};
+
+export type ManagedValueProjectionList = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedValueProjectionListSpec,
+};
+
+export type ManagedValueProjectionListValOrRef = ValOrRef<ManagedValueProjectionList>;
+
 export type ManagedColoringRuleSpec = {
   isEnabled: boolean,
   messageFilterChain: ManagedMessageFilterChainValOrRef,
@@ -189,6 +216,7 @@ export type ManagedConsumerSessionTargetSpec = {
   topicSelector: ManagedTopicSelectorValOrRef,
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
+  valueProjectionsList: ManagedValueProjectionListValOrRef
 };
 
 export type ManagedConsumerSessionTarget = {
@@ -204,6 +232,7 @@ export type ManagedConsumerSessionConfigSpec = {
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
+  valueProjectionsList: ManagedValueProjectionListValOrRef
 };
 
 export type ManagedConsumerSessionConfig = {
@@ -239,4 +268,6 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedColoringRuleChain |
   ManagedConsumerSessionTarget |
   ManagedMessageId |
-  ManagedMarkdownDocument;
+  ManagedMarkdownDocument |
+  ManagedValueProjection |
+  ManagedValueProjectionList;

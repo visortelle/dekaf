@@ -8,10 +8,9 @@ import consumer.session_runner.{ConsumerSessionContext, CurrentMessageVarName, J
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
 case class BasicMessageFilter(
-    target: BasicMessageFilterTarget,
     op: BasicMessageFilterOp
 ):
-    def test(polyglotContext: Context): TestResult =
+    def test(polyglotContext: Context, target: BasicMessageFilterTarget): TestResult =
         val opEvalCode = op.genJsFnCode(target.target) + "()"
         val evalCode =
             s"""
@@ -38,12 +37,10 @@ case class BasicMessageFilter(
 object BasicMessageFilter:
     def fromPb(filter: pb.BasicMessageFilter): BasicMessageFilter =
         BasicMessageFilter(
-            target = BasicMessageFilterTarget.fromPb(filter.target.get),
             op = BasicMessageFilterOp.fromPb(filter.op.get)
         )
 
     def toPb(filter: BasicMessageFilter): pb.BasicMessageFilter =
         pb.BasicMessageFilter(
-            target = Some(BasicMessageFilterTarget.toPb(filter.target)),
             op = Some(BasicMessageFilterOp.toPb(filter.op))
         )

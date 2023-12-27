@@ -16,14 +16,12 @@ import zio.test.Assertion.*
 object BasicMessageFilterTest extends ZIOSpecDefault:
     def runTestSpec(spec: TestSpec): Boolean =
         val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
-        val basicMessageFilter = BasicMessageFilter(
-            target = BasicMessageFilterTarget(target = spec.target),
-            op = spec.op
-        )
+        val basicMessageFilter = BasicMessageFilter(op = spec.op)
         val filter = MessageFilter(
             isEnabled = true,
             isNegated = false,
-            value = basicMessageFilter
+            targetField = BasicMessageFilterTarget(target = spec.target),
+            filter = basicMessageFilter
         )
         val result = sessionContext.testMessageFilter(
             filter = filter,
@@ -51,7 +49,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             assertTrue {
                 val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
                 val basicMessageFilter = BasicMessageFilter(
-                    target = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
                             op = TestOpBoolIsTrue()
@@ -61,7 +58,8 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 val filter = MessageFilter(
                     isEnabled = true,
                     isNegated = false,
-                    value = basicMessageFilter
+                    targetField = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
+                    filter = basicMessageFilter
                 )
 
                 val messageValueAsJson =
@@ -80,7 +78,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             assertTrue {
                 val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
                 val basicMessageFilter = BasicMessageFilter(
-                    target = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
                             op = TestOpBoolIsTrue()
@@ -90,7 +87,8 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 val filter = MessageFilter(
                     isEnabled = true,
                     isNegated = true,
-                    value = basicMessageFilter
+                    targetField = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
+                    filter = basicMessageFilter
                 )
 
                 val messageValueAsJson =

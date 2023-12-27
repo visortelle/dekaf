@@ -1,7 +1,7 @@
 import { themeBackgroundColorName, themeForegroundColorName } from "../ConsumerSession/SessionConfiguration/ColoringRulesInput/ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette";
 import { LibraryItem } from "./model/library";
 import { LibraryContext, resourceMatcherFromContext } from "./model/library-context";
-import { ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedTopicSelector } from "./model/user-managed-items";
+import { ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from "./model/user-managed-items";
 import { v4 as uuid } from 'uuid';
 
 export function getDefaultManagedItemMetadata(itemType: ManagedItemType): ManagedItemMetadata {
@@ -48,6 +48,10 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
                 mode: "all"
               }
             }
+          },
+          valueProjectionsList: {
+            type: "value",
+            val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
           }
         }
       }
@@ -70,6 +74,10 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
             type: "value",
             val: getDefaultManagedItem("message-filter-chain", libraryContext) as ManagedMessageFilterChain
           },
+          valueProjectionsList: {
+            type: "value",
+            val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
+          }
         }
       }
 
@@ -180,6 +188,33 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
         metadata,
         spec: {
           markdown: ''
+        }
+      }
+
+      return v;
+    }
+    case "value-projection": {
+      const v: ManagedValueProjection = {
+        metadata,
+        spec: {
+          target: {
+            type: "BasicMessageFilterTarget",
+            target: {
+              type: "BasicMessageFilterValueTarget",
+            }
+          },
+          shortName: 'value',
+          displayCharsCount: undefined
+        }
+      }
+
+      return v;
+    }
+    case "value-projection-list": {
+      const v: ManagedValueProjectionList = {
+        metadata,
+        spec: {
+          projections: []
         }
       }
 

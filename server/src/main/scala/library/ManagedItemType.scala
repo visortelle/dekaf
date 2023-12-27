@@ -16,7 +16,10 @@ enum ManagedItemType:
     RelativeDateTime,
     TopicSelector,
     ColoringRule,
-    ColoringRuleChain
+    ColoringRuleChain,
+    BasicMessageFilterTarget,
+    ValueProjection,
+    ValueProjectionList
 
 object ManagedItemType:
     def fromPb(v: pb.ManagedItemType): ManagedItemType =
@@ -32,6 +35,9 @@ object ManagedItemType:
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR => ManagedItemType.TopicSelector
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE => ManagedItemType.ColoringRule
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN => ManagedItemType.ColoringRuleChain
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET => ManagedItemType.BasicMessageFilterTarget
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION => ManagedItemType.ValueProjection
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST => ManagedItemType.ValueProjectionList
             case _ => throw new IllegalArgumentException("Unknown ManagedItemType")
 
     def toPb(v: ManagedItemType): pb.ManagedItemType =
@@ -47,3 +53,7 @@ object ManagedItemType:
             case ManagedItemType.TopicSelector => pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR
             case ManagedItemType.ColoringRule => pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE
             case ManagedItemType.ColoringRuleChain => pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN
+            case ManagedItemType.BasicMessageFilterTarget => pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET
+            case ManagedItemType.ValueProjection => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION
+            case ManagedItemType.ValueProjectionList => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST
+
