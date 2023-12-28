@@ -98,9 +98,13 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             s"""
               |(() => {
               |  const targetField = ${targetField.target.resolveVarName()}
-              |  return (${filter.jsCode})(v);
+              |  return (${filter.jsCode})(targetField);
               |})();
               |""".stripMargin
+
+//        Don't remove the following debug lines
+//        println(s"DEBUG EVAL CODE")
+//        println(evalCode)
 
         val testResult =
             try

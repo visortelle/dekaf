@@ -19,7 +19,7 @@ case class BasicMessageFilter(
                |})();
                |""".stripMargin
 
-//        Don't remove the following lines until the basic filters feature isn't ready
+// Don't remove the following debug lines
 //        println(s"DEBUG EVAL CODE")
 //        println(evalCode)
 
