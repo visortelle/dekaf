@@ -8,6 +8,8 @@ import { LibraryContext } from '../../../../../../LibraryBrowser/model/library-c
 import { useHover } from '../../../../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../../LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import Toggle from '../../../../../../Toggle/Toggle';
+import CodeEditor from '../../../../../../CodeEditor/CodeEditor';
 
 export type BasicMessageFilterTargetInputProps = {
   value: ManagedBasicMessageFilterTargetValOrRef,
@@ -78,41 +80,14 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
       </div>
 
       <div style={{ display: 'flex', flexDirection }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: '12rem' }}>
-            <strong style={{ whiteSpace: 'nowrap' }}>messages where</strong>&nbsp;
-            {target.type === "BasicMessageFilterValueTarget" && target.jsonFieldSelector === undefined && (
-              <span>
-                <strong
-                  style={{ textDecoration: 'underline dotted', cursor: 'pointer' }}
-                  onClick={() => {
-                    if (props.isReadOnly) {
-                      return;
-                    }
-
-                    if (target.type === "BasicMessageFilterValueTarget") {
-                      const newTarget: BasicMessageFilterTarget = {
-                        ...itemSpec.target,
-                        target: {
-                          type: "BasicMessageFilterValueTarget",
-                          jsonFieldSelector: ''
-                        }
-                      };
-                      onSpecChange({ ...itemSpec, target: newTarget });
-                    }
-                  }}
-                >entire</strong>&nbsp;
-              </span>
-            )}
-          </span>
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
           <div className={s.TargetType}>
             <Select<TargetType>
               size='small'
               list={[
-                { type: 'item', title: 'value', value: 'BasicMessageFilterValueTarget' },
-                { type: 'item', title: 'key', value: 'BasicMessageFilterKeyTarget' },
-                { type: 'item', title: 'property', value: 'BasicMessageFilterPropertyTarget' },
+                { type: 'item', title: 'message value', value: 'BasicMessageFilterValueTarget' },
+                { type: 'item', title: 'message key', value: 'BasicMessageFilterKeyTarget' },
+                { type: 'item', title: 'message property', value: 'BasicMessageFilterPropertyTarget' },
                 { type: 'item', title: 'state', value: 'BasicMessageFilterSessionContextStateTarget' }
               ]}
               value={target.type}
@@ -138,30 +113,44 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
               isReadOnly={props.isReadOnly}
             />
           </div>
+          {target.type === "BasicMessageFilterValueTarget" && (
+            <Toggle
+              value={target.jsonFieldSelector !== undefined}
+              onChange={(v) => {
+                if (target.type === "BasicMessageFilterValueTarget") {
+                  const newTarget: BasicMessageFilterTarget = {
+                    ...itemSpec.target,
+                    target: {
+                      type: "BasicMessageFilterValueTarget",
+                      jsonFieldSelector: v ? '' : undefined,
+                    }
+                  };
+                  onSpecChange({ ...itemSpec, target: newTarget });
+                }
+              }}
+              label='Sub. field'
+              isReadOnly={props.isReadOnly}
+            />
+          )}
+          <Toggle
+            value={itemSpec.target.jsModifierCode !== undefined}
+            onChange={(v) => {
+              if (target.type === "BasicMessageFilterValueTarget") {
+                const newTarget: BasicMessageFilterTarget = {
+                  ...itemSpec.target,
+                  jsModifierCode: v ? '(v) => v' : undefined,
+                };
+                onSpecChange({ ...itemSpec, target: newTarget });
+              }
+            }}
+            label='Post-process'
+            isReadOnly={props.isReadOnly}
+          />
         </div>
 
         <div className={s.Target}>
           {target.type === "BasicMessageFilterValueTarget" && target.jsonFieldSelector !== undefined && (
-            <div style={{ display: 'flex', alignItems: 'center', flex: '1', paddingLeft: '48rem', marginTop: '8rem' }}>
-              <strong
-                style={{ textDecoration: 'underline dotted', cursor: 'pointer', fontSize: '12rem' }}
-                onClick={() => {
-                  if (props.isReadOnly) {
-                    return;
-                  }
-
-                  if (target.type === "BasicMessageFilterValueTarget") {
-                    const newTarget: BasicMessageFilterTarget = {
-                      type: "BasicMessageFilterTarget",
-                      target: {
-                        ...target,
-                        jsonFieldSelector: undefined
-                      }
-                    };
-                    onSpecChange({ ...itemSpec, target: newTarget });
-                  }
-                }}
-              >sub field</strong>&nbsp;
+            <div style={{ display: 'flex', alignItems: 'center', flex: '1', marginTop: '8rem' }}>
               <BasicMessageFilterValueTargetInput
                 value={target}
                 onChange={(v) => {
@@ -173,6 +162,17 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
           )}
         </div>
       </div>
+      {itemSpec.target.jsModifierCode === undefined ? null : (
+        <div style={{ marginTop: '8rem' }}>
+          <CodeEditor
+            value={itemSpec.target.jsModifierCode}
+            onChange={(v) => {
+              onSpecChange({ ...itemSpec, target: { ...itemSpec.target, jsModifierCode: v } })
+            }}
+            height={40}
+          />
+        </div>
+      )}
     </div>
   );
 }

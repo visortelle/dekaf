@@ -1,21 +1,6 @@
 package library
 
-import _root_.library.managed_items.{
-    ManagedColoringRule,
-    ManagedColoringRuleChain,
-    ManagedConsumerSessionConfig,
-    ManagedConsumerSessionEvent,
-    ManagedConsumerSessionPauseTriggerChain,
-    ManagedConsumerSessionStartFrom,
-    ManagedConsumerSessionTarget,
-    ManagedDateTime,
-    ManagedMessageFilter,
-    ManagedMessageFilterChain,
-    ManagedMessageId,
-    ManagedRelativeDateTime,
-    ManagedTopicSelector,
-    ManagedMarkdownDocument
-}
+import _root_.library.managed_items.{ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionEvent, ManagedConsumerSessionPauseTriggerChain, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDateTime, ManagedMarkdownDocument, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageId, ManagedRelativeDateTime, ManagedTopicSelector, ManagedBasicMessageFilterTarget}
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
 type ManagedItem =
@@ -32,7 +17,8 @@ type ManagedItem =
     ManagedMessageId |
     ManagedRelativeDateTime |
     ManagedTopicSelector |
-    ManagedMarkdownDocument
+    ManagedMarkdownDocument |
+    ManagedBasicMessageFilterTarget
 
 object ManagedItem:
     def fromPb(v: pb.ManagedItem): ManagedItem =
@@ -51,6 +37,7 @@ object ManagedItem:
             case it: pb.ManagedItem.Spec.SpecRelativeDateTime => ManagedRelativeDateTime.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecTopicSelector => ManagedTopicSelector.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecMarkdownDocument => ManagedMarkdownDocument.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecBasicMessageFilterTarget => ManagedBasicMessageFilterTarget.fromPb(it.value)
             case _ => throw new IllegalArgumentException("Unknown ManagedItem type")
 
     def toPb(v: ManagedItem): pb.ManagedItem =
@@ -97,3 +84,7 @@ object ManagedItem:
             case it: ManagedMarkdownDocument =>
                 val itPb = ManagedMarkdownDocument.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecMarkdownDocument(itPb))
+            case it: ManagedBasicMessageFilterTarget =>
+                val itPb = ManagedBasicMessageFilterTarget.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecBasicMessageFilterTarget(itPb))
+

@@ -412,6 +412,16 @@ message BasicMessageFilterSessionContextStateTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
+message JsJsonModifier {
+  google.protobuf.StringValue js_code = 50;
+}
+
+message JsonModifier {
+  oneof modifier {
+    JsJsonModifier modifier_json = 1;
+  }
+}
+
 message BasicMessageFilterTarget {
   oneof target {
     BasicMessageFilterKeyTarget target_key = 1;
@@ -419,7 +429,7 @@ message BasicMessageFilterTarget {
     BasicMessageFilterPropertyTarget target_property = 3;
     BasicMessageFilterSessionContextStateTarget target_session_context_state = 4;
   }
-  google.protobuf.StringValue js_modifier_code = 50;
+  JsonModifier json_modifier = 50;
 }
 
 message BasicMessageFilter {

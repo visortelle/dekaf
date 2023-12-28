@@ -98,5 +98,15 @@ export const help: Partial<Record<ManagedItemType, ReactElement>> = {
         <a target="_blank" href="https://github.github.com/gfm/">Markdown reference</a>
       </p>
     </div>
+  ),
+  "basic-message-filter-target": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("basic-message-filter-target")}</strong> allows you to specify a field to use.
+      </p>
+      <p>
+        Optionally, you can post-process this field.
+      </p>
+    </div>
   )
 } as const;

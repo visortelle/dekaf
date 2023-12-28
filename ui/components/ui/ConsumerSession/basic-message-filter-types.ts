@@ -191,7 +191,8 @@ export type BasicMessageFilterTarget = {
   BasicMessageFilterKeyTarget |
   BasicMessageFilterValueTarget |
   BasicMessageFilterPropertyTarget |
-  BasicMessageFilterSessionContextStateTarget
+  BasicMessageFilterSessionContextStateTarget,
+  jsModifierCode: string | undefined
 }
 
 export type BasicMessageFilter = {
