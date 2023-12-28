@@ -1,6 +1,6 @@
-import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../ConsumerSession/types";
+import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, JsMessageFilter, MessageFilter, MessageFilterChainMode } from "../../ConsumerSession/types";
 import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
-import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
+import { BasicMessageFilter, BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -32,6 +32,7 @@ export type ManagedItemType =
   "consumer-session-event" |
   "consumer-session-pause-trigger-chain" |
   "topic-selector" |
+  "basic-message-filter-target" |
   "value-projection" |
   "value-projection-list";
 
@@ -42,7 +43,12 @@ export type ManagedItemMetadata = {
   descriptionMarkdown: string,
 };
 
-export type ManagedMessageFilterSpec = MessageFilter;
+export type ManagedMessageFilterSpec = {
+  isEnabled: boolean,
+  isNegated: boolean,
+  targetField: ManagedBasicMessageFilterTargetValOrRef,
+  filter: BasicMessageFilter | JsMessageFilter
+};
 
 export type ManagedMessageFilter = {
   metadata: ManagedItemMetadata,
@@ -131,8 +137,19 @@ export type ManagedTopicSelector = {
 
 export type ManagedTopicSelectorValOrRef = ValOrRef<ManagedTopicSelector>;
 
+export type ManagedBasicMessageFilterTargetSpec = {
+  target: BasicMessageFilterTarget
+};
+
+export type ManagedBasicMessageFilterTarget = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedBasicMessageFilterTargetSpec,
+};
+
+export type ManagedBasicMessageFilterTargetValOrRef = ValOrRef<ManagedBasicMessageFilterTarget>;
+
 export type ManagedValueProjectionSpec = {
-  target: BasicMessageFilterTarget,
+  target: ManagedBasicMessageFilterTargetValOrRef,
   shortName: string,
   displayCharsCount: number | undefined
 };
@@ -269,5 +286,6 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedConsumerSessionTarget |
   ManagedMessageId |
   ManagedMarkdownDocument |
+  ManagedBasicMessageFilterTarget |
   ManagedValueProjection |
   ManagedValueProjectionList;

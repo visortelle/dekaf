@@ -196,6 +196,5 @@ export type BasicMessageFilterTarget = {
 
 export type BasicMessageFilter = {
   type: "BasicMessageFilter",
-  target: BasicMessageFilterTarget,
   op: BasicMessageFilterOp
 }

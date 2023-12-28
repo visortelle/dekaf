@@ -507,14 +507,12 @@ export function basicMessageFilterTargetToPb(v: BasicMessageFilterTarget): pb.Ba
 export function basicMessageFilterFromPb(v: pb.BasicMessageFilter): BasicMessageFilter {
   return {
     type: "BasicMessageFilter",
-    target: basicMessageFilterTargetFromPb(v.getTarget()!),
     op: basicMessageFilterOpFromPb(v.getOp()!)
   }
 }
 
 export function basicMessageFilterToPb(v: BasicMessageFilter): pb.BasicMessageFilter {
   const resultPb = new pb.BasicMessageFilter();
-  resultPb.setTarget(basicMessageFilterTargetToPb(v.target));
   resultPb.setOp(basicMessageFilterOpToPb(v.op));
 
   return resultPb;

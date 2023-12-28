@@ -14,6 +14,8 @@ import { defaultBasicMessageFilter } from './BasicFilterEditor/defaultBasicMessa
 import OnOffToggle from '../../../../IconToggle/OnOffToggle/OnOffToggle';
 import InvertedToggle from '../../../../IconToggle/InvertedToggle/InvertedToggle';
 import IconToggle from '../../../../IconToggle/IconToggle';
+import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import BasicMessageFilterTargetInput from './BasicFilterEditor/BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
 
 export type FilterEditorProps = {
   value: ManagedMessageFilterValOrRef;
@@ -26,8 +28,8 @@ export type FilterEditorProps = {
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const [_, setDefaultMessageFilterType] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
-    defaultValue: 'basic-message-filter',
-  });
+    defaultValue: 'BasicMessageFilter',
+  })
 
   const resolveResult = useManagedItemValue<ManagedMessageFilter>(props.value);
   if (resolveResult.type !== 'success') {
@@ -50,8 +52,8 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
-    <div className={s.FilterEditor} ref={hoverRef} style={{ filter: cssFilter }}>
-      <div style={{ marginBottom: '8rem' }}>
+    <div className={s.FilterEditor} style={{ filter: cssFilter }}>
+      <div style={{ marginBottom: '8rem' }} ref={hoverRef}>
         <LibraryBrowserPanel
           isReadOnly={props.isReadOnly}
           value={item}
@@ -99,7 +101,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                     {
                       type: 'item',
                       label: 'Basic',
-                      value: 'basic-message-filter',
+                      value: 'BasicMessageFilter',
                       help: (
                         <>
                           Basic filters allow to define message filters without writing any code.
@@ -112,7 +114,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                     {
                       type: 'item',
                       label: 'JavaScript',
-                      value: 'js-message-filter',
+                      value: 'JsMessageFilter',
                       help: (
                         <>
                           JavaScript filters allow to define filters for complex scenarios.
@@ -123,23 +125,21 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                       )
                     },
                   ]}
-                  value={itemSpec.type}
+                  value={itemSpec.filter.type}
                   onChange={v => {
                     setDefaultMessageFilterType(v);
 
                     switch (v) {
-                      case 'basic-message-filter':
+                      case 'BasicMessageFilter':
                         onSpecChange({
                           ...itemSpec,
-                          type: 'basic-message-filter',
-                          value: defaultBasicMessageFilter,
+                          filter: defaultBasicMessageFilter,
                         });
                         return;
-                      case 'js-message-filter':
+                      case 'JsMessageFilter':
                         onSpecChange({
                           ...itemSpec,
-                          type: 'js-message-filter',
-                          value: defaultJsFilterValue,
+                          filter: defaultJsFilterValue,
                         });
                         return;
                     }
@@ -153,27 +153,32 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
         />
       </div>
 
+      <FormItem size='small'>
+        <BasicMessageFilterTargetInput
+          value={itemSpec.targetField}
+          onChange={(v) => onSpecChange({ ...itemSpec, targetField: v })}
+          isReadOnly={props.isReadOnly}
+          libraryContext={props.libraryContext}
+        />
+      </FormItem>
+
       <div>
-        {itemSpec.type === 'basic-message-filter' && (
+        {itemSpec.filter.type === 'BasicMessageFilter' && (
           <BasicFilterEditor
-            value={itemSpec.value}
+            value={itemSpec.filter}
             onChange={(v) => onSpecChange({
-              type: 'basic-message-filter',
-              value: v,
-              isEnabled: itemSpec.isEnabled,
-              isNegated: itemSpec.isNegated,
+              ...itemSpec,
+              filter: v
             })}
             isReadOnly={props.isReadOnly}
           />
         )}
-        {itemSpec.type === 'js-message-filter' && (
+        {itemSpec.filter.type === 'JsMessageFilter' && (
           <JsFilterEditor
-            value={itemSpec.value}
+            value={itemSpec.filter}
             onChange={(v) => onSpecChange({
-              type: 'js-message-filter',
-              value: v,
-              isEnabled: itemSpec.isEnabled,
-              isNegated: itemSpec.isNegated,
+              ...itemSpec,
+              filter: v
             })}
             isReadOnly={props.isReadOnly}
           />
