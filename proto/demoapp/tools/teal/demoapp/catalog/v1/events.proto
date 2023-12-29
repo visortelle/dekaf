@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.catalog.v1;
+
+import "tools/teal/demoapp/dto/v1/dto.proto";
+
+
+message CatalogCreated {
+  string catalog_id = 1;
+  string title = 2;
+  string description = 3;
+  int64 version = 4;
+}
+
+message CatalogDeleted {
+  string catalog_id = 1;
+  int64 version = 2;
+}
+
+message CatalogActivated {
+  string catalog_id = 1;
+  int64 version = 2;
+}
+
+message CatalogDeactivated {
+  string catalog_id = 1;
+  int64 version = 2;
+}
+
+message CatalogTitleChanged {
+  string catalog_id = 1;
+  string title = 2;
+  int64 version = 3;
+}
+
+message CatalogDescriptionChanged {
+  string catalog_id = 1;
+  string description = 2;
+  int64 version = 3;
+}
+
+message CatalogItemAdded {
+  string catalog_id = 1;
+  string item_id = 2;
+  string inventory_id = 3;
+  tools.teal.demoapp.dto.v1.Product product = 4;
+  tools.teal.demoapp.dto.v1.Money unit_price = 5;
+  string sku = 6;
+  int32 quantity = 7;
+  int64 version = 8;
+}
+
+message CatalogItemRemoved {
+  string catalog_id = 1;
+  string item_id = 2;
+  int64 version = 3;
+}
+
+message CatalogItemIncreased {
+  string catalog_id = 1;
+  string item_id = 2;
+  string inventory_id = 3;
+  int32 quantity = 4;
+  int64 version = 5;
+}
+
+message CatalogEventsSchema {
+  oneof event {
+    CatalogCreated catalog_created = 1;
+    CatalogDeleted catalog_deleted = 2;
+    CatalogActivated catalog_activated = 3;
+    CatalogDeactivated catalog_deactivated = 4;
+    CatalogTitleChanged catalog_title_changed = 5;
+    CatalogDescriptionChanged catalog_description_changed = 6;
+    CatalogItemAdded catalog_item_added = 7;
+    CatalogItemRemoved catalog_item_removed = 8;
+    CatalogItemIncreased catalog_item_increased = 9;
+  }
+}

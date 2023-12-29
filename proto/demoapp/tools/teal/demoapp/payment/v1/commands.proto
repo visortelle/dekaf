@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.payment.v1;
+
+import "tools/teal/demoapp/dto/v1/dto.proto";
+
+message RequestPayment {
+  string order_id = 1;
+  tools.teal.demoapp.dto.v1.Money amount_due = 2;
+  tools.teal.demoapp.dto.v1.Address billing_address = 3;
+  repeated tools.teal.demoapp.dto.v1.PaymentMethod payment_methods = 4;
+}
+
+message ProceedWithPayment {
+  string payment_id = 1;
+  string order_id = 2;
+}
+
+message CancelPayment {
+  string payment_id = 1;
+  string order_id = 2;
+}
+
+message AuthorizePaymentMethod {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+}
+
+message DenyPaymentMethod {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+}
+
+message CancelPaymentMethod {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+}
+
+message RefundPaymentMethod {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+}
+
+message DenyPaymentMethodRefund {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+}
+
+message DenyPaymentMethodCancellation {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+}
+
+message PaymentCommandsSchema {
+  oneof command {
+    RequestPayment request_payment = 1;
+    ProceedWithPayment proceed_with_payment = 2;
+    CancelPayment cancel_payment = 3;
+    AuthorizePaymentMethod authorize_payment_method = 4;
+    DenyPaymentMethod deny_payment_method = 5;
+    CancelPaymentMethod cancel_payment_method = 6;
+    RefundPaymentMethod refund_payment_method = 7;
+    DenyPaymentMethodRefund deny_payment_method_refund = 8;
+    DenyPaymentMethodCancellation deny_payment_method_cancellation = 9;
+  }
+}

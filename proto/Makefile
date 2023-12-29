@@ -6,9 +6,10 @@ clean:
 	rm -rf ./gen
 	rm -rf ../ui/grpc-web
 	rm -rf ../server/src/main/scala/pb
+	rm -rf ../demoapp/src/main/scala/pb
 
 .PHONY: build
 build:
-	buf mod update
-	buf lint
-	buf generate --include-imports --include-wkt
+	cd ./dekaf && buf mod update && buf lint && buf generate --include-imports --include-wkt
+	cd ./demoapp && buf mod update && buf lint && buf generate --include-imports --include-wkt
+

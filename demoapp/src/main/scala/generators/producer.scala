@@ -74,21 +74,18 @@ object ProducerPlanGenerator:
         ZIO.succeed(producerPlanGenerator)
 
 object ProducerPlanExecutor:
-  def createProducer(producerName: ProducerName, topicPlan: TopicPlan): Task[Producer[Array[Byte]]] =
-    val topicFqn = topicPlan.mkTopicFqn
-
-    ZIO.attempt {
-      val schema = new AutoProduceBytesSchema[Array[Byte]]
-      pulsarClient
-        .newProducer(schema)
-        .producerName(producerName)
-        .topic(topicFqn)
-        .create
-    }
-
   def startProduce(producerPlan: ProducerPlan, topicPlan: TopicPlan): Task[Unit] =
+    val topicFqn = topicPlan.topicFqn
+    
     for {
-      producer <- createProducer(producerPlan.name, topicPlan)
+      producer <- ZIO.attempt {
+        val schema = new AutoProduceBytesSchema[Array[Byte]]
+        pulsarClient
+          .newProducer(schema)
+          .producerName(producerPlan.name)
+          .topic(topicFqn)
+          .create
+      }
       _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topicPlan.name}")
       _ <- producerPlan.messageIndex
         .update { messageIndex =>
@@ -122,7 +119,7 @@ object ProducerPlanExecutor:
           pulsarClient
             .newProducer(schema)
             .producerName(producerPlan.name)
-            .topic(topicPlan.mkTopicFqn)
+            .topic(topicPlan.topicFqn)
             .create
         }
       }

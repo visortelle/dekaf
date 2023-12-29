@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.catalog.v1;
+
+import "tools/teal/demoapp/dto/v1/dto.proto";
+
+message ActivateCatalog {
+  string catalog_id = 1;
+}
+
+message AddCatalogItem {
+  string catalog_id = 1;
+  string inventory_id = 2;
+  tools.teal.demoapp.dto.v1.Product product = 3;
+  tools.teal.demoapp.dto.v1.Money unit_price = 4;
+  string sku = 5;
+  int32 quantity = 6;
+}
+
+message ChangeCatalogDescription {
+  string catalog_id = 1;
+  string description = 2;
+}
+
+message ChangeCatalogTitle {
+  string catalog_id = 1;
+  string title = 2;
+}
+
+message CreateCatalog {
+  string catalog_id = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message DeactivateCatalog {
+  string catalog_id = 1;
+}
+
+message DeleteCatalog {
+  string catalog_id = 1;
+}
+
+message RemoveCatalogItem {
+  string catalog_id = 1;
+  string item_id = 2;
+}
+
+message CatalogCommandsSchema {
+  oneof command {
+    ActivateCatalog activate_catalog = 1;
+    AddCatalogItem add_catalog_item = 2;
+    ChangeCatalogDescription change_catalog_description = 3;
+    ChangeCatalogTitle change_catalog_title = 4;
+    CreateCatalog create_catalog = 5;
+    DeactivateCatalog deactivate_catalog = 6;
+    DeleteCatalog delete_catalog = 7;
+    RemoveCatalogItem remove_catalog_item = 8;
+  }
+}

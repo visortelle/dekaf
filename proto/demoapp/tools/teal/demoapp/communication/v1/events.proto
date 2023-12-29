@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.communication.v1;
+
+import "tools/teal/demoapp/dto/v1/dto.proto";
+
+message NotificationRequested {
+  string notification_id = 1;
+  repeated tools.teal.demoapp.dto.v1.NotificationMethod methods = 2;
+  int64 version = 3;
+}
+
+message NotificationMethodFailed {
+  string notification_id = 1;
+  string method_id = 2;
+  int64 version = 3;
+}
+
+message NotificationMethodSent {
+  string notification_id = 1;
+  string method_id = 2;
+  int64 version = 3;
+}
+
+message NotificationMethodCancelled {
+  string notification_id = 1;
+  string method_id = 2;
+  int64 version = 3;
+}
+
+message NotificationMethodReset {
+  string notification_id = 1;
+  string method_id = 2;
+  int64 version = 3;
+}
+
+message CommunicationEventsSchema {
+  oneof event {
+    NotificationRequested notification_requested = 1;
+    NotificationMethodFailed notification_method_failed = 2;
+    NotificationMethodSent notification_method_sent = 3;
+    NotificationMethodCancelled notification_method_cancelled = 4;
+    NotificationMethodReset notification_method_reset = 5;
+  }
+}

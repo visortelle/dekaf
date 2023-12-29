@@ -1,0 +1,9 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - name: scala
+    out: ../../demoapp/src/main/scala/pb
+    opt:
+      - no_lenses
+

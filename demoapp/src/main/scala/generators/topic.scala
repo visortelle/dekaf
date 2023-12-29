@@ -39,7 +39,7 @@ case class TopicPlan(
     subscriptions: Map[SubscriptionName, SubscriptionPlan],
     afterAllocation: TopicPlan => Unit
 ):
-  def mkTopicFqn: String = persistency match
+  def topicFqn: String = persistency match
     case Persistent() => s"persistent://${tenant}/${namespace}/${name}"
     case NonPersistent() => s"non-persistent://${tenant}/${namespace}/${name}"
 
@@ -57,6 +57,8 @@ object TopicPlan:
         afterAllocation = _ => ()
       )
     )
+    
+    def makeProducers()
     
     def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): Task[TopicPlan] = for {
         producerGenerators <- ZIO.foreach(0 until generator.mkProducersCount(topicIndex)) { producerIndex =>
@@ -154,7 +156,7 @@ object TopicPlanExecutor:
     def allocateResources(topicPlan: TopicPlan): Task[TopicPlan] =
         for {
             _ <- ZIO.logInfo(s"Allocating resources for topic ${topicPlan.name}")
-            topicFqn <- ZIO.attempt(topicPlan.mkTopicFqn)
+            topicFqn <- ZIO.attempt(topicPlan.topicFqn)
             _ <- ZIO.attempt {
                 topicPlan.partitioning match
                     case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
@@ -168,7 +170,7 @@ object TopicPlanExecutor:
         } yield topicPlan
 
     private def startConsume(topic: TopicPlan): Task[Unit] =
-        val topicFqn = topic.mkTopicFqn
+        val topicFqn = topic.topicFqn
 
         def makeConsumers(subscription: SubscriptionPlan) = subscription.consumers.map { case (_, consumer) =>
             pulsarClient.newConsumer

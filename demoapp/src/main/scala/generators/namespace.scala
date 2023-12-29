@@ -2,8 +2,8 @@ package generators
 
 import zio.*
 import _root_.client.{adminClient, pulsarClient}
-import demo.tenants.schemas.namespaces.exampleShop.shared.{Command, Event}
-import demo.tenants.schemas.namespaces.exampleShop.shared.ConverterMappings
+import demo.tenants.cqrs.shared.{Command, Event}
+import demo.tenants.cqrs.shared.ConverterMappings
 
 type NamespaceName = String
 type NamespaceIndex = Int
@@ -13,7 +13,7 @@ case class NamespacePlan(
     name: NamespaceName,
     topics: Map[TopicName, TopicPlan],
     multiTopicProducers: Map[ProducerPlan, List[TopicPlan]],
-    actors:  Map[ActorName, ActorPlan[? <: Command, ? <: Event]],
+    processors:  Map[ProcessorName, ProcessorPlan[? <: Command, ? <: Event]],
     afterAllocation: () => Unit
 )
 
@@ -27,20 +27,20 @@ object NamespacePlan:
         }
         topics <- ZIO.succeed(topicsAsPairs.toMap)
 
-        actorsAsPairs <- ZIO.foreach(List.range(0, generator.mkActorsCount(namespaceIndex))) { actorIndex =>
+        processorsAsPairs <- ZIO.foreach(List.range(0, generator.mkProcessorsCount(namespaceIndex))) { processorIndex =>
             for {
-                actorGenerator <- generator.mkActorGenerator(actorIndex)
-                actorPlan <- ActorPlan.make(actorGenerator, actorIndex)(using actorGenerator.converter)
-            } yield actorPlan.name -> actorPlan
+                processorGenerator <- generator.mkProcessorGenerator(processorIndex)
+                processorPlan <- ProcessorPlan.make(processorGenerator, processorIndex)(using processorGenerator.converter)
+            } yield processorPlan.name -> processorPlan
         }
-        actors <- ZIO.succeed(actorsAsPairs.toMap)
+        processors <- ZIO.succeed(processorsAsPairs.toMap)
         namespacePlan <- ZIO.succeed {
             NamespacePlan(
                 tenant = generator.mkTenant(),
                 name = generator.mkName(namespaceIndex),
                 topics = topics,
                 multiTopicProducers = generator.mkMultiTopicProducers(namespaceIndex),
-                actors = actors,
+                processors = processors,
                 afterAllocation = () => generator.mkAfterAllocation(namespaceIndex)
             )
         }
@@ -52,8 +52,8 @@ case class NamespacePlanGenerator(
    mkTopicsCount: NamespaceIndex => Int,
    mkTopicGenerator: TopicIndex => Task[TopicPlanGenerator],
    mkMultiTopicProducers: NamespaceIndex => Map[ProducerPlan, List[TopicPlan]],
-   mkActorsCount: NamespaceIndex => Int,
-   mkActorGenerator: NamespaceIndex => Task[ActorPlanGenerator[? <: Command, ? <: Event]],
+   mkProcessorsCount: NamespaceIndex => Int,
+   mkProcessorGenerator: NamespaceIndex => Task[ProcessorPlanGenerator[? <: Command, ? <: Event]],
    mkAfterAllocation: NamespaceIndex => Unit = _ => ()
 )
 
@@ -64,9 +64,9 @@ object NamespacePlanGenerator:
         mkTopicsCount: NamespaceIndex => Int = _ => 1,
         mkTopicGenerator: TopicIndex => Task[TopicPlanGenerator] = _ => TopicPlanGenerator.make(),
         mkMultiTopicProducers: NamespaceIndex => Map[ProducerPlan, List[TopicPlan]] = _ => Map.empty,
-        mkActorsCount: NamespaceIndex => Int = _ => 1,
-        mkActorGenerator: ActorIndex => Task[ActorPlanGenerator[? <: Command, ? <: Event]] =
-          _ => ActorPlanGenerator.make[Command, Event]()(using ConverterMappings.commandToEvent),
+        mkProcessorsCount: NamespaceIndex => Int = _ => 1,
+        mkProcessorGenerator: ProcessorIndex => Task[ProcessorPlanGenerator[? <: Command, ? <: Event]] =
+          _ => ProcessorPlanGenerator.make[Command, Event]()(using ConverterMappings.commandToEvent),
         mkAfterAllocation: NamespaceIndex => Unit = _ => ()
     ): Task[NamespacePlanGenerator] =
         val namespacePlanGenerator = NamespacePlanGenerator(
@@ -75,8 +75,8 @@ object NamespacePlanGenerator:
             mkTopicsCount = mkTopicsCount,
             mkTopicGenerator = mkTopicGenerator,
             mkMultiTopicProducers = mkMultiTopicProducers,
-            mkActorsCount = mkActorsCount,
-            mkActorGenerator = mkActorGenerator,
+            mkProcessorsCount = mkProcessorsCount,
+            mkProcessorGenerator = mkProcessorGenerator,
             mkAfterAllocation = mkAfterAllocation
         )
 
@@ -99,5 +99,5 @@ object NamespacePlanExecutor:
         _ <- ZIO.logInfo(s"Starting namespace ${namespacePlan.name}")
         _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
           <&> ZIO.foreachParDiscard(namespacePlan.multiTopicProducers)(ProducerPlanExecutor.startMultiTopicProducer)
-          <&> ZIO.foreachParDiscard(namespacePlan.actors.values)(ActorPlanExecutor.start)
+          <&> ZIO.foreachParDiscard(namespacePlan.processors.values)(ProcessorPlanExecutor.start)
     } yield ()

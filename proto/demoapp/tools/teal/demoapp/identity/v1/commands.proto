@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.identity.v1;
+
+message ChangeEmail {
+  string user_id = 1;
+  string email = 2;
+}
+
+message ConfirmEmail {
+  string user_id = 1;
+  string email = 2;
+}
+
+message ExpiryEmail {
+  string user_id = 1;
+  string email = 2;
+}
+
+message RegisterUser {
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string password = 5;
+}
+
+message ChangePassword {
+  string user_id = 1;
+  string new_password = 2;
+  string new_password_confirmation = 3;
+}
+
+message DefinePrimaryEmail {
+  string user_id = 1;
+  string email = 2;
+}
+
+message DeleteUser {
+  string user_id = 1;
+}
+
+message IdentityCommandsSchema {
+  oneof command {
+    ChangeEmail change_email = 1;
+    ConfirmEmail confirm_email = 2;
+    ExpiryEmail expiry_email = 3;
+    RegisterUser register_user = 4;
+    ChangePassword change_password = 5;
+    DefinePrimaryEmail define_primary_email = 6;
+    DeleteUser delete_user = 7;
+  }
+}

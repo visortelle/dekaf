@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.shopping_cart.v1;
+
+import "tools/teal/demoapp/dto/v1/dto.proto";
+
+message AddCartItem {
+  string cart_id = 1;
+  string catalog_id = 2;
+  string inventory_id = 3;
+  tools.teal.demoapp.dto.v1.Product product = 4;
+  int32 quantity = 5;
+  tools.teal.demoapp.dto.v1.Money unit_price = 6;
+}
+
+message AddCreditCard {
+  string cart_id = 1;
+  tools.teal.demoapp.dto.v1.Money amount = 2;
+  tools.teal.demoapp.dto.v1.CreditCard credit_card = 3;
+}
+
+message AddDebitCard {
+  string cart_id = 1;
+  tools.teal.demoapp.dto.v1.Money amount = 2;
+  tools.teal.demoapp.dto.v1.DebitCard debit_card = 3;
+}
+
+message AddPayPal {
+  string cart_id = 1;
+  tools.teal.demoapp.dto.v1.Money amount = 2;
+  tools.teal.demoapp.dto.v1.PayPal pay_pal = 3;
+}
+
+message AddShippingAddress {
+  string cart_id = 1;
+  tools.teal.demoapp.dto.v1.Address address = 2;
+}
+
+message AddBillingAddress {
+  string cart_id = 1;
+  tools.teal.demoapp.dto.v1.Address address = 2;
+}
+
+message CreateCart {
+  string customer_id = 1;
+  string currency = 2;
+}
+
+message CheckOutCart {
+  string cart_id = 1;
+}
+
+message RemoveCartItem {
+  string cart_id = 1;
+  string item_id = 2;
+}
+
+message ChangeCartItemQuantity {
+  string cart_id = 1;
+  string item_id = 2;
+  int32 new_quantity = 3;
+}
+
+message DiscardCart {
+  string cart_id = 1;
+}
+
+message RemovePaymentMethod {
+  string cart_id = 1;
+  string method_id = 2;
+}
+
+message RebuildCartProjection {
+  string projection = 1;
+}
+
+message ShoppingCartCommandsSchema {
+  oneof command {
+    AddCartItem add_cart_item = 1;
+    AddCreditCard add_credit_card = 2;
+    AddDebitCard add_debit_card = 3;
+    AddPayPal add_pay_pal = 4;
+    AddShippingAddress add_shipping_address = 5;
+    AddBillingAddress add_billing_address = 6;
+    CreateCart create_cart = 7;
+    CheckOutCart check_out_cart = 8;
+    RemoveCartItem remove_cart_item = 9;
+    ChangeCartItemQuantity change_cart_item_quantity = 10;
+    DiscardCart discard_cart = 11;
+    RemovePaymentMethod remove_payment_method = 12;
+    RebuildCartProjection rebuild_cart_projection = 13;
+  }
+}

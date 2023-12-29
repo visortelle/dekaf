@@ -2,7 +2,7 @@ val scala3Version = "3.3.0"
 val pulsarVersion = "3.0.0"
 val zioVersion = "2.0.15"
 val zioConfigVersion = "3.0.7"
-val circeVersion = "0.14.5"
+val circeVersion = "0.14.6"
 val jacksonVersion = "2.15.2"
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
@@ -16,6 +16,8 @@ packageDoc / publishArtifact := false
 scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
 
 run / javaOptions ++= Seq("-Xmx8G")
+
+resolvers += Resolver.mavenCentral
 
 lazy val root = project
     .enablePlugins(ClasspathJarPlugin)
@@ -38,8 +40,7 @@ lazy val root = project
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % jacksonVersion,
             "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion,
             "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
-            "com.google.protobuf" % "protobuf-java" % "3.23.3",
-            "com.lihaoyi" %% "os-lib" % "0.9.1",
+            "com.lihaoyi" %% "os-lib" % "0.9.2",
             "com.lihaoyi" %% "pprint" % "0.8.1",
 
             // Pulsar
@@ -57,5 +58,9 @@ lazy val root = project
             "net.datafaker" % "datafaker" % "2.0.1",
             "org.scalameta" %% "munit" % "0.7.29" % Test,
             "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
+            "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1",
+
+            "com.google.protobuf" % "protobuf-java" % "3.25.1",
+            "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
         )
     )

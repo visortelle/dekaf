@@ -4,4 +4,4 @@ webServiceUrl: "http://localhost:8080"
 loadConfig:
   enableNonPersistentTopics: false
   producerLoadMultiplier:
-    baseMultiplier: 0.5
+    lightlyLoaded: 1000

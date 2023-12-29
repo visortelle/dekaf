@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package tools.teal.demoapp.account.v1;
+
+import "tools/teal/demoapp/dto/v1/dto.proto";
+
+message AccountActivated {
+  string account_id = 1;
+  string status = 2;
+  int64 version = 3;
+}
+
+message AccountCreated {
+  string account_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string status = 5;
+  int64 version = 6;
+}
+
+message AccountDeactivated {
+  string account_id = 1;
+  string status = 2;
+  int64 version = 3;
+}
+
+message AccountDeleted {
+  string account_id = 1;
+  string status = 2;
+  int64 version = 3;
+}
+
+message BillingAddressAdded {
+  string account_id = 1;
+  string address_id = 2;
+  tools.teal.demoapp.dto.v1.Address address = 3; 
+  int64 version = 4;
+}
+
+message BillingAddressDeleted {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message BillingAddressPreferred {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message BillingAddressRestored {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message PrimaryBillingAddressRemoved {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message PrimaryShippingAddressRemoved {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message ShippingAddressAdded {
+  string account_id = 1;
+  string address_id = 2;
+  tools.teal.demoapp.dto.v1.Address address = 3; 
+  int64 version = 4;
+}
+
+message ShippingAddressDeleted {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message ShippingAddressPreferred {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message ShippingAddressRestored {
+  string account_id = 1;
+  string address_id = 2;
+  int64 version = 3;
+}
+
+message AccountEventsSchema {
+  oneof event {
+    AccountActivated account_activated = 1;
+    AccountCreated account_created = 2;
+    AccountDeactivated account_deactivated = 3;
+    AccountDeleted account_deleted = 4;
+    BillingAddressAdded billing_address_added = 5;
+    BillingAddressDeleted billing_address_deleted = 6;
+    BillingAddressPreferred billing_address_preferred = 7;
+    BillingAddressRestored billing_address_restored = 8;
+    PrimaryBillingAddressRemoved primary_billing_address_removed = 9;
+    PrimaryShippingAddressRemoved primary_shipping_address_removed = 10;
+    ShippingAddressAdded shipping_address_added = 11;
+    ShippingAddressDeleted shipping_address_deleted = 12;
+    ShippingAddressPreferred shipping_address_preferred = 13;
+    ShippingAddressRestored shipping_address_restored = 14;
+  }
+}

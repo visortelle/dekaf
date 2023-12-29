@@ -1,0 +1,18 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - name: js # Required for grpc-web.
+    out: ../../ui/grpc-web
+    opt:
+      - import_style=commonjs
+  - name: grpc-web
+    out: ../../ui/grpc-web
+    opt:
+      - mode=grpcwebtext
+      - import_style=typescript
+  - name: scala
+    out: ../../server/src/main/scala/pb
+    opt:
+      - grpc
+      - no_lenses

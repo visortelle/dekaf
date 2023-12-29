@@ -1,8 +1,8 @@
 import zio.*
 import generators.*
-import demo.tenants.schemas.{CommandsTenant, EventsTenant, SchemasTenant}
+import demo.tenants.schemas.SchemasTenant
 import client.{adminClient, pulsarClient}
-import demo.tenants.schemas.namespaces.exampleShop.DemoappTenant
+import demo.tenants.cqrs.DemoappTenant
 
 import scala.jdk.CollectionConverters.*
 
