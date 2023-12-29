@@ -10,6 +10,7 @@ import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import Toggle from '../../../../../../Toggle/Toggle';
 import CodeEditor from '../../../../../../CodeEditor/CodeEditor';
+import JsonModifierInput from '../../../../../../JsonModifierInput/JsonModifierInput';
 
 export type BasicMessageFilterTargetInputProps = {
   value: ManagedBasicMessageFilterTargetValOrRef,
@@ -133,17 +134,22 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
             />
           )}
           <Toggle
-            value={itemSpec.target.jsModifierCode !== undefined}
+            value={itemSpec.target.jsonModifier !== undefined}
             onChange={(v) => {
               if (target.type === "BasicMessageFilterValueTarget") {
                 const newTarget: BasicMessageFilterTarget = {
                   ...itemSpec.target,
-                  jsModifierCode: v ? '(v) => v' : undefined,
+                  jsonModifier: v ? {
+                    modifier: {
+                      type: "JsJsonModifier",
+                      jsCode: '(v) => v'
+                    }
+                  } : undefined,
                 };
                 onSpecChange({ ...itemSpec, target: newTarget });
               }
             }}
-            label='Post-process'
+            label='Modify'
             isReadOnly={props.isReadOnly}
           />
         </div>
@@ -162,14 +168,13 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
           )}
         </div>
       </div>
-      {itemSpec.target.jsModifierCode === undefined ? null : (
+      {itemSpec.target.jsonModifier === undefined ? null : (
         <div style={{ marginTop: '8rem' }}>
-          <CodeEditor
-            value={itemSpec.target.jsModifierCode}
+          <JsonModifierInput
+            value={itemSpec.target.jsonModifier}
             onChange={(v) => {
-              onSpecChange({ ...itemSpec, target: { ...itemSpec.target, jsModifierCode: v } })
+              onSpecChange({ ...itemSpec, target: { ...itemSpec.target, jsonModifier: v } })
             }}
-            height={40}
           />
         </div>
       )}

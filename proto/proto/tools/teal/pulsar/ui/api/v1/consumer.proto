@@ -413,12 +413,12 @@ message BasicMessageFilterSessionContextStateTarget {
 }
 
 message JsJsonModifier {
-  google.protobuf.StringValue js_code = 50;
+  string js_code = 50;
 }
 
 message JsonModifier {
   oneof modifier {
-    JsJsonModifier modifier_json = 1;
+    JsJsonModifier modifier_js = 1;
   }
 }
 
