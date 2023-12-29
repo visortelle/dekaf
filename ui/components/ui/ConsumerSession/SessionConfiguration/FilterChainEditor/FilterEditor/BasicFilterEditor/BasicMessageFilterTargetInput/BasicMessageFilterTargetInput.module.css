@@ -1,5 +1,6 @@
 .BasicMessageFilterTargetInput {
   display: flex;
+  flex-direction: column;
 }
 
 .TargetType {

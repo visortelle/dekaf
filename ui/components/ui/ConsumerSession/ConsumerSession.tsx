@@ -345,7 +345,7 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [messages, sort, sessionState]);
 
   return (
-    <div className={s.Messages}>
+    <div className={s.ConsumerSession}>
       <Toolbar
         config={config}
         sessionState={sessionState}

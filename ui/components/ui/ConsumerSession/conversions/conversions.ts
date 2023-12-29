@@ -27,7 +27,8 @@ import {
   ConsumerSessionPauseTriggerChain,
   ConsumerSessionTarget,
   TestResult,
-  ChainTestResult
+  ChainTestResult,
+  JsMessageFilter
 } from "../types";
 
 import {
@@ -37,7 +38,7 @@ import {
   RegexSubscriptionMode,
 } from '../topic-selector/topic-selector';
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
-import { basicMessageFilterFromPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
+import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -348,34 +349,39 @@ export function coloringRuleChainToPb(v: ColoringRuleChain): pb.ColoringRuleChai
   return coloringRuleChainPb;
 }
 
+export function jsMessageFilterFromPb(v: pb.JsMessageFilter): JsMessageFilter {
+  return {
+    type: "JsMessageFilter",
+    jsCode: v.getJsCode()
+  }
+}
+
+export function jsMessageFilterToPb(v: JsMessageFilter): pb.JsMessageFilter {
+  const resultPb = new pb.JsMessageFilter();
+  resultPb.setJsCode(v.jsCode);
+
+  return resultPb;
+}
+
 export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
-  switch (filter.type) {
-    case "js-message-filter": {
-      const jsMessageFilterPb = new pb.JsMessageFilter();
-      jsMessageFilterPb.setJsCode(filter.value.jsCode);
+  const messageFilterPb = new pb.MessageFilter();
+  messageFilterPb.setTargetField(basicMessageFilterTargetToPb(filter.targetField));
+  messageFilterPb.setIsEnabled(filter.isEnabled);
+  messageFilterPb.setIsNegated(filter.isNegated);
 
-      const messageFilterPb = new pb.MessageFilter();
-
-      messageFilterPb.setFilterJs(jsMessageFilterPb)
-      messageFilterPb.setIsEnabled(filter.isEnabled);
-      messageFilterPb.setIsNegated(filter.isNegated);
-
-      return messageFilterPb;
+  switch (filter.filter.type) {
+    case "JsMessageFilter": {
+      messageFilterPb.setFilterJs(jsMessageFilterToPb(filter.filter));
+      break;
     }
 
-    case "basic-message-filter": {
-      const basicMessageFilterPb = basicMessageFilterToPb(filter.value);
-
-      const messageFilterPb = new pb.MessageFilter();
-
-      messageFilterPb.setFilterBasic(basicMessageFilterPb)
-      messageFilterPb.setIsEnabled(filter.isEnabled);
-      messageFilterPb.setIsNegated(filter.isNegated);
-
-      return messageFilterPb;
-
+    case "BasicMessageFilter": {
+      messageFilterPb.setFilterBasic(basicMessageFilterToPb(filter.filter));
+      break;
     }
   }
+
+  return messageFilterPb;
 }
 
 export function messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode {
@@ -404,17 +410,19 @@ export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
   switch (filter.getFilterCase()) {
     case pb.MessageFilter.FilterCase.FILTER_JS:
       return {
-        type: 'js-message-filter',
-        value: { jsCode: filter.getFilterJs()?.getJsCode() ?? '' },
+        type: 'MessageFilter',
         isEnabled: filter.getIsEnabled(),
         isNegated: filter.getIsNegated(),
+        targetField: basicMessageFilterTargetFromPb(filter.getTargetField()!),
+        filter: { type: "JsMessageFilter", jsCode: filter.getFilterJs()?.getJsCode() ?? '' },
       };
     case pb.MessageFilter.FilterCase.FILTER_BASIC: {
       return {
-        type: 'basic-message-filter',
-        value: basicMessageFilterFromPb(filter.getFilterBasic()!),
+        type: 'MessageFilter',
         isEnabled: filter.getIsEnabled(),
         isNegated: filter.getIsNegated(),
+        targetField: basicMessageFilterTargetFromPb(filter.getTargetField()!),
+        filter: basicMessageFilterFromPb(filter.getFilterBasic()!),
       };
     }
     default:

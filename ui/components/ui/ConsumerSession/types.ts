@@ -1,4 +1,4 @@
-import { BasicMessageFilter } from "./basic-message-filter-types";
+import { BasicMessageFilter, BasicMessageFilterTarget } from "./basic-message-filter-types";
 import { TopicSelector } from "./topic-selector/topic-selector";
 
 export type SessionState =
@@ -119,19 +119,17 @@ export type MessageDescriptor = {
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;
 
 export type JsMessageFilter = {
+  type: "JsMessageFilter",
   jsCode: string;
 };
 
 export type MessageFilter = {
+  type: "MessageFilter";
   isEnabled: boolean;
   isNegated: boolean;
-} & ({
-  type: "js-message-filter";
-  value: JsMessageFilter;
-} | {
-  type: "basic-message-filter";
-  value: BasicMessageFilter;
-});
+  targetField: BasicMessageFilterTarget
+  filter: JsMessageFilter | BasicMessageFilter
+};
 
 export type MessageFilterChainMode = 'all' | 'any';
 
@@ -142,7 +140,7 @@ export type MessageFilterChain = {
   mode: MessageFilterChainMode;
 }
 
-export type MessageFilterType = MessageFilter['type'];
+export type MessageFilterType = MessageFilter['filter']['type'];
 
 export type TestResult = {
   isOk: boolean,

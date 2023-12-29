@@ -56,6 +56,8 @@ export function pulsarResourceFromFqn<T extends PulsarResource>(fqn: string): T 
 
 export function pulsarResourceToFqn(resource: PulsarResource): string {
   switch (resource.type) {
+    case 'instance':
+      return '';
     case 'tenant':
       return resource.tenant;
     case 'namespace':
