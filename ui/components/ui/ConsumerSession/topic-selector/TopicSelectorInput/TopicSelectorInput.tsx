@@ -5,7 +5,7 @@ import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
-import Select from '../../../Select/Select';
+import Select, { List } from '../../../Select/Select';
 import ListInput from '../../../ConfigurationTable/ListInput/ListInput';
 import Input from '../../../Input/Input';
 import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
@@ -55,6 +55,15 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     `${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}` :
     undefined;
 
+  let list: List<ManagedTopicSelectorSpec['topicSelector']['type']> = [
+    { type: 'item', title: 'Specific Topic(s)', value: 'multi-topic-selector' },
+    { type: 'item', title: 'Namespaced RegExp', value: 'namespaced-regex-topic-selector' },
+  ];
+
+  if (props.libraryContext.pulsarResource.type === 'topic') {
+    list = [{ type: 'item', title: 'Current Topic', value: 'current-topic' }, ...list];
+  }
+
   return (
     <div className={s.TopicsSelectorsInput} ref={hoverRef}>
       <LibraryBrowserPanel
@@ -87,11 +96,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
 
       <FormItem>
         <Select<ManagedTopicSelectorSpec['topicSelector']['type']>
-          list={[
-            { type: 'item', title: 'Current Topic', value: 'current-topic' },
-            { type: 'item', title: 'Specific Topic(s)', value: 'multi-topic-selector' },
-            { type: 'item', title: 'Namespaced RegExp', value: 'namespaced-regex-topic-selector' },
-          ]}
+          list={list}
           onChange={(v) => {
             if (v === 'current-topic') {
               onSpecChange({ topicSelector: { type: 'current-topic' } });

@@ -33,7 +33,8 @@ const itemTypes: ManagedItemType[] = [
   "consumer-session-start-from",
   "coloring-rule",
   "coloring-rule-chain",
-  "markdown-document"
+  "markdown-document",
+  "basic-message-filter-target"
 ];
 
 const Library: React.FC<LibraryProps> = (props) => {

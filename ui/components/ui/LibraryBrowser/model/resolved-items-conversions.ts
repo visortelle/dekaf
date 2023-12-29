@@ -1,13 +1,30 @@
-import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from "./user-managed-items";
 import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../ConsumerSession/types";
 import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
+import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
     throw new Error('MessageFilter reference can\'t be converted to value');
   }
 
-  return v.val.spec;
+  const spec = v.val.spec;
+
+  return {
+    type: "MessageFilter",
+    isEnabled: spec.isEnabled,
+    isNegated: spec.isNegated,
+    targetField: basicMessageFilterTargetValueFromValOrRef(spec.targetField),
+    filter: spec.filter,
+  };
+}
+
+export function basicMessageFilterTargetValueFromValOrRef(v: ManagedBasicMessageFilterTargetValOrRef): BasicMessageFilterTarget {
+  if (v.val === undefined) {
+    throw new Error('BasicMessageFilterTarget reference can\'t be converted to value');
+  }
+
+  return v.val.spec.target;
 }
 
 export function messageFilterChainFromValOrRef(v: ManagedMessageFilterChainValOrRef): MessageFilterChain {

@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import * as t from '../../types';
-import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
+import { ManagedBasicMessageFilterTargetValOrRef, ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
 
 import s from './FilterChainEditor.module.css';
@@ -17,6 +17,7 @@ import { defaultBasicMessageFilter } from './FilterEditor/BasicFilterEditor/defa
 import OnOffToggle from '../../../IconToggle/OnOffToggle/OnOffToggle';
 import InvertedToggle from '../../../IconToggle/InvertedToggle/InvertedToggle';
 import IconToggle from '../../../IconToggle/IconToggle';
+import { getDefaultManagedItemMetadata } from '../../../LibraryBrowser/default-library-items';
 
 export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
@@ -29,7 +30,7 @@ export type FilterChainEditorProps = {
 const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
-    defaultValue: 'basic-message-filter',
+    defaultValue: 'BasicMessageFilter',
   });
   const ref = useRef<HTMLDivElement>(null);
 
@@ -152,28 +153,42 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             type: 'message-filter'
           };
 
-          let newFilter: ManagedMessageFilter;
+          const targetField: ManagedBasicMessageFilterTargetValOrRef = {
+            type: "value",
+            val: {
+              metadata: getDefaultManagedItemMetadata("basic-message-filter-target"),
+              spec: {
+                target: {
+                  type: "BasicMessageFilterTarget",
+                  target: {
+                    type: "BasicMessageFilterValueTarget"
+                  }
+                }
+              }
+            }
+          };
 
+          let newFilter: ManagedMessageFilter;
           switch (defaultMessageFilterType) {
-            case 'basic-message-filter':
+            case 'BasicMessageFilter':
               newFilter = {
                 metadata,
                 spec: {
                   isEnabled: true,
                   isNegated: false,
-                  type: 'basic-message-filter',
-                  value: defaultBasicMessageFilter
+                  filter: defaultBasicMessageFilter,
+                  targetField
                 }
               };
               break;
-            case 'js-message-filter':
+            case 'JsMessageFilter':
               newFilter = {
                 metadata,
                 spec: {
                   isEnabled: true,
                   isNegated: false,
-                  type: 'js-message-filter',
-                  value: defaultJsFilterValue
+                  filter: defaultJsFilterValue,
+                  targetField
                 }
               }
               break;

@@ -27,6 +27,9 @@ const ManagedItemTypePicker: React.FC<ManagedItemTypePickerProps> = (props) => {
           { type: 'item', title: getReadableItemType('markdown-document'), value: 'markdown-document' },
           { type: 'item', title: getReadableItemType('topic-selector'), value: 'topic-selector' },
           { type: 'item', title: getReadableItemType('consumer-session-target'), value: 'consumer-session-target' },
+          { type: 'item', title: getReadableItemType('basic-message-filter-target'), value: 'basic-message-filter-target' },
+          { type: 'item', title: getReadableItemType('value-projection'), value: 'value-projection' },
+          { type: 'item', title: getReadableItemType('value-projection-list'), value: 'value-projection-list' },
         ]}
         isReadOnly={props.readOnly}
       />

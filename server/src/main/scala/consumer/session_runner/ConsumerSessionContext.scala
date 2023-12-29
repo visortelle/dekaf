@@ -4,6 +4,7 @@ import _root_.config.readConfigAsync
 import _root_.consumer.message_filter.*
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import consumer.message_filter.basic_message_filter.BasicMessageFilter
+import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
 import io.circe.generic.auto.*
 import org.graalvm.polyglot.Context
 
@@ -75,9 +76,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
                |""".stripMargin
         context.eval("js", jsCode);
 
-        val result = filter.value match
-            case f: BasicMessageFilter => testBasicMessageFilter(f)
-            case f: JsMessageFilter    => testJsMessageFilter(f)
+        val result = filter.test(context)
 
         if filter.isNegated then result.isOk = !result.isOk
         result
@@ -89,27 +88,11 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-    private def testBasicMessageFilter(filter: BasicMessageFilter): TestResult =
-        filter.test(context)
+    private def testBasicMessageFilter(filter: BasicMessageFilter, targetField: BasicMessageFilterTarget): TestResult =
+        filter.test(context, targetField)
 
-    private def testJsMessageFilter(filter: JsMessageFilter): TestResult =
-        val evalCode =
-            s"""
-              |(() => {
-              |  return (${filter.jsCode})(globalThis.$CurrentMessageVarName);
-              |})();
-              |""".stripMargin
-
-        val testResult =
-            try
-                val isOk = context.eval("js", evalCode).asBoolean
-                TestResult(isOk = isOk, error = None)
-            catch {
-                case err: Throwable =>
-                    TestResult(isOk = false, error = Some(s"JsMessageFilter error: ${err.getMessage}"))
-            }
-
-        testResult
+    private def testJsMessageFilter(filter: JsMessageFilter, targetField: BasicMessageFilterTarget): TestResult =
+        filter.test(context, targetField)
 
     def getState: JsonStateValue =
         Try(context.eval("js", s"stringify(globalThis.$JsonStateVarName)").asString) match
