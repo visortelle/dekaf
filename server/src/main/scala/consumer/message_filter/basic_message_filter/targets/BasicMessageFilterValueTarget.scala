@@ -4,7 +4,7 @@ import _root_.consumer.session_runner.{CurrentMessageVarName, JsLibsVarName}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
 case class BasicMessageFilterValueTarget(
-    jsonFieldSelector: Option[String] = None
+    jsonFieldSelector: Option[String] = None,
 ) extends BasicMessageFilterTargetTrait:
     override def resolveVarName(): String =
         jsonFieldSelector match

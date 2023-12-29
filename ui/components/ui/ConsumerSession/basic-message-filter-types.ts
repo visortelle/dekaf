@@ -1,3 +1,5 @@
+import { JsonModifier } from "../JsonModifierInput/json-modifier/json-modifier-types";
+
 export type TestOpAlwaysOk = {
   type: "TestOpAlwaysOk"
 };
@@ -191,11 +193,11 @@ export type BasicMessageFilterTarget = {
   BasicMessageFilterKeyTarget |
   BasicMessageFilterValueTarget |
   BasicMessageFilterPropertyTarget |
-  BasicMessageFilterSessionContextStateTarget
+  BasicMessageFilterSessionContextStateTarget,
+  jsonModifier?: JsonModifier
 }
 
 export type BasicMessageFilter = {
   type: "BasicMessageFilter",
-  target: BasicMessageFilterTarget,
   op: BasicMessageFilterOp
 }

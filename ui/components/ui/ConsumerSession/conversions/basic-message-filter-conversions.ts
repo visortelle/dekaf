@@ -2,6 +2,7 @@ import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
+import { jsonModifierFromPb, jsonModifierToPb } from "../../JsonModifierInput/json-modifier/json-modifier-conversions-pb";
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
   return {
@@ -475,9 +476,13 @@ export function basicMessageFilterTargetFromPb(v: pb.BasicMessageFilterTarget): 
     default: throw new Error("Unable to convert BasicMessageFilterTarget. Unknown type.");
   }
 
+  const jsonModifierPb = v.getJsonModifier();
+  const jsonModifier = jsonModifierPb === undefined ? undefined : jsonModifierFromPb(jsonModifierPb);
+
   return {
     type: "BasicMessageFilterTarget",
-    target
+    target,
+    jsonModifier
   }
 }
 
@@ -497,8 +502,11 @@ export function basicMessageFilterTargetToPb(v: BasicMessageFilterTarget): pb.Ba
     case "BasicMessageFilterSessionContextStateTarget":
       resultPb.setTargetSessionContextState(basicMessageFilterSessionContextStateTargetToPb(v.target))
       break;
-
     default: throw new Error("Unable to convert BasicMessageFilterTarget. Unknown type.");
+  }
+
+  if (v.jsonModifier !== undefined) {
+    resultPb.setJsonModifier(jsonModifierToPb(v.jsonModifier));
   }
 
   return resultPb;
@@ -507,14 +515,12 @@ export function basicMessageFilterTargetToPb(v: BasicMessageFilterTarget): pb.Ba
 export function basicMessageFilterFromPb(v: pb.BasicMessageFilter): BasicMessageFilter {
   return {
     type: "BasicMessageFilter",
-    target: basicMessageFilterTargetFromPb(v.getTarget()!),
     op: basicMessageFilterOpFromPb(v.getOp()!)
   }
 }
 
 export function basicMessageFilterToPb(v: BasicMessageFilter): pb.BasicMessageFilter {
   const resultPb = new pb.BasicMessageFilter();
-  resultPb.setTarget(basicMessageFilterTargetToPb(v.target));
   resultPb.setOp(basicMessageFilterOpToPb(v.op));
 
   return resultPb;

@@ -3,6 +3,7 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.library.v1;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 import "tools/teal/pulsar/ui/api/v1/consumer.proto";
 
 enum ManagedItemType {
@@ -22,6 +23,9 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_COLORING_RULE = 12;
   MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN = 13;
   MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET = 14;
+  MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET = 15;
+  MANAGED_ITEM_TYPE_VALUE_PROJECTION = 16;
+  MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST = 17;
 }
 
 message ManagedItemMetadata {
@@ -147,8 +151,32 @@ message ManagedConsumerSessionPauseTriggerChainValOrRef {
   }
 }
 
+message ManagedBasicMessageFilterTargetSpec {
+  tools.teal.pulsar.ui.api.v1.BasicMessageFilterTarget target = 1;
+}
+
+message ManagedBasicMessageFilterTarget {
+  ManagedItemMetadata metadata = 1;
+  ManagedBasicMessageFilterTargetSpec spec = 2;
+}
+
+message ManagedBasicMessageFilterTargetValOrRef {
+  oneof val_or_ref {
+    ManagedBasicMessageFilterTarget val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedMessageFilterSpec {
-  tools.teal.pulsar.ui.api.v1.MessageFilter message_filter = 1;
+  bool is_enabled = 10;
+  bool is_negated = 11;
+
+  ManagedBasicMessageFilterTargetValOrRef target_field = 12;
+
+  oneof filter {
+    tools.teal.pulsar.ui.api.v1.JsMessageFilter filter_js = 1;
+    tools.teal.pulsar.ui.api.v1.BasicMessageFilter filter_basic = 2;
+  }
 }
 
 message ManagedMessageFilter {
@@ -240,10 +268,45 @@ message ManagedTopicSelectorValOrRef {
   }
 }
 
+message ManagedValueProjectionSpec {
+  ManagedBasicMessageFilterTarget target = 1;
+  string short_name = 2;
+  google.protobuf.Int32Value display_chars_count = 3;
+}
+
+message ManagedValueProjection {
+  ManagedItemMetadata metadata = 1;
+  ManagedValueProjectionSpec spec = 2;
+}
+
+message ManagedValueProjectionValOrRef {
+  oneof val_or_ref {
+    ManagedValueProjection val = 1;
+    string ref = 2;
+  }
+}
+
+message ManagedValueProjectionListSpec {
+  repeated ManagedValueProjectionValOrRef projections = 1;
+}
+
+message ManagedValueProjectionList {
+  ManagedItemMetadata metadata = 1;
+  ManagedValueProjectionListSpec spec = 2;
+}
+
+message ManagedValueProjectionListValOrRef {
+  oneof val_or_ref {
+    ManagedValueProjectionList val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedConsumerSessionTargetSpec {
   ManagedTopicSelectorValOrRef topic_selector = 1;
   ManagedMessageFilterChainValOrRef message_filter_chain = 2;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 4;
+  ManagedValueProjectionListValOrRef value_projection_list = 5;
 }
 
 message ManagedConsumerSessionTarget {
@@ -264,6 +327,7 @@ message ManagedConsumerSessionConfigSpec {
   ManagedMessageFilterChainValOrRef message_filter_chain = 3;
   ManagedConsumerSessionPauseTriggerChainValOrRef pause_trigger_chain = 4;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 5;
+  ManagedValueProjectionListValOrRef value_projection_list = 6;
 }
 
 message ManagedConsumerSessionConfig {
@@ -312,6 +376,9 @@ message ManagedItem {
     ManagedRelativeDateTime spec_relative_date_time = 14;
     ManagedTopicSelector spec_topic_selector = 15;
     ManagedMarkdownDocument spec_markdown_document = 16;
+    ManagedBasicMessageFilterTarget spec_basic_message_filter_target = 17;
+    ManagedValueProjection spec_value_projection = 18;
+    ManagedValueProjectionList spec_value_projection_list = 19;
   }
 }
 
