@@ -11,7 +11,7 @@ case class BasicMessageFilter(
     op: BasicMessageFilterOp
 ):
     def test(polyglotContext: Context, target: BasicMessageFilterTarget): TestResult =
-        val opEvalCode = op.genJsFnCode(target.target) + "()"
+        val opEvalCode = op.genJsFnCode(target) + "()"
         val evalCode =
             s"""
                |(() => {

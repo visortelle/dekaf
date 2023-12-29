@@ -76,9 +76,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
                |""".stripMargin
         context.eval("js", jsCode);
 
-        val result = filter.filter match
-            case f: BasicMessageFilter => testBasicMessageFilter(f, filter.targetField)
-            case f: JsMessageFilter    => testJsMessageFilter(f, filter.targetField)
+        val result = filter.test(context)
 
         if filter.isNegated then result.isOk = !result.isOk
         result
@@ -94,28 +92,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         filter.test(context, targetField)
 
     private def testJsMessageFilter(filter: JsMessageFilter, targetField: BasicMessageFilterTarget): TestResult =
-        val evalCode =
-            s"""
-              |(() => {
-              |  const targetField = ${targetField.target.resolveVarName()}
-              |  return (${filter.jsCode})(targetField);
-              |})();
-              |""".stripMargin
-
-//        Don't remove the following debug lines
-//        println(s"DEBUG EVAL CODE")
-//        println(evalCode)
-
-        val testResult =
-            try
-                val isOk = context.eval("js", evalCode).asBoolean
-                TestResult(isOk = isOk, error = None)
-            catch {
-                case err: Throwable =>
-                    TestResult(isOk = false, error = Some(s"JsMessageFilter error: ${err.getMessage}"))
-            }
-
-        testResult
+        filter.test(context, targetField)
 
     def getState: JsonStateValue =
         Try(context.eval("js", s"stringify(globalThis.$JsonStateVarName)").asString) match

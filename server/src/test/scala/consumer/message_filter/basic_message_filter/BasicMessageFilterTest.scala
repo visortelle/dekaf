@@ -1,6 +1,7 @@
 package consumer.message_filter.basic_message_filter
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import consumer.json_modifier.{JsJsonModifier, JsonModifier}
 import org.apache.commons.text.StringEscapeUtils
 import consumer.message_filter.MessageFilter
 import consumer.message_filter.basic_message_filter.*
@@ -16,6 +17,7 @@ import zio.test.Assertion.*
 object BasicMessageFilterTest extends ZIOSpecDefault:
     case class TestSpec(
         targetField: BasicMessageFilterTargetTrait,
+        targetJsonModifier: Option[JsonModifier] = None,
         op: BasicMessageFilterOp,
         messageAsJsonOmittingValue: String = "{}",
         messageValueAsJson: String = "null",
@@ -28,7 +30,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         val filter = MessageFilter(
             isEnabled = true,
             isNegated = false,
-            targetField = BasicMessageFilterTarget(target = spec.targetField),
+            targetField = BasicMessageFilterTarget(
+                target = spec.targetField,
+                jsonModifier = spec.targetJsonModifier
+            ),
             filter = basicMessageFilter
         )
         val result = sessionContext.testMessageFilter(
@@ -104,6 +109,58 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
 
                 !isOk
             }
+        },
+        /*
+        ==================
+         * JsonModifier *
+        ==================
+         */
+        test(BasicMessageFilterValueTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(),
+                targetJsonModifier = Some(
+                    JsonModifier(
+                        modifier = JsJsonModifier(
+                            jsCode = "v => v + 1"
+                        )
+                    )
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpNumberEq(eq = "3")
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |2
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterValueTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(
+                    jsonFieldSelector = Some("a")
+                ),
+                targetJsonModifier = Some(
+                    JsonModifier(
+                        modifier = JsJsonModifier(
+                            jsCode =
+                                """
+                                  |v => v * v
+                                  |""".stripMargin
+                        )
+                    )
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpNumberEq(eq = "4")
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |{ a: 2 }
+                      |""".stripMargin
+            )))
         },
         /*
         ========================
