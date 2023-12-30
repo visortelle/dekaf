@@ -34,3 +34,9 @@ object Serde:
     mapper.writer(avroSchema).writeValueAsBytes(value)
 
   def toProto[T <: GeneratedMessageV3](value: T): Array[Byte] = value.toByteArray
+
+/*  def fromProto[T <: GeneratedMessageV3](value: Array[Byte]): T =
+    val builder = tag.runtimeClass.getMethod("newBuilder").invoke(null)
+    builder.getClass.getMethod("mergeFrom", classOf[Array[Byte]]).invoke(builder, value)
+    builder.getClass.getMethod("build").invoke(builder).asInstanceOf[T]
+*/

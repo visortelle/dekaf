@@ -2,12 +2,12 @@ package demo.tenants.cqrs.shared
 
 import _root_.client.config
 import _root_.config.defaultConfig
-import generators.*
 import net.datafaker.Faker
+import zio.{Duration, ZIO}
 
 val faker = new Faker()
 
-object TopicConfig:
+object DemoappTopicConfig:
   sealed trait LoadType
   case object Overloaded extends LoadType
   case object HeavilyLoaded extends LoadType
@@ -16,8 +16,11 @@ object TopicConfig:
 
   val enableNonPersistentTopics: Boolean = config.loadConfig.flatMap(_.enableNonPersistentTopics).getOrElse(true)
   val enablePartitionedTopics: Boolean = config.loadConfig.flatMap(_.enablePartitionedTopics).getOrElse(true)
-  object ProducerLoadMultipliers:
-    val producerLoadMultipliersConfig = config.loadConfig
+
+  val workersAmount: Int = config.loadConfig.flatMap(_.workersAmount).getOrElse(faker.number().numberBetween(1, 10))
+
+  private object ProducerLoadMultipliers:
+    private val producerLoadMultipliersConfig = config.loadConfig
       .flatMap(_.producerLoadMultiplier)
       .getOrElse(defaultConfig.loadConfig.get.producerLoadMultiplier.get)
 
@@ -31,24 +34,16 @@ object TopicConfig:
     import ProducerLoadMultipliers.*
 
     val overloadedTopic: Long =
-      (50.0 / baseMultiplier * overloadedMultiplier)
-        .asInstanceOf[Number]
-        .longValue()
+      ((50.0 * Math.pow(10, 6)) / (baseMultiplier * overloadedMultiplier)).toLong
 
     val heavilyLoadedTopic: Long =
-      (100.0 / baseMultiplier * heavilyLoadedMultiplier)
-        .asInstanceOf[Number]
-        .longValue()
+      ((100.0 * Math.pow(10, 6)) / (baseMultiplier * heavilyLoadedMultiplier)).toLong
 
     val moderatelyLoadedTopic: Long =
-      (500.0 / baseMultiplier * moderatelyLoadedMultiplier)
-        .asInstanceOf[Number]
-        .longValue()
+      ((500.0 * Math.pow(10, 6)) / (baseMultiplier * moderatelyLoadedMultiplier)).toLong
 
     val lightlyLoadedTopic: Long =
-      (1000.0 / baseMultiplier * lightlyLoadedMultiplier)
-        .asInstanceOf[Number]
-        .longValue()
+      ((1000.0 * Math.pow(10, 6)) / (baseMultiplier * lightlyLoadedMultiplier)).toLong
 
   object SubscriptionAmount:
     private val subscriptionAmountConfig = config.loadConfig
@@ -78,7 +73,7 @@ object TopicConfig:
     val lightlyLoadedTopic: Int =
       consumersAmountConfig.lightlyLoaded.getOrElse(faker.number().numberBetween(1, 10))
 
-  object ProducerAmount:
+/*  object ProducerAmount:
     private val producersAmountConfig = config.loadConfig
       .flatMap(_.producersAmount)
       .getOrElse(defaultConfig.loadConfig.get.producersAmount.get)
@@ -86,16 +81,23 @@ object TopicConfig:
     val overloadedTopic: Int = producersAmountConfig.overloaded.getOrElse(1)
     val heavilyLoadedTopic: Int = producersAmountConfig.heavilyLoaded.getOrElse(1)
     val moderatelyLoadedTopic: Int = producersAmountConfig.moderatelyLoaded.getOrElse(1)
-    val lightlyLoadedTopic: Int = producersAmountConfig.lightlyLoaded.getOrElse(1)
+    val lightlyLoadedTopic: Int = producersAmountConfig.lightlyLoaded.getOrElse(1)*/
 
-def mkDefaultTopicPartitioning: TopicIndex => TopicPartitioning =
-  if (faker.number().randomDouble(2, 0, 1) > 0.8 && TopicConfig.enablePartitionedTopics) then
-    _ => Partitioned(faker.number().numberBetween(1, 10))
-  else
-    _ => NonPartitioned()
-
-def mkDefaultPersistency: TopicIndex => TopicPersistency =
-  if (faker.number().randomDouble(2, 0, 1) > 0.8 && TopicConfig.enableNonPersistentTopics) then
-    _ => NonPersistent()
-  else
-    _ => Persistent()
+  def logDemoappConfig = for {
+    _ <- ZIO.logInfo("Overloaded topic schedule time: " + DemoappTopicConfig.ScheduleTime.overloadedTopic / Math.pow(10, 6))
+    _ <- ZIO.logInfo("Heavily loaded topic schedule time: " + DemoappTopicConfig.ScheduleTime.heavilyLoadedTopic / Math.pow(10, 6))
+    _ <- ZIO.logInfo("Moderately loaded topic schedule time: " + DemoappTopicConfig.ScheduleTime.moderatelyLoadedTopic / Math.pow(10, 6))
+    _ <- ZIO.logInfo("Lightly loaded topic schedule time: " + DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic / Math.pow(10, 6))
+    _ <- ZIO.logInfo("Overloaded topic subscription amount: " + DemoappTopicConfig.SubscriptionAmount.overloadedTopic.toString)
+    _ <- ZIO.logInfo("Heavily loaded topic subscription amount: " + DemoappTopicConfig.SubscriptionAmount.heavilyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Moderately loaded topic subscription amount: " + DemoappTopicConfig.SubscriptionAmount.moderatelyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Lightly loaded topic subscription amount: " + DemoappTopicConfig.SubscriptionAmount.lightlyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Overloaded topic consumer amount: " + DemoappTopicConfig.ConsumerAmount.overloadedTopic.toString)
+    _ <- ZIO.logInfo("Heavily loaded topic consumer amount: " + DemoappTopicConfig.ConsumerAmount.heavilyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Moderately loaded topic consumer amount: " + DemoappTopicConfig.ConsumerAmount.moderatelyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Lightly loaded topic consumer amount: " + DemoappTopicConfig.ConsumerAmount.lightlyLoadedTopic.toString)
+/*    _ <- ZIO.logInfo("Overloaded topic producer amount: " + DemoappTopicConfig.ProducerAmount.overloadedTopic.toString)
+    _ <- ZIO.logInfo("Heavily loaded topic producer amount: " + DemoappTopicConfig.ProducerAmount.heavilyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Moderately loaded topic producer amount: " + DemoappTopicConfig.ProducerAmount.moderatelyLoadedTopic.toString)
+    _ <- ZIO.logInfo("Lightly loaded topic producer amount: " + DemoappTopicConfig.ProducerAmount.lightlyLoadedTopic.toString)*/
+  } yield ()

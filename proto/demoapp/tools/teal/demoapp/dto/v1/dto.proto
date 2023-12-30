@@ -41,7 +41,7 @@ message PayPal {
 message PaymentMethod {
   string id = 1;
   Money amount = 2;
-  oneof option {
+  oneof payment_option {
     CreditCard credit_card = 3;
     DebitCard debit_card = 4;
     PayPal pay_pal = 5;
@@ -113,7 +113,7 @@ message ShoppingCart {
 
 message NotificationMethod {
   string id = 1;
-  oneof option {
+  oneof notification_option {
     Email email = 2;
     Sms sms = 3;
     PushWeb push_web = 4;

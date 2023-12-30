@@ -1,6 +1,6 @@
 package demo.tenants.cqrs.namespaces
 
-import demo.tenants.cqrs.shared.TopicConfig
+import demo.tenants.cqrs.shared.DemoappTopicConfig
 import demo.tenants.cqrs.model.Communication.*
 import demo.tenants.cqrs.shared.mkConfigurableTopicPlanGenerator
 import generators.{NamespacePlanGenerator, TenantName}
@@ -16,42 +16,42 @@ object CommunicationNamespace:
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "RequestNotification",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[EmitNotificationMethod](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "EmitNotificationMethod",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[FailNotificationMethod](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "FailNotificationMethod",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Failover,
         ),
         mkConfigurableTopicPlanGenerator[CancelNotificationMethod](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "CancelNotificationMethod",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[SendNotificationMethod](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "SendNotificationMethod",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[ResetNotificationMethod](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ResetNotificationMethod",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )
@@ -73,35 +73,35 @@ object CommunicationNamespace:
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "NotificationRequested",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[NotificationMethodFailed](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "NotificationMethodFailed",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Failover,
         ),
         mkConfigurableTopicPlanGenerator[NotificationMethodSent](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "NotificationMethodSent",
-          mkLoadType = _ => TopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[NotificationMethodCancelled](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "NotificationMethodCancelled",
-          mkLoadType = _ => TopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[NotificationMethodReset](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "NotificationMethodReset",
-          mkLoadType = _ => TopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )

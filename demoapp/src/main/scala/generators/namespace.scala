@@ -1,9 +1,7 @@
 package generators
 
+import _root_.client.adminClient
 import zio.*
-import _root_.client.{adminClient, pulsarClient}
-import demo.tenants.cqrs.shared.{Command, Event}
-import demo.tenants.cqrs.shared.ConverterMappings
 
 type NamespaceName = String
 type NamespaceIndex = Int
@@ -13,7 +11,7 @@ case class NamespacePlan(
     name: NamespaceName,
     topics: Map[TopicName, TopicPlan],
     multiTopicProducers: Map[ProducerPlan, List[TopicPlan]],
-    processors:  Map[ProcessorName, ProcessorPlan[? <: Command, ? <: Event]],
+    processors:  Map[ProcessorName, ProcessorPlan[_, _]],
     afterAllocation: () => Unit
 )
 
@@ -30,7 +28,7 @@ object NamespacePlan:
         processorsAsPairs <- ZIO.foreach(List.range(0, generator.mkProcessorsCount(namespaceIndex))) { processorIndex =>
             for {
                 processorGenerator <- generator.mkProcessorGenerator(processorIndex)
-                processorPlan <- ProcessorPlan.make(processorGenerator, processorIndex)(using processorGenerator.converter)
+                processorPlan <- ProcessorPlan.make(processorGenerator, processorIndex)
             } yield processorPlan.name -> processorPlan
         }
         processors <- ZIO.succeed(processorsAsPairs.toMap)
@@ -53,7 +51,7 @@ case class NamespacePlanGenerator(
    mkTopicGenerator: TopicIndex => Task[TopicPlanGenerator],
    mkMultiTopicProducers: NamespaceIndex => Map[ProducerPlan, List[TopicPlan]],
    mkProcessorsCount: NamespaceIndex => Int,
-   mkProcessorGenerator: NamespaceIndex => Task[ProcessorPlanGenerator[? <: Command, ? <: Event]],
+   mkProcessorGenerator: NamespaceIndex => Task[ProcessorPlanGenerator[_, _]],
    mkAfterAllocation: NamespaceIndex => Unit = _ => ()
 )
 
@@ -65,8 +63,8 @@ object NamespacePlanGenerator:
         mkTopicGenerator: TopicIndex => Task[TopicPlanGenerator] = _ => TopicPlanGenerator.make(),
         mkMultiTopicProducers: NamespaceIndex => Map[ProducerPlan, List[TopicPlan]] = _ => Map.empty,
         mkProcessorsCount: NamespaceIndex => Int = _ => 1,
-        mkProcessorGenerator: ProcessorIndex => Task[ProcessorPlanGenerator[? <: Command, ? <: Event]] =
-          _ => ProcessorPlanGenerator.make[Command, Event]()(using ConverterMappings.commandToEvent),
+        mkProcessorGenerator: ProcessorIndex => Task[ProcessorPlanGenerator[_, _]] =
+          _ => ProcessorPlanGenerator.make(),
         mkAfterAllocation: NamespaceIndex => Unit = _ => ()
     ): Task[NamespacePlanGenerator] =
         val namespacePlanGenerator = NamespacePlanGenerator(

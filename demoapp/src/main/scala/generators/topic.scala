@@ -58,8 +58,6 @@ object TopicPlan:
       )
     )
     
-    def makeProducers()
-    
     def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): Task[TopicPlan] = for {
         producerGenerators <- ZIO.foreach(0 until generator.mkProducersCount(topicIndex)) { producerIndex =>
             generator.mkProducerGenerator(producerIndex)

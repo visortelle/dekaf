@@ -22,7 +22,7 @@ case class JwtConfig(token: String)
 case class AuthConfig(oauth2: Option[OAuth2Config], jwt: Option[JwtConfig])
 
 case class ProducerLoadMultipliersConfig(
-  @describe("Base multiplier for all producers. If not set, will be set to 1.0")                                          
+  @describe("Base multiplier for all producers. If not set, will be set to 1.0")
   baseMultiplier: Option[Double],
   @describe("Multiplier for producers for topics with the highest amount of messages/s. If not set, will be set to 1.0")
   overloaded: Option[Double],
@@ -84,11 +84,13 @@ case class LoadConfig(
       |If not set, the amount of consumers will be random in range [1, 10]
       |""".stripMargin)
   consumersAmount: Option[TopicConsumersAmountConfig],
-  @describe(
+  /*@describe(
     """Set the amount of producers for different topic categories.
       |If not set, there will be only one producer for each topic.
       |""".stripMargin)
-  producersAmount: Option[TopicProducersAmountConfig],
+  producersAmount: Option[TopicProducersAmountConfig],*/
+  @describe("Set the amount of workers (which is a consumer-producer pair). If not set, will be random in range [1, 10]")
+  workersAmount: Option[Int],
 )
 
 case class Config(
@@ -142,14 +144,15 @@ val defaultConfig = Config(
           lightlyLoaded = None,
         )
       ),
-      producersAmount = Some(
+      workersAmount = None,
+      /*producersAmount = Some(
         TopicProducersAmountConfig(
           overloaded = None,
           heavilyLoaded = None,
           moderatelyLoaded = None,
           lightlyLoaded = None,
         )
-      ),
+      ),*/
     )
   )
 )

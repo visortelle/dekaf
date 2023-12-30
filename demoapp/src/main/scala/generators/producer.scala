@@ -16,14 +16,8 @@ case class Message(
     properties: Option[Map[String, String]]
 )
 object Message:
-  def apply(key: String, payload: Array[Byte], properties: Map[String, String]): Message =
-    Message(Some(key), payload, Some(properties))
-
-  def apply(key: String, payload: Array[Byte]): Message =
-    Message(Some(key), payload, None)
-
-  def apply(payload: Array[Byte]): Message =
-    Message(None, payload, None)
+  def apply(payload: Array[Byte], key: Option[String] = None, properties: Option[Map[String, String]] = None): Message =
+    Message(key, payload, properties)
 
 case class ProducerPlan(
     name: ProducerName,
@@ -76,7 +70,7 @@ object ProducerPlanGenerator:
 object ProducerPlanExecutor:
   def startProduce(producerPlan: ProducerPlan, topicPlan: TopicPlan): Task[Unit] =
     val topicFqn = topicPlan.topicFqn
-    
+
     for {
       producer <- ZIO.attempt {
         val schema = new AutoProduceBytesSchema[Array[Byte]]

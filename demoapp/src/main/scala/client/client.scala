@@ -1,10 +1,9 @@
 package client
 
+import _root_.config.{AuthConfig, JwtConfig, OAuth2Config, readConfigAsync}
 import org.apache.pulsar.client.admin.PulsarAdmin
-import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.api.{Authentication, AuthenticationFactory}
+import org.apache.pulsar.client.api.{Authentication, AuthenticationFactory, PulsarClient}
 import org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2
-import _root_.config.{readConfigAsync, AuthConfig, JwtConfig, OAuth2Config}
 
 import java.net.URI
 import scala.concurrent.Await

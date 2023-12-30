@@ -1,3 +1,5 @@
+import scala.collection.Seq
+
 val scala3Version = "3.3.0"
 val pulsarVersion = "3.0.0"
 val zioVersion = "2.0.15"
@@ -59,8 +61,14 @@ lazy val root = project
             "org.scalameta" %% "munit" % "0.7.29" % Test,
             "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
             "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1",
-
-            "com.google.protobuf" % "protobuf-java" % "3.25.1",
-            "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
         )
     )
+
+libraryDependencies ++= Seq(
+  "com.google.protobuf" % "protobuf-java" % "3.23.4",
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+  "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
+  "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
+  "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
+  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+)

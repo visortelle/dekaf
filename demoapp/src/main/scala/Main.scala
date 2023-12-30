@@ -3,6 +3,7 @@ import generators.*
 import demo.tenants.schemas.SchemasTenant
 import client.{adminClient, pulsarClient}
 import demo.tenants.cqrs.DemoappTenant
+import demo.tenants.cqrs.shared.DemoappTopicConfig
 
 import scala.jdk.CollectionConverters.*
 
@@ -22,6 +23,7 @@ object DekafDemoApp extends ZIOAppDefault:
         )
 
         _ <- ZIO.logInfo("Starting app...")
+        _ <- DemoappTopicConfig.logDemoappConfig
         _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.allocateResources(tenantPlan))
         _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.start(tenantPlan))
     } yield ()
