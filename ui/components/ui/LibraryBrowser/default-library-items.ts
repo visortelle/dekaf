@@ -50,7 +50,8 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
               }
             }
           },
-          valueProjectionsList: {
+
+          valueProjectionList: {
             type: "value",
             val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
           }
@@ -75,7 +76,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
             type: "value",
             val: getDefaultManagedItem("message-filter-chain", libraryContext) as ManagedMessageFilterChain
           },
-          valueProjectionsList: {
+          valueProjectionList: {
             type: "value",
             val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
           }
@@ -225,7 +226,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
             val: getDefaultManagedItem("basic-message-filter-target", libraryContext) as ManagedBasicMessageFilterTarget
           },
           shortName: 'value',
-          displayCharsCount: undefined
+          width: undefined
         }
       }
 

@@ -269,9 +269,9 @@ message ManagedTopicSelectorValOrRef {
 }
 
 message ManagedValueProjectionSpec {
-  ManagedBasicMessageFilterTarget target = 1;
+  ManagedBasicMessageFilterTargetValOrRef target = 1;
   string short_name = 2;
-  google.protobuf.Int32Value display_chars_count = 3;
+  google.protobuf.Int32Value width = 3;
 }
 
 message ManagedValueProjection {

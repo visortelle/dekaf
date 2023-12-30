@@ -108,5 +108,22 @@ export const help: Partial<Record<ManagedItemType, ReactElement>> = {
         Optionally, you can post-process this field.
       </p>
     </div>
-  )
+  ),
+  "value-projection": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("value-projection")}</strong> allows you to map any message field to a table column, or use it as a value source in visualization charts.
+      </p>
+    </div>
+  ),
+  "value-projection-list": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("value-projection-list")}</strong> is a list of <strong>{getReadableItemType("value-projection")}</strong> items.
+      </p>
+      <p>
+        <strong>{getReadableItemType("value-projection")}</strong> allows you to map any message field to a table column, or use it as a value source in visualization charts.
+      </p>
+    </div>
+  ),
 } as const;

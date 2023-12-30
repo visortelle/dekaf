@@ -14,6 +14,7 @@ import DeleteButton from '../../DeleteButton/DeleteButton';
 import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
 import Toggle from '../../Toggle/Toggle';
 import { getDefaultManagedItem } from '../../LibraryBrowser/default-library-items';
+import ValueProjectionListInput from './ValueProjectionListInput/ValueProjectionListInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -124,6 +125,13 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             <FilterChainEditor
               value={itemSpec.messageFilterChain}
               onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+              libraryContext={props.libraryContext}
+              isReadOnly={props.isReadOnly}
+            />
+
+            <ValueProjectionListInput
+              value={itemSpec.valueProjectionList}
+              onChange={(v) => onSpecChange({ ...itemSpec, valueProjectionList: v })}
               libraryContext={props.libraryContext}
               isReadOnly={props.isReadOnly}
             />

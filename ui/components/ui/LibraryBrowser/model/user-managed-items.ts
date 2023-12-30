@@ -151,7 +151,7 @@ export type ManagedBasicMessageFilterTargetValOrRef = ValOrRef<ManagedBasicMessa
 export type ManagedValueProjectionSpec = {
   target: ManagedBasicMessageFilterTargetValOrRef,
   shortName: string,
-  displayCharsCount: number | undefined
+  width: number | undefined
 };
 
 export type ManagedValueProjection = {
@@ -233,7 +233,7 @@ export type ManagedConsumerSessionTargetSpec = {
   topicSelector: ManagedTopicSelectorValOrRef,
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
-  valueProjectionsList: ManagedValueProjectionListValOrRef
+  valueProjectionList: ManagedValueProjectionListValOrRef
 };
 
 export type ManagedConsumerSessionTarget = {
@@ -249,7 +249,7 @@ export type ManagedConsumerSessionConfigSpec = {
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
-  valueProjectionsList: ManagedValueProjectionListValOrRef
+  valueProjectionList: ManagedValueProjectionListValOrRef
 };
 
 export type ManagedConsumerSessionConfig = {
