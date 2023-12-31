@@ -476,9 +476,11 @@ object AccountNamespace:
         try
           val messageKey = msg.getKey
 
-          val eventMessageValue: pb.AccountEventsSchema = msg.getValue.getEventCase match
+          val msgValue = pb.AccountCommandsSchema.parseFrom(msg.getData)
+
+          val eventMessageValue: pb.AccountEventsSchema = msgValue.getEventCase match
             case pb.AccountCommandsSchema.EventCase.CREATE_ACCOUNT =>
-              val createAccountPb = msg.getValue.getCreateAccount
+              val createAccountPb = msgValue.getCreateAccount
 
               val accountCreated = MessageDto.random[AccountCreated]
 
@@ -494,7 +496,7 @@ object AccountNamespace:
                 .setAccountCreated(accountCreatedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.ACTIVATE_ACCOUNT =>
-              val activateAccountPb = msg.getValue.getActivateAccount
+              val activateAccountPb = msgValue.getActivateAccount
 
               val accountActivated = MessageDto.random[AccountActivated]
 
@@ -507,7 +509,7 @@ object AccountNamespace:
                 .setAccountActivated(accountActivatedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.ADD_BILLING_ADDRESS =>
-              val addBillingAddressPb = msg.getValue.getAddBillingAddress
+              val addBillingAddressPb = msgValue.getAddBillingAddress
 
               val billingAddressAdded = MessageDto.random[BillingAddressAdded]
 
@@ -521,7 +523,7 @@ object AccountNamespace:
                 .setBillingAddressAdded(billingAddressAddedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.ADD_SHIPPING_ADDRESS =>
-              val addShippingAddressPb = msg.getValue.getAddShippingAddress
+              val addShippingAddressPb = msgValue.getAddShippingAddress
 
               val shippingAddressAdded = MessageDto.random[ShippingAddressAdded]
 
@@ -535,7 +537,7 @@ object AccountNamespace:
                 .setShippingAddressAdded(shippingAddressAddedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.DELETE_ACCOUNT =>
-              val deleteAccountPb = msg.getValue.getDeleteAccount
+              val deleteAccountPb = msgValue.getDeleteAccount
 
               val accountDeleted = MessageDto.random[AccountDeleted]
 
@@ -548,7 +550,7 @@ object AccountNamespace:
                 .setAccountDeleted(accountDeletedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.DELETE_BILLING_ADDRESS =>
-              val deleteBillingAddressPb = msg.getValue.getDeleteBillingAddress
+              val deleteBillingAddressPb = msgValue.getDeleteBillingAddress
 
               val billingAddressDeleted = MessageDto.random[BillingAddressDeleted]
 
@@ -561,7 +563,7 @@ object AccountNamespace:
                 .setBillingAddressDeleted(billingAddressDeletedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.DELETE_SHIPPING_ADDRESS =>
-              val deleteShippingAddressPb = msg.getValue.getDeleteShippingAddress
+              val deleteShippingAddressPb = msgValue.getDeleteShippingAddress
 
               val shippingAddressDeleted = MessageDto.random[ShippingAddressDeleted]
 
@@ -574,7 +576,7 @@ object AccountNamespace:
                 .setShippingAddressDeleted(shippingAddressDeletedPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.PREFER_SHIPPING_ADDRESS =>
-              val preferShippingAddressPb = msg.getValue.getPreferShippingAddress
+              val preferShippingAddressPb = msgValue.getPreferShippingAddress
 
               val shippingAddressPreferred = MessageDto.random[ShippingAddressPreferred]
 
@@ -587,7 +589,7 @@ object AccountNamespace:
                 .setShippingAddressPreferred(shippingAddressPreferredPb)
                 .build()
             case pb.AccountCommandsSchema.EventCase.PREFER_BILLING_ADDRESS =>
-              val preferBillingAddressPb = msg.getValue.getPreferBillingAddress
+              val preferBillingAddressPb = msgValue.getPreferBillingAddress
 
               val billingAddressPreferred = MessageDto.random[BillingAddressPreferred]
 
@@ -604,9 +606,9 @@ object AccountNamespace:
           val effect = for {
             _ <- worker.producerPlan.messageIndex.update(_ + 1)
             _ <- ZIO.fromFuture(e =>
-              producer.newMessage
+              (producer.asInstanceOf[Producer[Array[Byte]]]).newMessage
                 .key(messageKey)
-                .value(eventMessageValue)
+                .value(eventMessageValue.toByteArray)
                 .sendAsync
                 .asScala
             )

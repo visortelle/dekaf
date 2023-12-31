@@ -2,6 +2,7 @@ package generators
 
 import _root_.client.pulsarClient
 import org.apache.pulsar.client.api.{Consumer, MessageListener, Producer, Schema, SubscriptionInitialPosition, SubscriptionType, Message as PulsarMessage}
+import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import zio.*
 
 import scala.jdk.FutureConverters.*
@@ -25,13 +26,15 @@ case class ProcessorWorker[A, B](
 object ProcessorWorkerExecutor:
   private def startProducer[A, B](worker: ProcessorWorker[A, B]): Task[Producer[B]] =
     ZIO.attempt {
-      val schema = Schema.getSchema(worker.producingTopicPlan.schemaInfos.head).asInstanceOf[Schema[B]]
-      
-      pulsarClient
+      val schema = new AutoProduceBytesSchema[Array[Byte]]
+
+      val producer: Producer[Array[Byte]] = pulsarClient
         .newProducer(schema)
         .producerName(worker.producerPlan.name)
         .topic(worker.producingTopicPlan.topicFqn)
         .create
+
+      producer.asInstanceOf[Producer[B]]
     }
 
   private def startConsumer[A, B](
@@ -42,7 +45,7 @@ object ProcessorWorkerExecutor:
     for {
       consumer <- ZIO.attempt {
         val schema = Schema.getSchema(worker.consumingTopicPlan.schemaInfos.head).asInstanceOf[Schema[A]]
-        
+
         pulsarClient.newConsumer(schema)
           .subscriptionName(worker.subscriptionPlan.name)
           .subscriptionType(worker.subscriptionPlan.subscriptionType)
@@ -152,8 +155,8 @@ object ProcessorPlanGenerator:
     mkWorkerProducerName: ProcessorIndex => ProducerIndex => WorkerName =
       processorIndex => producerIndex => s"dekaf-processor-worker-$processorIndex-$producerIndex",
     mkMessageListenerBuilder: ProcessorIndex => ProcessorMessageListenerBuilder[A, B] =
-    _ => 
-      (worker: ProcessorWorker[A, B], producer: Producer[B]) => 
+    _ =>
+      (worker: ProcessorWorker[A, B], producer: Producer[B]) =>
         (consumer: Consumer[A], msg: PulsarMessage[A]) =>
           consumer.acknowledge(msg)
   ): Task[ProcessorPlanGenerator[A, B]] =
