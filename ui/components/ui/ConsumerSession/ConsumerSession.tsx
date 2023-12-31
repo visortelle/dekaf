@@ -103,6 +103,8 @@ const Session: React.FC<SessionProps> = (props) => {
     scrollToBottom();
   }, sessionState === 'running' ? 200 : false);
 
+  console.log('MSGS', messages);
+
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
       return;

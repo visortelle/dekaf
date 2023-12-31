@@ -1,3 +1,4 @@
+import { ValueProjectionList } from "./SessionConfiguration/ValueProjectionListInput/value-projections";
 import { BasicMessageFilter, BasicMessageFilterTarget } from "./basic-message-filter-types";
 import { TopicSelector } from "./topic-selector/topic-selector";
 
@@ -63,6 +64,7 @@ export type ConsumerSessionTarget = {
   topicSelector: TopicSelector;
   messageFilterChain: MessageFilterChain;
   coloringRuleChain: ColoringRuleChain;
+  valueProjectionList: ValueProjectionList;
 };
 
 export type ConsumerSessionStartFrom =
@@ -83,6 +85,11 @@ export type ConsumerSessionConfig = {
   messageFilterChain: MessageFilterChain;
   pauseTriggerChain: ConsumerSessionPauseTriggerChain;
   coloringRuleChain: ColoringRuleChain;
+  valueProjectionList: ValueProjectionList;
+};
+
+export type ValueProjectionResult = {
+  displayValue: string | undefined
 };
 
 type Nullable<T> = T | null;
@@ -109,11 +116,17 @@ export type MessageDescriptor = {
   sessionContextStateJson: Nullable<string>; // JSON string
   index: number;
   debugStdout: Nullable<string>;
+
   sessionTargetIndex: Nullable<number>,
+
   sessionColorRuleChainTestResults: ChainTestResult[],
   sessionTargetColorRuleChainTestResults: ChainTestResult[],
+
   sessionMessageFilterChainTestResult: ChainTestResult | undefined,
   sessionTargetMessageFilterChainTestResult: ChainTestResult | undefined
+
+  sessionValueProjectionListResult: ValueProjectionResult[],
+  sessionTargetValueProjectionListResult: ValueProjectionResult[],
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;

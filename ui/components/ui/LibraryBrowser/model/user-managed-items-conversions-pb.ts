@@ -2,8 +2,6 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/manage
 import * as consumerPb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import * as t from "./user-managed-items";
 import {
-  messageFilterFromPb,
-  messageFilterToPb,
   messageFilterChainModeFromPb,
   messageFilterChainModeToPb,
   dateTimeUnitFromPb,
@@ -52,6 +50,8 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN: return "coloring-rule-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT: return "markdown-document";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET: return "basic-message-filter-target";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION: return "value-projection";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST: return "value-projection-list";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -70,6 +70,8 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "coloring-rule-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN;
     case "markdown-document": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT;
     case "basic-message-filter-target": return pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET;
+    case "value-projection": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION;
+    case "value-projection-list": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -827,7 +829,7 @@ export function managedBasicMessageFilterTargetValOrRefToPb(v: t.ManagedBasicMes
 
 export function managedValueProjectionSpecFromPb(v: pb.ManagedValueProjectionSpec): t.ManagedValueProjectionSpec {
   return {
-    target: managedBasicMessageFilterTargetValOrRefFromPb(v.getTarget()!),
+    target: managedBasicMessageFilterTargetValOrRefFromPb(v.getTargetField()!),
     width: v.getWidth()?.getValue(),
     shortName: v.getShortName()
   }
@@ -835,7 +837,7 @@ export function managedValueProjectionSpecFromPb(v: pb.ManagedValueProjectionSpe
 
 export function managedValueProjectionSpecToPb(v: t.ManagedValueProjectionSpec): pb.ManagedValueProjectionSpec {
   const specPb = new pb.ManagedValueProjectionSpec();
-  specPb.setTarget(managedBasicMessageFilterTargetValOrRefToPb(v.target));
+  specPb.setTargetField(managedBasicMessageFilterTargetValOrRefToPb(v.target));
 
   if (v.width !== undefined) {
     specPb.setWidth(new Int32Value().setValue(v.width));

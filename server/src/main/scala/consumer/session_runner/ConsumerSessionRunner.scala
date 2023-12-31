@@ -4,10 +4,14 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.session_config.ConsumerSessionConfig
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
+
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import scala.util.boundary, boundary.break
+import consumer.value_projections.ValueProjectionResult
+
+import scala.util.boundary
+import boundary.break
 
 type ConsumerSessionTargetIndex = Int
 
@@ -65,6 +69,10 @@ case class ConsumerSessionRunner(
                     else
                         Vector.empty
 
+                    val valueProjectionListResult: Vector[ValueProjectionResult] =
+                        sessionConfig.valueProjectionList.projections
+                            .map(vp => vp.project(sessionContext.context))
+
                     val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
                     val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
                     val errors = messageFilterChainErrors ++ coloringRuleChainErrors
@@ -74,6 +82,7 @@ case class ConsumerSessionRunner(
                         .withDebugStdout(sessionContext.getStdout)
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                        .withSessionValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
 
                     createAndSendResponse(Seq(messageToSendPb), errors)
 

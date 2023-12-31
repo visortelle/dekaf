@@ -8,6 +8,7 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.Consumer
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
+import consumer.value_projections.{ValueProjectionList, ValueProjectionResult}
 import org.apache.pulsar.client.api.Message
 
 import scala.util.{Failure, Success, Try}
@@ -21,6 +22,7 @@ case class ConsumerSessionTargetRunner(
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain,
+    valueProjectionList: ValueProjectionList,
     schemasByTopic: SchemasByTopic,
     sessionContext: ConsumerSessionContext,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
@@ -56,6 +58,10 @@ case class ConsumerSessionTargetRunner(
             else
                 Vector.empty
 
+            val valueProjectionListResult: Vector[ValueProjectionResult] =
+                thisTarget.valueProjectionList.projections
+                    .map(vp => vp.project(sessionContext.context))
+
             var msgToSend = if messageFilterChainResult.isOk then
                 Some(consumerSessionMessage)
             else
@@ -74,6 +80,7 @@ case class ConsumerSessionTargetRunner(
                         .withSessionTargetIndex(targetIndex)
                         .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                        .withSessionTargetValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
                 )
             )
 
@@ -135,6 +142,7 @@ object ConsumerSessionTargetRunner:
                 consumers = consumers,
                 messageFilterChain = targetConfig.messageFilterChain,
                 coloringRuleChain = targetConfig.coloringRuleChain,
+                valueProjectionList = targetConfig.valueProjectionList,
                 consumerListener = listener,
                 schemasByTopic = schemasByTopic,
                 stats = ConsumerSessionTargetStats(
