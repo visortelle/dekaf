@@ -14,7 +14,7 @@ import DeleteButton from '../../DeleteButton/DeleteButton';
 import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
 import Toggle from '../../Toggle/Toggle';
 import { getDefaultManagedItem } from '../../LibraryBrowser/default-library-items';
-import ValueProjectionListInput from './ValueProjectionListInput/ValueProjectionListInput';
+import ValueProjectionListInput from '../value-projections/ValueProjectionListInput/ValueProjectionListInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,

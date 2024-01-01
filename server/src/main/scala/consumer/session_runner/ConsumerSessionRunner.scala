@@ -51,8 +51,6 @@ case class ConsumerSessionRunner(
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
                         sessionConfig.messageFilterChain,
-                        msg.messageAsJsonOmittingValue,
-                        msg.messageValueAsJson
                     )
 
                     if !messageFilterChainResult.isOk then
@@ -63,8 +61,6 @@ case class ConsumerSessionRunner(
                             .filter(cr => cr.isEnabled)
                             .map(cr => sessionContext.testMessageFilterChain(
                                 cr.messageFilterChain,
-                                msg.messageAsJsonOmittingValue,
-                                msg.messageValueAsJson
                             ))
                     else
                         Vector.empty

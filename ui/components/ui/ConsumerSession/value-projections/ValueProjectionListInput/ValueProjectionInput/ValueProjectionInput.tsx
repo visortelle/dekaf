@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './ValueProjectionInput.module.css'
-import BasicMessageFilterTargetInput from '../../FilterChainEditor/FilterEditor/BasicFilterEditor/BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
+import BasicMessageFilterTargetInput from '../../../SessionConfiguration/FilterChainEditor/FilterEditor/BasicFilterEditor/BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
 import { LibraryContext } from '../../../../LibraryBrowser/model/library-context';
 import { ManagedValueProjection, ManagedValueProjectionSpec, ManagedValueProjectionValOrRef } from '../../../../LibraryBrowser/model/user-managed-items';
 import { useHover } from '../../../../../app/hooks/use-hover';

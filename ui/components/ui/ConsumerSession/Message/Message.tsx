@@ -2,15 +2,18 @@ import React from 'react';
 import * as Modals from '../../../app/contexts/Modals/Modals';
 import { SessionContextStateJsonField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField, SessionTargetIndexField } from './fields';
 import s from './Message.module.css';
-import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
-import { MessageDescriptor } from '../types';
+import { ConsumerSessionConfig, MessageDescriptor } from '../types';
 import MessageDetails from './MessageDetails/MessageDetails';
 import { Coloring } from '../coloring';
+import { getValueProjectionTds, ValueProjectionTh } from '../value-projections/render-value-projections';
+import { Td } from './Td';
 
 export type MessageProps = {
   isShowTooltips: boolean;
   message: MessageDescriptor;
   coloring: Coloring;
+  sessionConfig: ConsumerSessionConfig;
+  valueProjectionThs: ValueProjectionTh[]
 };
 
 const MessageComponent: React.FC<MessageProps> = (props) => {
@@ -51,6 +54,13 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       >
         <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
+      {getValueProjectionTds({
+        sessionConfig: props.sessionConfig,
+        valueProjectionThs: props.valueProjectionThs,
+        coloring: props.coloring,
+        message: props.message
+      })}
 
       <Td
         width='30ch'
@@ -166,29 +176,5 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
     </>
   );
 }
-
-type TdProps = {
-  children: React.ReactNode,
-  width?: string,
-  coloring: Coloring,
-} & React.ThHTMLAttributes<HTMLTableCellElement>;
-const Td: React.FC<TdProps> = (props) => {
-  const { children, className, width, coloring, ...restProps } = props;
-
-  return (
-    <td
-      className={`${cts.Td} ${s.Td} ${className || ''}`}
-      style={{
-        color: props.coloring?.foregroundColor,
-        backgroundColor: props.coloring?.backgroundColor
-      }}
-      {...restProps}
-    >
-      <div style={{ width, textOverflow: 'ellipsis', display: 'flex' }} >
-        {children}
-      </div>
-    </td>
-  );
-};
 
 export default MessageComponent;

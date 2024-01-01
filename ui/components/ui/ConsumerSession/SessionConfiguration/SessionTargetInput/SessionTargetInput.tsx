@@ -8,7 +8,7 @@ import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../Librar
 import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, ManagedConsumerSessionTargetValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
-import ValueProjectionListInput from '../ValueProjectionListInput/ValueProjectionListInput';
+import ValueProjectionListInput from '../../value-projections/ValueProjectionListInput/ValueProjectionListInput';
 
 export type SessionTargetInputProps = {
   value: ManagedConsumerSessionTargetValOrRef,

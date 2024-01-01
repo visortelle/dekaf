@@ -2,7 +2,7 @@ import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrR
 import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../ConsumerSession/types";
 import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
-import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/SessionConfiguration/ValueProjectionListInput/value-projections";
+import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/value-projections/ValueProjectionListInput/value-projections";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {

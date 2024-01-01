@@ -11,8 +11,6 @@ import {
   PauseRequest,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
-import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
-import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -26,17 +24,16 @@ import Toolbar from './Toolbar';
 import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
-import SvgIcon from '../SvgIcon/SvgIcon';
 import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions/conversions';
-import { SortKey, Sort, sortMessages } from './sort';
+import { Sort, sortMessages } from './sort';
 import { remToPx } from '../rem-to-px';
 import { help } from './Message/fields';
-import { tooltipId } from '../Tooltip/Tooltip';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { ManagedConsumerSessionConfigValOrRef } from '../LibraryBrowser/model/user-managed-items';
 import { consumerSessionConfigFromValOrRef } from '../LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import { getColoring } from './coloring';
+import { getValueProjectionThs } from './value-projections/render-value-projections';
+import { Th } from './Th';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -289,15 +286,28 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState, messagesLoadedPerSecond]);
 
   const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
+
+  const valueProjectionThs = config ? getValueProjectionThs({
+    sessionConfig: config,
+    sort,
+    setSort
+  }) : [];
+
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
-    const coloring = config === undefined ? undefined : getColoring(config, message);
+    if (config === undefined) {
+      return;
+    }
+
+    const coloring = getColoring(config, message);
 
     return (
       <MessageComponent
         key={i}
         message={message}
+        sessionConfig={config}
         isShowTooltips={isShowTooltips}
         coloring={coloring}
+        valueProjectionThs={valueProjectionThs}
       />
     );
   }, [sessionState, config]);
@@ -307,38 +317,6 @@ const Session: React.FC<SessionProps> = (props) => {
       setSessionState('pausing');
     }
   }, [sessionState]);
-
-  const Th = useCallback((props: { title: React.ReactNode, help: React.ReactElement, sortKey?: SortKey, style?: React.CSSProperties }) => {
-    const handleColumnHeaderClick = () => {
-      if (props.sortKey === undefined) {
-        return;
-      }
-
-      if (sort.key === props.sortKey) {
-        setSort({ key: props.sortKey, direction: sort.direction === 'asc' ? 'desc' : 'asc' });
-      } else {
-        setSort({ key: props.sortKey, direction: 'asc' });
-      }
-    }
-
-    return (
-      <th className={`${cts.Th} ${s.Th}`} style={props.style} onClick={handleColumnHeaderClick}>
-        <div
-          className={props.sortKey === undefined ? '' : cts.SortableTh}
-          data-tooltip-id={tooltipId}
-          data-tooltip-html={renderToStaticMarkup(props.help)}
-        >
-          {props.title}
-
-          {sort.key === props.sortKey && (
-            <div className={cts.SortableThIcon}>
-              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
-            </div>
-          )}
-        </div>
-      </th>
-    );
-  }, [sort]);
 
   const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
   const sortedMessages = useMemo(() => {
@@ -392,6 +370,8 @@ const Session: React.FC<SessionProps> = (props) => {
               <tr>
                 <Th
                   title="#"
+                  sort={sort}
+                  setSort={setSort}
                   sortKey="index"
                   style={{ position: 'sticky', left: 0, zIndex: 10 }}
                   help={(
@@ -405,22 +385,120 @@ const Session: React.FC<SessionProps> = (props) => {
                     </>
                   )}
                 />
-                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
-                <Th title="Key" sortKey="key" help={help.key} />
-                <Th title="Value" sortKey="value" help={help.value} />
-                <Th title="Target" sortKey="sessionTargetIndex" help={help.sessionTargetIndex} />
-                <Th title="Topic" sortKey="topic" help={help.topic} />
-                <Th title="Producer" sortKey="producerName" help={help.producerName} />
-                <Th title="Schema version" sortKey="schemaVersion" help={help.schemaVersion} />
-                <Th title="Size" sortKey="size" help={help.size} />
-                <Th title="Properties" sortKey="properties" help={help.propertiesMap} />
-                <Th title="Event time" sortKey="eventTime" help={help.eventTime} />
-                <Th title="Broker pub. time" sortKey="brokerPublishTime" help={help.brokerPublishTime} />
-                <Th title="Message Id" help={help.messageId} />
-                <Th title="Sequence Id" sortKey="sequenceId" help={help.sequenceId} />
-                <Th title="Ordering key" help={help.orderingKey} />
-                <Th title="Redelivery count" sortKey="redeliveryCount" help={help.redeliveryCount} />
-                <Th title="Session Context State" sortKey="sessionContextStateJson" help={help.sessionContextStateJson} />
+                <Th
+                  title="Publish time"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="publishTime"
+                  style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }}
+                  help={help.publishTime}
+                />
+                <Th
+                  title="Key"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="key"
+                  help={help.key}
+                />
+
+                {valueProjectionThs.map(vp => vp.th)}
+
+                <Th
+                  title="Value"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="value"
+                  help={help.value}
+                />
+                <Th
+                  title="Target"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="sessionTargetIndex"
+                  help={help.sessionTargetIndex}
+                />
+                <Th
+                  title="Topic"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="topic"
+                  help={help.topic}
+                />
+                <Th
+                  title="Producer"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="producerName"
+                  help={help.producerName}
+                />
+                <Th
+                  title="Schema version"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="schemaVersion"
+                  help={help.schemaVersion}
+                />
+                <Th
+                  title="Size"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="size"
+                  help={help.size}
+                />
+                <Th
+                  title="Properties"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="properties"
+                  help={help.propertiesMap}
+                />
+                <Th
+                  title="Event time"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="eventTime"
+                  help={help.eventTime}
+                />
+                <Th
+                  title="Broker pub. time"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="brokerPublishTime"
+                  help={help.brokerPublishTime}
+                />
+                <Th
+                  title="Message Id"
+                  sort={sort}
+                  setSort={setSort}
+                  help={help.messageId}
+                />
+                <Th
+                  title="Sequence Id"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="sequenceId"
+                  help={help.sequenceId}
+                />
+                <Th
+                  title="Ordering key"
+                  sort={sort}
+                  setSort={setSort}
+                  help={help.orderingKey}
+                />
+                <Th
+                  title="Redelivery count"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="redeliveryCount"
+                  help={help.redeliveryCount}
+                />
+                <Th
+                  title="Session Context State"
+                  sort={sort}
+                  setSort={setSort}
+                  sortKey="sessionContextStateJson"
+                  help={help.sessionContextStateJson}
+                />
               </tr>
             )}
           />

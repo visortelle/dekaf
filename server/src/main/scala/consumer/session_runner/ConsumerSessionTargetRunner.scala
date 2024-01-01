@@ -45,16 +45,16 @@ case class ConsumerSessionTargetRunner(
             val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
             val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
 
+            sessionContext.setCurrentMessage(messageJson,  messageValueToJsonResult)
+
             val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
                 thisTarget.messageFilterChain,
-                messageJson,
-                messageValueToJsonResult
             )
 
             val coloringRuleChainResult: Vector[ChainTestResult] = if thisTarget.coloringRuleChain.isEnabled then
                 thisTarget.coloringRuleChain.coloringRules
                     .filter(cr => cr.isEnabled)
-                    .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain, messageJson, messageValueToJsonResult))
+                    .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
             else
                 Vector.empty
 

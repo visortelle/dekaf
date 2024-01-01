@@ -13,15 +13,21 @@ case class ValueProjection(
         val evalCode =
             s"""
                |(() => {
-               |  return JSON.stringify(${targetField.resolveVarName()})
+               |  const targetField = ${targetField.resolveVarName()};
+               |
+               |  if (targetField === undefined) {
+               |    throw new Error('');
+               |  }
+               |
+               |  return JSON.stringify(targetField);
                |})();
                |""".stripMargin
 
         // Don't remove the following debug lines
-        //        println(s"DEBUG EVAL CODE")
-        //        println(evalCode)
+        println(s"DEBUG EVAL CODE")
+        println(evalCode)
 
-        val testResult =
+        val result =
             try
                 val displayValue = polyglotContext.eval("js", evalCode).asString()
                 ValueProjectionResult(displayValue = Some(displayValue))
@@ -30,7 +36,7 @@ case class ValueProjection(
                     ValueProjectionResult(displayValue = None)
             }
 
-        testResult
+        result
 
 object ValueProjection:
     def fromPb(v: pb.ValueProjection): ValueProjection =
