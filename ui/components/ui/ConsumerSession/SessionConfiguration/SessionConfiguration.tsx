@@ -26,15 +26,15 @@ export type SessionConfigurationProps = {
 };
 
 function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
-  if (value.type === "reference") {
-    return false;
-  }
-
-  if (value.val.spec.coloringRuleChain.val?.spec.coloringRules.length) {
+  if (value.val?.spec.coloringRuleChain.val?.spec.coloringRules.length) {
     return true;
   }
 
-  if (value.val.spec.messageFilterChain.val?.spec.filters.length) {
+  if (value.val?.spec.messageFilterChain.val?.spec.filters.length) {
+    return true;
+  }
+
+  if (value.val?.spec.valueProjectionList.val?.spec.projections.length) {
     return true;
   }
 
@@ -84,11 +84,18 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             <LibraryBrowserPanel
               value={item}
               itemType='consumer-session-config'
-              onPick={(item) => props.onChange({
-                type: 'reference',
-                ref: item.metadata.id,
-                val: item as ManagedConsumerSessionConfig
-              })}
+              onPick={(item) => {
+                const newValue: ManagedConsumerSessionConfigValOrRef = {
+                  type: 'reference',
+                  ref: item.metadata.id,
+                  val: item as ManagedConsumerSessionConfig
+                };
+
+                const isAdvancedConfig = detectAdvancedConfig(newValue);
+                setIsShowAdvanced(isAdvancedConfig);
+
+                props.onChange(newValue);
+              }}
               onSave={(item) => props.onChange({
                 type: 'reference',
                 ref: item.metadata.id,

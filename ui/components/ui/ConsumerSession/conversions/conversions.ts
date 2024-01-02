@@ -40,7 +40,7 @@ import {
 } from '../topic-selector/topic-selector';
 import { Int32Value, StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
-import { ValueProjection, ValueProjectionList } from "../value-projections/ValueProjectionListInput/value-projections";
+import { ValueProjection, ValueProjectionList } from "../value-projections/value-projections";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());

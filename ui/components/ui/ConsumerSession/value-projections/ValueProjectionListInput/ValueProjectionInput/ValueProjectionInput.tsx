@@ -103,7 +103,7 @@ const ValueProjectionInput: React.FC<ValueProjectionInputProps> = (props) => {
         <div>
           <FormLabel
             size='small'
-            content="Table Column Width"
+            content="Column Width"
           />
           <Input
             value={String(itemSpec.width) || ''}

@@ -32,7 +32,7 @@ import { ManagedConsumerSessionConfigValOrRef } from '../LibraryBrowser/model/us
 import { consumerSessionConfigFromValOrRef } from '../LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import { getColoring } from './coloring';
-import { getValueProjectionThs } from './value-projections/render-value-projections';
+import { getValueProjectionThs } from './value-projections/value-projections-utils';
 import { Th } from './Th';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
@@ -99,8 +99,6 @@ const Session: React.FC<SessionProps> = (props) => {
   useInterval(() => {
     scrollToBottom();
   }, sessionState === 'running' ? 200 : false);
-
-  console.log('MSGS', messages);
 
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
@@ -287,11 +285,13 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
 
-  const valueProjectionThs = config ? getValueProjectionThs({
-    sessionConfig: config,
-    sort,
-    setSort
-  }) : [];
+  const valueProjectionThs = useMemo(() => {
+    return config ? getValueProjectionThs({
+      sessionConfig: config,
+      sort,
+      setSort
+    }) : [];
+  }, [config, sort]);
 
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
     if (config === undefined) {
@@ -369,6 +369,7 @@ const Session: React.FC<SessionProps> = (props) => {
             fixedHeaderContent={() => (
               <tr>
                 <Th
+                  key="index"
                   title="#"
                   sort={sort}
                   setSort={setSort}
@@ -386,6 +387,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   )}
                 />
                 <Th
+                  key="publishTime"
                   title="Publish time"
                   sort={sort}
                   setSort={setSort}
@@ -394,6 +396,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.publishTime}
                 />
                 <Th
+                  key="key"
                   title="Key"
                   sort={sort}
                   setSort={setSort}
@@ -404,6 +407,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 {valueProjectionThs.map(vp => vp.th)}
 
                 <Th
+                  key="value"
                   title="Value"
                   sort={sort}
                   setSort={setSort}
@@ -411,6 +415,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.value}
                 />
                 <Th
+                  key="target"
                   title="Target"
                   sort={sort}
                   setSort={setSort}
@@ -418,6 +423,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.sessionTargetIndex}
                 />
                 <Th
+                  key="topic"
                   title="Topic"
                   sort={sort}
                   setSort={setSort}
@@ -425,6 +431,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.topic}
                 />
                 <Th
+                  key="producer"
                   title="Producer"
                   sort={sort}
                   setSort={setSort}
@@ -432,6 +439,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.producerName}
                 />
                 <Th
+                  key="schemaVersion"
                   title="Schema version"
                   sort={sort}
                   setSort={setSort}
@@ -439,6 +447,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.schemaVersion}
                 />
                 <Th
+                  key="size"
                   title="Size"
                   sort={sort}
                   setSort={setSort}
@@ -446,6 +455,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.size}
                 />
                 <Th
+                  key="properties"
                   title="Properties"
                   sort={sort}
                   setSort={setSort}
@@ -453,6 +463,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.propertiesMap}
                 />
                 <Th
+                  key="eventTime"
                   title="Event time"
                   sort={sort}
                   setSort={setSort}
@@ -460,6 +471,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.eventTime}
                 />
                 <Th
+                  key="brokerPublishTime"
                   title="Broker pub. time"
                   sort={sort}
                   setSort={setSort}
@@ -467,12 +479,14 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.brokerPublishTime}
                 />
                 <Th
+                  key="messageId"
                   title="Message Id"
                   sort={sort}
                   setSort={setSort}
                   help={help.messageId}
                 />
                 <Th
+                  key="sequenceId"
                   title="Sequence Id"
                   sort={sort}
                   setSort={setSort}
@@ -480,12 +494,14 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.sequenceId}
                 />
                 <Th
+                  key="orderingKey"
                   title="Ordering key"
                   sort={sort}
                   setSort={setSort}
                   help={help.orderingKey}
                 />
                 <Th
+                  key="redeliveryCount"
                   title="Redelivery count"
                   sort={sort}
                   setSort={setSort}
@@ -493,6 +509,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   help={help.redeliveryCount}
                 />
                 <Th
+                  key="sessionContextState"
                   title="Session Context State"
                   sort={sort}
                   setSort={setSort}

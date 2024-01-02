@@ -24,8 +24,8 @@ case class ValueProjection(
                |""".stripMargin
 
         // Don't remove the following debug lines
-        println(s"DEBUG EVAL CODE")
-        println(evalCode)
+//        println(s"DEBUG EVAL CODE")
+//        println(evalCode)
 
         val result =
             try

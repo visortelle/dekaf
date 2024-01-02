@@ -1,4 +1,4 @@
-import { BasicMessageFilterTarget } from "../../basic-message-filter-types";
+import { BasicMessageFilterTarget } from "../basic-message-filter-types";
 
 export type ValueProjection = {
   target: BasicMessageFilterTarget,

@@ -1,4 +1,4 @@
-import { ValueProjectionList } from "./value-projections/ValueProjectionListInput/value-projections";
+import { ValueProjectionList } from "./value-projections/value-projections";
 import { BasicMessageFilter, BasicMessageFilterTarget } from "./basic-message-filter-types";
 import { TopicSelector } from "./topic-selector/topic-selector";
 
