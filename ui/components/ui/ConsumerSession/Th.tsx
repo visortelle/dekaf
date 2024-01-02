@@ -7,6 +7,7 @@ import SvgIcon from '../SvgIcon/SvgIcon';
 import { FC } from "react";
 import s from './ConsumerSession.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
+import { isEqual } from "lodash";
 
 export type ThProps = {
   title: React.ReactNode,
@@ -18,12 +19,14 @@ export type ThProps = {
 };
 
 export const Th: FC<ThProps> = (props: ThProps) => {
+  const isSortedByThisColumn = isEqual(props.sort.key, props.sortKey);
+
   const handleColumnHeaderClick = () => {
     if (props.sortKey === undefined) {
       return;
     }
 
-    if (props.sort.key === props.sortKey) {
+    if (isSortedByThisColumn) {
       props.setSort({ key: props.sortKey, direction: props.sort.direction === 'asc' ? 'desc' : 'asc' });
     } else {
       props.setSort({ key: props.sortKey, direction: 'asc' });
@@ -39,7 +42,7 @@ export const Th: FC<ThProps> = (props: ThProps) => {
       >
         {props.title}
 
-        {props.sort.key === props.sortKey && (
+        {isSortedByThisColumn && (
           <div className={cts.SortableThIcon}>
             <SvgIcon svg={props.sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
           </div>

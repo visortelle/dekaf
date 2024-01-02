@@ -1,7 +1,7 @@
 import { ReactElement } from "react";
 import { ConsumerSessionConfig, MessageDescriptor } from "../types";
 import { Th } from "../Th";
-import { Sort } from "../sort";
+import { Sort, SortKey } from "../sort";
 import { remToPx } from "../../rem-to-px";
 import { Td } from "../Message/Td";
 import { Coloring } from "../coloring";
@@ -22,14 +22,35 @@ export type ValueProjectionTh = {
 }
 
 export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProjectionTh[] {
-  const getThs = (props: ValueProjectionThsProps, projections: ValueProjection[], reactKeyPrefix: string) => {
-    return projections.map((pr, i) => {
+  type GetThsProps = {
+    thsProps: ValueProjectionThsProps,
+    projections: ValueProjection[],
+    reactKeyPrefix: string,
+    type: {
+      type: "sessionValueProjections"
+    } | {
+      type: "sessionTargetValueProjections",
+      targetIndex: number
+    }
+  }
+  const getThs = (props: GetThsProps) => {
+    return props.projections.map((pr, i) => {
+      const sortKey: SortKey = props.type.type === "sessionValueProjections" ? {
+        type: "sessionValueProjection",
+        projectionIndex: i
+      } : {
+        type: "sessionTargetValueProjection",
+        targetIndex: props.type.targetIndex,
+        projectionIndex: i
+      };
+
       return {
         th: (
           <Th
-            key={`${reactKeyPrefix}-${i}`}
-            sort={props.sort}
-            setSort={props.setSort}
+            key={`${props.reactKeyPrefix}-${i}`}
+            sort={props.thsProps.sort}
+            setSort={props.thsProps.setSort}
+            sortKey={sortKey}
             title={`${pr.shortName}`}
             help={<></>}
           />
@@ -39,9 +60,23 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
     });
   }
 
-  const sessionThs = getThs(props, props.sessionConfig.valueProjectionList.projections, 'session-projection');
+  const sessionThs = getThs({
+    thsProps: props,
+    projections: props.sessionConfig.valueProjectionList.projections,
+    reactKeyPrefix: 'session-projection',
+    type: { type: "sessionValueProjections" }
+
+  });
   const sessionTargetThs = props.sessionConfig.targets.flatMap((target, i) =>
-    getThs(props, target.valueProjectionList.projections, `session-target-${i}-projection`)
+    getThs({
+      thsProps: props,
+      projections: target.valueProjectionList.projections,
+      reactKeyPrefix: `session-target-${i}-projection`,
+      type: {
+        type: "sessionTargetValueProjections",
+        targetIndex: i
+      }
+    })
   );
 
   return sessionThs.concat(sessionTargetThs);
