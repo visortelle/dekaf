@@ -8,7 +8,7 @@ import consumer.message_filter.basic_message_filter.*
 import consumer.message_filter.basic_message_filter.logic.*
 import consumer.message_filter.basic_message_filter.targets.*
 import consumer.message_filter.basic_message_filter.operations.*
-import consumer.session_runner.{ConsumerSessionContext, ConsumerSessionContextConfig, ConsumerSessionMessage}
+import consumer.session_runner.{ConsumerSessionContextPool, ConsumerSessionContextConfig, ConsumerSessionMessage}
 import consumer.session_runner
 import zio.*
 import zio.test.*
@@ -25,7 +25,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
+        val sessionContextPool = ConsumerSessionContextPool()
         val basicMessageFilter = BasicMessageFilter(op = spec.op)
         val filter = MessageFilter(
             isEnabled = true,
@@ -36,11 +36,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             ),
             filter = basicMessageFilter
         )
-        val result = sessionContext.testMessageFilter(
-            filter = filter,
-            messageAsJsonOmittingValue = spec.messageAsJsonOmittingValue,
-            messageValueAsJson = Right(spec.messageValueAsJson.trim)
-        ).isOk
+        val sessionContext = sessionContextPool.getNextContext
+        sessionContext.setCurrentMessage(spec.messageAsJsonOmittingValue, Right(spec.messageValueAsJson.trim))
+
+        val result = sessionContext.testMessageFilter(filter = filter).isOk
 
         if spec.isShouldFail then !result else result
 
@@ -52,7 +51,9 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          */
         test(BasicMessageFilter.getClass.toString) {
             assertTrue {
-                val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
+                val sessionContextPool = ConsumerSessionContextPool()
+                val sessionContext = sessionContextPool.getNextContext
+
                 val basicMessageFilter = BasicMessageFilter(
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
@@ -72,16 +73,16 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |true
                       |""".stripMargin
 
-                sessionContext.testMessageFilter(
-                    filter = filter,
-                    messageAsJsonOmittingValue = "{}",
-                    messageValueAsJson = Right(messageValueAsJson)
-                ).isOk
+                sessionContext.setCurrentMessage("{}", Right(messageValueAsJson.trim))
+
+                sessionContext.testMessageFilter(filter = filter).isOk
             }
         },
         test(BasicMessageFilter.getClass.toString) {
             assertTrue {
-                val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
+                val sessionContextPool = ConsumerSessionContextPool()
+                val sessionContext = sessionContextPool.getNextContext
+
                 val basicMessageFilter = BasicMessageFilter(
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
@@ -101,11 +102,9 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |true
                       |""".stripMargin
 
-                val isOk = sessionContext.testMessageFilter(
-                    filter = filter,
-                    messageAsJsonOmittingValue = "{}",
-                    messageValueAsJson = Right(messageValueAsJson)
-                ).isOk
+                sessionContext.setCurrentMessage("{}", Right(messageValueAsJson.trim))
+
+                val isOk = sessionContext.testMessageFilter(filter = filter).isOk
 
                 !isOk
             }
@@ -158,7 +157,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 ),
                 messageValueAsJson =
                     """
-                      |{ a: 2 }
+                      |{ "a": 2 }
                       |""".stripMargin
             )))
         },
