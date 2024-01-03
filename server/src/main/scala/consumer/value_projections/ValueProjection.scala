@@ -1,6 +1,7 @@
 package consumer.value_projections
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import _root_.consumer.session_runner.ConsumerSessionContext
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
 import org.graalvm.polyglot.Context
 
@@ -10,7 +11,7 @@ case class ValueProjection(
     shortName: String,
     width: Option[Int]
 ):
-    def project(polyglotContext: Context): ValueProjectionResult =
+    def project(context: ConsumerSessionContext): ValueProjectionResult =
         val evalCode =
             s"""
                |(() => {
@@ -30,7 +31,7 @@ case class ValueProjection(
 
         val result =
             try
-                val displayValue = polyglotContext.eval("js", evalCode).asString()
+                val displayValue = context.eval(evalCode).asString()
                 ValueProjectionResult(displayValue = Some(displayValue))
             catch {
                 case _: Throwable =>

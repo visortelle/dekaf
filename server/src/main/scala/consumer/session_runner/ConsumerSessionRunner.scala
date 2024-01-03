@@ -68,7 +68,7 @@ case class ConsumerSessionRunner(
                     val valueProjectionListResult: Vector[ValueProjectionResult] = if sessionConfig.valueProjectionList.isEnabled then
                         sessionConfig.valueProjectionList.projections
                             .filter(_.isEnabled)
-                            .map(_.project(sessionContext.context))
+                            .map(_.project(sessionContext))
                     else
                         Vector.empty
 

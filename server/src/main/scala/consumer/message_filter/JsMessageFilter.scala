@@ -2,11 +2,11 @@ package consumer.message_filter
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
-import consumer.session_runner.TestResult
+import consumer.session_runner.{ConsumerSessionContext, TestResult}
 import org.graalvm.polyglot.Context
 
 case class JsMessageFilter(jsCode: String):
-    def test(polyglotContext: Context, targetField: BasicMessageFilterTarget): TestResult =
+    def test(context: ConsumerSessionContext, targetField: BasicMessageFilterTarget): TestResult =
         val evalCode =
             s"""
                |(() => {
@@ -21,7 +21,7 @@ case class JsMessageFilter(jsCode: String):
 
         val testResult =
             try
-                val isOk = polyglotContext.eval("js", evalCode).asBoolean
+                val isOk = context.eval(evalCode).asBoolean
                 TestResult(isOk = isOk, error = None)
             catch {
                 case err: Throwable =>

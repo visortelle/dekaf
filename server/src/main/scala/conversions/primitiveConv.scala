@@ -38,7 +38,7 @@ object primitiveConv:
      * Replaces non-printable characters like line break to \n, tabs to \t, etc.
      * */
     def bytesToJsonString(bytes: Array[Byte]): String =
-        bytesToString(bytes).asJson.toString
+        bytesToString(bytes).asJson.noSpaces
 
     /* Converts a byte array to a boolean.
      * The byte array must be of length 1.

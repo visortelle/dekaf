@@ -7,6 +7,10 @@ import consumer.message_filter.basic_message_filter.BasicMessageFilter
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
 import io.circe.generic.auto.*
 import org.graalvm.polyglot.Context
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Callable
+import org.graalvm.polyglot.Value
 
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.Await
@@ -17,6 +21,7 @@ val VarPrefix = "__dekaf_"
 val JsonStateVarName = s"globalThis.${VarPrefix}state"
 val JsLibsVarName = s"globalThis.${VarPrefix}libs"
 val CurrentMessageVarName = s"globalThis.${VarPrefix}currentMessage"
+val CodeCacheVarName = s"globalThis.${VarPrefix}codeCache"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
@@ -32,17 +37,23 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         .err(config.stdout)
         .build
 
-    context.eval("js", s"$JsonStateVarName = {}") // Create empty fold-like accumulator variable.
+//    private val executor: ExecutorService = Executors.newSingleThreadExecutor()
+//    executor.submit(new Callable[Unit] {
+//        override def call(): Unit = {
+//            context.enter()
+//        }
+//    }).get()
+
+    eval(s"$CodeCacheVarName = {}")
+    eval(s"$JsonStateVarName = {}") // Create empty fold-like accumulator variable.
 
     // Load JS libraries.
-    context.eval("js", jsLibsBundle)
+    eval(jsLibsBundle)
     // Make JS libraries available in the global scope.
-    context.eval("js", s"Object.entries(${JsLibsVarName}).map(([k, v]) => globalThis[k] = v)")
+    eval(s"Object.entries(${JsLibsVarName}).map(([k, v]) => globalThis[k] = v)")
 
     // Provide better console output for debugging on client side.
-    context.eval(
-        "js",
-        s"""
+    eval(s"""
       |globalThis.${VarPrefix}consoleLog = console.log;
       |globalThis.${VarPrefix}consoleInfo = console.info;
       |globalThis.${VarPrefix}consoleWarn = console.warn;
@@ -56,6 +67,18 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
       |console.debug = (...args) => ${VarPrefix}consoleLog('[DEBUG]', ...(args.map(arg => stringify(arg, null, 4))));
       """.stripMargin
     )
+
+//    def eval(code: String): Value = {
+//        executor.submit(new Callable[Value] {
+//            override def call(): Value = {
+//                context.eval("js", code)
+//            }
+//        }).get()
+//    }
+
+    def eval(code: String): Value =
+        println(code)
+        context.eval("js", code)
 
     def getStdout: String =
         val logs = config.stdout.toString
@@ -74,23 +97,23 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
                |  $CurrentMessageVarName = message;
                |})()
                |""".stripMargin
-        context.eval("js", jsCode);
+        eval(jsCode);
 
     def testMessageFilter(filter: MessageFilter): TestResult =
-        val result = filter.test(context)
+        val result = filter.test(this)
 
         if filter.isNegated then result.isOk = !result.isOk
         result
 
     def runCode(code: String): String =
         try
-            context.eval("js", s"inspect($code);").asString()
+            eval(s"inspect($code);").asString()
         catch {
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
     def getState: JsonStateValue =
-        Try(context.eval("js", s"stringify($JsonStateVarName)").asString) match
+        Try(eval(s"stringify($JsonStateVarName)").asString) match
             case Failure(_) => "{}"
             case Success(v) => v
 
