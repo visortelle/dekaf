@@ -24,7 +24,7 @@ case class ConsumerSessionTargetRunner(
     coloringRuleChain: ColoringRuleChain,
     valueProjectionList: ValueProjectionList,
     schemasByTopic: SchemasByTopic,
-    sessionContext: ConsumerSessionContext,
+    sessionContextPool: ConsumerSessionContextPool,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
@@ -36,9 +36,10 @@ case class ConsumerSessionTargetRunner(
 
         val listener = thisTarget.consumerListener
         val targetMessageHandler = listener.targetMessageHandler
-        val sessionContext = thisTarget.sessionContext
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
+            val sessionContext = thisTarget.sessionContextPool.getNextContext
+
             thisTarget.stats.messagesProcessed += 1
 
             val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
@@ -112,7 +113,7 @@ object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
         targetIndex: Int,
-        sessionContext: ConsumerSessionContext,
+        sessionContextPool: ConsumerSessionContextPool,
         targetConfig: ConsumerSessionTarget,
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
@@ -140,7 +141,7 @@ object ConsumerSessionTargetRunner:
 
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
-                sessionContext = sessionContext,
+                sessionContextPool = sessionContextPool,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
                 messageFilterChain = targetConfig.messageFilterChain,

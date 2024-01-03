@@ -147,7 +147,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Consumer isn't found: ${request.consumerName}")
                 return Future.successful(RunCodeResponse(status = Some(status)))
 
-        val result = consumerSession.sessionContext.runCode(request.code)
+        val result = consumerSession.sessionContextPool.getContext(0).runCode(request.code)
 
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))

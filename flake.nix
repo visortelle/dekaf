@@ -38,7 +38,6 @@
 
           protoc-gen-grpc-web = pkgs.callPackage ./nix/protoc-gen-grpc-web.nix { };
           protoc-gen-scala = pkgs.callPackage ./nix/protoc-gen-scala.nix { };
-          graalvm = pkgs.callPackage ./nix/graalvm { };
 
           missingSysPkgs =
             if pkgs.stdenv.isDarwin then
@@ -67,7 +66,7 @@
               pkgs.coreutils
               pkgs.nodejs-18_x
 
-              graalvm
+              pkgs.graalvm-ce
               pkgs.dotty
               pkgs.scalafmt
               pkgs.scalafix

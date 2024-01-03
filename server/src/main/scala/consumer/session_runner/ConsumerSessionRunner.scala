@@ -18,7 +18,7 @@ type ConsumerSessionTargetIndex = Int
 case class ConsumerSessionRunner(
     sessionName: String,
     sessionConfig: ConsumerSessionConfig,
-    sessionContext: ConsumerSessionContext,
+    sessionContextPool: ConsumerSessionContextPool,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner]
@@ -29,6 +29,8 @@ case class ConsumerSessionRunner(
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
         def onNext(messageFromTarget: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
+            val sessionContext = sessionContextPool.getNextContext
+
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
                 val allErrors = errors ++ additionalErrors
 
@@ -99,7 +101,7 @@ object ConsumerSessionRunner:
         sessionName: String,
         sessionConfig: ConsumerSessionConfig
     ): ConsumerSessionRunner =
-        val sessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = new ByteArrayOutputStream()))
+        val sessionContextPool = ConsumerSessionContextPool()
 
         var targets = sessionConfig.targets.zipWithIndex.map { case (targetConfig, i) =>
             i -> ConsumerSessionTargetRunner.make(
@@ -108,7 +110,7 @@ object ConsumerSessionRunner:
                 pulsarClient = pulsarClient,
                 adminClient = adminClient,
                 schemasByTopic = Map.empty,
-                sessionContext = sessionContext,
+                sessionContextPool = sessionContextPool,
                 targetConfig = targetConfig
             )
         }.toMap
@@ -134,7 +136,7 @@ object ConsumerSessionRunner:
             sessionName = sessionName,
             sessionConfig = sessionConfig,
             schemasByTopic = schemasByTopic,
-            sessionContext = sessionContext,
+            sessionContextPool = sessionContextPool,
             targets = targets,
             grpcResponseObserver = None
         )

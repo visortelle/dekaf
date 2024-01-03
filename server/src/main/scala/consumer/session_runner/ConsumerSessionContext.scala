@@ -6,7 +6,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import consumer.message_filter.basic_message_filter.BasicMessageFilter
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
 import io.circe.generic.auto.*
-import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.{Context, Engine}
 
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.Await
@@ -22,12 +22,14 @@ val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
 
 case class ConsumerSessionContextConfig(
-    stdout: java.io.PrintStream | java.io.ByteArrayOutputStream
+    stdout: java.io.PrintStream | java.io.ByteArrayOutputStream,
+    engine: Engine
 )
 
 class ConsumerSessionContext(config: ConsumerSessionContextConfig):
     val context: Context = Context
         .newBuilder("js")
+//        .engine(config.engine)
         .out(config.stdout)
         .err(config.stdout)
         .build
