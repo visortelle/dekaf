@@ -6,22 +6,25 @@ import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTra
 case class ManagedConsumerSessionTargetSpec(
     topicSelector: ManagedTopicSelectorValOrRef,
     messageFilterChain: ManagedMessageFilterChainValOrRef,
-    coloringRuleChain: ManagedColoringRuleChainValOrRef
+    coloringRuleChain: ManagedColoringRuleChainValOrRef,
+    valueProjectionList: ManagedValueProjectionListValOrRef,
 )
 
 object ManagedConsumerSessionTargetSpec:
     def fromPb(v: pb.ManagedConsumerSessionTargetSpec): ManagedConsumerSessionTargetSpec =
         ManagedConsumerSessionTargetSpec(
-            topicSelector = ManagedTopicSelectorValOrRef.fromPb(v.topicSelector.get),
-            messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.messageFilterChain.get),
-            coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.coloringRuleChain.get)
+            topicSelector = ManagedTopicSelectorValOrRef.fromPb(v.getTopicSelector),
+            messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.getMessageFilterChain),
+            coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.getColoringRuleChain),
+            valueProjectionList = ManagedValueProjectionListValOrRef.fromPb(v.getValueProjectionList),
         )
 
     def toPb(v: ManagedConsumerSessionTargetSpec): pb.ManagedConsumerSessionTargetSpec =
         pb.ManagedConsumerSessionTargetSpec(
             topicSelector = Some(ManagedTopicSelectorValOrRef.toPb(v.topicSelector)),
             messageFilterChain = Some(ManagedMessageFilterChainValOrRef.toPb(v.messageFilterChain)),
-            coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain))
+            coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain)),
+            valueProjectionList = Some(ManagedValueProjectionListValOrRef.toPb(v.valueProjectionList)),
         )
 
 case class ManagedConsumerSessionTarget(

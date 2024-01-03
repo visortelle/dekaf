@@ -8,9 +8,7 @@ import s from './JsFilterEditor.module.css'
 
 export const defaultJsFilterValue: t.JsMessageFilter = {
   type: "JsMessageFilter",
-  jsCode: `(v) => {
-  return true;
-}`
+  jsCode: `(v) => true`
 };
 
 export type JsFilterEditorProps = {
@@ -26,7 +24,7 @@ const JsFilterEditor: React.FC<JsFilterEditorProps> = (props) => {
         <CodeEditor
           value={props.value.jsCode}
           onChange={v => props.onChange({ ...props.value, jsCode: v || '' })}
-          height="140rem"
+          height="60rem"
           language="javascript"
           // TODO remove the autocomplete configuration, when it will be possible to select\configure it directly in the codeEditor.
           autoCompleteConfig={{ language: 'javascript', match: /msg\./, dependencies: autocomplete.dependencies, kind: 'Function' }}

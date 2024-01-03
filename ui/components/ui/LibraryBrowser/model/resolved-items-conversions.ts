@@ -1,7 +1,8 @@
-import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef, ManagedValueProjectionListValOrRef, ManagedValueProjectionValOrRef } from "./user-managed-items";
 import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../ConsumerSession/types";
 import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
+import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/value-projections/value-projections";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -25,6 +26,30 @@ export function basicMessageFilterTargetValueFromValOrRef(v: ManagedBasicMessage
   }
 
   return v.val.spec.target;
+}
+
+export function valueProjectionFromValOrRef(v: ManagedValueProjectionValOrRef): ValueProjection {
+  if (v.val === undefined) {
+    throw new Error('ValueProjection reference can\'t be converted to value');
+  }
+
+  return {
+    isEnabled: v.val.spec.isEnabled,
+    target: basicMessageFilterTargetValueFromValOrRef(v.val.spec.target),
+    shortName: v.val.spec.shortName,
+    width: v.val.spec.width
+  };
+}
+
+export function valueProjectionListFromValOrRef(v: ManagedValueProjectionListValOrRef): ValueProjectionList {
+  if (v.val === undefined) {
+    throw new Error('ValueProjectionList reference can\'t be converted to value');
+  }
+
+  return {
+    isEnabled: v.val.spec.isEnabled,
+    projections: v.val.spec.projections.map(valueProjectionFromValOrRef)
+  };
 }
 
 export function messageFilterChainFromValOrRef(v: ManagedMessageFilterChainValOrRef): MessageFilterChain {
@@ -151,7 +176,8 @@ export function consumerSessionTargetFromValOrRef(v: ManagedConsumerSessionTarge
   return {
     topicSelector: topicSelectorFromValOrRef(spec.topicSelector, currentTopicFqn),
     coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
-    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain)
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
+    valueProjectionList: valueProjectionListFromValOrRef(spec.valueProjectionList)
   }
 }
 
@@ -190,6 +216,7 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
     messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
     targets: spec.targets.map(spec => consumerSessionTargetFromValOrRef(spec, currentTopicFqn)),
     coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
-    pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain)
+    pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain),
+    valueProjectionList: valueProjectionListFromValOrRef(spec.valueProjectionList)
   }
 }

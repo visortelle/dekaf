@@ -60,6 +60,8 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
                 {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
                 {props.itemType === 'markdown-document' && 'Markdown Document'}
                 {props.itemType === 'basic-message-filter-target' && 'Target Field'}
+                {props.itemType === 'value-projection' && 'Projection'}
+                {props.itemType === 'value-projection-list' && 'Projection List'}
               </strong>
             </div>
           )}

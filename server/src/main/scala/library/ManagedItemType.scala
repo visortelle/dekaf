@@ -56,4 +56,3 @@ object ManagedItemType:
             case ManagedItemType.BasicMessageFilterTarget => pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET
             case ManagedItemType.ValueProjection => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION
             case ManagedItemType.ValueProjectionList => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST
-

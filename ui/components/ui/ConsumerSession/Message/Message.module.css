@@ -11,6 +11,7 @@
 .Td {
   position: relative;
   border: none;
+  white-space: nowrap;
 }
 
 tr:has(> .Td:hover) .Td {
@@ -42,4 +43,3 @@ tr:has(> .Td:hover) {
   left: 285rem;
   z-index: 1;
 }
-
