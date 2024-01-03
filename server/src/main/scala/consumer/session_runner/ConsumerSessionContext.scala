@@ -6,7 +6,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import consumer.message_filter.basic_message_filter.BasicMessageFilter
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
 import io.circe.generic.auto.*
-import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.{Context, Engine, Value}
 
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.Await
@@ -22,12 +22,14 @@ val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
 
 case class ConsumerSessionContextConfig(
-    stdout: java.io.PrintStream | java.io.ByteArrayOutputStream
+    stdout: java.io.PrintStream | java.io.ByteArrayOutputStream,
+    engine: Engine
 )
 
 class ConsumerSessionContext(config: ConsumerSessionContextConfig):
     val context: Context = Context
         .newBuilder("js")
+        .engine(config.engine)
         .out(config.stdout)
         .err(config.stdout)
         .build
@@ -64,17 +66,19 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case v: java.io.OutputStream => v.flush() // For debug in test only
         logs
 
+    private val setCurrentMessageJsFnCode =
+        s"""
+           |((messageAsJsonOmittingValue, messageValueAsJson) => {
+           |  const message = JSON.parse(messageAsJsonOmittingValue);
+           |  message.value = JSON.parse(messageValueAsJson);
+           |  message.state = $JsonStateVarName;
+           |  $CurrentMessageVarName = message;
+           |})
+           |""".stripMargin
+    private val setCurrentMessageJsFn: Value = context.eval("js", setCurrentMessageJsFnCode)
+
     def setCurrentMessage(messageAsJsonOmittingValue: MessageAsJsonOmittingValue, messageValueAsJson: MessageValueAsJson) =
-        val jsCode =
-            s"""
-               |(() => {
-               |  const message = $messageAsJsonOmittingValue;
-               |  message.value = ${messageValueAsJson.getOrElse("undefined")};
-               |  message.state = $JsonStateVarName;
-               |  $CurrentMessageVarName = message;
-               |})()
-               |""".stripMargin
-        context.eval("js", jsCode);
+        setCurrentMessageJsFn.executeVoid(messageAsJsonOmittingValue, messageValueAsJson.getOrElse("undefined"))
 
     def testMessageFilter(filter: MessageFilter): TestResult =
         val result = filter.test(context)
