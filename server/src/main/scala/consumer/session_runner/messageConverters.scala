@@ -99,7 +99,7 @@ object converters:
 
         ConsumerSessionMessage(
             messagePb = messagePb,
-            messageAsJsonOmittingValue = messageAsJsonOmittingValue.asJson.toString,
+            messageAsJsonOmittingValue = messageAsJsonOmittingValue.asJson.noSpaces,
             messageValueAsJson = messageValueAsJson
         )
 

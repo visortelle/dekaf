@@ -5,9 +5,10 @@ import org.graalvm.polyglot.Engine
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-// XXX - Kept as is for further optimizations.
+// XXX - Kept as is for further optimization.
 case class ConsumerSessionContextPool():
     private val engine = Engine.newBuilder().build()
+    // XXX - Keep the pool size equal to "1" for now.
     private val poolSize = Runtime.getRuntime.availableProcessors().min(1)
     private val contextPool: Map[Int, ConsumerSessionContext] = Vector.tabulate(poolSize) { i =>
         val sessionContext = ConsumerSessionContext(

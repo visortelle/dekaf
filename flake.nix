@@ -87,9 +87,6 @@
               pkgs.git
               pkgs.git-lfs
               pkgs.unzip
-
-              pkgs.podman
-              pkgs.act
             ] ++ missingSysPkgs;
           };
         in
