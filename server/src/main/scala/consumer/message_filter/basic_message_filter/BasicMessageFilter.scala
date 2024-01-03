@@ -1,6 +1,6 @@
 package consumer.message_filter.basic_message_filter
 
-import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.{Context, Source, Value}
 import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterTarget, BasicMessageFilterTargetTrait}
 import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
 import consumer.message_filter.basic_message_filter.operations.TestOpTrait
@@ -10,22 +10,26 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 case class BasicMessageFilter(
     op: BasicMessageFilterOp
 ):
+    private var jsFn: Option[Value] = None
+
     def test(polyglotContext: Context, target: BasicMessageFilterTarget): TestResult =
         val opEvalCode = op.genJsFnCode(target) + "()"
-        val evalCode =
-            s"""
-               |(() => {
-               |  return ${opEvalCode}
-               |})();
-               |""".stripMargin
-
-// Don't remove the following debug lines
-//        println(s"DEBUG EVAL CODE")
-//        println(evalCode)
 
         val testResult =
             try
-                val isOk = polyglotContext.eval("js", evalCode).asBoolean
+                val isOk = jsFn match
+                    case Some(v) => v.execute().asBoolean()
+                    case None =>
+                        val evalCode =
+                            s"""
+                              |(() => {
+                              |  return $opEvalCode
+                              |});
+                              |""".stripMargin
+                        val fn = polyglotContext.eval("js", evalCode)
+                        jsFn = Some(fn)
+                        fn.execute().asBoolean()
+
                 TestResult(isOk = isOk, error = None)
             catch {
                 case err: Throwable =>

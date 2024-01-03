@@ -468,6 +468,7 @@ message MessageFilterChain {
 message ResumeRequest {
   string consumer_name = 1;
   bool include_consumer_stats = 2;
+  bool is_debug = 3;
 }
 
 message ConsumerStats {}
