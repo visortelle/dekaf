@@ -17,8 +17,6 @@ message ChainTestResult {
 
 message ValueProjectionResult {
   google.protobuf.StringValue display_value = 1;
-  google.protobuf.Int32Value session_target_index = 2;
-  int32 projection_index = 3;
 }
 
 message Message {
@@ -38,11 +36,15 @@ message Message {
   google.protobuf.StringValue debug_stdout = 51;
 
   google.protobuf.Int32Value session_target_index = 52;
+
   repeated ChainTestResult session_color_rule_chain_test_results = 53;
   repeated ChainTestResult session_target_color_rule_chain_test_results = 54;
+
   ChainTestResult session_message_filter_chain_test_result = 55;
   ChainTestResult session_target_message_filter_chain_test_result = 56;
-  repeated ValueProjectionResult value_projection_results = 57;
+
+  repeated ValueProjectionResult session_value_projection_list_result = 57;
+  repeated ValueProjectionResult session_target_value_projection_list_result = 58;
 
   map<string, string> properties = 1;
 
@@ -220,12 +222,14 @@ message TopicSelector {
 }
 
 message ValueProjection {
-  BasicMessageFilterTarget target = 1;
+  bool is_enabled = 4;
+  BasicMessageFilterTarget target_field = 1;
   string short_name = 2;
-  google.protobuf.Int32Value display_chars_count = 3;
+  google.protobuf.Int32Value width = 3;
 }
 
 message ValueProjectionList {
+  bool is_enabled = 2;
   repeated ValueProjection projections = 1;
 }
 

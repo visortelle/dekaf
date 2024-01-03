@@ -4,10 +4,14 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.session_config.ConsumerSessionConfig
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
+
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import scala.util.boundary, boundary.break
+import consumer.value_projections.ValueProjectionResult
+
+import scala.util.boundary
+import boundary.break
 
 type ConsumerSessionTargetIndex = Int
 
@@ -47,8 +51,6 @@ case class ConsumerSessionRunner(
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
                         sessionConfig.messageFilterChain,
-                        msg.messageAsJsonOmittingValue,
-                        msg.messageValueAsJson
                     )
 
                     if !messageFilterChainResult.isOk then
@@ -56,12 +58,17 @@ case class ConsumerSessionRunner(
 
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules
-                            .filter(cr => cr.isEnabled)
+                            .filter(_.isEnabled)
                             .map(cr => sessionContext.testMessageFilterChain(
                                 cr.messageFilterChain,
-                                msg.messageAsJsonOmittingValue,
-                                msg.messageValueAsJson
                             ))
+                    else
+                        Vector.empty
+
+                    val valueProjectionListResult: Vector[ValueProjectionResult] = if sessionConfig.valueProjectionList.isEnabled then
+                        sessionConfig.valueProjectionList.projections
+                            .filter(_.isEnabled)
+                            .map(_.project(sessionContext.context))
                     else
                         Vector.empty
 
@@ -74,6 +81,7 @@ case class ConsumerSessionRunner(
                         .withDebugStdout(sessionContext.getStdout)
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                        .withSessionValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
 
                     createAndSendResponse(Seq(messageToSendPb), errors)
 

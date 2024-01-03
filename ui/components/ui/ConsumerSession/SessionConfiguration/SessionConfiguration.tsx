@@ -14,6 +14,7 @@ import DeleteButton from '../../DeleteButton/DeleteButton';
 import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
 import Toggle from '../../Toggle/Toggle';
 import { getDefaultManagedItem } from '../../LibraryBrowser/default-library-items';
+import ValueProjectionListInput from '../value-projections/ValueProjectionListInput/ValueProjectionListInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -25,15 +26,15 @@ export type SessionConfigurationProps = {
 };
 
 function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
-  if (value.type === "reference") {
-    return false;
-  }
-
-  if (value.val.spec.coloringRuleChain.val?.spec.coloringRules.length) {
+  if (value.val?.spec.coloringRuleChain.val?.spec.coloringRules.length) {
     return true;
   }
 
-  if (value.val.spec.messageFilterChain.val?.spec.filters.length) {
+  if (value.val?.spec.messageFilterChain.val?.spec.filters.length) {
+    return true;
+  }
+
+  if (value.val?.spec.valueProjectionList.val?.spec.projections.length) {
     return true;
   }
 
@@ -83,11 +84,18 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             <LibraryBrowserPanel
               value={item}
               itemType='consumer-session-config'
-              onPick={(item) => props.onChange({
-                type: 'reference',
-                ref: item.metadata.id,
-                val: item as ManagedConsumerSessionConfig
-              })}
+              onPick={(item) => {
+                const newValue: ManagedConsumerSessionConfigValOrRef = {
+                  type: 'reference',
+                  ref: item.metadata.id,
+                  val: item as ManagedConsumerSessionConfig
+                };
+
+                const isAdvancedConfig = detectAdvancedConfig(newValue);
+                setIsShowAdvanced(isAdvancedConfig);
+
+                props.onChange(newValue);
+              }}
               onSave={(item) => props.onChange({
                 type: 'reference',
                 ref: item.metadata.id,
@@ -124,6 +132,13 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             <FilterChainEditor
               value={itemSpec.messageFilterChain}
               onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+              libraryContext={props.libraryContext}
+              isReadOnly={props.isReadOnly}
+            />
+
+            <ValueProjectionListInput
+              value={itemSpec.valueProjectionList}
+              onChange={(v) => onSpecChange({ ...itemSpec, valueProjectionList: v })}
               libraryContext={props.libraryContext}
               isReadOnly={props.isReadOnly}
             />
