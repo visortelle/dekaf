@@ -32,6 +32,8 @@ export function genMessageDescriptor(
     sessionTargetColorRuleChainTestResults: [],
     sessionMessageFilterChainTestResult: undefined,
     sessionTargetMessageFilterChainTestResult: undefined,
+    sessionTargetValueProjectionListResult: [],
+    sessionValueProjectionListResult: [],
     ...override,
   };
 }
@@ -65,6 +67,8 @@ export function genEmptyMessageDescriptor(
     sessionTargetColorRuleChainTestResults: [],
     sessionMessageFilterChainTestResult: undefined,
     sessionTargetMessageFilterChainTestResult: undefined,
+    sessionTargetValueProjectionListResult: [],
+    sessionValueProjectionListResult: [],
     ...override,
   };
 }

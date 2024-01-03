@@ -2,15 +2,18 @@ import React from 'react';
 import * as Modals from '../../../app/contexts/Modals/Modals';
 import { SessionContextStateJsonField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField, SessionTargetIndexField } from './fields';
 import s from './Message.module.css';
-import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
-import { MessageDescriptor } from '../types';
+import { ConsumerSessionConfig, MessageDescriptor } from '../types';
 import MessageDetails from './MessageDetails/MessageDetails';
 import { Coloring } from '../coloring';
+import { getValueProjectionTds, ValueProjectionTh } from '../value-projections/value-projections-utils';
+import { Td } from './Td';
 
 export type MessageProps = {
   isShowTooltips: boolean;
   message: MessageDescriptor;
   coloring: Coloring;
+  sessionConfig: ConsumerSessionConfig;
+  valueProjectionThs: ValueProjectionTh[]
 };
 
 const MessageComponent: React.FC<MessageProps> = (props) => {
@@ -27,6 +30,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   return (
     <>
       <Td
+        key="index"
         width="36rem"
         className={s.IndexField}
         onClick={showMessageDetails}
@@ -36,6 +40,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="publishTime"
         width="200rem"
         className={s.PublishTimeField}
         onClick={showMessageDetails}
@@ -45,6 +50,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="key"
         width='20ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -52,7 +58,15 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
+      {getValueProjectionTds({
+        sessionConfig: props.sessionConfig,
+        valueProjectionThs: props.valueProjectionThs,
+        coloring: props.coloring,
+        message: props.message
+      })}
+
       <Td
+        key="value"
         width='30ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -61,6 +75,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="sessionTargetIndex"
         width='5ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -69,6 +84,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="topic"
         width='60ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -77,6 +93,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="producerName"
         width='50ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -85,6 +102,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="schemaVersion"
         width='8ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -93,6 +111,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="size"
         width='12ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -101,6 +120,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="properties"
         width='30ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -109,6 +129,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="eventTime"
         width='30ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -117,6 +138,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="brokerPublishTime"
         width='30ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -125,6 +147,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="message"
         width='40ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -133,6 +156,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="sequence"
         width='10ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -141,6 +165,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="ordering"
         width='10ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -149,6 +174,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="redeliveryCount"
         width='10ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -157,6 +183,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td
+        key="sessionContextState"
         width='50ch'
         onClick={showMessageDetails}
         coloring={props.coloring}
@@ -166,29 +193,5 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
     </>
   );
 }
-
-type TdProps = {
-  children: React.ReactNode,
-  width?: string,
-  coloring: Coloring,
-} & React.ThHTMLAttributes<HTMLTableCellElement>;
-const Td: React.FC<TdProps> = (props) => {
-  const { children, className, width, coloring, ...restProps } = props;
-
-  return (
-    <td
-      className={`${cts.Td} ${s.Td} ${className || ''}`}
-      style={{
-        color: props.coloring?.foregroundColor,
-        backgroundColor: props.coloring?.backgroundColor
-      }}
-      {...restProps}
-    >
-      <div style={{ width, textOverflow: 'ellipsis', display: 'flex' }} >
-        {children}
-      </div>
-    </td>
-  );
-};
 
 export default MessageComponent;

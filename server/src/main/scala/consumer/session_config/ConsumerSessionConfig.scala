@@ -6,13 +6,15 @@ import _root_.consumer.session_target.ConsumerSessionTarget
 import _root_.consumer.message_filter.MessageFilterChain
 import _root_.consumer.pause_trigger.ConsumerSessionPauseTriggerChain
 import _root_.consumer.coloring_rules.ColoringRuleChain
+import _root_.consumer.value_projections.ValueProjectionList
 
 case class ConsumerSessionConfig(
     startFrom: ConsumerSessionStartFrom,
     targets: Vector[ConsumerSessionTarget],
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain,
-    pauseTriggerChain: ConsumerSessionPauseTriggerChain
+    pauseTriggerChain: ConsumerSessionPauseTriggerChain,
+    valueProjectionList: ValueProjectionList
 )
 
 object ConsumerSessionConfig:
@@ -28,7 +30,8 @@ object ConsumerSessionConfig:
                 .getOrElse(ColoringRuleChain.empty),
             pauseTriggerChain = v.pauseTriggerChain
                 .map(ConsumerSessionPauseTriggerChain.fromPb)
-                .getOrElse(ConsumerSessionPauseTriggerChain.empty)
+                .getOrElse(ConsumerSessionPauseTriggerChain.empty),
+            valueProjectionList = ValueProjectionList.fromPb(v.getValueProjectionList)
         )
 
     def toPb(v: ConsumerSessionConfig): pb.ConsumerSessionConfig =
@@ -41,5 +44,6 @@ object ConsumerSessionConfig:
                     events = Vector.empty,
                     mode = pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL
                 )
-            )
+            ),
+            valueProjectionList = Some(ValueProjectionList.toPb(v.valueProjectionList))
         )

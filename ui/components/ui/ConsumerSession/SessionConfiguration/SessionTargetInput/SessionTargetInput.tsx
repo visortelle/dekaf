@@ -8,6 +8,7 @@ import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../Librar
 import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, ManagedConsumerSessionTargetValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
+import ValueProjectionListInput from '../../value-projections/ValueProjectionListInput/ValueProjectionListInput';
 
 export type SessionTargetInputProps = {
   value: ManagedConsumerSessionTargetValOrRef,
@@ -81,6 +82,13 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       <FilterChainEditor
         value={itemSpec.messageFilterChain}
         onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+        libraryContext={props.libraryContext}
+        isReadOnly={props.isReadOnly}
+      />
+
+      <ValueProjectionListInput
+        value={itemSpec.valueProjectionList}
+        onChange={(v) => onSpecChange({ ...itemSpec, valueProjectionList: v })}
         libraryContext={props.libraryContext}
         isReadOnly={props.isReadOnly}
       />

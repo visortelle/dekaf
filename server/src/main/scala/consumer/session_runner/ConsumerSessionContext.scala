@@ -14,9 +14,9 @@ import scala.concurrent.duration.{Duration, SECONDS}
 
 type JsonStateValue = JsonValue // Cumulative state to produce user-defined calculations, preserved between messages.
 val VarPrefix = "__dekaf_"
-val JsonStateVarName = s"${VarPrefix}state"
-val JsLibsVarName = s"${VarPrefix}libs"
-val CurrentMessageVarName = s"${VarPrefix}currentMessage"
+val JsonStateVarName = s"globalThis.${VarPrefix}state"
+val JsLibsVarName = s"globalThis.${VarPrefix}libs"
+val CurrentMessageVarName = s"globalThis.${VarPrefix}currentMessage"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
@@ -32,12 +32,12 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         .err(config.stdout)
         .build
 
-    context.eval("js", s"globalThis.$JsonStateVarName = {}") // Create empty fold-like accumulator variable.
+    context.eval("js", s"$JsonStateVarName = {}") // Create empty fold-like accumulator variable.
 
     // Load JS libraries.
     context.eval("js", jsLibsBundle)
     // Make JS libraries available in the global scope.
-    context.eval("js", s"Object.entries(globalThis.${JsLibsVarName}).map(([k, v]) => globalThis[k] = v)")
+    context.eval("js", s"Object.entries(${JsLibsVarName}).map(([k, v]) => globalThis[k] = v)")
 
     // Provide better console output for debugging on client side.
     context.eval(
@@ -64,18 +64,19 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case v: java.io.OutputStream => v.flush() // For debug in test only
         logs
 
-    def testMessageFilter(filter: MessageFilter, messageAsJsonOmittingValue: MessageAsJsonOmittingValue, messageValueAsJson: MessageValueAsJson): TestResult =
+    def setCurrentMessage(messageAsJsonOmittingValue: MessageAsJsonOmittingValue, messageValueAsJson: MessageValueAsJson) =
         val jsCode =
             s"""
                |(() => {
                |  const message = $messageAsJsonOmittingValue;
                |  message.value = ${messageValueAsJson.getOrElse("undefined")};
-               |  message.state = globalThis.$JsonStateVarName;
-               |  globalThis.$CurrentMessageVarName = message;
+               |  message.state = $JsonStateVarName;
+               |  $CurrentMessageVarName = message;
                |})()
                |""".stripMargin
         context.eval("js", jsCode);
 
+    def testMessageFilter(filter: MessageFilter): TestResult =
         val result = filter.test(context)
 
         if filter.isNegated then result.isOk = !result.isOk
@@ -88,28 +89,18 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-    private def testBasicMessageFilter(filter: BasicMessageFilter, targetField: BasicMessageFilterTarget): TestResult =
-        filter.test(context, targetField)
-
-    private def testJsMessageFilter(filter: JsMessageFilter, targetField: BasicMessageFilterTarget): TestResult =
-        filter.test(context, targetField)
-
     def getState: JsonStateValue =
-        Try(context.eval("js", s"stringify(globalThis.$JsonStateVarName)").asString) match
+        Try(context.eval("js", s"stringify($JsonStateVarName)").asString) match
             case Failure(_) => "{}"
             case Success(v) => v
 
-    def testMessageFilterChain(
-        filterChain: MessageFilterChain,
-        jsonMessage: JsonValue,
-        jsonValue: MessageValueAsJson
-    ): ChainTestResult =
+    def testMessageFilterChain(filterChain: MessageFilterChain): ChainTestResult =
         if !filterChain.isEnabled then
             return ChainTestResult(isOk = true, results = Vector.empty)
 
         val filterResults = filterChain.filters
             .filter(_.isEnabled)
-            .map(f => testMessageFilter(f, jsonMessage, jsonValue))
+            .map(testMessageFilter)
 
         var isOk = filterChain.mode match {
             case MessageFilterChainMode.All => filterResults.forall(fr => fr.isOk)

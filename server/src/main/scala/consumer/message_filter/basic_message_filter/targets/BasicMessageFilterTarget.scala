@@ -14,7 +14,6 @@ case class BasicMessageFilterTarget(
                |(${modifier.modifier.jsCode})(${target.resolveVarName()})
                |""".stripMargin
 
-
 object BasicMessageFilterTarget:
     def fromPb(v: pb.BasicMessageFilterTarget): BasicMessageFilterTarget =
         val jsonModifier = v.jsonModifier.map(JsonModifier.fromPb)

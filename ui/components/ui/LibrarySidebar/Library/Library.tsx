@@ -34,7 +34,9 @@ const itemTypes: ManagedItemType[] = [
   "coloring-rule",
   "coloring-rule-chain",
   "markdown-document",
-  "basic-message-filter-target"
+  "basic-message-filter-target",
+  "value-projection",
+  "value-projection-list"
 ];
 
 const Library: React.FC<LibraryProps> = (props) => {

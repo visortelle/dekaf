@@ -28,7 +28,8 @@ import {
   ConsumerSessionTarget,
   TestResult,
   ChainTestResult,
-  JsMessageFilter
+  JsMessageFilter,
+  ValueProjectionResult
 } from "../types";
 
 import {
@@ -37,8 +38,9 @@ import {
   NamespacedRegexTopicSelector,
   RegexSubscriptionMode,
 } from '../topic-selector/topic-selector';
-import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
+import { Int32Value, StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
+import { ValueProjection, ValueProjectionList } from "../value-projections/value-projections";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -66,15 +68,21 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     topic: message.getTopic()?.getValue() ?? null,
     sessionContextStateJson: message.getSessionContextStateJson()?.getValue() ?? null,
     debugStdout: message.getDebugStdout()?.getValue() ?? null,
+
+    sessionTargetIndex: message.getSessionTargetIndex()?.getValue() ?? null,
+
     sessionColorRuleChainTestResults: message.getSessionColorRuleChainTestResultsList().map(chainTestResultFromPb),
     sessionTargetColorRuleChainTestResults: message.getSessionTargetColorRuleChainTestResultsList().map(chainTestResultFromPb),
+
     sessionMessageFilterChainTestResult: sessionMessageFilterChainTestResultPb === undefined ?
       undefined :
       chainTestResultFromPb(sessionMessageFilterChainTestResultPb),
     sessionTargetMessageFilterChainTestResult: sessionTargetMessageFilterChainTestResultPb === undefined ?
       undefined :
       chainTestResultFromPb(sessionTargetMessageFilterChainTestResultPb),
-    sessionTargetIndex: message.getSessionTargetIndex()?.getValue() ?? null
+
+    sessionValueProjectionListResult: message.getSessionValueProjectionListResultList().map(valueProjectionResultFromPb),
+    sessionTargetValueProjectionListResult: message.getSessionTargetValueProjectionListResultList().map(valueProjectionResultFromPb),
   };
 }
 
@@ -347,6 +355,40 @@ export function coloringRuleChainToPb(v: ColoringRuleChain): pb.ColoringRuleChai
   coloringRuleChainPb.setColoringRulesList(v.coloringRules.map(coloringRuleToPb));
 
   return coloringRuleChainPb;
+}
+
+export function valueProjectionFromPb(v: pb.ValueProjection): ValueProjection {
+  return {
+    isEnabled: v.getIsEnabled(),
+    target: basicMessageFilterTargetFromPb(v.getTargetField()!),
+    shortName: v.getShortName(),
+    width: v.getWidth()?.getValue()
+  }
+}
+
+export function valueProjectionToPb(v: ValueProjection): pb.ValueProjection {
+  const valueProjectionPb = new pb.ValueProjection();
+  valueProjectionPb.setIsEnabled(v.isEnabled);
+  valueProjectionPb.setTargetField(basicMessageFilterTargetToPb(v.target));
+  valueProjectionPb.setShortName(v.shortName);
+  valueProjectionPb.setWidth(v.width === undefined ? undefined : new Int32Value().setValue(v.width));
+
+  return valueProjectionPb;
+}
+
+export function valueProjectionListFromPb(v: pb.ValueProjectionList): ValueProjectionList {
+  return {
+    isEnabled: v.getIsEnabled(),
+    projections: v.getProjectionsList().map(valueProjectionFromPb)
+  }
+}
+
+export function valueProjectionListToPb(v: ValueProjectionList): pb.ValueProjectionList {
+  const valueProjectionListPb = new pb.ValueProjectionList();
+  valueProjectionListPb.setIsEnabled(v.isEnabled);
+  valueProjectionListPb.setProjectionsList(v.projections.map(valueProjectionToPb));
+
+  return valueProjectionListPb;
 }
 
 export function jsMessageFilterFromPb(v: pb.JsMessageFilter): JsMessageFilter {
@@ -688,6 +730,7 @@ export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): Consum
     topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
     messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
     coloringRuleChain: coloringRuleChainFromPb(v.getColoringRuleChain()!),
+    valueProjectionList: valueProjectionListFromPb(v.getValueProjectionList()!)
   };
 }
 
@@ -696,6 +739,7 @@ export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.Consumer
   consumerSessionTargetPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
   consumerSessionTargetPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
   consumerSessionTargetPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
+  consumerSessionTargetPb.setValueProjectionList(valueProjectionListToPb(v.valueProjectionList));
 
   return consumerSessionTargetPb;
 }
@@ -746,6 +790,7 @@ export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.Con
   const messageFilterChainPb = messageFilterChainToPb(config.messageFilterChain);
   const pauseTriggerChainPb = consumerSessionPauseTriggerChainToPb(config.pauseTriggerChain);
   const coloringRuleChainPb = coloringRuleChainToPb(config.coloringRuleChain);
+  const valueProjectionListPb = valueProjectionListToPb(config.valueProjectionList);
 
   const configPb = new pb.ConsumerSessionConfig();
   configPb.setStartFrom(startFromPb);
@@ -753,6 +798,7 @@ export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.Con
   configPb.setMessageFilterChain(messageFilterChainPb);
   configPb.setPauseTriggerChain(pauseTriggerChainPb);
   configPb.setColoringRuleChain(coloringRuleChainPb);
+  configPb.setValueProjectionList(valueProjectionListPb);
 
   return configPb;
 }
@@ -792,3 +838,18 @@ export function chainTestResultToPb(v: ChainTestResult): pb.ChainTestResult {
 
   return resultPb;
 }
+
+export function valueProjectionResultFromPb(v: pb.ValueProjectionResult): ValueProjectionResult {
+  return {
+    displayValue: v.getDisplayValue()?.getValue()
+  }
+}
+
+export function valueProjectionResultToPb(v: ValueProjectionResult): pb.ValueProjectionResult {
+  const resultPb = new pb.ValueProjectionResult();
+  if (v.displayValue !== undefined) {
+    resultPb.setDisplayValue(new StringValue().setValue(v.displayValue));
+  }
+  return resultPb;
+}
+

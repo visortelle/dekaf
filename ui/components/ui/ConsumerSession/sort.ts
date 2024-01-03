@@ -18,7 +18,16 @@ export type SortKey =
   | "sequenceId"
   | "orderingKey"
   | "redeliveryCount"
-  | "sessionContextStateJson";
+  | "sessionContextStateJson"
+  | ({
+    type: "sessionValueProjection",
+    projectionIndex: number
+  })
+  | ({
+    type: "sessionTargetValueProjection",
+    targetIndex: number,
+    projectionIndex: number
+  });
 
 export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
@@ -146,6 +155,53 @@ export const sortMessages = (
     };
 
     return s(messages, [], sortFn);
+  }
+
+  if (typeof sort.key !== 'string' && sort.key.type === "sessionValueProjection") {
+    const projectionIndex = sort.key.projectionIndex;
+
+    const [defs, undefs] = partition(
+      messages,
+      (m) => m.sessionValueProjectionListResult[projectionIndex].displayValue !== undefined
+    );
+
+    const sortFn: SortFn = (a, b) =>
+      (a.sessionValueProjectionListResult[projectionIndex].displayValue || "")
+        .localeCompare(b.sessionValueProjectionListResult[projectionIndex].displayValue || "",
+          "en",
+          { numeric: true }
+        );
+
+    return s(defs, undefs, sortFn);
+  }
+
+  if (typeof sort.key !== 'string' && sort.key.type === "sessionTargetValueProjection") {
+    const targetIndex = sort.key.targetIndex;
+    const projectionIndex = sort.key.projectionIndex;
+
+    const [defs, undefs] = partition(
+      messages,
+      (m) => m.sessionTargetIndex === targetIndex &&
+        m.sessionTargetValueProjectionListResult[projectionIndex].displayValue !== undefined
+    );
+
+    const sortFn: SortFn = (a, b) => {
+      if (a.sessionTargetIndex !== targetIndex) {
+        return 1;
+      }
+
+      if (b.sessionTargetIndex !== targetIndex) {
+        return -1;
+      }
+
+      return (a.sessionTargetValueProjectionListResult[projectionIndex].displayValue || "")
+        .localeCompare(b.sessionTargetValueProjectionListResult[projectionIndex].displayValue || "",
+          "en",
+          { numeric: true }
+        );
+    }
+
+    return s(defs, undefs, sortFn);
   }
 
   return messages;
