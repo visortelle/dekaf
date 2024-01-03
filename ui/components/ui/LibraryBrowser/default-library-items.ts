@@ -221,6 +221,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
       const v: ManagedValueProjection = {
         metadata,
         spec: {
+          isEnabled: true,
           target: {
             type: "value",
             val: getDefaultManagedItem("basic-message-filter-target", libraryContext) as ManagedBasicMessageFilterTarget
@@ -236,6 +237,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
       const v: ManagedValueProjectionList = {
         metadata,
         spec: {
+          isEnabled: true,
           projections: []
         }
       }

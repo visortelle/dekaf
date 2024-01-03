@@ -5,16 +5,19 @@ import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTa
 import org.apache.pulsar.client.admin.PulsarAdmin
 
 case class ValueProjectionList(
+    isEnabled: Boolean,
     projections: Vector[ValueProjection]
 )
 
 object ValueProjectionList:
     def fromPb(v: pb.ValueProjectionList): ValueProjectionList =
         ValueProjectionList(
+            isEnabled = v.isEnabled,
             projections = v.projections.map(ValueProjection.fromPb).toVector
         )
 
     def toPb(v: ValueProjectionList): pb.ValueProjectionList =
         pb.ValueProjectionList(
+            isEnabled = v.isEnabled,
             projections = v.projections.map(ValueProjection.toPb)
         )

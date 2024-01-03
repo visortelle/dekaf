@@ -8,6 +8,7 @@ import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../Librar
 import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { getDefaultManagedItem, getDefaultManagedItemMetadata } from '../../../LibraryBrowser/default-library-items';
+import OnOffToggle from '../../../IconToggle/OnOffToggle/OnOffToggle';
 
 export type ValueProjectionListInputProps = {
   value: ManagedValueProjectionListValOrRef,
@@ -38,8 +39,10 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
+
   return (
-    <div className={s.ValueProjectionsInput}>
+    <div className={s.ValueProjectionsInput} style={{ filter: cssFilter }}>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           isReadOnly={props.isReadOnly}
@@ -64,6 +67,17 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          extraElements={{
+            preItemType: (
+              <div style={{ display: 'flex', gap: '4rem' }}>
+                <OnOffToggle
+                  value={itemSpec.isEnabled}
+                  onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
+                  isReadOnly={props.isReadOnly}
+                />
+              </div>
+            )
+          }}
           {...props.libraryBrowserPanel}
         />
       </div>
@@ -86,7 +100,7 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
           );
         }}
         value={itemSpec.projections}
-        onChange={(v) => onSpecChange({ projections: v })}
+        onChange={(v) => onSpecChange({ ...itemSpec, projections: v })}
         onAdd={() => {
           const newProjection: ManagedValueProjectionValOrRef = {
             type: "value",

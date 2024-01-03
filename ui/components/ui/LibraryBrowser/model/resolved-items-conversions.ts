@@ -34,6 +34,7 @@ export function valueProjectionFromValOrRef(v: ManagedValueProjectionValOrRef): 
   }
 
   return {
+    isEnabled: v.val.spec.isEnabled,
     target: basicMessageFilterTargetValueFromValOrRef(v.val.spec.target),
     shortName: v.val.spec.shortName,
     width: v.val.spec.width
@@ -46,6 +47,7 @@ export function valueProjectionListFromValOrRef(v: ManagedValueProjectionListVal
   }
 
   return {
+    isEnabled: v.val.spec.isEnabled,
     projections: v.val.spec.projections.map(valueProjectionFromValOrRef)
   };
 }

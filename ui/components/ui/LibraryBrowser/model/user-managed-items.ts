@@ -149,6 +149,7 @@ export type ManagedBasicMessageFilterTarget = {
 export type ManagedBasicMessageFilterTargetValOrRef = ValOrRef<ManagedBasicMessageFilterTarget>;
 
 export type ManagedValueProjectionSpec = {
+  isEnabled: boolean,
   target: ManagedBasicMessageFilterTargetValOrRef,
   shortName: string,
   width: number | undefined
@@ -162,6 +163,7 @@ export type ManagedValueProjection = {
 export type ManagedValueProjectionValOrRef = ValOrRef<ManagedValueProjection>;
 
 export type ManagedValueProjectionListSpec = {
+  isEnabled: boolean,
   projections: ManagedValueProjectionValOrRef[]
 };
 

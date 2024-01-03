@@ -359,6 +359,7 @@ export function coloringRuleChainToPb(v: ColoringRuleChain): pb.ColoringRuleChai
 
 export function valueProjectionFromPb(v: pb.ValueProjection): ValueProjection {
   return {
+    isEnabled: v.getIsEnabled(),
     target: basicMessageFilterTargetFromPb(v.getTargetField()!),
     shortName: v.getShortName(),
     width: v.getWidth()?.getValue()
@@ -367,6 +368,7 @@ export function valueProjectionFromPb(v: pb.ValueProjection): ValueProjection {
 
 export function valueProjectionToPb(v: ValueProjection): pb.ValueProjection {
   const valueProjectionPb = new pb.ValueProjection();
+  valueProjectionPb.setIsEnabled(v.isEnabled);
   valueProjectionPb.setTargetField(basicMessageFilterTargetToPb(v.target));
   valueProjectionPb.setShortName(v.shortName);
   valueProjectionPb.setWidth(v.width === undefined ? undefined : new Int32Value().setValue(v.width));
@@ -376,12 +378,14 @@ export function valueProjectionToPb(v: ValueProjection): pb.ValueProjection {
 
 export function valueProjectionListFromPb(v: pb.ValueProjectionList): ValueProjectionList {
   return {
+    isEnabled: v.getIsEnabled(),
     projections: v.getProjectionsList().map(valueProjectionFromPb)
   }
 }
 
 export function valueProjectionListToPb(v: ValueProjectionList): pb.ValueProjectionList {
   const valueProjectionListPb = new pb.ValueProjectionList();
+  valueProjectionListPb.setIsEnabled(v.isEnabled);
   valueProjectionListPb.setProjectionsList(v.projections.map(valueProjectionToPb));
 
   return valueProjectionListPb;

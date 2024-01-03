@@ -5,6 +5,7 @@ import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTa
 import org.graalvm.polyglot.Context
 
 case class ValueProjection(
+    isEnabled: Boolean,
     targetField: BasicMessageFilterTarget,
     shortName: String,
     width: Option[Int]
@@ -41,6 +42,7 @@ case class ValueProjection(
 object ValueProjection:
     def fromPb(v: pb.ValueProjection): ValueProjection =
         ValueProjection(
+            isEnabled = v.isEnabled,
             targetField = BasicMessageFilterTarget.fromPb(v.targetField.get),
             shortName = v.shortName,
             width = v.width
@@ -48,6 +50,7 @@ object ValueProjection:
 
     def toPb(v: ValueProjection): pb.ValueProjection =
         pb.ValueProjection(
+            isEnabled = v.isEnabled,
             targetField = Some(BasicMessageFilterTarget.toPb(v.targetField)),
             shortName = v.shortName,
             width = v.width

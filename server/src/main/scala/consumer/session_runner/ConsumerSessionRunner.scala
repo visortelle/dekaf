@@ -58,16 +58,19 @@ case class ConsumerSessionRunner(
 
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules
-                            .filter(cr => cr.isEnabled)
+                            .filter(_.isEnabled)
                             .map(cr => sessionContext.testMessageFilterChain(
                                 cr.messageFilterChain,
                             ))
                     else
                         Vector.empty
 
-                    val valueProjectionListResult: Vector[ValueProjectionResult] =
+                    val valueProjectionListResult: Vector[ValueProjectionResult] = if sessionConfig.valueProjectionList.isEnabled then
                         sessionConfig.valueProjectionList.projections
-                            .map(vp => vp.project(sessionContext.context))
+                            .filter(_.isEnabled)
+                            .map(_.project(sessionContext.context))
+                    else
+                        Vector.empty
 
                     val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
                     val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))

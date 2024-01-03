@@ -58,9 +58,12 @@ case class ConsumerSessionTargetRunner(
             else
                 Vector.empty
 
-            val valueProjectionListResult: Vector[ValueProjectionResult] =
+            val valueProjectionListResult: Vector[ValueProjectionResult] = if thisTarget.valueProjectionList.isEnabled then
                 thisTarget.valueProjectionList.projections
-                    .map(vp => vp.project(sessionContext.context))
+                    .filter(_.isEnabled)
+                    .map(_.project(sessionContext.context))
+            else
+                Vector.empty
 
             var msgToSend = if messageFilterChainResult.isOk then
                 Some(consumerSessionMessage)

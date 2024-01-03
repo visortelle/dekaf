@@ -222,12 +222,14 @@ message TopicSelector {
 }
 
 message ValueProjection {
+  bool is_enabled = 4;
   BasicMessageFilterTarget target_field = 1;
   string short_name = 2;
   google.protobuf.Int32Value width = 3;
 }
 
 message ValueProjectionList {
+  bool is_enabled = 2;
   repeated ValueProjection projections = 1;
 }
 

@@ -269,6 +269,7 @@ message ManagedTopicSelectorValOrRef {
 }
 
 message ManagedValueProjectionSpec {
+  bool is_enabled = 4;
   ManagedBasicMessageFilterTargetValOrRef target_field = 1;
   string short_name = 2;
   google.protobuf.Int32Value width = 3;
@@ -287,6 +288,7 @@ message ManagedValueProjectionValOrRef {
 }
 
 message ManagedValueProjectionListSpec {
+  bool is_enabled = 2;
   repeated ManagedValueProjectionValOrRef projections = 1;
 }
 

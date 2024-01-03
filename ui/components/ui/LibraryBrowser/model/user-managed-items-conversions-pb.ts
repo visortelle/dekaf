@@ -829,6 +829,7 @@ export function managedBasicMessageFilterTargetValOrRefToPb(v: t.ManagedBasicMes
 
 export function managedValueProjectionSpecFromPb(v: pb.ManagedValueProjectionSpec): t.ManagedValueProjectionSpec {
   return {
+    isEnabled: v.getIsEnabled(),
     target: managedBasicMessageFilterTargetValOrRefFromPb(v.getTargetField()!),
     width: v.getWidth()?.getValue(),
     shortName: v.getShortName()
@@ -837,13 +838,14 @@ export function managedValueProjectionSpecFromPb(v: pb.ManagedValueProjectionSpe
 
 export function managedValueProjectionSpecToPb(v: t.ManagedValueProjectionSpec): pb.ManagedValueProjectionSpec {
   const specPb = new pb.ManagedValueProjectionSpec();
+
+  specPb.setIsEnabled(v.isEnabled);
   specPb.setTargetField(managedBasicMessageFilterTargetValOrRefToPb(v.target));
+  specPb.setShortName(v.shortName);
 
   if (v.width !== undefined) {
     specPb.setWidth(new Int32Value().setValue(v.width));
   }
-
-  specPb.setShortName(v.shortName);
 
   return specPb;
 }
@@ -896,12 +898,15 @@ export function managedValueProjectionValOrRefToPb(v: t.ManagedValueProjectionVa
 
 export function managedValueProjectionListSpecFromPb(v: pb.ManagedValueProjectionListSpec): t.ManagedValueProjectionListSpec {
   return {
+    isEnabled: v.getIsEnabled(),
     projections: v.getProjectionsList().map(managedValueProjectionValOrRefFromPb)
   }
 }
 
 export function managedValueProjectionListSpecToPb(v: t.ManagedValueProjectionListSpec): pb.ManagedValueProjectionListSpec {
   const specPb = new pb.ManagedValueProjectionListSpec();
+
+  specPb.setIsEnabled(v.isEnabled);
   specPb.setProjectionsList(v.projections.map(managedValueProjectionValOrRefToPb));
 
   return specPb;

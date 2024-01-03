@@ -4,16 +4,19 @@ import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTra
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
 case class ManagedValueProjectionListSpec(
+    isEnabled: Boolean,
     projections: Vector[ManagedValueProjectionValOrRef]
 )
 
 object ManagedValueProjectionListSpec:
     def fromPb(v: pb.ManagedValueProjectionListSpec): ManagedValueProjectionListSpec =
         ManagedValueProjectionListSpec(
+            isEnabled = v.isEnabled,
             projections = v.projections.map(ManagedValueProjectionValOrRef.fromPb).toVector
         )
     def toPb(v: ManagedValueProjectionListSpec): pb.ManagedValueProjectionListSpec =
         pb.ManagedValueProjectionListSpec(
+            isEnabled = v.isEnabled,
             projections = v.projections.map(ManagedValueProjectionValOrRef.toPb)
         )
 

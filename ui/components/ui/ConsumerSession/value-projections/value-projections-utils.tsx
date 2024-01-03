@@ -34,7 +34,7 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
     }
   }
   const getThs = (props: GetThsProps) => {
-    return props.projections.map((pr, i) => {
+    return props.projections.filter(pr => pr.isEnabled).map((pr, i) => {
       const sortKey: SortKey = props.type.type === "sessionValueProjections" ? {
         type: "sessionValueProjection",
         projectionIndex: i
@@ -51,8 +51,8 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
             sort={props.thsProps.sort}
             setSort={props.thsProps.setSort}
             sortKey={sortKey}
-            title={`${pr.shortName}`}
-            help={<></>}
+            title={<span><span style={{ fontSize: '9rem', color: 'var(--accent-color-blue)' }}>VP</span> {pr.shortName}</span>}
+            help={<>Value Projection</>}
           />
         ),
         widthPx: remToPx(pr.width || defaultWidth)
@@ -60,14 +60,14 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
     });
   }
 
-  const sessionThs = getThs({
+  const sessionThs = props.sessionConfig.valueProjectionList.isEnabled ? getThs({
     thsProps: props,
     projections: props.sessionConfig.valueProjectionList.projections,
     reactKeyPrefix: 'session-projection',
     type: { type: "sessionValueProjections" }
+  }) : [];
 
-  });
-  const sessionTargetThs = props.sessionConfig.targets.flatMap((target, i) =>
+  const sessionTargetThs = props.sessionConfig.targets.flatMap((target, i) => target.valueProjectionList.isEnabled ?
     getThs({
       thsProps: props,
       projections: target.valueProjectionList.projections,
@@ -76,7 +76,7 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
         type: "sessionTargetValueProjections",
         targetIndex: i
       }
-    })
+    }) : []
   );
 
   return sessionThs.concat(sessionTargetThs);
@@ -92,36 +92,59 @@ export type GetValueProjectionTdsProps = {
 export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactElement[] {
   function getTdsFromTo(props: GetValueProjectionTdsProps): [number, number] {
     const targetIndex = props.message.sessionTargetIndex!;
+    const sessionProjectionListSize = props.sessionConfig.valueProjectionList.isEnabled ?
+      props.sessionConfig.valueProjectionList.projections
+        .filter(pr => pr.isEnabled)
+        .length :
+      0;
 
     function getFrom(): number {
-      let from: number = props.sessionConfig.valueProjectionList.projections.length;
+      let from: number = sessionProjectionListSize;
 
       for (let i = 0; i < props.sessionConfig.targets.length; i++) {
         if (i === targetIndex) {
           return from;
         }
 
-        from = from + props.sessionConfig.targets[i].valueProjectionList.projections.length;
+        const target = props.sessionConfig.targets[i];
+
+        const sessionTargetProjectionListSize = target.valueProjectionList.isEnabled ?
+          target.valueProjectionList
+            .projections
+            .filter(pr => pr.isEnabled)
+            .length :
+          0;
+
+        from = from + sessionTargetProjectionListSize;
       }
 
       return from;
     }
 
     const from = getFrom();
-    const to = from + props.sessionConfig.targets[targetIndex].valueProjectionList.projections.length;
+    const to = from + props.sessionConfig.targets[targetIndex].valueProjectionList
+      .projections
+      .filter(pr => pr.isEnabled)
+      .length;
 
     return [from, to];
   }
 
-  const sessionTds = props.sessionConfig.valueProjectionList.projections.map((_, i) => {
-    return props.message.sessionValueProjectionListResult[i].displayValue;
-  });
+  const sessionTds = props.sessionConfig.valueProjectionList.isEnabled ? props.sessionConfig.valueProjectionList.projections
+    .filter(pr => pr.isEnabled)
+    .map((_, i) => {
+      return props.message.sessionValueProjectionListResult[i]?.displayValue;
+    }) : [];
 
   const targetIndex = props.message.sessionTargetIndex!;
-  const targetTds = props.sessionConfig.targets[targetIndex].valueProjectionList.projections.map((_, i) => {
-    return props.message.sessionTargetValueProjectionListResult[i].displayValue;
-  });
-
+  const target = props.sessionConfig.targets[targetIndex];
+  const targetTds = target.valueProjectionList.isEnabled ?
+    target.valueProjectionList.projections
+      .filter(pr => pr.isEnabled)
+      .map((_, i) => {
+        return props.message.sessionTargetValueProjectionListResult[i]?.displayValue;
+      }) :
+    [];
 
   const targetTdsFromTo = getTdsFromTo(props);
   const tds = Array.from(Array(props.valueProjectionThs.length)).map((_, i) => {
@@ -130,7 +153,8 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
     if (i < sessionTds.length) {
       displayValue = <>{sessionTds[i]}</>;
     } else if (i >= targetTdsFromTo[0] && i <= targetTdsFromTo[1]) {
-      displayValue = <>{targetTds[i - targetTdsFromTo[0]]}</>;
+      const v = targetTds[i - targetTdsFromTo[0]];
+      displayValue = <>{v === undefined ? <NoData /> : v}</>;
     }
 
     return (

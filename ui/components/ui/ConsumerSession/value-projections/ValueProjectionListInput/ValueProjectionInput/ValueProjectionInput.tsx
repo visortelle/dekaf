@@ -9,6 +9,7 @@ import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../Libra
 import Input from '../../../../Input/Input';
 import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import OnOffToggle from '../../../../IconToggle/OnOffToggle/OnOffToggle';
 
 export type ValueProjectionInputProps = {
   value: ManagedValueProjectionValOrRef,
@@ -39,8 +40,10 @@ const ValueProjectionInput: React.FC<ValueProjectionInputProps> = (props) => {
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
+
   return (
-    <div className={s.ValueProjectionInput}>
+    <div className={s.ValueProjectionInput} style={{ filter: cssFilter }}>
       <FormItem>
         <div ref={hoverRef}>
           <LibraryBrowserPanel
@@ -66,8 +69,53 @@ const ValueProjectionInput: React.FC<ValueProjectionInputProps> = (props) => {
             isForceShowButtons={isHovered}
             libraryContext={props.libraryContext}
             managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+            extraElements={{
+              preItemType: (
+                <div style={{ display: 'flex', gap: '4rem' }}>
+                  <OnOffToggle
+                    value={itemSpec.isEnabled}
+                    onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
+                    isReadOnly={props.isReadOnly}
+                  />
+                </div>
+              )
+            }}
             {...props.libraryBrowserPanel}
           />
+        </div>
+      </FormItem>
+
+      <FormItem>
+        <div style={{ display: 'grid', gap: '12rem', gridTemplateColumns: '1fr 1fr' }}>
+          <div>
+            <FormLabel
+              content="Label"
+              help={(
+                <p>
+                  Label is used as a table column name, or a chart item label.
+                </p>
+              )}
+            />
+            <Input
+              value={itemSpec.shortName}
+              onChange={(v) => onSpecChange({ ...itemSpec, shortName: v })}
+              placeholder='Item Name'
+              size='small'
+            />
+          </div>
+
+          <div>
+            <FormLabel
+              content="Column Width"
+            />
+            <Input
+              value={String(itemSpec.width) || ''}
+              onChange={(v) => onSpecChange({ ...itemSpec, width: Number(v) })}
+              placeholder='default'
+              inputProps={{ type: 'number' }}
+              size='small'
+            />
+          </div>
         </div>
       </FormItem>
 
@@ -81,40 +129,7 @@ const ValueProjectionInput: React.FC<ValueProjectionInputProps> = (props) => {
         />
       </FormItem>
 
-      <div style={{ display: 'grid', gap: '12rem', gridTemplateColumns: '1fr 1fr' }}>
-        <div>
-          <FormLabel
-            size='small'
-            content="Short Name"
-            help={(
-              <p>
-                Short name is used as a table column name, or a chart item label.
-              </p>
-            )}
-          />
-          <Input
-            value={itemSpec.shortName}
-            onChange={(v) => onSpecChange({ ...itemSpec, shortName: v })}
-            placeholder='Item Name'
-            size='small'
-          />
-        </div>
 
-        <div>
-          <FormLabel
-            size='small'
-            content="Column Width"
-          />
-          <Input
-            value={String(itemSpec.width) || ''}
-            onChange={(v) => onSpecChange({ ...itemSpec, width: Number(v) })}
-            placeholder='default'
-            inputProps={{ type: 'number' }}
-            size='small'
-          />
-        </div>
-
-      </div>
     </div>
   );
 }

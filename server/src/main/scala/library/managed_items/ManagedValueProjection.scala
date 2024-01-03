@@ -4,6 +4,7 @@ import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTra
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
 case class ManagedValueProjectionSpec(
+    isEnabled: Boolean,
     targetField: ManagedBasicMessageFilterTargetValOrRef,
     shortName: String,
     width: Option[Int]
@@ -12,12 +13,14 @@ case class ManagedValueProjectionSpec(
 object ManagedValueProjectionSpec:
     def fromPb(v: pb.ManagedValueProjectionSpec): ManagedValueProjectionSpec =
         ManagedValueProjectionSpec(
+            isEnabled = v.isEnabled,
             targetField = ManagedBasicMessageFilterTargetValOrRef.fromPb(v.getTargetField),
-            shortName = v.shortName, 
+            shortName = v.shortName,
             width = v.width
         )
     def toPb(v: ManagedValueProjectionSpec): pb.ManagedValueProjectionSpec =
         pb.ManagedValueProjectionSpec(
+            isEnabled = v.isEnabled,
             targetField = Some(ManagedBasicMessageFilterTargetValOrRef.toPb(v.targetField)),
             shortName = v.shortName,
             width = v.width
