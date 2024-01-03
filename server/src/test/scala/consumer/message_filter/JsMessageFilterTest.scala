@@ -5,7 +5,7 @@ import consumer.message_filter.MessageFilter
 import consumer.message_filter.basic_message_filter.BasicMessageFilterTest.suite
 import consumer.message_filter.basic_message_filter.targets.*
 import consumer.json_modifier.{JsJsonModifier, JsonModifier}
-import consumer.session_runner.{ConsumerSessionContext, ConsumerSessionContextConfig, ConsumerSessionMessage}
+import consumer.session_runner.{ConsumerSessionContextPool, ConsumerSessionContextConfig, ConsumerSessionMessage}
 import consumer.session_runner
 import zio.*
 import zio.test.*
@@ -22,7 +22,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
+        val sessionContextPool = ConsumerSessionContextPool()
         val jsMessageFilter = JsMessageFilter(jsCode = spec.jsCode)
         val filter = MessageFilter(
             isEnabled = true,
@@ -33,11 +33,8 @@ object JsMessageFilterTest extends ZIOSpecDefault:
             ),
             filter = jsMessageFilter
         )
-        val result = sessionContext.testMessageFilter(
-            filter = filter,
-            messageAsJsonOmittingValue = spec.messageAsJsonOmittingValue,
-            messageValueAsJson = Right(spec.messageValueAsJson.trim)
-        ).isOk
+        val sessionContext = sessionContextPool.getNextContext
+        val result = sessionContext.testMessageFilter(filter = filter).isOk
 
         if spec.isShouldFail then !result else result
 

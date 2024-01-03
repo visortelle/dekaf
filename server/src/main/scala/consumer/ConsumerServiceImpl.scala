@@ -53,9 +53,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return
 
         try {
-            consumerSession.resume(
-                grpcResponseObserver = responseObserver,
-            )
+            consumerSession.resume(grpcResponseObserver = responseObserver)
         } catch {
             case err: Throwable =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)

@@ -90,11 +90,6 @@
 
               pkgs.podman
               pkgs.act
-
-              pkgs.postgresql_16
-              pkgs.grafana
-              pkgs.prometheus
-              pkgs.prometheus-alertmanager
             ] ++ missingSysPkgs;
           };
         in

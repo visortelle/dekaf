@@ -30,7 +30,7 @@ case class ConsumerSessionTargetRunner(
     var stats: ConsumerSessionTargetStats
 ) {
     def resume(
-        onNext: (msg: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: Vector[String]) => Unit
+        onNext: (msg: Option[ConsumerSessionMessage], sessionContext: ConsumerSessionContext, stats: ConsumerSessionTargetStats, errors: Vector[String]) => Unit
     ): Unit =
         val thisTarget = this
 
@@ -38,15 +38,14 @@ case class ConsumerSessionTargetRunner(
         val targetMessageHandler = listener.targetMessageHandler
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
-            val sessionContext = thisTarget.sessionContextPool.getNextContext
-
             thisTarget.stats.messagesProcessed += 1
 
+            val sessionContext = thisTarget.sessionContextPool.getNextContext
             val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
             val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
             val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
 
-            sessionContext.setCurrentMessage(messageJson,  messageValueToJsonResult)
+            sessionContext.setCurrentMessage(messageJson, messageValueToJsonResult)
 
             val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
                 thisTarget.messageFilterChain,
@@ -82,6 +81,7 @@ case class ConsumerSessionTargetRunner(
                 m.copy(
                     messagePb = m.messagePb
                         .withSessionTargetIndex(targetIndex)
+                        .withDebugStdout(sessionContext.getStdout)
                         .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
                         .withSessionTargetValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
@@ -90,6 +90,7 @@ case class ConsumerSessionTargetRunner(
 
             onNext(
                 msg = msgToSend,
+                sessionContext = sessionContext,
                 stats = stats,
                 errors = errors
             )

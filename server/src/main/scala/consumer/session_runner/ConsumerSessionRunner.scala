@@ -28,9 +28,7 @@ case class ConsumerSessionRunner(
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
-        def onNext(messageFromTarget: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
-            val sessionContext = sessionContextPool.getNextContext
-
+        def onNext(messageFromTarget: Option[ConsumerSessionMessage], sessionContext: ConsumerSessionContext, stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
                 val allErrors = errors ++ additionalErrors
 
@@ -80,7 +78,7 @@ case class ConsumerSessionRunner(
 
                     val messageToSendPb = msg.messagePb
                         .withSessionContextStateJson(sessionContext.getState)
-                        .withDebugStdout(sessionContext.getStdout)
+                        .withDebugStdout(msg._1.debugStdout.getOrElse("") + "\n" + sessionContext.getStdout)
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
                         .withSessionValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
@@ -91,6 +89,7 @@ case class ConsumerSessionRunner(
     def pause(): Unit =
         targets.values.foreach(_.pause())
     def stop(): Unit =
+        pause()
         targets.values.foreach(_.stop())
 }
 

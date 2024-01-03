@@ -1,11 +1,14 @@
 package consumer.session_runner
 
 import java.io.ByteArrayOutputStream
-import org.graalvm.polyglot.Engine;
+import org.graalvm.polyglot.Engine
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+// XXX - Kept as is for further optimizations.
 case class ConsumerSessionContextPool():
     private val engine = Engine.newBuilder().build()
-    private val poolSize = Runtime.getRuntime.availableProcessors().min(16)
+    private val poolSize = Runtime.getRuntime.availableProcessors().min(1)
     private val contextPool: Map[Int, ConsumerSessionContext] = Vector.tabulate(poolSize) { i =>
         val sessionContext = ConsumerSessionContext(
             ConsumerSessionContextConfig(
@@ -15,15 +18,15 @@ case class ConsumerSessionContextPool():
         )
         (i, sessionContext)
     }.toMap
-    private var currentContextKey: Int = 0
 
+    private val currentContextKey = new AtomicInteger(0)
     def getNextContext: ConsumerSessionContext =
-        currentContextKey =
-            if currentContextKey == poolSize - 1
+        val key = currentContextKey.getAndUpdate(k => {
+            if k == poolSize - 1
             then 0
-            else currentContextKey + 1
+            else k + 1
+        })
 
-        contextPool(currentContextKey)
-
-    def getContext(key: Int): ConsumerSessionContext =
         contextPool(key)
+
+    def getContext(key: Int): ConsumerSessionContext = contextPool(key)
