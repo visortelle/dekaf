@@ -24,7 +24,8 @@ case class ConsumerSessionRunner(
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner]
 ) {
     def resume(
-        grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]
+        grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
+        isDebug: Boolean
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
@@ -71,10 +72,12 @@ case class ConsumerSessionRunner(
                             .map(_.project(sessionContext.context))
                     else
                         Vector.empty
-
-                    val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
-                    val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
-                    val errors = messageFilterChainErrors ++ coloringRuleChainErrors
+                        
+                    val errors: Vector[String] = if isDebug then
+                        val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
+                        val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
+                        messageFilterChainErrors ++ coloringRuleChainErrors
+                    else Vector.empty
 
                     val messageToSendPb = msg.messagePb
                         .withSessionContextStateJson(sessionContext.getState)
@@ -85,7 +88,7 @@ case class ConsumerSessionRunner(
 
                     createAndSendResponse(Seq(messageToSendPb), errors)
 
-        targets.values.foreach(_.resume(onNext = onNext))
+        targets.values.foreach(_.resume(onNext = onNext, isDebug = isDebug))
     def pause(): Unit =
         targets.values.foreach(_.pause())
     def stop(): Unit =

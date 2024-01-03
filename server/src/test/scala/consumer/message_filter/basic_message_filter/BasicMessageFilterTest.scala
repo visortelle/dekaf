@@ -37,6 +37,8 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             filter = basicMessageFilter
         )
         val sessionContext = sessionContextPool.getNextContext
+        sessionContext.setCurrentMessage(spec.messageAsJsonOmittingValue, Right(spec.messageValueAsJson.trim))
+
         val result = sessionContext.testMessageFilter(filter = filter).isOk
 
         if spec.isShouldFail then !result else result
@@ -71,6 +73,8 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |true
                       |""".stripMargin
 
+                sessionContext.setCurrentMessage("{}", Right(messageValueAsJson.trim))
+
                 sessionContext.testMessageFilter(filter = filter).isOk
             }
         },
@@ -97,6 +101,8 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                     """
                       |true
                       |""".stripMargin
+
+                sessionContext.setCurrentMessage("{}", Right(messageValueAsJson.trim))
 
                 val isOk = sessionContext.testMessageFilter(filter = filter).isOk
 
@@ -151,7 +157,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 ),
                 messageValueAsJson =
                     """
-                      |{ a: 2 }
+                      |{ "a": 2 }
                       |""".stripMargin
             )))
         },
