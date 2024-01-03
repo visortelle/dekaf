@@ -51,7 +51,7 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
             sort={props.thsProps.sort}
             setSort={props.thsProps.setSort}
             sortKey={sortKey}
-            title={<span><span style={{ fontSize: '9rem', color: 'var(--accent-color-blue)' }}>VP</span> {pr.shortName}</span>}
+            title={<span><span style={{ fontSize: '9rem', color: 'var(--accent-color-blue)' }}>P</span> {pr.shortName}</span>}
             help={<>Value Projection</>}
           />
         ),
