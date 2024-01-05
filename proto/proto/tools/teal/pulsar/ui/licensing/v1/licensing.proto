@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.licensing.v1;
+
+import "google/rpc/status.proto";
+
+enum Product {
+  PRODUCT_UNSPECIFIED = 0;
+  PRODUCT_DEKAF_DESKTOP_FREE = 1;
+  PRODUCT_DEKAF_DESKTOP = 2;
+  PRODUCT_DEKAF_FREE = 3;
+  PRODUCT_DEKAF_FOR_TEAMS = 4;
+  PRODUCT_DEKAF_ENTERPRISE = 5;
+}
+
+message GetLicenseInfoRequest {}
+
+message GetLicenseInfoResponse {
+  google.rpc.Status status = 1;
+}
+
+message LicenseInfo {
+  Product product = 1;
+}
+
+service MetricsService {
+  rpc GetLicenseInfo(GetLicenseInfoRequest) returns (GetLicenseInfoResponse);
+}

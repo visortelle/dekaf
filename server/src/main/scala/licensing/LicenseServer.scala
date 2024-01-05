@@ -30,19 +30,20 @@ val Graffiti =
 object LicenseServer:
     case class InitResult(
         keygenMachine: KeygenMachine,
-        keygenClient: KeygenClient
+        keygenClient: KeygenClient,
+        productInfo: LicenseInfo
     )
 
     def init: Task[InitResult] = for {
         _ <- ZIO.attempt {
             println(Graffiti)
+            println(s"${buildinfo.BuildInfo.name} ${buildinfo.BuildInfo.version}")
             println(
                 s"Teal Tools Inc. Wilmington, Delaware, U.S. ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).atZone(ZoneOffset.UTC).getYear}"
             )
-            println(s"Product: ${buildinfo.BuildInfo.name} ${buildinfo.BuildInfo.version}")
+            println(s"https://teal.tools")
             println(s"Built at: ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).toString}")
-            println(s"More about Dekaf: https://dekaf.io")
-            println(s"More about Teal Tools: https://teal.tools")
+            println(s"More info: https://dekaf.io")
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
@@ -66,11 +67,12 @@ object LicenseServer:
             )
         }
         keygenLicense <- keygenClient.validateLicense(licenseId)
-        product <- ZIO.attempt(ProductFamily.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
-        _ <- ZIO.whenCase(product) {
-            case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.")
-            case _       => ZIO.logError(s"Provided license doesn't match any product. Please contact support team at https://support.dekaf.com")
-        }
+        maybeProductInfo <- ZIO.attempt(AvailableLicenses.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
+        productInfo <- ZIO.whenCase(maybeProductInfo) {
+            case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.").as(p)
+            case _       => ZIO.fail(new Exception(s"Provided license doesn't match any product. Please contact support team at https://support.dekaf.com"))
+        }.map(_.get)
+        _ <- ZIO.succeed(License.setLicenseInfo(productInfo))
         sessionFingerprint <- ZIO.attempt(UUID.randomUUID().toString)
         _ <- ZIO.logInfo(s"License session fingerprint: $sessionFingerprint")
         keygenMachine <- keygenClient
@@ -95,7 +97,7 @@ object LicenseServer:
                     )
                 )
             )
-    } yield InitResult(keygenMachine, keygenClient)
+    } yield InitResult(keygenMachine, keygenClient, productInfo)
 
     def run(initResult: InitResult): Task[Unit] =
         startLicenseHeartbeatPing(initResult.keygenMachine.data.id.get)

@@ -1,5 +1,6 @@
 package consumer
 
+import _root_.licensing.{License, Product}
 import _root_.consumer.session_config.ConsumerSessionConfig
 import _root_.pulsar_auth.RequestContext
 import com.google.rpc.code.Code
