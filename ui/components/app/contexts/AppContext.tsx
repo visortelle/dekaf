@@ -15,6 +15,9 @@ export type Config = {
   pulsarBrokerUrl: string,
   pulsarWebUrl: string,
   buildInfo: BuildInfo,
+  productName: string,
+  productCode: string,
+  licenseId: string,
 }
 
 export type PerformanceOptimizations = {
@@ -44,6 +47,9 @@ const defaultValue: Value = {
       builtAtString: '',
       builtAtMillis: 0
     },
+    productName: '',
+    productCode: '',
+    licenseId: ''
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,

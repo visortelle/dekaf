@@ -69,7 +69,7 @@ object LicenseServer:
         keygenLicense <- keygenClient.validateLicense(licenseId)
         maybeProductInfo <- ZIO.attempt(AvailableLicenses.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
         productInfo <- ZIO.whenCase(maybeProductInfo) {
-            case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.").as(p)
+            case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.productName}.").as(p)
             case _       => ZIO.fail(new Exception(s"Provided license doesn't match any product. Please contact support team at https://support.dekaf.com"))
         }.map(_.get)
         _ <- ZIO.succeed(License.setLicenseInfo(productInfo))

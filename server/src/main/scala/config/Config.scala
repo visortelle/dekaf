@@ -5,7 +5,7 @@ import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
 import _root_.postgres.{PostgresVariant, given_Decoder_PostgresVariant, given_Encoder_PostgresVariant}
-import licensing.{Product, LicenseInfo, AvailableLicenses}
+import licensing.{ProductCode, LicenseInfo, AvailableLicenses}
 import postgres.PostgresVariant.embedded
 
 import java.nio.file.Path
