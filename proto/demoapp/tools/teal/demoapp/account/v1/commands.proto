@@ -50,7 +50,7 @@ message PreferBillingAddress {
 }
 
 message AccountCommandsSchema {
-  oneof event {
+  oneof command {
     CreateAccount create_account = 1;
     ActivateAccount activate_account = 2;
     AddBillingAddress add_billing_address = 3;

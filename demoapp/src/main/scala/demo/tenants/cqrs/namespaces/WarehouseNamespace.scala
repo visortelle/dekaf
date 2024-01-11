@@ -97,7 +97,7 @@ object WarehouseNamespace:
           mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[InventoryReserved](
+        mkConfigurableTopicPlanGenerator[InventoryItemReserved](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "InventoryReserved",
@@ -111,7 +111,7 @@ object WarehouseNamespace:
           mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
-        mkConfigurableTopicPlanGenerator[InventoryNotReserved](
+        mkConfigurableTopicPlanGenerator[InventoryItemNotReserved](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "InventoryNotReserved",

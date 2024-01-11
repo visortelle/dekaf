@@ -1,7 +1,7 @@
 package demo.tenants.cqrs.model.Account
 
 import demo.tenants.cqrs.model.Dto.Address
-import demo.tenants.cqrs.shared.{Command, Randomizable, Schemable}
+import demo.tenants.cqrs.model.{Command, Randomizable, Schemable}
 import demo.tenants.schemas.namespaces.faker
 import org.apache.pulsar.client.impl.schema.JSONSchema
 

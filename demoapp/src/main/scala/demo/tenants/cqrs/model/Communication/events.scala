@@ -1,6 +1,7 @@
 package demo.tenants.cqrs.model.Communication
 
 import demo.tenants.cqrs.model.Dto.{Money, NotificationMethod, Product}
+import demo.tenants.cqrs.model.{Event, Randomizable, Schemable}
 import demo.tenants.cqrs.shared.*
 import demo.tenants.schemas.namespaces.faker
 import org.apache.pulsar.client.impl.schema.JSONSchema

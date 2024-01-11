@@ -1,6 +1,7 @@
 package demo.tenants.cqrs.model.Warehouse
 
 import demo.tenants.cqrs.model.Dto.Product
+import demo.tenants.cqrs.model.{Event, Randomizable, Schemable}
 import demo.tenants.cqrs.shared.*
 import demo.tenants.schemas.namespaces.faker
 import org.apache.pulsar.client.impl.schema.JSONSchema
@@ -84,12 +85,16 @@ object InventoryAdjustmentDecreased extends Randomizable[InventoryAdjustmentDecr
 case class InventoryAdjustmentNotDecreased(inventoryId: UUID, itemId: UUID, reason: String, quantityDesired: Int, quantityAvailable: Int, version: Long) extends Event
 
 object InventoryAdjustmentNotDecreased extends Randomizable[InventoryAdjustmentNotDecreased] with Schemable[InventoryAdjustmentNotDecreased]:
-  override def random: InventoryAdjustmentNotDecreased = InventoryAdjustmentNotDecreased(
+  override def random: InventoryAdjustmentNotDecreased = 
+    val quantityAvailable = faker.number().numberBetween(1, 100)
+    val quantityDesired = faker.number().numberBetween(quantityAvailable + 1, quantityAvailable + 100)
+    
+    InventoryAdjustmentNotDecreased(
     inventoryId = UUID.randomUUID(),
     itemId = UUID.randomUUID(),
     reason = faker.lorem().sentence(),
-    quantityDesired = faker.number().numberBetween(1, 100),
-    quantityAvailable = faker.number().numberBetween(1, 100),
+    quantityDesired = quantityDesired,
+    quantityAvailable = quantityAvailable,
     version = faker.number().numberBetween(1, 100)
   )
 
@@ -100,34 +105,34 @@ object InventoryAdjustmentNotDecreased extends Randomizable[InventoryAdjustmentN
 
   given Schemable[InventoryAdjustmentNotDecreased] = this
 
-case class InventoryReserved(
+case class InventoryItemReserved(
   inventoryId: UUID,
   itemId: UUID,
   catalogId: UUID,
   cartId: UUID,
   product: Product,
   quantity: Int,
-  expiration: OffsetDateTime,
+  expirationDate: OffsetDateTime,
   version: Long
 ) extends Event
 
-object InventoryReserved extends Randomizable[InventoryReserved] with Schemable[InventoryReserved]:
-  override def random: InventoryReserved = InventoryReserved(
+object InventoryItemReserved extends Randomizable[InventoryItemReserved] with Schemable[InventoryItemReserved]:
+  override def random: InventoryItemReserved = InventoryItemReserved(
     inventoryId = UUID.randomUUID(),
     itemId = UUID.randomUUID(),
     catalogId = UUID.randomUUID(),
     cartId = UUID.randomUUID(),
     product = Product.random,
     quantity = faker.number().numberBetween(1, 100),
-    expiration = faker.date().future(365, TimeUnit.DAYS).toInstant.atOffset(ZoneOffset.UTC),
+    expirationDate = faker.date().future(365, TimeUnit.DAYS).toInstant.atOffset(ZoneOffset.UTC),
     version = faker.number().numberBetween(1, 100)
   )
 
-  override def schema: JSONSchema[InventoryReserved] =
-    JSONSchema.of(classOf[InventoryReserved])
+  override def schema: JSONSchema[InventoryItemReserved] =
+    JSONSchema.of(classOf[InventoryItemReserved])
 
-  given Randomizable[InventoryReserved] = this
-  given Schemable[InventoryReserved] = this
+  given Randomizable[InventoryItemReserved] = this
+  given Schemable[InventoryItemReserved] = this
 
 case class StockDepleted(inventoryId: UUID, itemId: UUID, product: Product, version: Long) extends Event
 
@@ -145,10 +150,10 @@ object StockDepleted extends Randomizable[StockDepleted] with Schemable[StockDep
   given Randomizable[StockDepleted] = this
   given Schemable[StockDepleted] = this
 
-case class InventoryNotReserved(inventoryId: UUID, itemId: UUID, cartId: UUID, quantityDesired: Int, quantityAvailable: Int, version: Long) extends Event
+case class InventoryItemNotReserved(inventoryId: UUID, itemId: UUID, cartId: UUID, quantityDesired: Int, quantityAvailable: Int, version: Long) extends Event
 
-object InventoryNotReserved extends Randomizable[InventoryNotReserved] with Schemable[InventoryNotReserved]:
-  override def random: InventoryNotReserved = InventoryNotReserved(
+object InventoryItemNotReserved extends Randomizable[InventoryItemNotReserved] with Schemable[InventoryItemNotReserved]:
+  override def random: InventoryItemNotReserved = InventoryItemNotReserved(
     inventoryId = UUID.randomUUID(),
     itemId = UUID.randomUUID(),
     cartId = UUID.randomUUID(),
@@ -157,11 +162,11 @@ object InventoryNotReserved extends Randomizable[InventoryNotReserved] with Sche
     version = faker.number().numberBetween(1, 100)
   )
 
-  override def schema: JSONSchema[InventoryNotReserved] =
-    JSONSchema.of(classOf[InventoryNotReserved])
+  override def schema: JSONSchema[InventoryItemNotReserved] =
+    JSONSchema.of(classOf[InventoryItemNotReserved])
 
-  given Randomizable[InventoryNotReserved] = this
-  given Schemable[InventoryNotReserved] = this
+  given Randomizable[InventoryItemNotReserved] = this
+  given Schemable[InventoryItemNotReserved] = this
 
 case class InventoryItemIncreased(inventoryId: UUID, itemId: UUID, quantity: Int, version: Long) extends Event
 

@@ -9,7 +9,9 @@ object DemoappTenant:
 
   def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
     val namespacePlanGenerators = List(
-      AccountNamespace.mkPlanGenerator(tenantName)
+      AccountNamespace.mkPlanGenerator(tenantName),
+      CatalogNamespace.mkPlanGenerator(tenantName),
+      WarehouseNamespace.mkPlanGenerator(tenantName),
     )
 
     TenantPlanGenerator.make(

@@ -1,7 +1,7 @@
 package demo.tenants.cqrs.model.ShoppingCart
 
 import demo.tenants.cqrs.model.Dto.{Address, CreditCard, DebitCard, Money, NotificationMethod, PayPal, Product, ShoppingCart}
-import demo.tenants.cqrs.shared.{Command, Event, Randomizable, Schemable}
+import demo.tenants.cqrs.model.{Command, Event, Randomizable, Schemable}
 import demo.tenants.schemas.namespaces.faker
 import org.apache.pulsar.client.impl.schema.JSONSchema
 

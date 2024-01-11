@@ -1,4 +1,4 @@
-package demo.tenants.cqrs.shared
+package demo.tenants.cqrs.model
 
 import org.apache.pulsar.client.impl.schema.JSONSchema
 

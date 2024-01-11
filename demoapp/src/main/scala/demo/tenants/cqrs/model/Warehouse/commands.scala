@@ -1,7 +1,7 @@
 package demo.tenants.cqrs.model.Warehouse
 
 import demo.tenants.cqrs.model.Dto.{NotificationMethod, Product}
-import demo.tenants.cqrs.shared.{Command, Event, Randomizable, Schemable}
+import demo.tenants.cqrs.model.{Command, Event, Randomizable, Schemable}
 import demo.tenants.schemas.namespaces.faker
 import org.apache.pulsar.client.impl.schema.JSONSchema
 
