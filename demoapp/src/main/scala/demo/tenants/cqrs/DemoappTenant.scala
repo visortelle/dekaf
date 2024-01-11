@@ -5,7 +5,7 @@ import namespacesRestructured.*
 import zio.Task
 
 object DemoappTenant:
-  val tenantName = s"Demoapp-${System.currentTimeMillis()}"
+  val tenantName = s"DemoShop-${System.currentTimeMillis()}"
 
   def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
     val namespacePlanGenerators = List(
