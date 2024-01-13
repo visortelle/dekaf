@@ -17,7 +17,7 @@ type InternalConfigurationData = {
 type ConfigValue = undefined | { value: string, source: 'dynamic-config' | 'runtime-config' };
 export type Value = {
   runtimeConfig: Record<string, string>;
-  internalConfig: Record<string, string>;
+  internalConfig: InternalConfigurationData;
   dynamicConfig: Record<string, string>;
   get: (key: string) => ConfigValue;
   isLoading: boolean;
