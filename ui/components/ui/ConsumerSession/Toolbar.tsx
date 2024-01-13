@@ -8,6 +8,7 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import { SessionState, ConsumerSessionConfig } from './types';
 import SmallButton from '../SmallButton/SmallButton';
 import Input from '../Input/Input';
+import PremiumTitle from './PremiumTitle';
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -21,6 +22,7 @@ export type ToolbarProps = {
   onToggleConsoleClick: () => void;
   displayMessagesLimit: number;
   onDisplayMessagesLimitChange: (limit: number) => void;
+  isProductPlanLimitReached: boolean
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -47,6 +49,8 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             onClick={playButtonOnClick}
             type={'primary'}
             disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
+            isPremiumFeature={props.isProductPlanLimitReached && props.sessionState === 'paused'}
+            premiumFeatureTitle={<PremiumTitle />}
           />
         </div>
 
