@@ -36,6 +36,7 @@ import { getColoring } from './coloring';
 import { getValueProjectionThs } from './value-projections/value-projections-utils';
 import { Th } from './Th';
 import { ProductCode } from '../../app/licensing/ProductCode';
+import PremiumTitle from './PremiumTitle';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
 const productPlanMessagesLimit = 100 as const;
@@ -58,7 +59,7 @@ const displayMessagesRealTimeLimit = 250; // too many items leads to table blink
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
   const brokersConfig = BrokersConfig.useContext();
-  const { notifyError } = Notifications.useContext();
+  const { notifyError, notifyInfo } = Notifications.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = GrpcClient.useContext();
@@ -157,6 +158,7 @@ const Session: React.FC<SessionProps> = (props) => {
       if (messagesLoaded > productPlanMessagesLimit) {
         setSessionState('pausing');
         setIsProductPlanLimitReached(true);
+        notifyInfo(<PremiumTitle />);
       }
     }
     // PRODUCT PLAN LIMITATION END
