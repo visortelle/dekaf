@@ -14,7 +14,7 @@ import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
 import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
 
 import scala.jdk.CollectionConverters.*
-import _root_.licensing.License
+import _root_.licensing.Licensing
 import _root_.pulsar_auth
 import _root_.pulsar_auth.{PulsarAuth, credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName}
 import io.circe.parser.decode as decodeJson
@@ -50,8 +50,8 @@ object HttpServer:
                             "pulsarWebUrl" -> appConfig.pulsarWebUrl.get,
                             "pulsarName" -> appConfig.pulsarName.get,
                             "pulsarColor" -> appConfig.pulsarColor.get,
-                            "productCode" -> License.getLicenseInfo().productCode,
-                            "productName" -> License.getLicenseInfo().productName,
+                            "productCode" -> Licensing.licenseInfo.productCode,
+                            "productName" -> Licensing.licenseInfo.productName,
                             "licenseId" -> appConfig.licenseId.getOrElse("undefined"),
                         ).asJava
 

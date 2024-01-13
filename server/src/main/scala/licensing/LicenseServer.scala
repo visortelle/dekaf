@@ -72,7 +72,7 @@ object LicenseServer:
             case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.productName}.").as(p)
             case _       => ZIO.fail(new Exception(s"Provided license doesn't match any product. Please contact support team at https://support.dekaf.com"))
         }.map(_.get)
-        _ <- ZIO.succeed(License.setLicenseInfo(productInfo))
+        _ <- ZIO.succeed(Licensing.licenseInfo = productInfo)
         sessionFingerprint <- ZIO.attempt(UUID.randomUUID().toString)
         _ <- ZIO.logInfo(s"License session fingerprint: $sessionFingerprint")
         keygenMachine <- keygenClient

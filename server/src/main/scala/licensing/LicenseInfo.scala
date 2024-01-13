@@ -13,15 +13,6 @@ case class LicenseInfo(
     keygenProductId: String
 )
 
-object License:
-    private var licenseInfo: LicenseInfo = AvailableLicenses.find(_.productCode == ProductCode.DekafForTeamsFree).get
-
-    def getLicenseInfo(): LicenseInfo = licenseInfo
-
-    def setLicenseInfo(v: LicenseInfo) = licenseInfo = v
-
-    def getProductCode: ProductCode = licenseInfo.productCode
-
 val AvailableLicenses: List[LicenseInfo] = List(
     LicenseInfo(
         productCode = ProductCode.DekafDesktopFree,
