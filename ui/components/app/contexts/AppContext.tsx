@@ -1,6 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../local-storage-keys';
+import { ProductCode } from '../licensing/ProductCode';
 
 type BuildInfo = {
   name: string,
@@ -8,6 +9,7 @@ type BuildInfo = {
   builtAtString: string,
   builtAtMillis: number
 }
+
 export type Config = {
   publicBaseUrl: string,
   pulsarName: string,
@@ -15,6 +17,9 @@ export type Config = {
   pulsarBrokerUrl: string,
   pulsarWebUrl: string,
   buildInfo: BuildInfo,
+  productName: string,
+  productCode: ProductCode,
+  licenseId: string,
 }
 
 export type PerformanceOptimizations = {
@@ -44,6 +49,9 @@ const defaultValue: Value = {
       builtAtString: '',
       builtAtMillis: 0
     },
+    productName: '',
+    productCode: '',
+    licenseId: ''
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,

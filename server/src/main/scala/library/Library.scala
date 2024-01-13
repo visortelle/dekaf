@@ -30,6 +30,8 @@ class Library:
     private var rootDir = "./data"
     private var db = LibraryDb(itemsById = Map.empty)
     private val logger: Logger = Logger(getClass.getName)
+    
+    def size: Int = db.itemsById.size
 
     def writeItem(item: LibraryItem): Unit =
         val itemId = item.spec.metadata.id

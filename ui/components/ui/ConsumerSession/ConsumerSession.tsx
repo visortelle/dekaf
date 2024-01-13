@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import s from './ConsumerSession.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
+import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 import {
   Message,
   CreateConsumerRequest,
@@ -34,8 +35,11 @@ import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import { getColoring } from './coloring';
 import { getValueProjectionThs } from './value-projections/value-projections-utils';
 import { Th } from './Th';
+import { ProductCode } from '../../app/licensing/ProductCode';
+import PremiumTitle from './PremiumTitle';
 
-const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
+const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
+const productPlanMessagesLimit = 100 as const;
 
 export type SessionProps = {
   sessionKey: number;
@@ -54,7 +58,8 @@ const displayMessagesRealTimeLimit = 250; // too many items leads to table blink
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
-  const { notifyError } = Notifications.useContext();
+  const brokersConfig = BrokersConfig.useContext();
+  const { notifyError, notifyInfo } = Notifications.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = GrpcClient.useContext();
@@ -73,6 +78,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
+  const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
   const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
   const currentTopicFqn: string | undefined = useMemo(() => currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`, [currentTopic]);
@@ -133,6 +139,30 @@ const Session: React.FC<SessionProps> = (props) => {
       notifyError(`${res.getStatus()?.getMessage()}`);
     }
   }, []);
+
+  useEffect(() => {
+    // PRODUCT PLAN LIMITATION START
+    if (appContext.config.productCode === ProductCode.DekafDesktopFree || appContext.config.productCode === ProductCode.DekafFree) {
+      const isPulsarStandalone =
+        (brokersConfig.internalConfig.zookeeperServers?.startsWith('rocksdb') ||
+          brokersConfig.internalConfig.configurationStoreServers?.startsWith('rocksdb'));
+
+      const isDemoapp =
+        props.libraryContext.pulsarResource.type !== 'instance' &&
+        props.libraryContext.pulsarResource.tenant === 'dekaf-demoapp';
+
+      if (isPulsarStandalone && isDemoapp) {
+        return;
+      }
+
+      if (messagesLoaded > productPlanMessagesLimit) {
+        setSessionState('pausing');
+        setIsProductPlanLimitReached(true);
+        notifyInfo(<PremiumTitle />);
+      }
+    }
+    // PRODUCT PLAN LIMITATION END
+  }, [messagesLoaded]);
 
   useEffect(() => {
     streamRef.current = stream;
@@ -339,6 +369,7 @@ const Session: React.FC<SessionProps> = (props) => {
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
         displayMessagesLimit={displayMessagesLimit}
         onDisplayMessagesLimitChange={setDisplayMessagesLimit}
+        isProductPlanLimitReached={isProductPlanLimitReached}
       />
 
       {currentView === 'messages' && messages.length === 0 && (
