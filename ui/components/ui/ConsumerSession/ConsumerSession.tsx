@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import s from './ConsumerSession.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
+import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 import {
   Message,
   CreateConsumerRequest,
@@ -37,7 +38,7 @@ import { Th } from './Th';
 import { ProductCode } from '../../app/licensing/ProductCode';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
-const productPlanMessagesLimit = 50 as const;
+const productPlanMessagesLimit = 100 as const;
 
 export type SessionProps = {
   sessionKey: number;
@@ -56,6 +57,7 @@ const displayMessagesRealTimeLimit = 250; // too many items leads to table blink
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
+  const brokersConfig = BrokersConfig.useContext();
   const { notifyError } = Notifications.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -140,6 +142,18 @@ const Session: React.FC<SessionProps> = (props) => {
   useEffect(() => {
     // PRODUCT PLAN LIMITATION START
     if (appContext.config.productCode === ProductCode.DekafDesktopFree || appContext.config.productCode === ProductCode.DekafFree) {
+      const isPulsarStandalone =
+        (brokersConfig.internalConfig.zookeeperServers?.startsWith('rocksdb') ||
+          brokersConfig.internalConfig.configurationStoreServers?.startsWith('rocksdb'));
+
+      const isDemoapp =
+        props.libraryContext.pulsarResource.type !== 'instance' &&
+        props.libraryContext.pulsarResource.tenant === 'dekaf-demoapp';
+
+      if (isPulsarStandalone && isDemoapp) {
+        return;
+      }
+
       if (messagesLoaded > productPlanMessagesLimit) {
         setSessionState('pausing');
         setIsProductPlanLimitReached(true);
