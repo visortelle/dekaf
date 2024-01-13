@@ -50,7 +50,7 @@ object HttpServer:
                             "pulsarWebUrl" -> appConfig.pulsarWebUrl.get,
                             "pulsarName" -> appConfig.pulsarName.get,
                             "pulsarColor" -> appConfig.pulsarColor.get,
-                            "productCode" -> Licensing.licenseInfo.productCode,
+                            "productCode" -> Licensing.licenseInfo.productCode.ordinal,
                             "productName" -> Licensing.licenseInfo.productName,
                             "licenseId" -> appConfig.licenseId.getOrElse("undefined"),
                         ).asJava

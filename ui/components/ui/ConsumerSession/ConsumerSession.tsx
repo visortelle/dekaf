@@ -34,8 +34,10 @@ import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import { getColoring } from './coloring';
 import { getValueProjectionThs } from './value-projections/value-projections-utils';
 import { Th } from './Th';
+import { ProductCode } from '../../app/licensing/ProductCode';
 
-const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
+const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
+const productPlanMessagesLimit = 50 as const;
 
 export type SessionProps = {
   sessionKey: number;
@@ -73,6 +75,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
+  const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
   const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
   const currentTopicFqn: string | undefined = useMemo(() => currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`, [currentTopic]);
@@ -133,6 +136,17 @@ const Session: React.FC<SessionProps> = (props) => {
       notifyError(`${res.getStatus()?.getMessage()}`);
     }
   }, []);
+
+  useEffect(() => {
+    // PRODUCT PLAN LIMITATION START
+    if (appContext.config.productCode === ProductCode.DekafDesktopFree || appContext.config.productCode === ProductCode.DekafFree) {
+      if (messagesLoaded > productPlanMessagesLimit) {
+        setSessionState('pausing');
+        setIsProductPlanLimitReached(true);
+      }
+    }
+    // PRODUCT PLAN LIMITATION END
+  }, [messagesLoaded]);
 
   useEffect(() => {
     streamRef.current = stream;
@@ -339,6 +353,7 @@ const Session: React.FC<SessionProps> = (props) => {
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
         displayMessagesLimit={displayMessagesLimit}
         onDisplayMessagesLimitChange={setDisplayMessagesLimit}
+        isProductPlanLimitReached={isProductPlanLimitReached}
       />
 
       {currentView === 'messages' && messages.length === 0 && (

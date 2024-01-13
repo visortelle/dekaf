@@ -1,6 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../local-storage-keys';
+import { ProductCode } from '../licensing/ProductCode';
 
 type BuildInfo = {
   name: string,
@@ -8,6 +9,7 @@ type BuildInfo = {
   builtAtString: string,
   builtAtMillis: number
 }
+
 export type Config = {
   publicBaseUrl: string,
   pulsarName: string,
@@ -16,7 +18,7 @@ export type Config = {
   pulsarWebUrl: string,
   buildInfo: BuildInfo,
   productName: string,
-  productCode: string,
+  productCode: ProductCode,
   licenseId: string,
 }
 

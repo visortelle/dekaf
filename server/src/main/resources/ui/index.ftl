@@ -39,7 +39,7 @@
         builtAtMillis: ${buildInfo.builtAtMillis?c},
       },
 
-      productCode: '${productCode}',
+      productCode: ${productCode},
       productName: '${productName}',
       licenseId: '${licenseId}'
     };

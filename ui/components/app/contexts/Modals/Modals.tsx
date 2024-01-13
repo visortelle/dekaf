@@ -13,6 +13,7 @@ export type ModalStackEntry = {
   id: string,
   title: string,
   content: ReactNode,
+  isNotCloseable?: boolean,
   styleMode?: 'no-content-padding',
 }
 
@@ -98,7 +99,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       transition={{ duration: 0.25, ease: 'easeInOut' }}
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') {
+        if (!props.entry.isNotCloseable && e.key === 'Escape') {
           props.onClose();
         }
       }}
@@ -108,7 +109,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
           <div className={s.TopBarTitle}>
             <H2>{props.entry.title}</H2>
           </div>
-          <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>
+          {!props.entry.isNotCloseable && <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>}
         </div>
         {(
           <div className={`${s.Content} ${props.entry.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{props.entry.content}</div>

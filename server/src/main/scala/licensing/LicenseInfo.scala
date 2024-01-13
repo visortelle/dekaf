@@ -1,9 +1,10 @@
 package licensing
 
+// XXX - keep the order in sync with the same enum on the frontend side.
 enum ProductCode:
     case DekafDesktopFree
     case DekafDesktop
-    case DekafForTeamsFree
+    case DekafFree
     case DekafForTeams
     case DekafEnterprise
 
@@ -25,8 +26,8 @@ val AvailableLicenses: List[LicenseInfo] = List(
         keygenProductId = "5e8aa639-90a9-4bd4-863a-a19b09897b83"
     ),
     LicenseInfo(
-        productCode = ProductCode.DekafForTeamsFree,
-        productName = "Dekaf for Teams Free",
+        productCode = ProductCode.DekafFree,
+        productName = "Dekaf Free",
         keygenProductId = "371a9d7a-2381-4ff5-b8ef-5de8ceab7c78"
     ),
     LicenseInfo(

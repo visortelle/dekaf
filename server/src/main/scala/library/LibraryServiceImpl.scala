@@ -40,16 +40,16 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
     override def saveLibraryItem(request: SaveLibraryItemRequest): Future[SaveLibraryItemResponse] =
         logger.debug(s"Updating library item: ${request.item}")
 
-        // PRODUCT PLAN RESTRICTION START
-        if Vector(ProductCode.DekafForTeamsFree, ProductCode.DekafDesktopFree, ProductCode.DekafForTeams).contains(Licensing.productCode) then
+        // PRODUCT PLAN LIMITATION START
+        if Vector(ProductCode.DekafFree, ProductCode.DekafDesktopFree, ProductCode.DekafForTeams).contains(Licensing.productCode) then
             val itemsLimit = if Licensing.productCode == ProductCode.DekafForTeams then 300 else 50
             if library.size > itemsLimit then
                 val status: Status = Status(
                     code = Code.PERMISSION_DENIED.index,
-                    message = s"Your current product plan doesn't allow to store more than ${itemsLimit} library items. Upgrade your plan at https://dekaf.io"
+                    message = s"Limit of library items in your plan has been reached. Please upgrade your plan at https://dekaf.io"
                 )
                 return Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
-        // PRODUCT PLAN RESTRICTION END
+        // PRODUCT PLAN LIMITATION END
 
         try {
             if request.item.isEmpty then throw new Exception("Library item is empty")

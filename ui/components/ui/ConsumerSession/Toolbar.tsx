@@ -21,6 +21,7 @@ export type ToolbarProps = {
   onToggleConsoleClick: () => void;
   displayMessagesLimit: number;
   onDisplayMessagesLimitChange: (limit: number) => void;
+  isProductPlanLimitReached: boolean
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -47,6 +48,8 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             onClick={playButtonOnClick}
             type={'primary'}
             disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
+            isPremiumFeature={props.isProductPlanLimitReached && props.sessionState === 'paused'}
+            premiumFeatureTitle={<>Limit of messages in your plan has been reached. Please upgrade your plan at <a target='_blank' href="https://dekaf.io">https://dekaf.io</a></>}
           />
         </div>
 
