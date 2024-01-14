@@ -89,13 +89,20 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
       width: 1280,
       height: 800,
       show: false,
-      backgroundColor: '#f5f5f5'
+      backgroundColor: '#f5f5f5',
     });
     win.loadURL(url);
     win.once('ready-to-show', () => {
       win.show();
       win.maximize();
     });
+    win.on('close', () => {
+      const req: KillProcess = {
+        type: "KillProcess",
+        processId
+      };
+      sendMessage(apiChannel, req);
+    })
   }
 }
 
@@ -189,11 +196,7 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
   const proc = activeChildProcesses[arg.processId];
 
   if (proc === undefined) {
-    const req: ErrorHappened = {
-      type: "ErrorHappened",
-      message: `Unable to kill process. No such process ${arg.processId}`
-    };
-    sendMessage(apiChannel, req);
+    console.warn(`Unable to kill process. No such process ${arg.processId}`);
   }
 
   if (activeProcesses[arg.processId].status === 'failed') {
@@ -338,7 +341,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
 
   const connectionId = connection.type === "local-pulsar-instance" ? connection.instanceId : connection.connectionId;
 
-  const dekafDataDir = paths.getDekafDataDir(connectionId);
+  const dekafDataDir = paths.getRemoteConnectionDekafDataDir(connectionId);
   if (!(fs.existsSync(dekafDataDir))) {
     await fsExtra.ensureDir(dekafDataDir);
     const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
@@ -530,9 +533,7 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
 
     env["DEKAF_DEMOAPP_PULSAR_BROKER_URL"] = `pulsar://127.0.0.1:${instanceConfig.config.brokerServicePort}`
     env["DEKAF_DEMOAPP_PULSAR_WEB_URL"] = `http://127.0.0.1:${instanceConfig.config.webServicePort}`
-  }
-
-  if (connection.type === "remote-pulsar-connection") {
+  } else if (connection.type === "remote-pulsar-connection") {
     throw new Error(`Running Dekaf Demoapp isn't support for remote Pulsar connections.`);
   }
 

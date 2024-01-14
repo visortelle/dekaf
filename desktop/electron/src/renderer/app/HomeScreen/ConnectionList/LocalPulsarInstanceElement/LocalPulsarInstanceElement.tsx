@@ -42,6 +42,32 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
   const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
   const [isMissingPulsarDistribution, setIsMissingPulsarDistribution] = useState<boolean | undefined>(undefined);
 
+  const killAll = () => {
+    let processesToKill = [dekafProcessId]
+    if (isHasDemoapp) {
+      processesToKill = processesToKill.concat([dekafDemoappProcessId]);
+    }
+
+    processesToKill.forEach(processId => {
+      if (processId === undefined) {
+        return;
+      }
+
+      const req: KillProcess = { type: "KillProcess", processId };
+      window.electron.ipcRenderer.sendMessage(apiChannel, req);
+    });
+
+    // XXX - well. Probably need to reimplement it without the timeout.
+    setTimeout(() => {
+      if (pulsarProcessId === undefined) {
+        return;
+      }
+
+      const req: KillProcess = { type: "KillProcess", processId: pulsarProcessId };
+      window.electron.ipcRenderer.sendMessage(apiChannel, req);
+    }, 3000);
+  }
+
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ActiveProcessesUpdated" || arg.type === "GetActiveProcessesResult") {
@@ -70,8 +96,14 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
   }, [props.pulsarInstance]);
 
+  const isHasDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
+
   useEffect(() => {
-    function runDemoapp() {
+    if (pulsarProcessStatus === 'failed' || dekafProcessStatus === 'failed' || dekafDemoappProcessStatus === 'failed') {
+      killAll();
+    }
+
+    if (isHasDemoapp && (dekafDemoappProcessStatus === undefined || dekafDemoappProcessStatus === 'unknown') && pulsarProcessStatus === 'ready') {
       const dekafDemoappReq: SpawnProcess = {
         type: "SpawnProcess",
         process: {
@@ -89,29 +121,28 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
     }
 
-    function stopDemoappIfExists() {
-      if (dekafDemoappProcessId === undefined) {
+    if (pulsarProcessStatus === 'ready' && (dekafProcessStatus === undefined || dekafProcessStatus === 'unknown')) {
+      if (isHasDemoapp && dekafDemoappProcessStatus !== 'ready') {
         return;
       }
 
-      const dekafDemoappReq: KillProcess = {
-        type: "KillProcess",
-        processId: dekafDemoappProcessId
+      const dekafReq: SpawnProcess = {
+        type: "SpawnProcess",
+        process: {
+          type: "dekaf",
+          connection: {
+            type: "local-pulsar-instance",
+            instanceId: props.pulsarInstance.metadata.id,
+            dekafLicenseId,
+            dekafLicenseToken
+          }
+        },
+        processId: uuid()
       };
 
-      window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
+      window.electron.ipcRenderer.sendMessage(apiChannel, dekafReq);
     }
-
-    const isHasDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
-
-    if (isHasDemoapp) {
-      if (pulsarProcessStatus === 'ready') {
-        runDemoapp();
-      } else if (pulsarProcessStatus === 'stopping' || pulsarProcessStatus === 'failed') {
-        stopDemoappIfExists();
-      }
-    }
-  }, [pulsarProcessStatus]);
+  }, [pulsarProcessStatus, dekafProcessStatus, dekafDemoappProcessStatus]);
 
   let logSources: LogSource[] = [];
   if (pulsarProcessId !== undefined) {
@@ -121,17 +152,25 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     logSources = logSources.concat([{ name: 'dekaf', processId: dekafProcessId }]);
   }
   if (dekafDemoappProcessId !== undefined) {
-    logSources = logSources.concat([{ name: 'demoappp', processId: dekafDemoappProcessId }]);
+    logSources = logSources.concat([{ name: 'demoapp', processId: dekafDemoappProcessId }]);
   }
 
   const isRunning =
-    pulsarProcessStatus === 'starting' ||
-    pulsarProcessStatus === 'alive' ||
-    pulsarProcessStatus === 'ready' ||
-    dekafProcessStatus === "starting" ||
-    dekafProcessStatus === "alive" ||
-    dekafProcessStatus === "ready";
-  const isStopping = pulsarProcessStatus === 'stopping' || dekafProcessStatus === 'stopping';
+    (pulsarProcessStatus === 'starting' ||
+      pulsarProcessStatus === 'alive' ||
+      pulsarProcessStatus === 'ready') ||
+    (dekafProcessStatus === "starting" ||
+      dekafProcessStatus === "alive" ||
+      dekafProcessStatus === "ready") || (
+      isHasDemoapp ? (
+        dekafDemoappProcessStatus === "starting" ||
+        dekafDemoappProcessStatus === "alive" ||
+        dekafDemoappProcessStatus === "ready"
+      ) : true
+    )
+  const isStopping = pulsarProcessStatus === 'stopping' || dekafProcessStatus === 'stopping' || dekafDemoappProcessStatus === 'stopping';
+  const isReady = pulsarProcessStatus === 'ready' && dekafDemoappProcessStatus === 'ready' && dekafProcessStatus === 'ready';
+  const isFailed = pulsarProcessStatus === 'failed' || dekafProcessStatus === 'failed' || dekafDemoappProcessStatus === 'failed';
 
   const renderStatus = (status: ProcessStatus | undefined): React.ReactNode => {
     switch (status) {
@@ -211,10 +250,10 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
-        {!isRunning && <SmallButton
+        {(!isRunning && !isFailed && !isStopping) && <SmallButton
           type='primary'
           text='Connect'
-          disabled={isStopping || isMissingPulsarDistribution}
+          disabled={(isRunning && !isReady) || isMissingPulsarDistribution}
           onClick={() => {
             const pulsarReq: SpawnProcess = {
               type: "SpawnProcess",
@@ -226,22 +265,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
             };
 
             window.electron.ipcRenderer.sendMessage(apiChannel, pulsarReq);
-
-            const dekafReq: SpawnProcess = {
-              type: "SpawnProcess",
-              process: {
-                type: "dekaf",
-                connection: {
-                  type: "local-pulsar-instance",
-                  instanceId: props.pulsarInstance.metadata.id,
-                  dekafLicenseId,
-                  dekafLicenseToken
-                }
-              },
-              processId: uuid()
-            };
-
-            window.electron.ipcRenderer.sendMessage(apiChannel, dekafReq);
 
             const updateReq: UpdateLocalPulsarInstance = {
               type: "UpdateLocalPulsarInstance",
@@ -258,20 +281,11 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
           }}
         />}
 
-        {isRunning && <SmallButton
+        {(isRunning || isStopping || isFailed) && <SmallButton
           type='regular'
-          text='Disconnect'
-          disabled={(pulsarProcessId === undefined && setDekafProcessId === undefined) || isStopping}
-          onClick={() => {
-            [pulsarProcessId, dekafProcessId].forEach(processId => {
-              if (processId === undefined) {
-                return;
-              }
-
-              const req: KillProcess = { type: "KillProcess", processId };
-              window.electron.ipcRenderer.sendMessage(apiChannel, req);
-            });
-          }}
+          text='Stop and disconnect'
+          disabled={isStopping}
+          onClick={killAll}
         />}
 
         <ProcessLogsViewButton
