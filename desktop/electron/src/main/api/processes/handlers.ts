@@ -341,7 +341,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
 
   const connectionId = connection.type === "local-pulsar-instance" ? connection.instanceId : connection.connectionId;
 
-  const dekafDataDir = paths.getRemoteConnectionDekafDataDir(connectionId);
+  const dekafDataDir = connection.type === "local-pulsar-instance" ? paths.getPulsarLocalInstanceDekafDataDir(connectionId) : paths.getRemoteConnectionDekafDataDir(connectionId);
   if (!(fs.existsSync(dekafDataDir))) {
     await fsExtra.ensureDir(dekafDataDir);
     const defaultDataDir = path.resolve(path.join(paths.dekafDir, "data"));
