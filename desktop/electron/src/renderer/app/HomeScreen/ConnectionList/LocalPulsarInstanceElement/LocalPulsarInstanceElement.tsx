@@ -282,7 +282,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         />}
 
         {(isRunning || isStopping || isFailed) && <SmallButton
-          type='regular'
+          type='danger'
           text='Stop and disconnect'
           disabled={isStopping}
           onClick={killAll}
