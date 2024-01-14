@@ -4,6 +4,7 @@ import { colorsByName } from '../ColorPickerButton/ColorPicker/color-palette';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import useInterval from '../../app/hooks/use-interval';
 import Select, { ListItem } from '../Select/Select';
+import Input from '../Input/Input';
 
 const logsColorPalette: string[] = [
   colorsByName['slate-700'],
@@ -39,6 +40,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const logsRef = useRef<HTMLDivElement>(null);
   const [sourceFilter, setSourceFilter] = useState(allSources);
+  const [filter, setFilter] = useState('');
 
   const scrollToBottom = (bottomOffset?: number, behavior?: 'auto' | 'smooth') => {
     const scrollParent = logsRef.current?.children[0];
@@ -80,7 +82,9 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
     }
   });
 
-  const filteredItems = sourceFilter === allSources ? props.logs : props.logs.filter(entry => entry.source === sourceFilter);
+  let filteredItems = sourceFilter === allSources ? props.logs : props.logs.filter(entry => entry.source === sourceFilter);
+  filteredItems = filteredItems.filter(item => item.content.toLowerCase().includes(filter));
+
   const itemsToShow = isFollow ? filteredItems.slice(-displayEntriesWhenFollow) : filteredItems;
 
   const itemContent = (i: number, entry: LogEntry) => {
@@ -109,7 +113,10 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
             onChange={setSourceFilter}
           />
         </div>
-        <div>Shown <strong>{filteredItems.length}</strong> of <strong>{props.logs.length}</strong> entries</div>
+        <div style={{ width: '320rem' }}>
+          <Input value={filter} onChange={setFilter} placeholder='Search in logs' />
+        </div>
+        <div>Shown <strong>{filteredItems.length}</strong> of latest <strong>{props.logs.length}</strong> entries</div>
       </div>
       <div ref={logsRef} className={s.Logs} onWheel={onWheel}>
         <Virtuoso
