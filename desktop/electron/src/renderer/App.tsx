@@ -14,6 +14,8 @@ import logo from './logo.png';
 import backIcon from './back.svg';
 import './ui/force-show-scrollbars-on-macos';
 import SmallButton from './ui/SmallButton/SmallButton';
+import SocialIcons from './ui/SocialIcons/SocialIcons';
+import A from './ui/A/A';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
@@ -51,13 +53,17 @@ function InitialAppScreen() {
             <div className={s.ConnectionList}>
               <div className={s.Logo}>
                 <img src={logo} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <strong>Stay Connected</strong>
+                  <SocialIcons fill='#fff' />
+                </div>
               </div>
               <ConnectionList />
             </div>
             <div className={s.Blog}>
               <div
                 style={{
-                  padding: '12rem 18rem',
+                  padding: '12rem 18rem 8rem 18rem',
                   display: 'flex',
                   borderBottom: '1px solid var(--border-color)'
                 }}
@@ -69,9 +75,9 @@ function InitialAppScreen() {
                   svgIcon={backIcon}
                 />
                 <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: '18rem' }}>
-                  <a href={links.docs} target='_blank'>📘 Documentation</a>
-                  <a href={links.support} target='_blank'>🛟 Support</a>
-                  <a href={links.upgradeIndividual} target='_blank'><strong>⭐️ Upgrade</strong></a>
+                  <A href={links.docs} target='_blank'>📘 Documentation</A>
+                  <A href={links.support} target='_blank'>🛟 Support</A>
+                  <A href={links.upgradeIndividual} target='_blank'><strong>⭐️ Upgrade</strong></A>
                 </div>
               </div>
               <iframe key={refreshIframeKey} src={links.blogRootCropped} className={s.BlogIframe} />

@@ -62,15 +62,21 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
     }
   }
 
+  const isShowProcessStatuses = dekafProcessStatus !== undefined && dekafProcessStatus !== 'unknown';
+
+  console.log('is show', isShowProcessStatuses, dekafProcessStatus)
+
   return (
     <div className={s.RemotePulsarConnectionElement}>
       <H3>{props.connection.metadata.name}</H3>
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.connection.metadata.lastUsedAt))}</div>
 
-      <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
-        <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
-        <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
-      </div>
+      {isShowProcessStatuses && (
+        <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
+          <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
+          <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
+        </div>
+      )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
         {!isRunning && <SmallButton

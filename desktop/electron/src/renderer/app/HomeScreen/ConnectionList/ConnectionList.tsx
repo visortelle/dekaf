@@ -81,12 +81,12 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
 
   return (
     <div className={s.ConnectionList}>
-      <div style={{ padding: '8rem 18rem', display: 'flex', flexDirection: 'column', gap: '12rem', borderBottom: '1px solid var(--border-color)' }}>
+      <div style={{ padding: '12rem 18rem 8rem 18rem', display: 'flex', flexDirection: 'column', gap: '12rem', borderBottom: '1px solid var(--border-color)' }}>
         <div>
           <Input
             value={filter}
             onChange={setFilter}
-            placeholder='Find connections by name'
+            placeholder='Find connection by name'
           />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -144,6 +144,11 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     }
   }
 
+  const isShowProcessStatuses =
+    (dekafProcessStatus !== undefined && dekafProcessStatus !== 'unknown') ||
+    (pulsarProcessStatus !== undefined && pulsarProcessStatus !== 'unknown') ||
+    (dekafDemoappProcessStatus !== undefined && dekafDemoappProcessStatus !== 'unknown');
+
   return (
     <div className={s.LocalPulsarInstanceElement}>
       <H3>{props.pulsarInstance.metadata.name}</H3>
@@ -187,19 +192,22 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
           />
         </div>
       )}
-      <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
-        <ProcessStatusIndicator processId={pulsarProcessId} onStatusChange={setPulsarProcessStatus} />
-        <strong>Pulsar status:&nbsp;</strong>{renderStatus(pulsarProcessStatus)}
-      </div>
 
-      <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
-        <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
-        <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
-      </div>
+      <div style={{ display: isShowProcessStatuses ? 'block' : 'none' }}>
+        <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
+          <ProcessStatusIndicator processId={pulsarProcessId} onStatusChange={setPulsarProcessStatus} />
+          <strong>Pulsar status:&nbsp;</strong>{renderStatus(pulsarProcessStatus)}
+        </div>
 
-      <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
-        <ProcessStatusIndicator processId={dekafDemoappProcessId} onStatusChange={setDekafDemoappProcessStatus} />
-        <strong>Demoapp status:&nbsp;</strong>{renderStatus(dekafDemoappProcessStatus)}
+        <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
+          <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
+          <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
+        </div>
+
+        <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
+          <ProcessStatusIndicator processId={dekafDemoappProcessId} onStatusChange={setDekafDemoappProcessStatus} />
+          <strong>Demoapp status:&nbsp;</strong>{renderStatus(dekafDemoappProcessStatus)}
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
@@ -274,7 +282,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         <EditLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} disabled={isRunning} />
         <DeleteLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} instanceName={props.pulsarInstance.metadata.name} disabled={isRunning} />
       </div>
-    </div>
+    </div >
   );
 }
 

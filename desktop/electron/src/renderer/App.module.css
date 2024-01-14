@@ -4,9 +4,12 @@
 }
 
 .Logo {
-  object-fit: cover;
-  padding: 18rem;
-  padding-bottom: 0;
+  padding: 12rem 18rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: var(--accent-color-black);
+  color: #fff;
 }
 
 .Logo img {
