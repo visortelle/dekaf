@@ -7,7 +7,6 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14rem;
   font-weight: var(--font-weight-bold);
@@ -114,6 +113,7 @@
 .DisabledButton.Button.BorderlessSemitransparent {
   background-color: transparent !important;
 }
+
 .DisabledButton {
   opacity: 1;
   background-color: var(--surface-color) !important;
@@ -128,4 +128,18 @@
 .DisabledButton:hover {
   cursor: default;
   opacity: 1;
+}
+
+.PremiumFeature {
+  position: absolute;
+  top: -7rem;
+  right: -7rem;
+}
+
+.PremiumFeature svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--accent-color-yellow);
+  stroke: #555;
+  stroke-width: 1px;
 }

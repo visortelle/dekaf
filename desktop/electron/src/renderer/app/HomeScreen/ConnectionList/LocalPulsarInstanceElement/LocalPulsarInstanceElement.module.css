@@ -5,3 +5,7 @@
   flex-direction: column;
   gap: 8rem;
 }
+
+.LocalPulsarInstanceElement:last-child {
+  border-bottom: none;
+}

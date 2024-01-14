@@ -75,7 +75,7 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
         {!isRunning && <SmallButton
           type='primary'
-          text='Start'
+          text='Connect'
           disabled={isStopping}
           onClick={() => {
             const dekafReq: SpawnProcess = {
@@ -111,7 +111,7 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
 
         {isRunning && <SmallButton
           type='regular'
-          text='Stop'
+          text='Disconnect'
           disabled={(setDekafProcessId === undefined) || isStopping}
           onClick={() => {
             [dekafProcessId].forEach(processId => {

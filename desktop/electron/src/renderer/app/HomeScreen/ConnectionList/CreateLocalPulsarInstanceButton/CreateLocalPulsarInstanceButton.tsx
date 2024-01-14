@@ -9,6 +9,8 @@ import { apiChannel } from '../../../../../main/channels';
 import { ListPulsarDistributions } from '../../../../../main/api/local-pulsar-distributions/types';
 import PulsarDistributionPicker from '../LocalPulsarInstanceElement/LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
 import { genRandomName } from '../ConnectionMetadataEditor/gen-random-name';
+import SmallButton from '../../../../ui/SmallButton/SmallButton';
+import addIcon from './add.svg';
 
 export type CreateLocalPulsarInstanceButtonProps = {};
 
@@ -16,9 +18,10 @@ const CreateLocalPulsarInstanceButton: React.FC<CreateLocalPulsarInstanceButtonP
   const modals = Modals.useContext();
 
   return (
-    <Button
+    <SmallButton
       type='primary'
       text='Create Local Pulsar Instance'
+      svgIcon={addIcon}
       onClick={() => {
         modals.push({
           id: 'create-local-pulsar-instance',

@@ -205,7 +205,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
         {!isRunning && <SmallButton
           type='primary'
-          text='Start'
+          text='Connect'
           disabled={isStopping || isMissingPulsarDistribution}
           onClick={() => {
             const pulsarReq: SpawnProcess = {
@@ -252,7 +252,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
         {isRunning && <SmallButton
           type='regular'
-          text='Stop'
+          text='Disconnect'
           disabled={(pulsarProcessId === undefined && setDekafProcessId === undefined) || isStopping}
           onClick={() => {
             [pulsarProcessId, dekafProcessId].forEach(processId => {

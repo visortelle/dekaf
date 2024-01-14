@@ -7,6 +7,8 @@ import { v4 as uuid } from 'uuid';
 import { CreateRemotePulsarConnection, RemotePulsarConnection } from '../../../../../main/api/remote-pulsar-connections/types';
 import { genRandomName } from '../ConnectionMetadataEditor/gen-random-name';
 import { apiChannel } from '../../../../../main/channels';
+import SmallButton from '../../../../ui/SmallButton/SmallButton';
+import addIcon from './add.svg';
 
 export type CreateRemotePulsarConnectionButtonProps = {};
 
@@ -14,13 +16,14 @@ const CreateRemotePulsarConnectionButton: React.FC<CreateRemotePulsarConnectionB
   const modals = Modals.useContext();
 
   return (
-    <Button
+    <SmallButton
       type='primary'
-      text='Create Remote Connection'
+      text='Add Connection'
+      svgIcon={addIcon}
       onClick={() => {
         modals.push({
           id: 'create-remote-pulsar-connection',
-          title: 'Create Remote Connection',
+          title: 'Add Connection',
           content: (
             <CreateLocalPulsarInstanceForm
               onCreate={modals.pop}
