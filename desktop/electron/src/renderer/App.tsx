@@ -9,14 +9,14 @@ import * as Modals from './app/Modals/Modals';
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from 'react';
 import { LocalPulsarInstance } from '../main/api/local-pulsar-instances/types';
-import PulsarStandaloneConfigInput from './LocalPulsarInstanceEditor/PulsarStandaloneConfigInput/PulsarStandaloneConfigInput';
-import PulsarDistributionPickerButton from './LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPickerButton';
+import PulsarStandaloneConfigInput from './app/HomeScreen/ConnectionsList/LocalPulsarInstanceElement/LocalPulsarInstanceEditor/PulsarStandaloneConfigInput/PulsarStandaloneConfigInput';
+import PulsarDistributionPickerButton from './app/HomeScreen/ConnectionsList/LocalPulsarInstanceElement/LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPickerButton';
 import SmallButton from './ui/SmallButton/SmallButton';
-import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
+import CreateLocalPulsarInstanceButton from './app/HomeScreen/ConnectionsList/CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
 import Tooltip from './ui/Tooltip/Tooltip';
 import { apiChannel } from '../main/channels';
-import ConnectionsList from './ConnectionsList/ConnectionsList';
-import CreateRemotePulsarConnectionButton from './CreateRemotePulsarConnectionButton/CreateRemotePulsarConnectionButton';
+import ConnectionsList from './app/HomeScreen/ConnectionsList/ConnectionsList';
+import CreateRemotePulsarConnectionButton from './app/HomeScreen/ConnectionsList/CreateRemotePulsarConnectionButton/CreateRemotePulsarConnectionButton';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
