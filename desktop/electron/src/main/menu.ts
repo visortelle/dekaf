@@ -122,9 +122,15 @@ export default class MenuBuilder {
           },
         },
         {
-          label: 'Community Discussions',
+          label: 'Support',
           click() {
-            shell.openExternal('https://dekaf.io/community');
+            shell.openExternal('https://dekaf.io/support');
+          },
+        },
+        {
+          label: '⭐️ Upgrade',
+          click() {
+            shell.openExternal('https://dekaf.io/pricing');
           },
         }
       ],

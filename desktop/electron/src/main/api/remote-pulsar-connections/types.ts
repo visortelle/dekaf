@@ -1,4 +1,4 @@
-import { Credentials } from "../../../renderer/RemotePulsarConnectionEditor/pulsar-auth/domain";
+import { Credentials } from "../../../renderer/app/HomeScreen/ConnectionList/RemotePulsarConnectionElement/RemotePulsarConnectionEditor/pulsar-auth/domain";
 import { ConnectionMetadata } from "../dekaf/types";
 
 export type StreamNativeCloudRemotePulsarConnectionFlavor = {
