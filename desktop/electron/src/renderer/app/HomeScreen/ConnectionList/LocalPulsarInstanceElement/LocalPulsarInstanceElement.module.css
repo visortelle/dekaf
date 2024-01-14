@@ -1,0 +1,11 @@
+.LocalPulsarInstanceElement {
+  padding: 12rem 24rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.LocalPulsarInstanceElement:last-child {
+  border-bottom: none;
+}

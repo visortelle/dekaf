@@ -1,22 +1,21 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
+import s from './App.module.css';
 import '../../assets/globals.css';
 import '../../assets/fonts.css';
-import { ApiEvent } from '../main/api/service';
 import * as I18n from './app/I18n/I18n';
 import * as Notifications from './app/Notifications/Notifications';
 import * as Modals from './app/Modals/Modals';
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from 'react';
-import { LocalPulsarInstance } from '../main/api/local-pulsar-instances/types';
-import PulsarStandaloneConfigInput from './LocalPulsarInstanceEditor/PulsarStandaloneConfigInput/PulsarStandaloneConfigInput';
-import PulsarDistributionPickerButton from './LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPickerButton';
-import SmallButton from './ui/SmallButton/SmallButton';
-import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
 import Tooltip from './ui/Tooltip/Tooltip';
 import { apiChannel } from '../main/channels';
-import ConnectionsList from './ConnectionsList/ConnectionsList';
-import CreateRemotePulsarConnectionButton from './CreateRemotePulsarConnectionButton/CreateRemotePulsarConnectionButton';
+import ConnectionList from './app/HomeScreen/ConnectionList/ConnectionList';
+import logo from './logo.png';
+import backIcon from './back.svg';
+import './ui/force-show-scrollbars-on-macos';
+import SmallButton from './ui/SmallButton/SmallButton';
+import SocialIcons from './ui/SocialIcons/SocialIcons';
+import A from './ui/A/A';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
@@ -25,8 +24,17 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
+const links = {
+  blogRoot: 'https://dekaf.io/blog',
+  blogRootCropped: 'https://dekaf.io/blog?isCropPage=true',
+  docs: 'https://dekaf.io/docs',
+  support: 'https://dekaf.io/support',
+  upgradeIndividual: 'https://www.dekaf.io/pricing?productId=dekaf-desktop&buyerType=individual'
+};
+
 function InitialAppScreen() {
   const { notifyError } = Notifications.useContext();
+  const [refreshIframeKey, setRefreshIframeKey] = useState(0);
 
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
@@ -40,57 +48,40 @@ function InitialAppScreen() {
     <I18n.DefaultProvider>
       <Notifications.DefaultProvider>
         <Modals.DefaultProvider>
-          <div>
+          <div className={s.App}>
             <Tooltip />
-
-            <CreateLocalPulsarInstanceButton />
-            <CreateRemotePulsarConnectionButton />
-
-            <ConnectionsList />
-            {/* <SmallButton
-              onClick={() => {
-                const event: ApiEvent = { type: "GetPaths" };
-                window.electron.ipcRenderer.sendMessage('api', event);
-                // const pulsarProcess = spawn(
-                //   pulsarBin,
-                //   ["standalone"],
-                //   {
-                //     env: {'JAVA_HOME': javaHome },
-                //     stdio: "pipe"
-                //   }
-                // );
-                // pulsarProcess.stdout.on("data", data => console.log(`[LOG][pulsar] ${data}`));
-                // pulsarProcess.stderr.on("data", data => console.log(`[ERROR][pulsar] ${data}`));
-              }}
-              type='primary'
-              text='Create a local Pulsar instance'
-            /> */}
-            {/* <SmallButton
-              onClick={() => {
-                // const pulsarProcess = spawn(
-                //   dekafBin,
-                //   [],
-                //   {
-                //     env: {
-                //       'JAVA_HOME': javaHome,
-                //       'DEKAF_LICENSE_ID': licenseId,
-                //       'DEKAF_LICENSE_TOKEN': licenseToken,
-                //       'DEKAF_DATA_DIR': path.join(pulsarInstancesDir, 'instance-1', 'dekaf-data')
-                //     },
-                //     stdio: "pipe"
-                //   }
-                // );
-                // pulsarProcess.stdout.on("data", data => console.log(`[LOG][pulsar] ${data}`));
-                // pulsarProcess.stderr.on("data", data => console.log(`[ERROR][pulsar] ${data}`));
-
-
-                // setTimeout(() => {
-                //   window.location.href="http://localhost:8090/"
-                // }, 10_000);
-              }}
-              type='primary'
-              text='Connect'
-            /> */}
+            <div className={s.ConnectionList}>
+              <div className={s.Logo}>
+                <img src={logo} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <strong>Stay Connected</strong>
+                  <SocialIcons fill='#fff' />
+                </div>
+              </div>
+              <ConnectionList />
+            </div>
+            <div className={s.Blog}>
+              <div
+                style={{
+                  padding: '12rem 18rem 8rem 18rem',
+                  display: 'flex',
+                  borderBottom: '1px solid var(--border-color)'
+                }}
+              >
+                <SmallButton
+                  appearance='borderless'
+                  onClick={() => setRefreshIframeKey(v => v + 1)}
+                  text='Show all updates'
+                  svgIcon={backIcon}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: '18rem' }}>
+                  <A href={links.docs} target='_blank'>📘 Documentation</A>
+                  <A href={links.support} target='_blank'>🛟 Support</A>
+                  <A href={links.upgradeIndividual} target='_blank'><strong>⭐️ Upgrade</strong></A>
+                </div>
+              </div>
+              <iframe key={refreshIframeKey} src={links.blogRootCropped} className={s.BlogIframe} />
+            </div>
           </div>
         </Modals.DefaultProvider>
       </Notifications.DefaultProvider>
