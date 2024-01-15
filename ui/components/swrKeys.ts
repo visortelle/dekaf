@@ -82,7 +82,7 @@ export const swrKeys = {
           ],
         }
       },
-      resourceFqnCheck: {
+      checkResourceExists: {
         _: (props: {
           tenant: string,
           namespace: string,
@@ -92,7 +92,7 @@ export const swrKeys = {
           subscription: string
         }) => [
           "customApi",
-          "resourceFqnCheck",
+          "checkResourceExists",
           props.tenant,
           props.namespace,
           props.topic,

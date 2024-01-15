@@ -11,6 +11,7 @@ import _root_.pulsar_auth.RequestContext
 
 import scala.util.{Failure, Success, Try}
 import CheckResourceExistsRequest.Resource
+import topic.getTopicPartitioningType
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -143,10 +144,6 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         val adminClient = RequestContext.pulsarAdmin.get()
         val resourceFqn = request.resourceFqn
 
-        def lookupPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupPartitionedTopic(resourceFqn))
-
-        def lookupNonPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupTopic(resourceFqn))
-
         def failWithMessage(message: String): Future[CheckResourceExistsResponse] =
             val status = Status(code = Code.FAILED_PRECONDITION.index, message = message)
             Future.successful(CheckResourceExistsResponse(status = Some(status), isExists = false))
@@ -157,12 +154,9 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             case Resource.NamespaceResource(_) =>
                 Try(adminClient.namespaces.getBundles(resourceFqn)).isSuccess
             case Resource.TopicResource(_) =>
-                lookupPartitionedTopic() match
-                    case Success(_) => true
-                    case Failure(exception) =>
-                        lookupNonPartitionedTopic() match
-                            case Success(_) => true
-                            case Failure(err) => false
+                Try(getTopicPartitioningType(adminClient, resourceFqn)) match
+                    case Success(value) => true
+                    case Failure(exception) => false
             case Resource.SubscriptionResource(value) =>
                 Try(adminClient.topics.getSubscriptionProperties(resourceFqn, value.subscriptionName)).isSuccess
             case Resource.SchemaResource(value) =>
