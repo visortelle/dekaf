@@ -1,6 +1,10 @@
 export type PulsarTopicPersistency = 'persistent' | 'non-persistent';
 export type PulsarTopicPartitioning = 'partitioned' | 'non-partitioned';
 
+export type PulsarInstanceResource = {
+  type: 'instance'
+};
+
 export type PulsarTopicResource = {
   type: 'topic',
   tenant: string,
@@ -21,6 +25,7 @@ export type PulsarTenantResource = {
 }
 
 export type PulsarResource =
+  PulsarInstanceResource |
   PulsarTenantResource |
   PulsarNamespaceResource |
   PulsarTopicResource;
@@ -51,6 +56,8 @@ export function pulsarResourceFromFqn<T extends PulsarResource>(fqn: string): T 
 
 export function pulsarResourceToFqn(resource: PulsarResource): string {
   switch (resource.type) {
+    case 'instance':
+      return '';
     case 'tenant':
       return resource.tenant;
     case 'namespace':

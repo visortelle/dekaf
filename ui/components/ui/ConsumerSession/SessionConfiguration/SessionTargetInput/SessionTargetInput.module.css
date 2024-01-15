@@ -1,0 +1,17 @@
+.SessionTargetInput {
+  display: flex;
+  flex-direction: column;
+  gap: 32rem;
+  padding: 24rem 12rem;
+  position: relative;
+  overflow: auto;
+}
+
+.TargetIndex {
+  position: absolute;
+  top: 6rem;
+  left: 12rem;
+  font-weight: var(--font-weight-bold);
+  opacity: 0.6;
+  font-size: 12rem;
+}

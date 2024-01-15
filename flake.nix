@@ -38,7 +38,6 @@
 
           protoc-gen-grpc-web = pkgs.callPackage ./nix/protoc-gen-grpc-web.nix { };
           protoc-gen-scala = pkgs.callPackage ./nix/protoc-gen-scala.nix { };
-          graalvm = pkgs.callPackage ./nix/graalvm { };
 
           missingSysPkgs =
             if pkgs.stdenv.isDarwin then
@@ -67,7 +66,7 @@
               pkgs.coreutils
               pkgs.nodejs-18_x
 
-              graalvm
+              pkgs.graalvm-ce
               pkgs.dotty
               pkgs.scalafmt
               pkgs.scalafix
@@ -88,14 +87,6 @@
               pkgs.git
               pkgs.git-lfs
               pkgs.unzip
-
-              pkgs.podman
-              pkgs.act
-
-              pkgs.postgresql_16
-              pkgs.grafana
-              pkgs.prometheus
-              pkgs.prometheus-alertmanager
             ] ++ missingSysPkgs;
           };
         in

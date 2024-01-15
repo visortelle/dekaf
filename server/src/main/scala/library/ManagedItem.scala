@@ -1,6 +1,7 @@
 package library
 
 import _root_.library.managed_items.{
+    ManagedBasicMessageFilterTarget,
     ManagedColoringRule,
     ManagedColoringRuleChain,
     ManagedConsumerSessionConfig,
@@ -9,11 +10,14 @@ import _root_.library.managed_items.{
     ManagedConsumerSessionStartFrom,
     ManagedConsumerSessionTarget,
     ManagedDateTime,
+    ManagedMarkdownDocument,
     ManagedMessageFilter,
     ManagedMessageFilterChain,
     ManagedMessageId,
     ManagedRelativeDateTime,
-    ManagedTopicSelector
+    ManagedTopicSelector,
+    ManagedValueProjection,
+    ManagedValueProjectionList
 }
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
@@ -30,25 +34,33 @@ type ManagedItem =
     ManagedMessageFilterChain |
     ManagedMessageId |
     ManagedRelativeDateTime |
-    ManagedTopicSelector
+    ManagedTopicSelector |
+    ManagedMarkdownDocument |
+    ManagedBasicMessageFilterTarget |
+    ManagedValueProjection |
+    ManagedValueProjectionList
 
 object ManagedItem:
     def fromPb(v: pb.ManagedItem): ManagedItem =
         v.spec match
-            case it: pb.ManagedItem.Spec.SpecColoringRule => ManagedColoringRule.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecColoringRuleChain => ManagedColoringRuleChain.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecConsumerSessionConfig => ManagedConsumerSessionConfig.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecConsumerSessionEvent => ManagedConsumerSessionEvent.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecColoringRule                     => ManagedColoringRule.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecColoringRuleChain                => ManagedColoringRuleChain.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecConsumerSessionConfig            => ManagedConsumerSessionConfig.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecConsumerSessionEvent             => ManagedConsumerSessionEvent.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecConsumerSessionPauseTriggerChain => ManagedConsumerSessionPauseTriggerChain.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecConsumerSessionStartFrom => ManagedConsumerSessionStartFrom.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecConsumerSessionTarget => ManagedConsumerSessionTarget.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecDateTime => ManagedDateTime.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecMessageFilter => ManagedMessageFilter.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecMessageFilterChain => ManagedMessageFilterChain.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecMessageId => ManagedMessageId.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecRelativeDateTime => ManagedRelativeDateTime.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecTopicSelector => ManagedTopicSelector.fromPb(it.value)
-            case _ => throw new IllegalArgumentException("Unknown ManagedItem type")
+            case it: pb.ManagedItem.Spec.SpecConsumerSessionStartFrom         => ManagedConsumerSessionStartFrom.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecConsumerSessionTarget            => ManagedConsumerSessionTarget.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecDateTime                         => ManagedDateTime.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecMessageFilter                    => ManagedMessageFilter.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecMessageFilterChain               => ManagedMessageFilterChain.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecMessageId                        => ManagedMessageId.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecRelativeDateTime                 => ManagedRelativeDateTime.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecTopicSelector                    => ManagedTopicSelector.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecMarkdownDocument                 => ManagedMarkdownDocument.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecBasicMessageFilterTarget         => ManagedBasicMessageFilterTarget.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecValueProjection                  => ManagedValueProjection.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecValueProjectionList              => ManagedValueProjectionList.fromPb(it.value)
+            case _                                                            => throw new IllegalArgumentException("Unknown ManagedItem type")
 
     def toPb(v: ManagedItem): pb.ManagedItem =
         v match
@@ -91,3 +103,15 @@ object ManagedItem:
             case it: ManagedTopicSelector =>
                 val itPb = ManagedTopicSelector.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecTopicSelector(itPb))
+            case it: ManagedMarkdownDocument =>
+                val itPb = ManagedMarkdownDocument.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecMarkdownDocument(itPb))
+            case it: ManagedBasicMessageFilterTarget =>
+                val itPb = ManagedBasicMessageFilterTarget.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecBasicMessageFilterTarget(itPb))
+            case it: ManagedValueProjection =>
+                val itPb = ManagedValueProjection.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecValueProjection(itPb))
+            case it: ManagedValueProjectionList =>
+                val itPb = ManagedValueProjectionList.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecValueProjectionList(itPb))

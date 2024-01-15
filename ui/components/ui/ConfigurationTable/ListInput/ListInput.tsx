@@ -52,12 +52,13 @@ export type ListValue<T> = {
   isContentDoesntOverlapRemoveButton?: boolean;
   isHasCollapsedRenderer?: boolean;
   nothingToShowContent?: React.ReactNode;
+  isReadOnly?: boolean;
 };
 
 function ListInput<T>(props: ListValue<T>): React.ReactElement {
   const [editorValue, setEditorValue] = useState<EditorValue<T>>(props.editor?.initialValue);
   const [uncollapsedItems, setUncollapsedItems] = useState<Id[]>([]);
-  const isRenderEditor = typeof props.editor?.render !== 'undefined';
+  const isRenderEditor = !props.isReadOnly && (typeof props.editor?.render !== 'undefined');
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { delay: 100, tolerance: 50 } }),
@@ -113,9 +114,9 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       onDragEnd={handleDragEnd}
     >
       <div className={s.Header}>
-        <div className={s.HeaderItemName}>
+        {/* <div className={s.HeaderItemName}>
           {props.itemName === undefined ? '' : `${props.itemName}s`}: <strong>{props.value.length}</strong>
-        </div>
+        </div> */}
         <div className={s.HeaderControls}>
           {props.isHasCollapsedRenderer && (
             <SmallButton
@@ -151,6 +152,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
                     value={v.value}
                     isCollapsed={!uncollapsedItems.includes(v.id)}
                     onToggleCollapsed={() => setUncollapsedItems((prev) => prev.includes(v.id) ? prev.filter((id) => id !== v.id) : [...prev, v.id])}
+                    isReadOnly={props.isReadOnly}
                   />
                 );
               })}
@@ -173,7 +175,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
         )}
 
         <div className={s.BottomControls}>
-          {props.onAdd && (
+          {(!props.isReadOnly && props.onAdd) && (
             <div className={s.AddButton}>
               <AddButton
                 onClick={add}
@@ -195,6 +197,7 @@ type SortableItemProps<T> = {
   listProps: ListValue<T>,
   isCollapsed?: boolean,
   onToggleCollapsed?: () => void,
+  isReadOnly?: boolean
 };
 function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
   const {
@@ -220,10 +223,14 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
     onDragEnd: () => setIsDraggingSomeItem(false)
   });
 
+  const isDraggable = !props.isReadOnly;
+  const isRemovable = !props.isReadOnly;
+
   return (
     <div
       className={`
-        ${s.ListFieldValue} ${typeof listProps.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}
+        ${s.ListFieldValue}
+        ${(typeof listProps.onRemove === 'undefined' || props.isReadOnly) ? '' : s.RemovableListFieldValue}
         ${listProps.isContentDoesntOverlapRemoveButton ? s.RemovableListFieldValueWithoutPadding : ''}
         ${isDragging ? s.DraggingItem : ''}
       `}
@@ -241,7 +248,7 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
           />
         )}
 
-        <div {...attributes} {...listeners}>
+        {isDraggable && (<div {...attributes} {...listeners}>
           <SmallButton
             appearance='borderless-semitransparent'
             svgIcon={dragIcon}
@@ -249,8 +256,9 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
             title="Drag this item"
           />
         </div>
+        )}
 
-        {listProps.onRemove && (
+        {(isRemovable && listProps.onRemove) && (
           <SmallButton
             onClick={() => listProps.onRemove!(props.id)}
             title="Remove this item"

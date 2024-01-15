@@ -14,7 +14,8 @@
   align-items: center;
   padding-left: 12rem;
   pointer-events: none;
-  padding-top: 4rem; /* Fix svg align. */
+  padding-top: 4rem;
+  /* Fix svg align. */
 }
 
 .InputIcon svg {
@@ -29,7 +30,7 @@
   border-radius: 4rem;
   border: 1px solid var(--border-color);
   padding: 0 12rem 0 12rem;
-  height: 36rem;
+  height: 34rem;
   display: flex;
   flex: 1 0 auto;
   font-size: 14rem;

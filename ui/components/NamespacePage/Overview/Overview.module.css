@@ -1,8 +1,19 @@
 .Overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: (0, 1fr);
+  overflow: hidden;
+}
+
+.LeftPanel {
   padding: 24rem 12rem 0 12rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
+  overflow: auto;
+}
+
+.RightPanel {
+  overflow: hidden;
+  display: grid;
+  border-left: 1px solid var(--border-color);
 }
 
 .Section {
@@ -65,5 +76,4 @@
   border-left: none;
 }
 
-.Table {
-}
+.Table {}

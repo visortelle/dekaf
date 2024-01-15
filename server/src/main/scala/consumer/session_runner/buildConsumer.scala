@@ -11,8 +11,7 @@ def buildConsumer(
 ): Either[String, ConsumerBuilder[Array[Byte]]] =
     val consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(1000) // Too big queue causes long time messages loading after consumer pause.
-        .autoScaledReceiverQueueSizeEnabled(true)
+        .receiverQueueSize(2000)
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)

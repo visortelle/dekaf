@@ -1,0 +1,7 @@
+.FormItem {
+  margin-bottom: 18rem;
+}
+
+.FormItem:last-child {
+  margin-bottom: 0;
+}

@@ -1,0 +1,45 @@
+.Message {
+  overflow: hidden;
+  padding: 0rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ShowMoreButton {
+  display: none;
+}
+
+.Td {
+  position: relative;
+  border: none;
+  white-space: nowrap;
+}
+
+tr:has(> .Td:hover) .Td {
+  background-color: var(--surface-color) !important;
+  color: var(--text-color) !important;
+}
+
+tr:has(> .Td:hover) {
+  z-index: 999;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Fields */
+.IndexField {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.PublishTimeField {
+  position: sticky;
+  left: 60rem;
+  z-index: 1;
+}
+
+.ViewMessageDetailsField {
+  position: sticky;
+  left: 285rem;
+  z-index: 1;
+}

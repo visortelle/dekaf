@@ -60,7 +60,7 @@ export const createResources = () => {
         config: {
           publicBaseUrl: `https://${host}/demo`,
           pulsarBrokerUrl: "pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651",
-          pulsarHttpUrl: "https://cluster-f.o-xy6ek.snio.cloud",
+          pulsarWebUrl: "https://cluster-f.o-xy6ek.snio.cloud",
         },
         env: [
           { name: "DEKAF_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },

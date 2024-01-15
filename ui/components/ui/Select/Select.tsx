@@ -18,6 +18,8 @@ export type SelectProps<V> = {
   placeholder?: string;
   disabled?: boolean;
   appearance?: 'regular' | 'no-borders';
+  size?: 'regular' | 'small';
+  isReadOnly?: boolean;
 }
 
 function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
@@ -31,13 +33,18 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
   }
 
   return (
-    <div className={`${s.Container} ${props.appearance === 'no-borders' ? s.NoBorders : ''}`}>
+    <div className={`
+      ${props.size === 'small' ? s.SmallSelect : ''}
+      ${s.Container}
+      ${props.appearance === 'no-borders' ? s.NoBorders : ''}
+      ${props.isReadOnly ? s.ReadOnly : ''}
+    `}>
       {props.value === undefined && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
         onChange={(v) => props.onChange(v.target.value as V)}
         value={props.value}
-        disabled={props.disabled}
+        disabled={props.disabled || props.isReadOnly}
       >
         {props.list.map(item => {
           if (item.type === 'empty') {
@@ -53,9 +60,11 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
           }
         })}
       </select>
-      <div className={`${s.Arrow} ${props.disabled ? s.DisabledArrow : ''}`}>
-        <SvgIcon svg={arrowDownIcon} />
-      </div>
+      {!props.isReadOnly && (
+        <div className={`${s.Arrow} ${props.disabled ? s.DisabledArrow : ''}`}>
+          <SvgIcon svg={arrowDownIcon} />
+        </div>
+      )}
     </div>
   )
 }

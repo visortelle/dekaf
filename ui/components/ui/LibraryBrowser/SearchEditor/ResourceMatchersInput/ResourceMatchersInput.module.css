@@ -1,14 +1,13 @@
 .ResourceMatchersInput {
+  max-width: 480rem;
 }
 
-.Matchers {
-  display: flex;
-  flex-direction: column;
-  gap: 48rem;
+.ResourceMatcherInput {
+  padding-top: 36rem;
+  padding-bottom: 12rem;
+  flex: 1;
 }
 
-.AddButton {
-  margin-top: 8rem;
-  display: flex;
-  justify-content: flex-end;
+.ReadOnly .ResourceMatcherInput {
+  padding-top: 12rem;
 }

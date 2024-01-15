@@ -9,6 +9,53 @@ export type LibraryContext = {
 export function resourceMatcherFromContext(context: LibraryContext): m.ResourceMatcher {
   const pulsarResource = context.pulsarResource;
 
+  if (pulsarResource.type === 'instance') {
+    const instanceMatcher: m.InstanceMatcher = {
+      reactKey: uuid(),
+      type: 'instance-matcher'
+    };
+
+    return instanceMatcher;
+  }
+
+  if (pulsarResource.type === 'tenant') {
+    const tenantMatcher: m.TenantMatcher = {
+      reactKey: uuid(),
+      type: 'tenant-matcher',
+      value: {
+        reactKey: uuid(),
+        type: 'exact-tenant-matcher',
+        tenant: pulsarResource.tenant
+      }
+    };
+
+    return tenantMatcher;
+  }
+
+  if (pulsarResource.type === 'namespace') {
+    const tenantMatcher: m.TenantMatcher = {
+      reactKey: uuid(),
+      type: 'tenant-matcher',
+      value: {
+        reactKey: uuid(),
+        type: 'exact-tenant-matcher',
+        tenant: pulsarResource.tenant
+      }
+    };
+    const namespaceMatcher: m.NamespaceMatcher = {
+      reactKey: uuid(),
+      type: 'namespace-matcher',
+      value: {
+        reactKey: uuid(),
+        type: 'exact-namespace-matcher',
+        tenant: tenantMatcher,
+        namespace: pulsarResource.namespace
+      },
+    };
+
+    return namespaceMatcher;
+  }
+
   if (pulsarResource.type === 'topic') {
     const tenantMatcher: m.TenantMatcher = {
       reactKey: uuid(),
@@ -37,7 +84,6 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
         reactKey: uuid(),
         type: 'exact-topic-matcher',
         namespace: namespaceMatcher,
-        persistency: pulsarResource.topicPersistency,
         topic: pulsarResource.topic
       }
     }
@@ -45,5 +91,5 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
     return topicMatcher;
   }
 
-  throw new Error(`Unsupported Pulsar resource type: ${pulsarResource.type}`);
+  throw new Error(`Unsupported Pulsar resource type: ${(pulsarResource as PulsarResource).type}`);
 }

@@ -1,0 +1,21 @@
+.FormLabel {
+  display: block;
+  margin-bottom: 4rem;
+  font-weight: var(--font-weight-bold);
+  position: relative;
+  display: inline-flex;
+}
+
+.WithHelp {
+  margin-right: 18rem;
+}
+
+.HelpIcon {
+  position: absolute;
+  top: -4rem;
+  right: -20rem;
+}
+
+.Required {
+  transform: translate(0.2ch, -0.8ch);
+}

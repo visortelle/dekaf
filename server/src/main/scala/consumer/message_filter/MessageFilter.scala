@@ -1,12 +1,24 @@
 package consumer.message_filter
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import consumer.message_filter.basic_message_filter.BasicMessageFilter
+import _root_.consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
+import consumer.message_filter.JsMessageFilter
+import consumer.session_runner.TestResult
+import org.graalvm.polyglot.Context
 
 case class MessageFilter(
     isEnabled: Boolean,
     isNegated: Boolean,
-    value: BasicMessageFilter | JsMessageFilter
-)
+    targetField: BasicMessageFilterTarget,
+    filter: BasicMessageFilter | JsMessageFilter
+):
+    def test(polyglotContext: Context): TestResult =
+        val result = filter match
+            case f: BasicMessageFilter => f.test(polyglotContext, targetField)
+            case f: JsMessageFilter => f.test(polyglotContext, targetField)
+
+        result
 
 object MessageFilter:
     def fromPb(v: pb.MessageFilter): MessageFilter =
@@ -15,7 +27,8 @@ object MessageFilter:
                 MessageFilter(
                     isEnabled = v.isEnabled,
                     isNegated = v.isNegated,
-                    value = JsMessageFilter.fromPb(jsFilter)
+                    targetField = BasicMessageFilterTarget.fromPb(v.targetField.get),
+                    filter = JsMessageFilter.fromPb(jsFilter)
                 )
             )
             .getOrElse(
@@ -24,19 +37,21 @@ object MessageFilter:
                         MessageFilter(
                             isEnabled = v.isEnabled,
                             isNegated = v.isNegated,
-                            value = BasicMessageFilter.fromPb(basicFilter)
+                            targetField = BasicMessageFilterTarget.fromPb(v.targetField.get),
+                            filter = BasicMessageFilter.fromPb(basicFilter)
                         )
                     )
                     .getOrElse(throw new IllegalArgumentException("Invalid message filter"))
             )
 
     def toPb(v: MessageFilter): pb.MessageFilter =
-        v match
-            case MessageFilter(isEnabled, isNegated, messageFilter: BasicMessageFilter) =>
-                pb.MessageFilter(
-                    isEnabled = isEnabled,
-                    isNegated = isNegated,
-                    filter = pb.MessageFilter.Filter.FilterBasic(BasicMessageFilter.toPb(messageFilter))
-                )
-            case MessageFilter(isEnabled, isNegated, messageFilter: JsMessageFilter) =>
-                pb.MessageFilter(isEnabled = isEnabled, isNegated = isNegated, filter = pb.MessageFilter.Filter.FilterJs(JsMessageFilter.toPb(messageFilter)))
+        pb.MessageFilter(
+            isEnabled = v.isEnabled,
+            isNegated = v.isNegated,
+            targetField = Some(BasicMessageFilterTarget.toPb(v.targetField)),
+            filter = v.filter match
+                case f: BasicMessageFilter =>
+                    pb.MessageFilter.Filter.FilterBasic(BasicMessageFilter.toPb(f))
+                case f: JsMessageFilter =>
+                    pb.MessageFilter.Filter.FilterJs(JsMessageFilter.toPb(f))
+        )

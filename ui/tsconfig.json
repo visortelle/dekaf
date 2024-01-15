@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
   },
   "include": ["**/*.ts", "**/*.tsx", "scripts/generate-json-schema.js"],
   "exclude": ["node_modules"]

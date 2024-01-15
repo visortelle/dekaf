@@ -1,0 +1,9 @@
+.SvgIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.SvgIcon svg:focus {
+  outline: none;
+}

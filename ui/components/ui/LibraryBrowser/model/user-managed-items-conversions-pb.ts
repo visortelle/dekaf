@@ -2,8 +2,6 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/manage
 import * as consumerPb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import * as t from "./user-managed-items";
 import {
-  messageFilterFromPb,
-  messageFilterToPb,
   messageFilterChainModeFromPb,
   messageFilterChainModeToPb,
   dateTimeUnitFromPb,
@@ -30,13 +28,19 @@ import {
   consumerSessionEventUnexpectedErrorOccurredToPb,
   consumerSessionPauseTriggerChainModeFromPb,
   consumerSessionPauseTriggerChainModeToPb,
-} from "../../../TopicPage/Messages/conversions";
+  jsMessageFilterFromPb,
+  jsMessageFilterToPb,
+} from "../../ConsumerSession/conversions/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
+import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "../../ConsumerSession/conversions/basic-message-filter-conversions";
+import { Int32Value } from "google-protobuf/google/protobuf/wrappers_pb";
 
 export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType {
   switch (v) {
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG: return "consumer-session-config";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET: return "consumer-session-target";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR: return "topic-selector";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM: return "consumer-session-start-from";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN: return "consumer-session-pause-trigger-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
@@ -44,6 +48,10 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN: return "message-filter-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE: return "coloring-rule";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN: return "coloring-rule-chain";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT: return "markdown-document";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET: return "basic-message-filter-target";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION: return "value-projection";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST: return "value-projection-list";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -51,6 +59,8 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
 export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
   switch (v) {
     case "consumer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG;
+    case "consumer-session-target": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET;
+    case "topic-selector": return pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR;
     case "consumer-session-start-from": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM;
     case "consumer-session-pause-trigger-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN;
     case "producer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;
@@ -58,6 +68,10 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "message-filter-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN;
     case "coloring-rule": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE;
     case "coloring-rule-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN;
+    case "markdown-document": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT;
+    case "basic-message-filter-target": return pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET;
+    case "value-projection": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION;
+    case "value-projection-list": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -518,12 +532,44 @@ export function managedConsumerSessionPauseTriggerChainValOrRefToPb(v: t.Managed
 }
 
 export function managedMessageFilterSpecFromPb(v: pb.ManagedMessageFilterSpec): t.ManagedMessageFilterSpec {
-  return messageFilterFromPb(v.getMessageFilter()!)
+  let filter: t.ManagedMessageFilterSpec['filter'];
+  switch (v.getFilterCase()) {
+    case pb.ManagedMessageFilterSpec.FilterCase.FILTER_BASIC: {
+      filter = basicMessageFilterFromPb(v.getFilterBasic()!)
+      break;
+    }
+    case pb.ManagedMessageFilterSpec.FilterCase.FILTER_JS: {
+      filter = jsMessageFilterFromPb(v.getFilterJs()!)
+      break;
+    }
+    default: throw new Error(`Unable to convert ManagedMessageFilterSpec. Unknown filter type. ${v.getFilterCase()}`)
+  }
+
+  return {
+    isEnabled: v.getIsEnabled(),
+    isNegated: v.getIsNegated(),
+    targetField: managedBasicMessageFilterTargetValOrRefFromPb(v.getTargetField()!),
+    filter
+  }
 }
 
 export function managedMessageFilterSpecToPb(v: t.ManagedMessageFilterSpec): pb.ManagedMessageFilterSpec {
   const specPb = new pb.ManagedMessageFilterSpec();
-  specPb.setMessageFilter(messageFilterToPb(v));
+  specPb.setIsEnabled(v.isEnabled);
+  specPb.setIsNegated(v.isNegated);
+  specPb.setTargetField(managedBasicMessageFilterTargetValOrRefToPb(v.targetField));
+
+  switch (v.filter.type) {
+    case "BasicMessageFilter": {
+      specPb.setFilterBasic(basicMessageFilterToPb(v.filter));
+      break;
+    }
+    case "JsMessageFilter": {
+      specPb.setFilterJs(jsMessageFilterToPb(v.filter));
+      break;
+    }
+  }
+
   return specPb;
 }
 
@@ -722,6 +768,196 @@ export function managedTopicSelectorValOrRefToPb(v: t.ManagedTopicSelectorValOrR
   return valOrRefPb;
 }
 
+export function managedBasicMessageFilterTargetSpecFromPb(v: pb.ManagedBasicMessageFilterTargetSpec): t.ManagedBasicMessageFilterTargetSpec {
+  return {
+    target: basicMessageFilterTargetFromPb(v.getTarget()!)
+  }
+}
+
+export function managedBasicMessageFilterTargetSpecToPb(v: t.ManagedBasicMessageFilterTargetSpec): pb.ManagedBasicMessageFilterTargetSpec {
+  const specPb = new pb.ManagedBasicMessageFilterTargetSpec();
+  specPb.setTarget(basicMessageFilterTargetToPb(v.target));
+
+  return specPb;
+}
+
+export function managedBasicMessageFilterTargetFromPb(v: pb.ManagedBasicMessageFilterTarget): t.ManagedBasicMessageFilterTarget {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedBasicMessageFilterTargetSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedBasicMessageFilterTargetToPb(v: t.ManagedBasicMessageFilterTarget): pb.ManagedBasicMessageFilterTarget {
+  const selectorPb = new pb.ManagedBasicMessageFilterTarget();
+  selectorPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  selectorPb.setSpec(managedBasicMessageFilterTargetSpecToPb(v.spec));
+  return selectorPb;
+}
+
+export function managedBasicMessageFilterTargetValOrRefFromPb(v: pb.ManagedBasicMessageFilterTargetValOrRef): t.ManagedBasicMessageFilterTargetValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedBasicMessageFilterTargetValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedBasicMessageFilterTargetFromPb(v.getVal()!)
+      };
+    case pb.ManagedBasicMessageFilterTargetValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedBasicMessageFilterTargetValOrRef: ${v}`);
+  }
+}
+
+export function managedBasicMessageFilterTargetValOrRefToPb(v: t.ManagedBasicMessageFilterTargetValOrRef): pb.ManagedBasicMessageFilterTargetValOrRef {
+  const valOrRefPb = new pb.ManagedBasicMessageFilterTargetValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRefPb.setVal(managedBasicMessageFilterTargetToPb(v.val));
+      break;
+    case 'reference':
+      valOrRefPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedBasicMessageFilterTargetValOrRef: ${v}`);
+  }
+  return valOrRefPb;
+}
+
+export function managedValueProjectionSpecFromPb(v: pb.ManagedValueProjectionSpec): t.ManagedValueProjectionSpec {
+  return {
+    isEnabled: v.getIsEnabled(),
+    target: managedBasicMessageFilterTargetValOrRefFromPb(v.getTargetField()!),
+    width: v.getWidth()?.getValue(),
+    shortName: v.getShortName()
+  }
+}
+
+export function managedValueProjectionSpecToPb(v: t.ManagedValueProjectionSpec): pb.ManagedValueProjectionSpec {
+  const specPb = new pb.ManagedValueProjectionSpec();
+
+  specPb.setIsEnabled(v.isEnabled);
+  specPb.setTargetField(managedBasicMessageFilterTargetValOrRefToPb(v.target));
+  specPb.setShortName(v.shortName);
+
+  if (v.width !== undefined) {
+    specPb.setWidth(new Int32Value().setValue(v.width));
+  }
+
+  return specPb;
+}
+
+export function managedValueProjectionFromPb(v: pb.ManagedValueProjection): t.ManagedValueProjection {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedValueProjectionSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedValueProjectionToPb(v: t.ManagedValueProjection): pb.ManagedValueProjection {
+  const selectorPb = new pb.ManagedValueProjection();
+  selectorPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  selectorPb.setSpec(managedValueProjectionSpecToPb(v.spec));
+  return selectorPb;
+}
+
+export function managedValueProjectionValOrRefFromPb(v: pb.ManagedValueProjectionValOrRef): t.ManagedValueProjectionValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedValueProjectionValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedValueProjectionFromPb(v.getVal()!)
+      };
+    case pb.ManagedValueProjectionValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedValueProjectionValOrRef: ${v}`);
+  }
+}
+
+export function managedValueProjectionValOrRefToPb(v: t.ManagedValueProjectionValOrRef): pb.ManagedValueProjectionValOrRef {
+  const valOrRefPb = new pb.ManagedValueProjectionValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRefPb.setVal(managedValueProjectionToPb(v.val));
+      break;
+    case 'reference':
+      valOrRefPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedValueProjectionValOrRef: ${v}`);
+  }
+  return valOrRefPb;
+}
+
+export function managedValueProjectionListSpecFromPb(v: pb.ManagedValueProjectionListSpec): t.ManagedValueProjectionListSpec {
+  return {
+    isEnabled: v.getIsEnabled(),
+    projections: v.getProjectionsList().map(managedValueProjectionValOrRefFromPb)
+  }
+}
+
+export function managedValueProjectionListSpecToPb(v: t.ManagedValueProjectionListSpec): pb.ManagedValueProjectionListSpec {
+  const specPb = new pb.ManagedValueProjectionListSpec();
+
+  specPb.setIsEnabled(v.isEnabled);
+  specPb.setProjectionsList(v.projections.map(managedValueProjectionValOrRefToPb));
+
+  return specPb;
+}
+
+export function managedValueProjectionListFromPb(v: pb.ManagedValueProjectionList): t.ManagedValueProjectionList {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedValueProjectionListSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedValueProjectionListToPb(v: t.ManagedValueProjectionList): pb.ManagedValueProjectionList {
+  const selectorPb = new pb.ManagedValueProjectionList();
+  selectorPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  selectorPb.setSpec(managedValueProjectionListSpecToPb(v.spec));
+  return selectorPb;
+}
+
+export function managedValueProjectionListValOrRefFromPb(v: pb.ManagedValueProjectionListValOrRef): t.ManagedValueProjectionListValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedValueProjectionListValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedValueProjectionListFromPb(v.getVal()!)
+      };
+    case pb.ManagedValueProjectionListValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedValueProjectionListValOrRef: ${v}`);
+  }
+}
+
+export function managedValueProjectionListValOrRefToPb(v: t.ManagedValueProjectionListValOrRef): pb.ManagedValueProjectionListValOrRef {
+  const valOrRefPb = new pb.ManagedValueProjectionListValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRefPb.setVal(managedValueProjectionListToPb(v.val));
+      break;
+    case 'reference':
+      valOrRefPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedValueProjectionListValOrRef: ${v}`);
+  }
+  return valOrRefPb;
+}
+
 export function managedColoringRuleSpecFromPb(v: pb.ManagedColoringRuleSpec): t.ManagedColoringRuleSpec {
   return {
     isEnabled: v.getIsEnabled(),
@@ -852,6 +1088,7 @@ export function managedConsumerSessionTargetSpecFromPb(v: pb.ManagedConsumerSess
     topicSelector: managedTopicSelectorValOrRefFromPb(v.getTopicSelector()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
+    valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!)
   };
 }
 
@@ -860,6 +1097,7 @@ export function managedConsumerSessionTargetSpecToPb(v: t.ManagedConsumerSession
   specPb.setTopicSelector(managedTopicSelectorValOrRefToPb(v.topicSelector));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
   specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
+  specPb.setValueProjectionList(managedValueProjectionListValOrRefToPb(v.valueProjectionList));
   return specPb;
 }
 
@@ -916,6 +1154,7 @@ export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSess
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
     pauseTriggerChain: managedConsumerSessionPauseTriggerChainValOrRefFromPb(v.getPauseTriggerChain()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
+    valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!)
   };
 }
 
@@ -926,6 +1165,7 @@ export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSession
   specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
   specPb.setPauseTriggerChain(managedConsumerSessionPauseTriggerChainValOrRefToPb(v.pauseTriggerChain));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
+  specPb.setValueProjectionList(managedValueProjectionListValOrRefToPb(v.valueProjectionList));
 
   return specPb;
 }
@@ -976,6 +1216,65 @@ export function managedConsumerSessionConfigValOrRefToPb(v: t.ManagedConsumerSes
   return idPb;
 }
 
+export function managedMarkdownDocumentSpecFromPb(v: pb.ManagedMarkdownDocumentSpec): t.ManagedMarkdownDocumentSpec {
+  return {
+    markdown: v.getMarkdown()
+  };
+}
+
+export function managedMarkdownDocumentSpecToPb(v: t.ManagedMarkdownDocumentSpec): pb.ManagedMarkdownDocumentSpec {
+  const specPb = new pb.ManagedMarkdownDocumentSpec();
+  specPb.setMarkdown(v.markdown);
+
+  return specPb;
+}
+
+export function managedMarkdownDocumentFromPb(v: pb.ManagedMarkdownDocument): t.ManagedMarkdownDocument {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedMarkdownDocumentSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedMarkdownDocumentToPb(v: t.ManagedMarkdownDocument): pb.ManagedMarkdownDocument {
+  const configPb = new pb.ManagedMarkdownDocument();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedMarkdownDocumentSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedMarkdownDocumentValOrRefFromPb(v: pb.ManagedMarkdownDocumentValOrRef): t.ManagedMarkdownDocumentValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMarkdownDocumentValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedMarkdownDocumentFromPb(v.getVal()!)
+      };
+    case pb.ManagedMarkdownDocumentValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedMarkdownDocumentValOrRef: ${v}`);
+  }
+}
+
+export function managedMarkdownDocumentValOrRefToPb(v: t.ManagedMarkdownDocumentValOrRef): pb.ManagedMarkdownDocumentValOrRef {
+  const idPb = new pb.ManagedMarkdownDocumentValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedMarkdownDocumentToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedMarkdownDocumentValOrRef: ${v}`);
+  }
+  return idPb;
+}
+
 export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
   switch (v.getSpecCase()) {
     case pb.ManagedItem.SpecCase.SPEC_MESSAGE_ID:
@@ -1004,6 +1303,14 @@ export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
       return managedConsumerSessionTargetFromPb(v.getSpecConsumerSessionTarget()!);
     case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_CONFIG:
       return managedConsumerSessionConfigFromPb(v.getSpecConsumerSessionConfig()!);
+    case pb.ManagedItem.SpecCase.SPEC_MARKDOWN_DOCUMENT:
+      return managedMarkdownDocumentFromPb(v.getSpecMarkdownDocument()!);
+    case pb.ManagedItem.SpecCase.SPEC_BASIC_MESSAGE_FILTER_TARGET:
+      return managedBasicMessageFilterTargetFromPb(v.getSpecBasicMessageFilterTarget()!);
+    case pb.ManagedItem.SpecCase.SPEC_VALUE_PROJECTION:
+      return managedValueProjectionFromPb(v.getSpecValueProjection()!);
+    case pb.ManagedItem.SpecCase.SPEC_VALUE_PROJECTION_LIST:
+      return managedValueProjectionListFromPb(v.getSpecValueProjectionList()!);
     default:
       throw new Error(`Unknown ManagedItem: ${v}`);
   }
@@ -1056,12 +1363,28 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
       itemPb.setSpecConsumerSessionPauseTriggerChain(managedConsumerSessionPauseTriggerChainToPb(v as t.ManagedConsumerSessionPauseTriggerChain));
       break;
     }
-    case "consumer-session-topic": {
+    case "consumer-session-target": {
       itemPb.setSpecConsumerSessionTarget(managedConsumerSessionTargetToPb(v as t.ManagedConsumerSessionTarget));
       break;
     }
     case "consumer-session-config": {
       itemPb.setSpecConsumerSessionConfig(managedConsumerSessionConfigToPb(v as t.ManagedConsumerSessionConfig));
+      break;
+    }
+    case "markdown-document": {
+      itemPb.setSpecMarkdownDocument(managedMarkdownDocumentToPb(v as t.ManagedMarkdownDocument));
+      break;
+    }
+    case "basic-message-filter-target": {
+      itemPb.setSpecBasicMessageFilterTarget(managedBasicMessageFilterTargetToPb(v as t.ManagedBasicMessageFilterTarget));
+      break;
+    }
+    case "value-projection": {
+      itemPb.setSpecValueProjection(managedValueProjectionToPb(v as t.ManagedValueProjection));
+      break;
+    }
+    case "value-projection-list": {
+      itemPb.setSpecValueProjectionList(managedValueProjectionListToPb(v as t.ManagedValueProjectionList));
       break;
     }
   }

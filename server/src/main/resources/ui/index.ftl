@@ -30,14 +30,18 @@
       pulsarName: '${pulsarName}',
       pulsarColor: '${pulsarColor}',
       pulsarBrokerUrl: '${pulsarBrokerUrl}',
-      pulsarHttpUrl: '${pulsarHttpUrl}',
+      pulsarWebUrl: '${pulsarWebUrl}',
 
       buildInfo: {
         name: '${buildInfo.name}',
         version: '${buildInfo.version}',
         builtAtString: '${buildInfo.builtAtString}',
-        builtAtMillis: '${buildInfo.builtAtMillis}',
-      }
+        builtAtMillis: ${buildInfo.builtAtMillis?c},
+      },
+
+      productCode: ${productCode},
+      productName: '${productName}',
+      licenseId: '${licenseId}'
     };
 
     pulsarUiEntrypoint.renderApp(document.getElementById('pulsar-ui-root'), config);

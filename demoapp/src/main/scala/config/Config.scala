@@ -22,23 +22,34 @@ case class JwtConfig(token: String)
 case class AuthConfig(oauth2: Option[OAuth2Config], jwt: Option[JwtConfig])
 
 case class Config(
-    brokerServiceUrl: String,
-    webServiceUrl: String,
-    auth: Option[AuthConfig] = None
+    pulsarBrokerUrl: Option[String],
+    pulsarWebUrl: Option[String],
+    auth: Option[AuthConfig]
 )
 
 val defaultConfig = Config(
-    brokerServiceUrl = "pulsar://localhost:6650",
-    webServiceUrl = "http://localhost:8080",
+    pulsarBrokerUrl = Some("pulsar://localhost:6650"),
+    pulsarWebUrl = Some("http://localhost:8080"),
     auth = None
 )
 
-val configDescriptor = descriptor[Config].default(defaultConfig)
-
-val configSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
+val yamlConfigDescriptor = descriptor[Config]
+val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_DEMOAPP_${toUpperSnakeCase(key)}")
 
 def readConfig =
-    for config <- read(configDescriptor from configSource)
+    for
+        yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
+        envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
+        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).orElseSucceed(defaultConfig)
+        envConfig <- read(envConfigDescriptor.from(envConfigSource))
+        defaultConfig <- ZIO.succeed(defaultConfig)
+
+        config <- ZIO.succeed {
+            mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig))
+        }
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))
+
+def toUpperSnakeCase(s: String) =
+    s.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z\\d])([A-Z])", "$1_$2").toUpperCase

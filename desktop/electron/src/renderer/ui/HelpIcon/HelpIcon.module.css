@@ -1,0 +1,15 @@
+.HelpIcon svg {
+  width: 16rem;
+  height: 16rem;
+  fill: var(--accent-color-blue);
+}
+
+.HelpIcon:hover {
+  cursor: help;
+  position: relative;
+}
+
+.HelpIcon * {
+  display: inline;
+  vertical-align: middle;
+}

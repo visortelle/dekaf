@@ -1,0 +1,70 @@
+.Root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.73);
+}
+
+.Root:focus {
+  outline: none;
+}
+
+.ContentContainer {
+  border-radius: 12rem;
+  overflow: hidden;
+  box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
+  background-color: #fff;
+}
+
+.Content {
+  padding: 12rem 24rem;
+  max-height: calc(100vh - 96rem);
+  overflow: auto;
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
+}
+
+.TopBar {
+  height: 72rem;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.Content.NoContentPadding {
+  padding: 0;
+}
+
+.TopBarTitle {
+  padding-left: 24rem;
+}
+
+.TopBarClose {
+  width: 32rem;
+  height: 32rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12rem;
+}
+
+.TopBarClose:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.TopBarClose svg {
+  width: 24rem;
+  height: 24rem;
+  fill: var(--text-color);
+}

@@ -1,0 +1,5 @@
+.LocalPulsarInstanceEditor {
+  width: 800rem;
+  display: flex;
+  flex-direction: column;
+}

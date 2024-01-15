@@ -20,6 +20,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
 import focusIcon from './focus.svg';
+import NothingToShow from '../../NothingToShow/NothingToShow';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -482,7 +483,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           value={filterQuery}
           onChange={v => setFilterQuery(v)}
           clearable={true}
-          focusOnMount={true}
         />
       </div>
       <div className={s.TreeControlButtons}>
@@ -498,7 +498,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             type='regular'
           />
           <SmallButton
-            title="Select Current Resource"
+            title="Show Current Resource"
             svgIcon={focusIcon}
             onClick={() => navigateToPath(props.selectedNodePath)}
             appearance='borderless-semitransparent'
@@ -536,6 +536,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
             ref={itemsContainerRef}
           >
+            {flattenTree.length === 0 && <div style={{ padding: '12rem' }}><NothingToShow /></div>}
             {flattenTree.map(renderTreeItem)}
           </div>
         )}

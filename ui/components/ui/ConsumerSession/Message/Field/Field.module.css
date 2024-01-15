@@ -1,0 +1,41 @@
+.Field {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.FieldName {
+  white-space: nowrap;
+  font-weight: var(--font-weight-bold);
+  font-size: 13rem;
+  width: 18ch;
+  padding-right: 8rem;
+}
+
+.FieldValue {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline;
+  text-align: right;
+}
+
+.ClickableFieldValue:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.FieldValueLink {
+  color: inherit !important;
+}
+
+.FieldValueLink:hover {
+  text-decoration: underline;
+}
+
+.NoData {
+  color: #aaa;
+}
+

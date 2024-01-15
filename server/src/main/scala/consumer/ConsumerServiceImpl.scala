@@ -1,5 +1,6 @@
 package consumer
 
+import _root_.licensing.{Licensing, ProductCode}
 import _root_.consumer.session_config.ConsumerSessionConfig
 import _root_.pulsar_auth.RequestContext
 import com.google.rpc.code.Code
@@ -38,7 +39,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val sessionName = request.consumerName
-        logger.info(s"Resume consumer session: $sessionName")
+        logger.info(s"Resuming consumer session: $sessionName")
 
         val consumerSession = Option(consumerSessions.get(sessionName)) match
             case Some(consumerSession) => consumerSession
@@ -50,11 +51,18 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val res = ResumeResponse(status = Some(status))
                 responseObserver.onNext(res)
                 responseObserver.onCompleted()
-                return ()
+                return
 
-        consumerSession.resume(
-            grpcResponseObserver = responseObserver,
-        )
+        try {
+            consumerSession.resume(grpcResponseObserver = responseObserver, isDebug = request.isDebug)
+        } catch {
+            case err: Throwable =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val res = ResumeResponse(status = Some(status))
+                responseObserver.onNext(res)
+                responseObserver.onCompleted()
+                return
+        }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(ResumeResponse(status = Some(status)))
@@ -62,6 +70,23 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     override def pause(request: PauseRequest): Future[PauseResponse] =
         val sessionName = request.consumerName
         logger.info(s"Pausing consumer session $sessionName")
+
+        val consumerSession = Option(consumerSessions.get(sessionName)) match
+            case Some(consumerSession) => consumerSession
+            case _ =>
+                val msg = s"No such consumer consumer session: $sessionName"
+                logger.warn(msg)
+
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
+                return Future.successful(PauseResponse(status = Some(status)))
+
+        try {
+            consumerSession.pause()
+        } catch {
+            case err: Throwable =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                return Future.successful(PauseResponse(status = Some(status)))
+        }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(PauseResponse(status = Some(status)))
@@ -102,8 +127,14 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(DeleteConsumerResponse(status = Some(status)))
 
-        consumerSession.stop()
-        consumerSessions.remove(sessionName)
+        try {
+            consumerSession.stop()
+            consumerSessions.remove(sessionName)
+        } catch {
+            case err: Throwable =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                return Future.successful(DeleteConsumerResponse(status = Some(status)))
+        }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
@@ -115,7 +146,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Consumer isn't found: ${request.consumerName}")
                 return Future.successful(RunCodeResponse(status = Some(status)))
 
-        val result = consumerSession.sessionContext.runCode(request.code)
+        val result = consumerSession.sessionContextPool.getContext(0).runCode(request.code)
 
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))
