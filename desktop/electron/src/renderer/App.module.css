@@ -4,7 +4,7 @@
 }
 
 .Logo {
-  padding: 12rem 18rem;
+  padding: 12rem 18rem 12rem 12rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;

@@ -20,7 +20,7 @@ import A from './ui/A/A';
 // Debug
 if (process.env.NODE_ENV === "development") {
   window.electron.ipcRenderer.on(apiChannel, (arg) => {
-    console.debug('Received API event:', arg);
+    // console.debug('Received API event:', arg);
   });
 }
 
