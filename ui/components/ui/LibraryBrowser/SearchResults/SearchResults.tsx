@@ -7,7 +7,6 @@ import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItem
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import partition from 'lodash/partition';
-import { newItemLabel } from '../LibraryBrowser';
 
 export type ExtraLabel = {
   text: string;
@@ -78,11 +77,6 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                 onChange={setSort}
               />
             </div>
-            <DeleteLibraryItemButton
-              itemId={props.selectedItemId}
-              onDeleted={props.onDeleted}
-              isDisabled={Object.values(props.extraLabels).find(el => el.text === newItemLabel) !== undefined}
-            />
           </div>
           {filteredItems.length === 0 && (
             <div className={s.NothingToShow}>
@@ -103,6 +97,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     onClick={() => props.onSelect(id)}
                     selectedItemId={props.selectedItemId}
                     extraLabel={props.extraLabels[id]}
+                    onDeleted={props.onDeleted}
                   />
                 )
               })}
@@ -120,6 +115,7 @@ export type ItemProps = {
   descriptionMarkdown: string;
   updatedAt: string;
   onClick: () => void;
+  onDeleted: () => void;
   selectedItemId?: string;
   extraLabel?: ExtraLabel;
 };
@@ -133,17 +129,21 @@ const Item: React.FC<ItemProps> = (props) => {
       <div className={s.ItemName}>
         {props.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>
-      <div className={s.ItemDescription}>
-        {props.descriptionMarkdown}
-      </div>
       <div className={s.ItemUpdatedAt}>
-        Updated at: {i18n.formatDateTime(new Date(props.updatedAt))}
+        Updated at:<br />{i18n.formatDateTime(new Date(props.updatedAt))}
       </div>
       {props.extraLabel && (
         <div className={s.ItemExtraLabel} style={{ color: props.extraLabel.color }}>
           {props.extraLabel.text}
         </div>
       )}
+      <div className={s.DeleteItemButton}>
+        <DeleteLibraryItemButton
+          itemId={props.id}
+          onDeleted={props.onDeleted}
+          isDisabled={props.name.length === 0}
+        />
+      </div>
     </div>
   );
 }

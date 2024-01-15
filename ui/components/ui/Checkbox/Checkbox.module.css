@@ -8,10 +8,11 @@
 }
 
 .InlineCheckbox {
-  margin-bottom: 0.2em; /* Attempt to compensate line height. */
+  /* Attempt to compensate line height. */
+  margin-bottom: 0.2em;
 }
 
-.Checkbox:hover {
+.Checkbox:not(.ReadOnly):hover {
   cursor: pointer;
 }
 
@@ -47,7 +48,8 @@
   left: 0;
   top: 0;
 
-  pointer-events: none; /* Prevent an additional outline appearing after click on the SVG element in Chromium. */
+  pointer-events: none;
+  /* Prevent an additional outline appearing after click on the SVG element in Chromium. */
 }
 
 .Checked svg {

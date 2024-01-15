@@ -20,6 +20,7 @@
   overflow: hidden;
   box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
   background-color: #fff;
+  max-width: calc(100vw - 24rem);
 }
 
 .Content {

@@ -15,6 +15,10 @@ message ChainTestResult {
   repeated TestResult results = 2;
 }
 
+message ValueProjectionResult {
+  google.protobuf.StringValue display_value = 1;
+}
+
 message Message {
   // Message value as raw bytes.
   google.protobuf.BytesValue raw_value = 4;
@@ -32,10 +36,15 @@ message Message {
   google.protobuf.StringValue debug_stdout = 51;
 
   google.protobuf.Int32Value session_target_index = 52;
+
   repeated ChainTestResult session_color_rule_chain_test_results = 53;
   repeated ChainTestResult session_target_color_rule_chain_test_results = 54;
+
   ChainTestResult session_message_filter_chain_test_result = 55;
   ChainTestResult session_target_message_filter_chain_test_result = 56;
+
+  repeated ValueProjectionResult session_value_projection_list_result = 57;
+  repeated ValueProjectionResult session_target_value_projection_list_result = 58;
 
   map<string, string> properties = 1;
 
@@ -212,10 +221,23 @@ message TopicSelector {
   }
 }
 
+message ValueProjection {
+  bool is_enabled = 4;
+  BasicMessageFilterTarget target_field = 1;
+  string short_name = 2;
+  google.protobuf.Int32Value width = 3;
+}
+
+message ValueProjectionList {
+  bool is_enabled = 2;
+  repeated ValueProjection projections = 1;
+}
+
 message ConsumerSessionTarget {
   TopicSelector topic_selector = 1;
   MessageFilterChain message_filter_chain = 2;
   ColoringRuleChain coloring_rule_chain = 3;
+  ValueProjectionList value_projection_list = 4;
 }
 
 message ConsumerSessionConfig {
@@ -224,6 +246,7 @@ message ConsumerSessionConfig {
   MessageFilterChain message_filter_chain = 3;
   ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
   ColoringRuleChain coloring_rule_chain = 5;
+  ValueProjectionList value_projection_list = 6;
 }
 
 message CreateConsumerRequest {
@@ -244,7 +267,8 @@ message DeleteConsumerResponse {
 }
 
 message JsMessageFilter {
-  string js_code = 1;
+  BasicMessageFilterTarget target = 1;
+  string js_code = 2;
 }
 
 message TestOpAlwaysOk {}
@@ -392,6 +416,16 @@ message BasicMessageFilterSessionContextStateTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
+message JsJsonModifier {
+  string js_code = 50;
+}
+
+message JsonModifier {
+  oneof modifier {
+    JsJsonModifier modifier_js = 1;
+  }
+}
+
 message BasicMessageFilterTarget {
   oneof target {
     BasicMessageFilterKeyTarget target_key = 1;
@@ -399,16 +433,19 @@ message BasicMessageFilterTarget {
     BasicMessageFilterPropertyTarget target_property = 3;
     BasicMessageFilterSessionContextStateTarget target_session_context_state = 4;
   }
+  JsonModifier json_modifier = 50;
 }
 
 message BasicMessageFilter {
-  BasicMessageFilterTarget target = 1;
   BasicMessageFilterOp op = 2;
 }
 
 message MessageFilter {
   bool is_enabled = 10;
   bool is_negated = 11;
+
+  BasicMessageFilterTarget target_field = 12;
+
   oneof filter {
     JsMessageFilter filter_js = 1;
     BasicMessageFilter filter_basic = 2;
@@ -431,6 +468,7 @@ message MessageFilterChain {
 message ResumeRequest {
   string consumer_name = 1;
   bool include_consumer_stats = 2;
+  bool is_debug = 3;
 }
 
 message ConsumerStats {}

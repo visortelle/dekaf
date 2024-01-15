@@ -2,7 +2,7 @@
 .H2,
 .H3 {
   margin: 0;
-  font-weight: 500;
+  font-weight: var(--font-weight-bold);
   position: relative;
   display: inline-flex;
 }

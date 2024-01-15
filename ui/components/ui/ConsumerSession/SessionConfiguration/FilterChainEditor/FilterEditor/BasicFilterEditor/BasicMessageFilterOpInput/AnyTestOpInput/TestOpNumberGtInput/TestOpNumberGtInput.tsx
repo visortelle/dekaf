@@ -1,0 +1,29 @@
+import React from 'react';
+import s from './TestOpNumberGtInput.module.css'
+import { TestOpNumberGt } from '../../../../../../../basic-message-filter-types';
+import FormItem from '../../../../../../../../ConfigurationTable/FormItem/FormItem';
+import Input from '../../../../../../../../Input/Input';
+
+export type TestOpNumberGtInputProps = {
+  value: TestOpNumberGt,
+  onChange: (v: TestOpNumberGt) => void,
+  isReadOnly?: boolean
+};
+
+const TestOpNumberGtInput: React.FC<TestOpNumberGtInputProps> = (props) => {
+  return (
+    <div className={s.TestOpNumberGtInput}>
+      <FormItem>
+        <Input
+          size='small'
+          value={props.value.gt}
+          onChange={(v) => props.onChange({ ...props.value, gt: v })}
+          inputProps={{ type: 'number' }}
+          isReadOnly={props.isReadOnly}
+        />
+      </FormItem>
+    </div>
+  );
+}
+
+export default TestOpNumberGtInput;

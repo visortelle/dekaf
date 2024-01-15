@@ -1,6 +1,6 @@
 package consumer.message_filter.basic_message_filter
 
-import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.{Context, Source, Value}
 import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterTarget, BasicMessageFilterTargetTrait}
 import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
 import consumer.message_filter.basic_message_filter.operations.TestOpTrait
@@ -8,25 +8,28 @@ import consumer.session_runner.{ConsumerSessionContext, CurrentMessageVarName, J
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
 case class BasicMessageFilter(
-    target: BasicMessageFilterTarget,
     op: BasicMessageFilterOp
 ):
-    def test(polyglotContext: Context): TestResult =
-        val opEvalCode = op.genJsFnCode(target.target) + "()"
-        val evalCode =
-            s"""
-               |(() => {
-               |  return ${opEvalCode}
-               |})();
-               |""".stripMargin
+    private var jsFn: Option[Value] = None
 
-//        Don't remove the following lines until the basic filters feature isn't ready
-//        println(s"DEBUG EVAL CODE")
-//        println(evalCode)
+    def test(polyglotContext: Context, target: BasicMessageFilterTarget): TestResult =
+        val opEvalCode = op.genJsFnCode(target) + "()"
 
         val testResult =
             try
-                val isOk = polyglotContext.eval("js", evalCode).asBoolean
+                val isOk = jsFn match
+                    case Some(v) => v.execute().asBoolean()
+                    case None =>
+                        val evalCode =
+                            s"""
+                              |(() => {
+                              |  return $opEvalCode
+                              |});
+                              |""".stripMargin
+                        val fn = polyglotContext.eval("js", evalCode)
+                        jsFn = Some(fn)
+                        fn.execute().asBoolean()
+
                 TestResult(isOk = isOk, error = None)
             catch {
                 case err: Throwable =>
@@ -38,12 +41,10 @@ case class BasicMessageFilter(
 object BasicMessageFilter:
     def fromPb(filter: pb.BasicMessageFilter): BasicMessageFilter =
         BasicMessageFilter(
-            target = BasicMessageFilterTarget.fromPb(filter.target.get),
             op = BasicMessageFilterOp.fromPb(filter.op.get)
         )
 
     def toPb(filter: BasicMessageFilter): pb.BasicMessageFilter =
         pb.BasicMessageFilter(
-            target = Some(BasicMessageFilterTarget.toPb(filter.target)),
             op = Some(BasicMessageFilterOp.toPb(filter.op))
         )

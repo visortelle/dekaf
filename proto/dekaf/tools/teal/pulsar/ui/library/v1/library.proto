@@ -3,12 +3,11 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.library.v1;
 
 import "google/rpc/status.proto";
-import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
 import "tools/teal/pulsar/ui/library/v1/managed_items.proto";
+import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
 
 message LibraryItemMetadata {
   string updated_at = 4;
-  repeated string tags = 8;
   repeated ResourceMatcher available_for_contexts = 9;
 }
 
@@ -44,8 +43,7 @@ message GetLibraryItemResponse {
 
 message ListLibraryItemsRequest {
   repeated ManagedItemType types = 1;
-  repeated string context_fqns = 2;
-  repeated string tags = 3;
+  repeated ResourceMatcher contexts = 2;
 }
 
 message ListLibraryItemsResponse {
@@ -53,9 +51,25 @@ message ListLibraryItemsResponse {
   repeated LibraryItem items = 2; // resource spec is omitted in response to reduce it's size
 }
 
+message GetLibraryItemsCountRequest {
+  repeated ManagedItemType types = 1;
+  repeated ResourceMatcher contexts = 2;
+}
+
+message LibraryItemsCount {
+  ManagedItemType item_type = 1;
+  int64 item_count = 2;
+}
+
+message GetLibraryItemsCountResponse {
+  google.rpc.Status status = 1;
+  repeated LibraryItemsCount item_count_per_type = 2;
+}
+
 service LibraryService {
   rpc SaveLibraryItem(SaveLibraryItemRequest) returns (SaveLibraryItemResponse);
   rpc DeleteLibraryItem(DeleteLibraryItemRequest) returns (DeleteLibraryItemResponse);
   rpc GetLibraryItem(GetLibraryItemRequest) returns (GetLibraryItemResponse);
   rpc ListLibraryItems(ListLibraryItemsRequest) returns (ListLibraryItemsResponse);
+  rpc GetLibraryItemsCount(GetLibraryItemsCountRequest) returns (GetLibraryItemsCountResponse);
 }

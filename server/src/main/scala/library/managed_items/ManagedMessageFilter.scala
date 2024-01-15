@@ -2,21 +2,42 @@ package library.managed_items
 
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 import _root_.consumer.message_filter.MessageFilter
+import _root_.consumer.message_filter.basic_message_filter.BasicMessageFilter
+import _root_.consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
+import _root_.consumer.message_filter.JsMessageFilter
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
+import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 
 case class ManagedMessageFilterSpec(
-    messageFilter: MessageFilter
+    isEnabled: Boolean,
+    isNegated: Boolean,
+    targetField: ManagedBasicMessageFilterTargetValOrRef,
+    filter: BasicMessageFilter | JsMessageFilter
 )
 
 object ManagedMessageFilterSpec:
     def fromPb(v: pb.ManagedMessageFilterSpec): ManagedMessageFilterSpec =
         ManagedMessageFilterSpec(
-            messageFilter = MessageFilter.fromPb(v.messageFilter.get)
+            isEnabled = v.isEnabled,
+            isNegated = v.isNegated,
+            targetField = ManagedBasicMessageFilterTargetValOrRef.fromPb(v.targetField.get),
+            filter = v.filter match
+                case pb.ManagedMessageFilterSpec.Filter.FilterBasic(v) =>
+                    BasicMessageFilter.fromPb(v)
+                case pb.ManagedMessageFilterSpec.Filter.FilterJs(v) =>
+                    JsMessageFilter.fromPb(v)
         )
 
     def toPb(v: ManagedMessageFilterSpec): pb.ManagedMessageFilterSpec =
         pb.ManagedMessageFilterSpec(
-            messageFilter = Some(MessageFilter.toPb(v.messageFilter))
+            isEnabled = v.isEnabled,
+            isNegated = v.isNegated,
+            targetField = Some(ManagedBasicMessageFilterTargetValOrRef.toPb(v.targetField)),
+            filter = v.filter match
+                case f: BasicMessageFilter =>
+                    pb.ManagedMessageFilterSpec.Filter.FilterBasic(BasicMessageFilter.toPb(f))
+                case f: JsMessageFilter =>
+                    pb.ManagedMessageFilterSpec.Filter.FilterJs(JsMessageFilter.toPb(f))
         )
 
 case class ManagedMessageFilter(
@@ -36,7 +57,6 @@ object ManagedMessageFilter:
             metadata = Some(ManagedItemMetadata.toPb(v.metadata)),
             spec = Some(ManagedMessageFilterSpec.toPb(v.spec))
         )
-
 
 case class ManagedMessageFilterValOrRef(
     value: Option[ManagedMessageFilter],

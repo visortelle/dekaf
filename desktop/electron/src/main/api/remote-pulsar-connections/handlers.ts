@@ -106,7 +106,7 @@ export async function handleDeleteRemotePulsarConnection(event: Electron.IpcMain
     const connectionDir = paths.getRemotePulsarConnectionDir(arg.connectionId);
     await fsExtra.remove(connectionDir);
 
-    const dekafDataDir = paths.getDekafDataDir(arg.connectionId);
+    const dekafDataDir = paths.getRemoteConnectionDekafDataDir(arg.connectionId);
     await fsExtra.remove(dekafDataDir);
 
     const req: RemotePulsarConnectionDeleted = {

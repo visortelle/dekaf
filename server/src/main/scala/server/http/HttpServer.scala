@@ -2,7 +2,7 @@ package server.http
 
 import zio.*
 import zio.ZIOAppDefault
-import _root_.config.{readConfig, Config}
+import _root_.config.{Config, readConfig}
 import io.javalin.Javalin
 import io.javalin.rendering.template.JavalinFreemarker
 import io.javalin.http.staticfiles.{Location, StaticFileConfig}
@@ -10,12 +10,16 @@ import io.javalin.http.staticfiles.{Location, StaticFileConfig}
 import scala.jdk.CollectionConverters.*
 import _root_.pulsar_auth
 import io.circe.parser.decode as decodeJson
-import _root_.pulsar_auth.{defaultPulsarAuth, PulsarAuthRoutes}
+import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
 import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
+
 import scala.jdk.CollectionConverters.*
+import _root_.licensing.Licensing
 import _root_.pulsar_auth
-import _root_.pulsar_auth.{credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName, PulsarAuth}
+import _root_.pulsar_auth.{PulsarAuth, credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName}
 import io.circe.parser.decode as decodeJson
+
+import java.text.MessageFormat
 
 object HttpServer:
     private val isBinaryBuild = buildinfo.ExtraBuildInfo.isBinaryBuild
@@ -45,7 +49,10 @@ object HttpServer:
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
                             "pulsarWebUrl" -> appConfig.pulsarWebUrl.get,
                             "pulsarName" -> appConfig.pulsarName.get,
-                            "pulsarColor" -> appConfig.pulsarColor.get
+                            "pulsarColor" -> appConfig.pulsarColor.get,
+                            "productCode" -> Licensing.licenseInfo.productCode.ordinal,
+                            "productName" -> Licensing.licenseInfo.productName,
+                            "licenseId" -> appConfig.licenseId.getOrElse("undefined"),
                         ).asJava
 
                         val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))

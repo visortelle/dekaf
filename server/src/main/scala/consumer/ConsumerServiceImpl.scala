@@ -1,5 +1,6 @@
 package consumer
 
+import _root_.licensing.{Licensing, ProductCode}
 import _root_.consumer.session_config.ConsumerSessionConfig
 import _root_.pulsar_auth.RequestContext
 import com.google.rpc.code.Code
@@ -53,9 +54,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return
 
         try {
-            consumerSession.resume(
-                grpcResponseObserver = responseObserver,
-            )
+            consumerSession.resume(grpcResponseObserver = responseObserver, isDebug = request.isDebug)
         } catch {
             case err: Throwable =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
@@ -147,7 +146,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Consumer isn't found: ${request.consumerName}")
                 return Future.successful(RunCodeResponse(status = Some(status)))
 
-        val result = consumerSession.sessionContext.runCode(request.code)
+        val result = consumerSession.sessionContextPool.getContext(0).runCode(request.code)
 
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))

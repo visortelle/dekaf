@@ -4,27 +4,32 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.session_config.ConsumerSessionConfig
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
+
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import scala.util.boundary, boundary.break
+import consumer.value_projections.ValueProjectionResult
+
+import scala.util.boundary
+import boundary.break
 
 type ConsumerSessionTargetIndex = Int
 
 case class ConsumerSessionRunner(
     sessionName: String,
     sessionConfig: ConsumerSessionConfig,
-    sessionContext: ConsumerSessionContext,
+    sessionContextPool: ConsumerSessionContextPool,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner]
 ) {
     def resume(
-        grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]
+        grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
+        isDebug: Boolean
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
-        def onNext(messageFromTarget: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
+        def onNext(messageFromTarget: Option[ConsumerSessionMessage], sessionContext: ConsumerSessionContext, stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
                 val allErrors = errors ++ additionalErrors
 
@@ -47,8 +52,6 @@ case class ConsumerSessionRunner(
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
                         sessionConfig.messageFilterChain,
-                        msg.messageAsJsonOmittingValue,
-                        msg.messageValueAsJson
                     )
 
                     if !messageFilterChainResult.isOk then
@@ -56,31 +59,40 @@ case class ConsumerSessionRunner(
 
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules
-                            .filter(cr => cr.isEnabled)
+                            .filter(_.isEnabled)
                             .map(cr => sessionContext.testMessageFilterChain(
                                 cr.messageFilterChain,
-                                msg.messageAsJsonOmittingValue,
-                                msg.messageValueAsJson
                             ))
                     else
                         Vector.empty
 
-                    val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
-                    val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
-                    val errors = messageFilterChainErrors ++ coloringRuleChainErrors
+                    val valueProjectionListResult: Vector[ValueProjectionResult] = if sessionConfig.valueProjectionList.isEnabled then
+                        sessionConfig.valueProjectionList.projections
+                            .filter(_.isEnabled)
+                            .map(_.project(sessionContext.context))
+                    else
+                        Vector.empty
+                        
+                    val errors: Vector[String] = if isDebug then
+                        val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
+                        val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
+                        messageFilterChainErrors ++ coloringRuleChainErrors
+                    else Vector.empty
 
                     val messageToSendPb = msg.messagePb
                         .withSessionContextStateJson(sessionContext.getState)
-                        .withDebugStdout(sessionContext.getStdout)
+                        .withDebugStdout(msg._1.debugStdout.getOrElse("") + "\n" + sessionContext.getStdout)
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                        .withSessionValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
 
                     createAndSendResponse(Seq(messageToSendPb), errors)
 
-        targets.values.foreach(_.resume(onNext = onNext))
+        targets.values.foreach(_.resume(onNext = onNext, isDebug = isDebug))
     def pause(): Unit =
         targets.values.foreach(_.pause())
     def stop(): Unit =
+        pause()
         targets.values.foreach(_.stop())
 }
 
@@ -91,7 +103,7 @@ object ConsumerSessionRunner:
         sessionName: String,
         sessionConfig: ConsumerSessionConfig
     ): ConsumerSessionRunner =
-        val sessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = new ByteArrayOutputStream()))
+        val sessionContextPool = ConsumerSessionContextPool()
 
         var targets = sessionConfig.targets.zipWithIndex.map { case (targetConfig, i) =>
             i -> ConsumerSessionTargetRunner.make(
@@ -100,7 +112,7 @@ object ConsumerSessionRunner:
                 pulsarClient = pulsarClient,
                 adminClient = adminClient,
                 schemasByTopic = Map.empty,
-                sessionContext = sessionContext,
+                sessionContextPool = sessionContextPool,
                 targetConfig = targetConfig
             )
         }.toMap
@@ -126,7 +138,7 @@ object ConsumerSessionRunner:
             sessionName = sessionName,
             sessionConfig = sessionConfig,
             schemasByTopic = schemasByTopic,
-            sessionContext = sessionContext,
+            sessionContextPool = sessionContextPool,
             targets = targets,
             grpcResponseObserver = None
         )

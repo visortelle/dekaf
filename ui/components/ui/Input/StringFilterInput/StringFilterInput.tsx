@@ -7,7 +7,8 @@ export type StringFilterInputProps = {
   onChange: (v: string) => void,
   isMatchCase: boolean,
   onIsMatchCaseChange: (v: boolean) => void,
-  size?: InputProps['size']
+  size?: InputProps['size'],
+  isReadOnly?: boolean
 };
 
 const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
@@ -25,6 +26,7 @@ const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
         help: "Match case"
       }]}
       size={props.size}
+      isReadOnly={props.isReadOnly}
     />
   );
 }

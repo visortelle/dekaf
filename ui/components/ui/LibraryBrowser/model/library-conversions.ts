@@ -6,7 +6,6 @@ import { managedItemFromPb, managedItemToPb } from "./user-managed-items-convers
 export function libraryItemMetadataFromPb(v: pb.LibraryItemMetadata): t.LibraryItemMetadata {
   return {
     updatedAt: v.getUpdatedAt(),
-    tags: v.getTagsList(),
     availableForContexts: v.getAvailableForContextsList().map(resourceMatcherFromPb),
   };
 }
@@ -14,7 +13,6 @@ export function libraryItemMetadataFromPb(v: pb.LibraryItemMetadata): t.LibraryI
 export function libraryItemMetadataToPb(v: t.LibraryItemMetadata): pb.LibraryItemMetadata {
   const metadataPb = new pb.LibraryItemMetadata();
   metadataPb.setUpdatedAt(v.updatedAt);
-  metadataPb.setTagsList(v.tags);
   metadataPb.setAvailableForContextsList(v.availableForContexts.map(resourceMatcherToPb));
   return metadataPb;
 }
