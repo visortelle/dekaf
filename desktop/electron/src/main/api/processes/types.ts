@@ -107,3 +107,8 @@ export type ProcessLogEntryReceived = {
   type: "ProcessLogEntryReceived",
   entry: LogEntry
 };
+
+export type DekafWindowClosed = {
+  type: "DekafWindowClosed",
+  processId: string
+};

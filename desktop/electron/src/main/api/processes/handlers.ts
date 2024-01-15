@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
+import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, DekafWindowClosed, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
@@ -97,8 +97,8 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
       win.maximize();
     });
     win.on('close', () => {
-      const req: KillProcess = {
-        type: "KillProcess",
+      const req: DekafWindowClosed = {
+        type: "DekafWindowClosed",
         processId
       };
       sendMessage(apiChannel, req);
