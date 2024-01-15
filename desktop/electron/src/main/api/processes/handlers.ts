@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, DekafWindowClosed, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
+import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, ActiveWindows, DekafRuntimeConfig, DekafToPulsarConnection, DekafWindowClosed, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
@@ -43,6 +43,7 @@ function appendLog(processId: ProcessId, entry: LogEntry, event: Electron.IpcMai
 
 const activeProcesses: ActiveProcesses = {};
 const activeChildProcesses: ActiveChildProcesses = {};
+const activeWindows: ActiveWindows = {};
 
 function getProcessStatus(processId: ProcessId): ProcessStatus | undefined {
   return activeProcesses[processId].status;
@@ -51,6 +52,7 @@ function getProcessStatus(processId: ProcessId): ProcessStatus | undefined {
 function deleteProcess(processId: ProcessId) {
   delete activeProcesses[processId];
   delete activeChildProcesses[processId];
+  delete activeWindows[processId];
   delete processLogs[processId];
 
   const req: GetActiveProcessesResult = {
@@ -91,6 +93,9 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
       show: false,
       backgroundColor: '#f5f5f5',
     });
+
+    activeWindows[processId] = win;
+
     win.loadURL(url);
     win.once('ready-to-show', () => {
       win.show();
@@ -102,6 +107,7 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
         processId
       };
       sendMessage(apiChannel, req);
+      delete activeWindows[processId];
     })
   }
 }
@@ -204,6 +210,11 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     return;
   }
 
+  const win = activeWindows[arg.processId];
+  if (win !== undefined && !win.isDestroyed()) {
+    win.close();
+  }
+
   proc.childProcess.kill();
 
   updateProcessStatus(arg.processId, 'stopping');
@@ -236,6 +247,20 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   await fsExtra.ensureDir(instancePaths.metadataDir);
   await fsExtra.ensureDir(path.dirname(instancePaths.functionsWorkerConfPath));
   await fsExtra.ensureDir(path.dirname(instancePaths.standaloneConfPath));
+
+  // // XXX - maybe not a good idea to always remove ledgers LOCK before start
+  // const ledgersLock = path.join(instancePaths.bookkeeperDir, 'current', 'ledgers', 'LOCK');
+  // if (fs.existsSync(ledgersLock)) {
+  //   console.info(`Removing ledgers LOCK file at ${ledgersLock}`);
+  //   await fsExtra.removeSync(ledgersLock);
+  // }
+
+  // // XXX - maybe not a good idea to always remove metadata LOCK before start
+  // const metadataLock = path.join(instancePaths.metadataDir, 'LOCK');
+  // if (fs.existsSync(metadataLock)) {
+  //   console.info(`Removing metadata LOCK file at ${metadataLock}`);
+  //   await fsExtra.removeSync(metadataLock);
+  // }
 
   const instanceConfig = await getInstanceConfig(instanceId);
 

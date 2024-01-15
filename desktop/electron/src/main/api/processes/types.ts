@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
+import { BrowserWindow } from "electron";
 
 export type ProcessId = string;
 
@@ -60,6 +61,8 @@ export type ActiveChildProcess = {
   childProcess: ChildProcessWithoutNullStreams,
 };
 export type ActiveChildProcesses = Record<ProcessId, ActiveChildProcess>;
+
+export type ActiveWindows = Record<ProcessId, BrowserWindow>;
 
 export type ProcessLogs = Record<ProcessId, LogEntry[]>;
 

@@ -94,6 +94,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
   }
 
   const killAll = () => {
+    console.log('dek', dekafProcessId, dekafDemoappProcessId)
     if (dekafProcessId === undefined && dekafDemoappProcessId === undefined) {
       killPulsar();
       return;
@@ -148,7 +149,9 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     }
 
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
+      console.log('A')
       if (arg.type === "DekafWindowClosed" && arg.processId === dekafProcessId) {
+        console.log('B', arg.processId)
         killAll();
       }
     });
@@ -233,9 +236,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     (pulsarProcessStatus !== undefined && pulsarProcessStatus !== 'unknown') ||
     (dekafDemoappProcessStatus !== undefined && dekafDemoappProcessStatus !== 'unknown');
 
-  // // console.log('isshow', isShowProcessStatuses, dekafProcessStatus, pulsarProcessStatus, dekafDemoappProcessStatus);
-  // console.log('isRunning', isRunning, 'isFailed', isFailed, 'isStopping', isStopping);
-
   return (
     <div className={s.LocalPulsarInstanceElement}>
       <div className={s.Name}>
@@ -310,7 +310,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
         {(!isRunning && !isFailed && !isStopping) && <SmallButton
           type='primary'
-          text='Connect'
+          text='Start and Connect'
           disabled={(isRunning && !isReady) || isMissingPulsarDistribution}
           onClick={() => {
             const pulsarReq: SpawnProcess = {
@@ -341,7 +341,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
         {(isRunning || isStopping || isFailed) && <SmallButton
           type='danger'
-          text='Stop and disconnect'
+          text='Stop and Disconnect'
           disabled={isStopping}
           onClick={killAll}
         />}
