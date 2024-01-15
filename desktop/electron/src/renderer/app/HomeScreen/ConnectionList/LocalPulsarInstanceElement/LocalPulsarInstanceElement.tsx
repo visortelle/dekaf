@@ -94,7 +94,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
   }
 
   const killAll = () => {
-    console.log('dek', dekafProcessId, dekafDemoappProcessId)
     if (dekafProcessId === undefined && dekafDemoappProcessId === undefined) {
       killPulsar();
       return;
@@ -149,9 +148,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     }
 
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
-      console.log('A')
       if (arg.type === "DekafWindowClosed" && arg.processId === dekafProcessId) {
-        console.log('B', arg.processId)
         killAll();
       }
     });

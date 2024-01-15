@@ -15,6 +15,7 @@ import { LogSource } from '../../../../ui/LogsView/ProcessLogsView/ProcessLogsVi
 import ProcessLogsViewButton from '../../../../ui/LogsView/ProcessLogsViewButton/ProcessLogsViewButton';
 import EditRemotePulsarConnectionButton from './EditRemotePulsarConnectionButton/EditRemotePulsarConnectionButton';
 import DeleteLocalPulsarInstanceButton from '../LocalPulsarInstanceElement/DeleteLocalPulsarInstanceButton/DeleteLocalPulsarInstanceButton';
+import DeleteRemotePulsarConnectionButton from './DeleteRemotePulsarConnectionButton/DeleteRemotePulsarConnectionButton';
 
 export type RemotePulsarConnectionElementProps = {
   connection: RemotePulsarConnection
@@ -26,6 +27,24 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
   const [dekafProcessStatus, setDekafProcessStatus] = useState<ProcessStatus | undefined>(undefined);
   const [dekafLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
   const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
+
+  const killAll = () => {
+    if (dekafProcessId === undefined) {
+      return;
+    }
+
+    const req: KillProcess = { type: "KillProcess", processId: dekafProcessId };
+    window.electron.ipcRenderer.sendMessage(apiChannel, req);
+  }
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
+      if (arg.type === "DekafWindowClosed" && arg.processId === dekafProcessId) {
+        killAll();
+      }
+    });
+  }, [dekafProcessId]);
+
 
   useEffect(() => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
@@ -56,7 +75,7 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
       case undefined: return <NoData />;
       case "unknown": return <NoData />;
       case "starting": return "starting...";
-      case "alive": return "starting...";
+      case "alive": return "alive...";
       case "stopping": return "stopping...";
       default: return status;
     }
@@ -64,19 +83,17 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
 
   const isShowProcessStatuses = dekafProcessStatus !== undefined && dekafProcessStatus !== 'unknown';
 
-  console.log('is show', isShowProcessStatuses, dekafProcessStatus)
-
   return (
     <div className={s.RemotePulsarConnectionElement}>
       <H3>{props.connection.metadata.name}</H3>
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.connection.metadata.lastUsedAt))}</div>
 
-      {isShowProcessStatuses && (
+      <div style={{ display: isShowProcessStatuses ? 'block' : 'none' }}>
         <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
           <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
           <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
         </div>
-      )}
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
         {!isRunning && <SmallButton
@@ -116,19 +133,10 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
         />}
 
         {isRunning && <SmallButton
-          type='regular'
+          type='danger'
           text='Disconnect'
           disabled={(setDekafProcessId === undefined) || isStopping}
-          onClick={() => {
-            [dekafProcessId].forEach(processId => {
-              if (processId === undefined) {
-                return;
-              }
-
-              const req: KillProcess = { type: "KillProcess", processId };
-              window.electron.ipcRenderer.sendMessage(apiChannel, req);
-            });
-          }}
+          onClick={killAll}
         />}
 
         <ProcessLogsViewButton
@@ -137,7 +145,7 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
         />
 
         <EditRemotePulsarConnectionButton connectionId={props.connection.metadata.id} disabled={isRunning} />
-        <DeleteLocalPulsarInstanceButton instanceId={props.connection.metadata.id} instanceName={props.connection.metadata.name} disabled={isRunning} />
+        <DeleteRemotePulsarConnectionButton connectionId={props.connection.metadata.id} connectionName={props.connection.metadata.name} disabled={isRunning} />
       </div>
     </div>
   );
