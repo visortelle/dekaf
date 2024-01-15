@@ -1,23 +1,23 @@
 .LibraryBrowser {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  height: calc(100vh - 120rem);
+  display: grid;
+  grid-template-rows: 1fr max-content;
 }
 
 .Content {
-  display: flex;
   overflow: hidden;
+  display: grid;
 }
 
 .SearchEditor {
-  width: 360rem;
+  flex: 1 0 360rem;
   border-right: 1px solid var(--border-color);
-  padding: 12rem 24rem 48rem 24rem;
+  padding: 12rem 12rem 48rem 24rem;
   overflow: auto;
 }
 
 .SearchResults {
-  width: 480rem;
+  flex: 1 0 420rem;
   border-right: 1px solid var(--border-color);
   overflow: hidden;
   display: flex;
@@ -30,14 +30,17 @@
 
 .LibraryItemEditor {
   overflow: auto;
-  width: 480rem;
+  min-width: 480rem;
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
 }
 
 .Footer {
   display: flex;
   height: 64rem;
   padding: 12rem;
-  flex: 1 0 auto;
   align-items: center;
   justify-content: flex-end;
   background-color: var(--surface-color);

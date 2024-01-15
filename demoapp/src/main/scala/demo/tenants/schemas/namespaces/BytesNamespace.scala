@@ -96,17 +96,17 @@ object BytesNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1B-100-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(1),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-1B-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => mkRandomBytes(1),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
@@ -117,50 +117,50 @@ object BytesNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1KB-100-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(KB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1KB-10k-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(KB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromNanos(100_000))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-10KB-100-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(TenKB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-100KB-10-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => mkRandomBytes(HundredKB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-1KB-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => mkRandomBytes(KB),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-1KB-10k-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => mkRandomBytes(KB),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromNanos(100_000))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-10KB-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => mkRandomBytes(TenKB),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-100KB-10-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => mkRandomBytes(HundredKB),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,

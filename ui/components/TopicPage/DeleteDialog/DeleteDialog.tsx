@@ -43,10 +43,10 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
 
       notifySuccess(`${props.topicPersistency === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully deleted.`);
 
-      const mutatePersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-      const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+      const mutatePartitionedTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: props.tenant, namespace: props.namespace }));
+      const mutateNonPartitionedTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: props.tenant, namespace: props.namespace }));
 
-      await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);
+      await Promise.all([mutatePartitionedTopics, mutateNonPartitionedTopics]);
 
       props.navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
       modals.pop();
@@ -61,7 +61,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />

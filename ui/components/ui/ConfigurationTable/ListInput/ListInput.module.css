@@ -1,3 +1,26 @@
+.Header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  /* padding-bottom: 4rem; */
+  position: relative;
+}
+
+.HeaderControls {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: -5rem;
+  right: 0;
+}
+
+.HeaderItemName {
+  font-size: 12rem;
+  opacity: 0.6;
+}
+
+
 .ListField {
   position: relative;
   background-color: #fff;
@@ -10,17 +33,20 @@
 .ListFieldValues {
   border: 1px solid var(--border-color);
   border-radius: 4rem;
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .ListFieldValue {
   padding: 0 12rem;
-  min-height: 36rem;
+  min-height: 34rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   font-size: 14rem;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
 }
 
@@ -29,7 +55,11 @@
 }
 
 .RemovableListFieldValue {
-  padding-right: 32rem;
+  padding-right: 64rem;
+}
+
+.RemovableListFieldValueWithoutPadding {
+  padding-right: 12rem !important;
 }
 
 .ListFieldRemoveValue {
@@ -46,10 +76,12 @@
   align-items: flex-start;
   padding-top: 12rem;
 }
+
 .ListFieldRemoveValue:hover {
   opacity: 0.5;
   cursor: pointer;
 }
+
 .ListFieldRemoveValue svg {
   width: 14rem;
   height: 14rem;
@@ -57,15 +89,55 @@
 }
 
 .Editor {
-  margin-top: 18rem;
+  margin-top: 8rem;
 }
 
 .Editor:first-child {
   margin-top: 0;
 }
 
-.AddButton {
+.BottomControls {
   display: flex;
   justify-content: flex-end;
   margin-top: 8rem;
+}
+
+.AddButton {
+  margin-right: -12rem;
+}
+
+.Error {
+  margin-top: 4rem;
+  color: var(--accent-color-red);
+}
+
+.DraggingItem {
+  background-color: #fff;
+  box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.27);
+  z-index: 100;
+}
+
+.Controls {
+  position: absolute;
+  top: 4rem;
+  right: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ControlsIcon {
+  opacity: 0.5;
+}
+
+.ControlsIcon svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--text-color);
+}
+
+.ControlsIcon:hover {
+  cursor: pointer;
+  opacity: 1;
+  transition: all 0.2s ease-in-out;
 }

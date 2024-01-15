@@ -5,6 +5,7 @@ import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
 import _root_.postgres.{PostgresVariant, given_Decoder_PostgresVariant, given_Encoder_PostgresVariant}
+import licensing.{ProductCode, LicenseInfo, AvailableLicenses}
 import postgres.PostgresVariant.embedded
 
 import java.nio.file.Path
@@ -32,10 +33,12 @@ case class Config(
     pulsarName: Option[String] = Some("default"),
     @describe("Optional accent color to visually distinguish this instance")
     pulsarColor: Option[String] = Some("transparent"),
+    @describe("The URL where Pulsar broker (or proxy) serves http requests.")
+    pulsarWebUrl: Option[String] = Some("http://localhost:8080"),
     @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
     pulsarBrokerUrl: Option[String] = Some("pulsar://localhost:6650"),
-    @describe("The URL where Pulsar broker (or proxy) serves http requests.")
-    pulsarHttpUrl: Option[String] = Some("http://localhost:8090"),
+    @describe("Advertised listener name.")
+    pulsarListenerName: Option[String] = None,
 
     //
     @describe("Path to the TLS key file.")
@@ -83,7 +86,7 @@ case class Config(
           |""".stripMargin)
     pulsarTlsProtocols: Option[List[String]] = None,
 
-    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    @describe("Default authentication credentials for all users. Not recommended to use it in multi-user production environment.")
     defaultPulsarAuth: Option[String] = None,
 
     // Postgres
@@ -116,12 +119,16 @@ def readConfig =
     for
         yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
         envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
-        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).orElseSucceed(Config())
+        maybeYamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).either
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 
         config <- ZIO.succeed {
-            val mergedConfig = mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig))
+            val appConfig = maybeYamlConfig match
+                case Right(yamlConfig) => mergeConfigs(envConfig, yamlConfig)
+                case Left(_) => envConfig
+
+            val mergedConfig = mergeConfigs(defaultConfig, appConfig)
             normalizeConfig(mergedConfig)
         }
     yield config

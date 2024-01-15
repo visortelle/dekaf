@@ -85,12 +85,12 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                     title="Namespace"
                     fields={[
                       replicationClustersField,
+                      propertiesField,
                       persistenceField,
                       maxTopicsPerNamespaceField,
                       compactionThresholdField,
                       delayedDeliveryField,
                       resourceGroupField,
-                      propertiesField,
                     ].map(field => field(props))}
                   />
                 </div>

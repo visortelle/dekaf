@@ -1,9 +1,8 @@
-.DatetimePicker {
-
-}
+.DatetimePicker {}
 
 .Picker {
   z-index: 999;
+  background-color: #fff !important;
 }
 
 .SvgIcon svg {
@@ -18,12 +17,12 @@
   transition: var(--transition-short);
 }
 
-.DatetimePicker .Picker:global(.react-datetime-picker--disabled),
-.DatetimePicker .Picker:global(.react-datetime-picker--disabled) * {
-  background-color: transparent !important;
+.DatetimePicker:not(.ReadOnly) .Picker:global(.react-datetime-picker--disabled),
+.DatetimePicker:not(.ReadOnly) .Picker:global(.react-datetime-picker--disabled) * {
   color: #aaa !important;
   fill: #aaa !important;
 }
+
 .DatetimePicker .Picker:global(.react-datetime-picker--disabled) :global(.react-datetime-picker__wrapper) {
   border: 1px solid var(--border-color) !important;
 }
@@ -128,7 +127,7 @@
 .Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__prev-button),
 .Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__prev2-button),
 .Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__next-button),
-.Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__next2-button){
+.Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__next2-button) {
   font-size: 14rem !important;
 }
 
@@ -143,6 +142,15 @@
   border: 1px solid var(--border-color) !important;
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27) !important;
   border-radius: 4rem;
-  height: 36rem;
+  height: 34rem;
   padding: 0 6rem 0 12rem;
+}
+
+.Picker :global(.react-datetime-picker__clock) {
+  box-shadow: 1rem 1rem 4rem rgba(0, 0, 0, 0.27) !important;
+  border-radius: 8rem !important;
+  border: none !important;
+  width: unset !important;
+  height: unset !important;
+  padding: 12rem !important;
 }

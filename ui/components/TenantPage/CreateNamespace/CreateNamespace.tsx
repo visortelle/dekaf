@@ -19,7 +19,7 @@ import { H1, H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { help } from "../Namespaces/help";
-import KeyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
+import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateNamespaceProps = {
   tenant: string;
@@ -97,7 +97,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
 
     await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
 
-    navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
+    navigate(routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: namespaceName }));
   };
 
   const namespaceNameInput = (
@@ -167,8 +167,8 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
 
   const propertiesEditorInput = (
     <KeyValueEditor
-      value={properties}
-      onChange={setProperties}
+      value={recordToIndexedKv(properties)}
+      onChange={v => setProperties(recordFromIndexedKv(v))}
       height="300rem"
       testId="properties"
     />

@@ -1,0 +1,64 @@
+.NodeIcon {
+  position: relative;
+  font-size: 14rem;
+  width: 26rem;
+  height: 26rem;
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  color: #fff;
+  padding: 2rem;
+  border-radius: 6rem;
+  user-select: none;
+  cursor: initial;
+}
+
+.NodeIconExpandable:hover {
+  opacity: 0.5;
+  transition: var(--transition-short);
+}
+
+.NodeIconExpandable {
+  cursor: pointer;
+  border-top: 0 solid rgba(0, 0, 0, 0.27);
+  border-bottom: 1rem solid rgba(0, 0, 0, 0.27);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.5), inset 0 0 0 rgba(0, 0, 0, 0.5);
+  margin: 1rem;
+  position: relative;
+  top: 1rem;
+  transition: var(--transition-short);
+}
+
+.NodeIconExpanded {
+  border-bottom-width: 0;
+  border-top-width: 1rem;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.5), inset 1rem 1rem 1rem rgba(0, 0, 0, 0.5);
+  transition: var(--transition-short);
+}
+
+.NodeIconAddon {
+  color: #fff;
+  font-size: 8rem;
+  font-weight: bold;
+  white-space: no-wrap;
+  background-color: var(--text-color);
+  min-width: 12rem;
+  padding: 0 1rem;
+  align-items: center;
+  border-radius: 3rem;
+  justify-content: center;
+  height: 12rem;
+  display: flex;
+  line-height: 1;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translate(-52%, -144%);
+}
+
+.SvgIcon svg {
+  width: 22rem;
+  height: 22rem;
+}

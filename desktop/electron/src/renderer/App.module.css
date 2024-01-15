@@ -1,0 +1,41 @@
+.App {
+  display: grid;
+  grid-template-columns: min-content 1fr;
+}
+
+.Logo {
+  padding: 12rem 18rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: var(--accent-color-black);
+  color: #fff;
+}
+
+.Logo img {
+  height: 120rem;
+  width: auto;
+}
+
+.ConnectionList {
+  overflow: hidden;
+  border-right: 1px solid var(--border-color);
+  width: 480rem;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: min-content 1fr;
+}
+
+.Blog {
+  width: 600rem;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.BlogIframe {
+  appearance: none;
+  border: none;
+  width: 100%;
+  flex: 1;
+}

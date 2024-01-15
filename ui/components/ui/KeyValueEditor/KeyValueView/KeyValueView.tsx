@@ -1,17 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import Input from '../../Input/Input';
 import SmallButton from '../../SmallButton/SmallButton';
-import { KeyValues } from '../KeyValueEditor';
-
+import { IndexedKv } from '../KeyValueEditor';
 import s from './KeyValueView.module.css';
+import st from '../../SimpleTable/SimpleTable.module.css';
+import deleteIcon from './icons/delete.svg';
+import createIcon from './icons/create.svg';
+import { cloneDeep } from 'lodash';
 
 type Props = {
-  onChange: (v: KeyValues) => void,
+  onChange: (v: IndexedKv) => void,
   changeValidity: (validity: boolean) => void,
   maxHeight: string,
   testId?: string,
-  value: KeyValues,
+  mode?: 'edit' | 'readonly',
+  value: IndexedKv,
 }
 
 type NewKeyValue = {
@@ -19,180 +23,148 @@ type NewKeyValue = {
   value: string,
 }
 
-type InvalidKeys = {
-  [key: string]: number,
-}
+const defaultKeyValue = { key: '', value: '' };
 
 const KeyValueView = (props: Props) => {
-
-  const defaultKeyValue = { key: '', value: '' };
-
   const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue);
-  const [invalidKeys, setInvalidKeys] = useState<InvalidKeys>();
-  const [convertedKeyValues, setConvertedKeyValues] = useState(Object.entries(props.value))
 
-  const addNewKey = () => {
-    setConvertedKeyValues([
-      ...convertedKeyValues,
-      [newKeyValue.key, newKeyValue.value]
-    ]);
+  const onAdd = () => {
+    const newKvs = props.value.concat(newKeyValue);
+    props.onChange(newKvs);
+
     setNewKeyValue(defaultKeyValue);
   }
 
-  const validateField = (key: string, index?: number) => {
-    let repeating = 1;
+  const onKvValueChange = (index: number, value: string) => {
+    const oldKv = props.value[index];
+    const newKv = { ...oldKv, value };
 
-    convertedKeyValues.map((keyValue) => {
-      if (keyValue[0] === key) {
-        repeating++
-      }
-    })
+    const newKvs = cloneDeep(props.value);
+    newKvs[index] = newKv;
 
-    if (newKeyValue.key === key && index) [
-      repeating++
-    ]
+    props.onChange(newKvs);
+  };
 
-    if (!invalidKeys) {
-      setInvalidKeys({ [key]: repeating })
-    } else if (index) {
-      setInvalidKeys({
-        ...invalidKeys,
-        [key]: repeating,
-        [convertedKeyValues[index][0]]: invalidKeys[convertedKeyValues[index][0]] - 1
-      })
-    } else {
-      setInvalidKeys({
-        ...invalidKeys,
-        [key]: repeating,
-        [newKeyValue.key]: invalidKeys[newKeyValue.key] - 1
-      })
-    }
-  }
+  const onKvKeyChange = (index: number, key: string) => {
+    const oldKv = props.value[index];
+    const newKv = { ...oldKv, key };
+
+    const newKvs = cloneDeep(props.value);
+    newKvs[index] = newKv;
+
+    props.onChange(newKvs);
+  };
 
   const onDelete = (index: number) => {
-    const copyKeyValues = [...convertedKeyValues];
-    copyKeyValues.splice(index, 1);
-    setConvertedKeyValues(copyKeyValues);
+    const newValue = props.value.filter((_, i) => i !== index);
+    props.onChange(newValue);
   }
 
-  useEffect(() => {
-    if (!invalidKeys) {
-      return;
-    }
-
-    let valid = true;
-    Object.keys(invalidKeys).map(key => {
-      if (invalidKeys[key] > 1 && key !== newKeyValue.key || invalidKeys[key] > 2) {
-        valid = false;
-      }
-    });
-
-    props.changeValidity(valid);
-  }, [invalidKeys]);
-
-  useEffect(() => {
-    props.onChange(Object.fromEntries(convertedKeyValues));
-  }, [convertedKeyValues]);
+  const isReadOnly = props.mode === 'readonly';
 
   return (
-    <div className={`${s.List}`} style={{ maxHeight: props.maxHeight }} >
-      <div className={`${s.Row} ${s.Header}`}>
-        <span className={s.ColumnName}>
-          Key
-        </span>
-        <span className={s.ColumnName}>
-          Value
-        </span>
-      </div>
+    <div className={`${s.KeyValueView}`} style={{ maxHeight: props.maxHeight }}>
+      <table className={st.Table}>
+        <thead>
+          <tr className={st.Row}>
+            <td className={st.HeaderCell}>Key</td>
+            <td className={st.HeaderCell}>Value</td>
+            {!isReadOnly && <td className={st.HeaderCell}></td>}
+          </tr>
+        </thead>
 
-      <div className={s.Rows}>
-        {convertedKeyValues.map((keyValue, index) => (
-          <div className={`${s.Row}`}>
-            <div className={`${s.Field}`}>
-              <Input
-                isSmall
-                type="text"
-                value={keyValue[0]}
-                onChange={(v) => {
-                  setConvertedKeyValues(Object.assign([
-                    ...convertedKeyValues],
-                    { [index]: [v, keyValue[1]] }
-                  ))
-                  validateField(v, index)
-                }}
-                testId={`key-${keyValue[0]}-${props.testId}`}
-                isError={invalidKeys && invalidKeys[keyValue[0]] > 1}
-              />
-            </div>
-            <div className={`${s.Field}`}>
-              <Input
-                isSmall
-                value={keyValue[1]}
-                onChange={(v) => setConvertedKeyValues(Object.assign(
-                  [...convertedKeyValues],
-                  { [index]: [keyValue[0], v] }
-                ))}
-                testId={`value-${keyValue[1]}-${props.testId}`}
-              />
-            </div>
-            <div className={`${s.ButtonBlock}`}>
-              <SmallButton
-                onClick={() => onDelete(index)}
-                type='danger'
-                text='Delete'
-                className={s.Button}
-                testId={`key-value-delete-${keyValue[0]}-${props.testId}`}
-              />
-            </div>
-          </div>
-        ))}
+        <tbody>
+          {props.value.map((kv, index) => (
+            <tr className={st.Row} key={index}>
+              <td className={`${st.Cell} ${s.InputCell}`}>
+                <Input
+                  type="text"
+                  size='small'
+                  value={kv.key}
+                  onChange={(v) => onKvKeyChange(index, v)}
+                  testId={`key-${kv.key}-${props.testId}`}
+                  isError={false}
+                  appearance='no-borders'
+                  inputProps={{ disabled: isReadOnly }}
+                />
+              </td>
 
-        <div className={`${s.Row}`}>
-          <div className={`${s.Field} ${invalidKeys && invalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
-            <Input
-              isSmall
-              placeholder='New key'
-              value={newKeyValue.key}
-              onChange={(v) => {
-                setNewKeyValue({
-                  ...newKeyValue,
-                  key: v
-                })
-                validateField(v)
-              }}
-              testId={`new-key-${props.testId}`}
-            />
-          </div>
-          <div className={`${s.Field}`}>
-            <Input
-              isSmall
-              placeholder='New value'
-              value={newKeyValue.value}
-              onChange={(v) => setNewKeyValue({
-                ...newKeyValue,
-                value: v
-              })}
-              testId={`new-value-${props.testId}`}
-            />
-          </div>
-          <div className={`${s.ButtonBlock}`}>
-            <SmallButton
-              onClick={() => addNewKey()}
-              type="primary"
-              text="Add"
-              className={s.Button}
-              disabled={
-                newKeyValue.key.length === 0 ||
-                newKeyValue.value.length === 0 ||
-                invalidKeys && invalidKeys[newKeyValue.key] > 1
-              }
-              testId={`key-value-add-${props.testId}`}
-            />
-          </div>
-        </div>
-      </div>
+              <td className={`${st.Cell} ${s.InputCell}`}>
+                <Input
+                  value={kv.value}
+                  size='small'
+                  onChange={(v) => onKvValueChange(index, v)}
+                  testId={`value-${kv.value}-${props.testId}`}
+                  appearance='no-borders'
+                  inputProps={{ disabled: isReadOnly }}
+                />
+              </td>
+
+              {!isReadOnly && (
+                <td className={`${st.Cell} ${s.ButtonCell}`}>
+                  <SmallButton
+                    onClick={() => onDelete(index)}
+                    type='danger'
+                    className={s.Button}
+                    svgIcon={deleteIcon}
+                    title={`Delete key-value pair`}
+                    testId={`key-value-delete-${kv.key}-${props.testId}`}
+                  />
+                </td>
+              )}
+            </tr>
+          ))}
+
+          {!isReadOnly && (
+            <tr className={st.Row}>
+              <td className={`${st.Cell} ${s.InputCell}`}>
+                <Input
+                  size='small'
+                  placeholder='New key'
+                  value={newKeyValue.key}
+                  onChange={(v) => {
+                    setNewKeyValue({
+                      ...newKeyValue,
+                      key: v
+                    })
+                  }}
+                  testId={`new-key-${props.testId}`}
+                  appearance='no-borders'
+                />
+              </td>
+              <td className={`${st.Cell} ${s.InputCell}`}>
+                <Input
+                  size='small'
+                  placeholder='New value'
+                  value={newKeyValue.value}
+                  onChange={(v) => setNewKeyValue({
+                    ...newKeyValue,
+                    value: v
+                  })}
+                  testId={`new-value-${props.testId}`}
+                  appearance='no-borders'
+                />
+              </td>
+              <td className={`${st.Cell} ${s.ButtonCell}`}>
+                <SmallButton
+                  onClick={() => onAdd()}
+                  type="primary"
+                  svgIcon={createIcon}
+                  title='Add new key-value pair'
+                  className={s.Button}
+                  disabled={
+                    newKeyValue.key.length === 0 ||
+                    newKeyValue.value.length === 0
+                  }
+                  testId={`key-value-add-${props.testId}`}
+                />
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
-  )
+  );
 }
 
 export default KeyValueView

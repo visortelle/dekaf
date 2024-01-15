@@ -3,7 +3,6 @@ import s from './Layout.module.css'
 import NavigationTree from './NavigationTree/NavigationTree';
 import { TreePath } from './NavigationTree/TreeView';
 import GlobalProgressIndicator from '../GlobalProgressIndicator/GlobalProgressIndicator';
-import Footer from './Footer';
 import SettingsBar from './SettingsBar/SettingsBar';
 
 export type LayoutProps = {
@@ -32,9 +31,6 @@ const Layout: React.FC<LayoutProps> = (props) => {
       <div className={s.Content}>
         <div className={s.Children} style={{ overflow: props?.scrollMode === 'page-own' ? "hidden" : 'initial' }}>
           {children}
-        </div>
-        <div className={s.Footer}>
-          <Footer />
         </div>
       </div>
     </div>

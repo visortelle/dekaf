@@ -1,0 +1,3 @@
+.JsonView:global(.monaco-editor) {
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+}

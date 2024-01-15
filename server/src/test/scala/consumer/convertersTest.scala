@@ -1,15 +1,13 @@
-package consumer
+package consumer.session_runner
 
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
-import zio.test.TestAspect.*
 
-import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
-import org.apache.pulsar.client.api.{Message, Schema}
+import org.apache.pulsar.client.api.Schema
 import org.apache.pulsar.client.api.schema.SchemaDefinition
-import org.apache.pulsar.client.impl.{MessageImpl, TypedMessageBuilderImpl}
+import org.apache.pulsar.client.impl.MessageImpl
 import org.apache.pulsar.client.impl.schema.{
     AvroSchema,
     BooleanSchema,
@@ -27,21 +25,15 @@ import org.apache.pulsar.client.impl.schema.{
     SchemaDefinitionImpl,
     SchemaUtils,
     ShortSchema,
-    StringSchema,
+    StringSchema
 }
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import com.google.protobuf.Descriptors
-import com.google.protobuf.descriptor.FileDescriptorProto
-import org.apache.pulsar.client.impl.schema.generic.{GenericAvroReader, GenericAvroWriter, GenericProtobufNativeRecord, GenericProtobufNativeSchema}
-import org.apache.pulsar.client.impl.schema.writer.AvroWriter
-import org.apache.pulsar.client.impl.schema.util.SchemaUtil
 import org.apache.pulsar.common.api.proto.MessageMetadata
 import schema.protobufnative.FileEntry
 import io.circe.parser.parse as parseJson
 
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 
 object convertersTest extends ZIOSpecDefault:
     def spec = suite(s"${this.getClass.toString} - messageValueToJson()")(
@@ -387,13 +379,13 @@ object convertersTest extends ZIOSpecDefault:
                 parseJson(json) == parseJson(testCase.expectedJson)
 
             val testCases = List[TestCase](
-                TestCase(Array(0), "\"0\""),
-                TestCase(Array(0, 0), "\"0\""),
-                TestCase(Array(1), "\"1\""),
-                TestCase(Array(15), "\"15\""),
-                TestCase(Array(127), "\"127\""),
-                TestCase(Array(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xee).map(_.toByte), "\"-18\""),
-                TestCase(Array(0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff).map(_.toByte), s""""${Long.MaxValue.toString}"""")
+                TestCase(Array(0), "0"),
+                TestCase(Array(0, 0), "0"),
+                TestCase(Array(1), "1"),
+                TestCase(Array(15), "15"),
+                TestCase(Array(127), "127"),
+                TestCase(Array(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xee).map(_.toByte), "-18"),
+                TestCase(Array(0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff).map(_.toByte), s"""${Long.MaxValue.toString}""")
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -471,7 +463,7 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0x40, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), "15.0"),
                 TestCase(Array(0x40, 0x5f, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), "127.0"),
                 TestCase(Array(0xc0, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), "-18.0"),
-                TestCase(Array(0xc0, 0xdd, 0x4c, 0x01, 0xeb, 0x85, 0x1e, 0xb8).map(_.toByte), "-30000.03"),
+                TestCase(Array(0xc0, 0xdd, 0x4c, 0x01, 0xeb, 0x85, 0x1e, 0xb8).map(_.toByte), "-30000.03")
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -512,7 +504,7 @@ object convertersTest extends ZIOSpecDefault:
                 ),
                 TestCase(Array(0x47, 0x72, 0x75, 0xc3, 0x9f).map(_.toByte), "\"Gruß\""),
                 TestCase(Array(0xe4, 0xb8, 0x96, 0xe7, 0x95, 0x8c).map(_.toByte), "\"世界\""),
-                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s""""),
+                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s"""")
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -553,11 +545,10 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
                 TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
                 TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
-
                 TestCase("".getBytes("UTF-8"), _.isLeft),
                 TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
                 TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
-                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft)
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -598,11 +589,10 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
                 TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
                 TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
-
                 TestCase("".getBytes("UTF-8"), _.isLeft),
                 TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
                 TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
-                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft)
             )
 
             assertTrue(testCases.forall(runTestCase))

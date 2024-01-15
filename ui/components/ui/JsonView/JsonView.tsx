@@ -1,17 +1,17 @@
 import React from 'react';
 
 import CodeEditor from '../CodeEditor/CodeEditor';
-import { KeyValues } from '../KeyValueEditor/KeyValueEditor';
+import { IndexedKv } from '../KeyValueEditor/KeyValueEditor';
 
 import s from './JsonView.module.css'
 
 export type JsonViewProps = {
   json?: string;
-  value?: KeyValues;
+  value?: IndexedKv;
   height: string;
   width: string;
   readonly?: boolean;
-  onChange?: (keyValues: KeyValues) => void;
+  onChange?: (keyValues: IndexedKv) => void;
   changeValidity?: (validity: boolean) => void;
 };
 
@@ -37,8 +37,8 @@ const JsonView: React.FC<JsonViewProps> = (props) => {
       <CodeEditor
         value={
           props.json ?
-          JSON.stringify(JSON.parse(props.json), null, 2) :
-          JSON.stringify(props.value, null, 2)
+            JSON.stringify(JSON.parse(props.json), null, 2) :
+            JSON.stringify(props.value, null, 2)
         }
         language='json'
         height={props.height}

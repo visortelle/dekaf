@@ -4,8 +4,8 @@ export const routes = {
   instance: {
     tenants: {
       _: {
-        path: "/",
-        get: () => `/`,
+        path: "/tenants",
+        get: () => `/tenants`,
       },
     },
     overview: {
@@ -45,6 +45,13 @@ export const routes = {
         get: () => `/instance/create-tenant`,
       },
     },
+    consumerSession: {
+      _: {
+        path: "/consumer-session",
+        get: (props: { managedConsumerSessionId: string | undefined }) =>
+          `/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
+      },
+    },
   },
   tenants: {
     tenant: {
@@ -60,6 +67,16 @@ export const routes = {
           path: "tenants/:tenant/overview",
           get: (props: { tenant: string }) =>
             `/tenants/${props.tenant}/overview`,
+        },
+      },
+      consumerSession: {
+        _: {
+          path: "tenants/:tenant/consumer-session",
+          get: (props: {
+            tenant: string,
+            managedConsumerSessionId: string | undefined
+          }) =>
+            `/tenants/${props.tenant}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
         },
       },
       namespaces: {
@@ -104,6 +121,17 @@ export const routes = {
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/subscription-permissions`,
             },
           },
+          consumerSession: {
+            _: {
+              path: "tenants/:tenant/namespaces/:namespace/consumer-session",
+              get: (props: {
+                tenant: string;
+                namespace: string;
+                managedConsumerSessionId?: string
+              }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
+            },
+          },
           topics: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/topics",
@@ -112,16 +140,17 @@ export const routes = {
             },
             anyTopicPersistency: {
               topic: {
-                messages: {
+                consumerSession: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/messages",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/consumer-session",
                     get: (props: {
                       tenant: string;
                       namespace: string;
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
+                      managedConsumerSessionId?: string
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/messages`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
                   },
                 },
                 producers: {

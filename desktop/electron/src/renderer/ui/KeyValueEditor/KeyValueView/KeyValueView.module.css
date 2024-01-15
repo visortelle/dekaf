@@ -1,0 +1,17 @@
+.KeyValueView {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.InputCell {
+  padding: 2rem 0 !important;
+}
+
+.ButtonCell {
+  padding: 2rem 4rem !important;
+}
+
+.ErrorField input {
+  border-color: var(--accent-color-red) !important;
+  box-shadow: 1rem 1rem 1rem 1rem #00000045, 0 0 0 1rem var(--accent-color-red) !important;
+}

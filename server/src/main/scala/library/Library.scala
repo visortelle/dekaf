@@ -1,35 +1,18 @@
 package library
 
-import io.circe.*
-import io.circe.generic.semiauto.*
-import io.circe.syntax.*
-import io.circe.parser.parse as parseJson
-import io.circe.parser.decode as decodeJson
+import scalapb.json4s.JsonFormat
 import com.typesafe.scalalogging.Logger
+import com.tools.teal.pulsar.ui.library.v1.library as pb
+import scala.util.{Failure, Success, Try}
 
-case class LibraryItemMetadata(
-    updatedAt: String,
-    tags: List[String],
-    availableForContexts: List[ResourceMatcher]
-)
-
-case class LibraryItem(
-    metadata: LibraryItemMetadata,
-    spec: UserManagedItem
-)
-given Decoder[LibraryItem] = deriveDecoder[LibraryItem]
-given Encoder[LibraryItem] = deriveEncoder[LibraryItem]
-
-type LibraryItemId = String
 type FileName = String
 type TagName = String
 type LibraryScanResultEntry = Either[Throwable, LibraryItem]
 type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
-    types: List[UserManagedItemType],
-    tags: List[TagName],
-    contextFqns: List[String]
+    types: Vector[ManagedItemType],
+    contexts: List[ResourceMatcher]
 )
 
 case class LibraryDb(
@@ -47,27 +30,27 @@ class Library:
     private var rootDir = "./data"
     private var db = LibraryDb(itemsById = Map.empty)
     private val logger: Logger = Logger(getClass.getName)
+    
+    def size: Int = db.itemsById.size
 
     def writeItem(item: LibraryItem): Unit =
         val itemId = item.spec.metadata.id
 
-        if item.spec.metadata.name.isEmpty then
-            throw new Exception(s"Library item $itemId should have a name.")
+        if item.spec.metadata.name.isEmpty then throw new Exception(s"Library item $itemId should have a name.")
 
-        val fileName = s"${itemId}.json"
+        val fileName = s"$itemId.binpb"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
-        val itemAsJson = item.asJson.spaces2SortKeys
-
+        val itemAsBinary = LibraryItem.toPb(item).toByteArray
 
         os.write.over(
             target = filePath,
-            data = itemAsJson
+            data = itemAsBinary
         )
 
         refreshDb()
 
     def deleteItem(itemId: LibraryItemId): Unit =
-        val fileName = s"$itemId.json"
+        val fileName = s"$itemId.binpb"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
 
         os.remove(filePath)
@@ -78,39 +61,40 @@ class Library:
         db.itemsById.get(itemId)
 
     def listItems(filter: ListItemsFilter): List[LibraryItem] =
-        def getItemsByTags(items: List[LibraryItem], tags: List[TagName]): List[LibraryItem] =
-            items.filter(item => item.metadata.tags.exists(tag => tags.contains(tag)))
-
-        def getItemsByContextFqns(items: List[LibraryItem], contextFqns: List[String]): List[LibraryItem] =
-            items.filter(item => item.metadata.availableForContexts.exists(resource => contextFqns.exists(fqn => ResourceMatcher.test(resource, fqn))))
-
-        val dbItems = db.itemsById.values.toList
-        val byTypes =
-            if filter.types.isEmpty
-            then dbItems
-            else
-                dbItems.filter(item =>
-                    val metadata = item.spec.metadata
-                    filter.types.contains(metadata.`type`)
+        def getItemsByContexts(items: List[LibraryItem], contexts: List[ResourceMatcher]): List[LibraryItem] =
+            items.filter(item =>
+                item.metadata.availableForContexts.exists(availableForContext =>
+                    contexts.exists(context => availableForContext.test(context))
                 )
-        val byContextFqns =
-            if filter.contextFqns.isEmpty
-            then byTypes
-            else getItemsByContextFqns(byTypes, filter.contextFqns)
-        val byTags =
-            if filter.tags.isEmpty
-            then byContextFqns
-            else getItemsByTags(byContextFqns, filter.tags)
+            )
 
-        byTags
+        filter.contexts match
+            case List() => List.empty
+            case _ =>
+                val dbItems = db.itemsById.values.toList
+                val byTypes =
+                    if filter.types.isEmpty
+                    then dbItems
+                    else
+                        dbItems.filter(item =>
+                            val metadata = item.spec.metadata
+                            filter.types.contains(metadata.`type`)
+                        )
+                val byContexts =
+                    if filter.contexts.isEmpty
+                    then byTypes
+                    else getItemsByContexts(byTypes, filter.contexts)
+
+                byContexts
 
     private def scan(): LibraryScanResults =
         os.list(os.Path(rootDir, os.pwd))
-            .filter(f => os.isFile(f) && f.ext == "json")
+            .filter(f => os.isFile(f) && f.ext == "binpb")
             .map { path =>
                 val fileName = path.last
-                val fileContent = os.read(path)
-                val scanResultEntry = decodeJson[LibraryItem](fileContent)
+                val fileContent = os.read.bytes(path)
+                val scanResultEntryA = Try(LibraryItem.fromPb(pb.LibraryItem.parseFrom(fileContent)))
+                val scanResultEntry = scanResultEntryA.toEither
 
                 val libraryItemIdFromFileName = fileName.split('.').head
                 scanResultEntry match

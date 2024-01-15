@@ -12,6 +12,7 @@ import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import Input from '../../../../ui/Input/Input';
 import { swrKeys } from '../../../../swrKeys';
 import { mutate } from 'swr';
+import AuthParamsString from '../methods/AuthParamsString/AuthParamsString';
 
 export type CredentialsEditorProps = {
   onDone: () => void;
@@ -36,7 +37,8 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           list={[
             { type: 'item', title: 'Empty', value: 'empty' },
             { type: 'item', title: 'OAuth2', value: 'oauth2' },
-            { type: 'item', title: 'JWT', value: 'jwt' }
+            { type: 'item', title: 'JWT', value: 'jwt' },
+            { type: 'item', title: 'Auth Params String', value: 'authParamsString' }
           ]}
           value={credentials.type}
           onChange={(type) => {
@@ -49,6 +51,9 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
                 break;
               case 'jwt':
                 setCredentials({ type: 'jwt', token: '' });
+                break;
+              case 'authParamsString':
+                setCredentials({ type: 'authParamsString', authPluginClassName: '', authParams: '' });
                 break;
             }
           }}
@@ -68,6 +73,12 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
             onChange={setCredentials}
           />
         )}
+        {credentials.type === 'authParamsString' && (
+          <AuthParamsString
+            value={credentials}
+            onChange={setCredentials}
+          />
+        )}
       </div>
 
       <div className={s.Footer}>
@@ -77,7 +88,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           disabled={credentialsName.length === 0}
           text='Save'
           onClick={async () => {
-            const res = await fetch(`${config.publicBaseUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
+            await fetch(`${config.publicBaseUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
               headers: {

@@ -10,6 +10,8 @@ import {
   matchPath,
   useNavigate,
   Params,
+  Navigate,
+  useSearchParams,
 } from "react-router-dom";
 import * as Modals from "../contexts/Modals/Modals";
 
@@ -61,6 +63,7 @@ const prepareRoutes = (): {
     withLayoutProps: WithLayoutProps;
   }) => RouteObject[];
 } => {
+  const [searchParams] = useSearchParams();
   const getRoutes = ({
     withLayout,
     withLayoutProps,
@@ -70,10 +73,18 @@ const prepareRoutes = (): {
   }) => [
       /* Instance */
       {
+        // Redirect to the Instance Overview page
+        path: "/",
+        element: withLayout(
+          <Navigate to={routes.instance.overview._.path} replace />,
+          withLayoutProps
+        ),
+      },
+      {
         path: routes.instance.overview._.path,
         element: withLayout(
           <InstancePage view={{ type: "overview" }} />,
-          withLayoutProps
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
@@ -128,20 +139,30 @@ const prepareRoutes = (): {
           withLayoutProps
         ),
       },
+      {
+        path: routes.instance.consumerSession._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "consumer-session", managedConsumerSessionId: searchParams.get('id') || undefined }} />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
       /* Topics */
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
-          .messages._.path,
+          .consumerSession._.path,
         element: withLayout(
-          <RoutedTopicPage view="messages" />,
+          <RoutedTopicPage view="consumer-session" />,
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .overview._.path,
-        element: withLayout(<RoutedTopicPage view="overview" />, withLayoutProps),
+        element: withLayout(
+          <RoutedTopicPage view="overview" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
@@ -195,7 +216,7 @@ const prepareRoutes = (): {
         path: routes.tenants.tenant.namespaces.namespace.overview._.path,
         element: withLayout(
           <RoutedNamespacePage view="overview" />,
-          setScrollMode(withLayoutProps, "window")
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
@@ -233,6 +254,13 @@ const prepareRoutes = (): {
           withLayoutProps
         ),
       },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.consumerSession._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="consumer-session" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
       /* Subscriptions */
       {
@@ -248,7 +276,7 @@ const prepareRoutes = (): {
         path: routes.tenants.tenant.overview._.path,
         element: withLayout(
           <RoutedTenantPage view={"overview"} />,
-          withLayoutProps
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
@@ -265,6 +293,15 @@ const prepareRoutes = (): {
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
+      {
+        path: routes.tenants.tenant.consumerSession._.path,
+        element: withLayout(
+          <RoutedTenantPage view="consumer-session" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+
+      /* Misc */
       {
         path: "*",
         element: withLayout(
@@ -286,6 +323,8 @@ const prepareRoutes = (): {
   };
 };
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/g;
+
 const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const { paths, getRoutes } = prepareRoutes();
 
@@ -297,31 +336,52 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const tenant: TreeNode | undefined =
     currentRoute?.params?.tenant === undefined
       ? undefined
-      : { type: "tenant", name: currentRoute?.params?.tenant || "unknown" };
+      : { type: "tenant", tenant: currentRoute?.params?.tenant || "unknown" };
   const namespace: TreeNode | undefined =
     currentRoute?.params?.namespace === undefined
       ? undefined
       : {
         type: "namespace",
-        name: currentRoute?.params?.namespace || "unknown",
+        tenant: currentRoute?.params?.tenant || "unknown",
+        namespace: currentRoute?.params?.namespace || "unknown",
       };
-  const topicPersistency: PulsarTopicPersistency = currentRoute?.params
-    ?.topicPersistency as PulsarTopicPersistency;
-  const topic: TreeNode | undefined =
-    topicPersistency === undefined || currentRoute?.params?.topic === undefined
-      ? undefined
-      : {
-        type:
-          topicPersistency === "persistent"
-            ? "persistent-topic"
-            : "non-persistent-topic",
-        name: currentRoute?.params?.topic || "unknown",
+  const persistency: PulsarTopicPersistency = currentRoute?.params
+    ?.topicPersistency! as PulsarTopicPersistency;
+
+  const topicName = currentRoute?.params?.topic || "unknown";
+  const isPartition = partitionRegexp.test(topicName);
+  const topic = isPartition ? topicName.replace(partitionRegexp, "$1") : topicName;
+
+  const topicNode: TreeNode | undefined =
+    persistency === undefined || currentRoute?.params?.topic === undefined
+      ? undefined : {
+        type: "topic",
+        persistency,
+        tenant: tenant?.tenant!,
+        namespace: namespace?.namespace!,
+        topic,
+        partitioning: { type: "non-partitioned" }, // doesn't matter here
+        topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
       };
+
+  const topicPartitionNode: TreeNode | undefined =
+    persistency === undefined || currentRoute?.params?.topic === undefined || !isPartition ?
+      undefined :
+      {
+        type: "topic-partition",
+        persistency,
+        tenant: tenant?.tenant!,
+        namespace: namespace?.namespace!,
+        topic,
+        partition: topicName.replace(partitionRegexp, "$2"),
+        partitioning: { type: "non-partitioned" }, // doesn't matter here
+        topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
+      }
 
   const withLayoutProps: WithLayoutProps = {
     layout: {
       navigationTree: {
-        selectedNodePath: [tenant, namespace, topic].filter(
+        selectedNodePath: [tenant, namespace, topicNode, topicPartitionNode].filter(
           (n) => n !== undefined
         ) as TreeNode[],
       },
@@ -331,24 +391,54 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 };
 
-const RoutedTenantPage = (props: { view: TenantPageView }) => {
+const RoutedTenantPage = (props: { view: TenantPageView['type'] }) => {
   const { tenant } = useParams();
-  return <TenantPage tenant={tenant!} view={props.view} />;
+  const [searchParams] = useSearchParams();
+
+  let view: TenantPageView;
+  switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
+    default: view = { type: props.view };
+  }
+
+  return <TenantPage tenant={tenant!} view={view} />;
 };
 
-const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
+const RoutedNamespacePage = (props: { view: NamespacePageView['type'] }) => {
   const { tenant, namespace } = useParams();
+  const [searchParams] = useSearchParams();
+
+  let view: NamespacePageView;
+  switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
+    default: view = { type: props.view };
+  }
+
   return (
-    <NamespacePage tenant={tenant!} namespace={namespace!} view={props.view} />
+    <NamespacePage tenant={tenant!} namespace={namespace!} view={view} />
   );
 };
 
 const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
   const { tenant, namespace, topic, topicPersistency, schemaVersion } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   let view: TopicPageView;
   switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
     case "schema-initial-screen":
       view = { type: "schema-initial-screen" };
       break;

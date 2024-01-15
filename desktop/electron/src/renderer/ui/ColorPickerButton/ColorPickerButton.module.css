@@ -1,0 +1,11 @@
+.ColorPickerButton {
+  width: 24rem;
+  height: 24rem;
+  box-shadow: 0 0 0 1px #ddd;
+  border-radius: 4rem;
+}
+
+.ColorPickerButton:hover {
+  cursor: pointer;
+  opacity: 0.75;
+}

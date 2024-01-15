@@ -2,31 +2,79 @@ import React from 'react';
 import s from './LibraryBrowserButtons.module.css'
 import LibraryBrowserSaveButton from './LibraryBrowserSaveButton/LibraryBrowserSaveButton';
 import LibraryBrowserPickButton from './LibraryBrowserPickButton/LibraryBrowserPickButton';
-import { UserManagedItem, UserManagedItemType } from '../../model/user-managed-items';
+import { ManagedItem, ManagedItemType } from '../../model/user-managed-items';
 import { LibraryContext } from '../../model/library-context';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
+import addNameIcon from './add-name.svg';
+import addDescriptionIcon from './add-description.svg';
+import SmallButton from '../../../SmallButton/SmallButton';
+import { cloneDeep } from 'lodash';
+import { getReadableItemType } from '../../get-readable-item-type';
+
+export type HidableElement = 'save-button';
 
 export type LibraryBrowserButtonsProps = {
-  itemType: UserManagedItemType;
-  itemToSave: UserManagedItem | undefined;
-  onPick: (item: UserManagedItem) => void;
-  onSave: (item: UserManagedItem) => void;
+  itemType: ManagedItemType;
+  value: ManagedItem;
+  onChange: (item: ManagedItem) => void;
+  onSave: (item: ManagedItem) => void;
+  onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
+  isReadOnly?: boolean;
+  hiddenElements?: HidableElement[];
 };
 
 const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
+  const modals = Modals.useContext();
+
   return (
     <div className={s.LibraryBrowserButtons}>
       <LibraryBrowserPickButton
         itemType={props.itemType}
-        onPick={props.onPick}
+        onPick={(v) => {
+          props.onPick(v);
+          modals.pop();
+        }}
         libraryContext={props.libraryContext}
       />
 
-      <LibraryBrowserSaveButton
-        itemToSave={props.itemToSave}
-        libraryContext={props.libraryContext}
-        onSave={props.onSave}
-      />
+      {!props.hiddenElements?.includes('save-button') && (
+        <LibraryBrowserSaveButton
+          itemToSave={props.value}
+          libraryContext={props.libraryContext}
+          onSave={props.onSave}
+        />
+      )}
+
+      {props.value.metadata.name.length === 0 && (
+        <SmallButton
+          type='regular'
+          appearance='borderless-semitransparent'
+          svgIcon={addNameIcon}
+          onClick={() => {
+            const newValue = cloneDeep(props.value);
+            newValue.metadata.name = `New ${getReadableItemType(props.itemType)}`
+
+            props.onChange(newValue);
+          }}
+          title="Add name"
+        />
+      )}
+
+      {props.value.metadata.descriptionMarkdown.length === 0 && (
+        <SmallButton
+          type='regular'
+          appearance='borderless-semitransparent'
+          svgIcon={addDescriptionIcon}
+          onClick={() => {
+            const newValue = cloneDeep(props.value);
+            newValue.metadata.descriptionMarkdown = `Library item description.`
+
+            props.onChange(newValue);
+          }}
+          title="Add description"
+        />
+      )}
     </div>
   );
 }

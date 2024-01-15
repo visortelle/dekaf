@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 import * as _pulsarAuthServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/Pulsar_authServiceClientPb';
 import * as _producerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ProducerServiceClientPb';
@@ -14,6 +14,7 @@ import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/u
 import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
 import * as _topicPoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/Topic_policiesServiceClientPb';
 import * as _libraryServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/LibraryServiceClientPb';
+import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 export type Value = {
   pulsarAuthServiceClient: _pulsarAuthServiceClient.PulsarAuthServiceClient,
@@ -70,6 +71,32 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient(props.grpcWebUrl));
   const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient(props.grpcWebUrl));
   const [libraryServiceClient] = useState(new _libraryServiceClient.LibraryServiceClient(props.grpcWebUrl));
+
+  const allClients = [
+    pulsarAuthServiceClient,
+    producerServiceClient,
+    consumerServiceClient,
+    topicServiceClient,
+    topicpoliciesServiceClient,
+    schemaServiceClient,
+    namespaceServiceClient,
+    namespacePoliciesServiceClient,
+    tenantServiceClient,
+    clustersServiceClient,
+    metricsServiceClient,
+    brokersServiceClient,
+    brokerstatsServiceClient,
+    brokerstatsServiceClient,
+    libraryServiceClient
+  ];
+
+  useEffect(() => {
+    const grpcWebDevTools = (window as any).__GRPCWEB_DEVTOOLS__;
+
+    if (grpcWebDevTools !== undefined) {
+      grpcWebDevTools(allClients);
+    }
+  }, allClients);
 
   return (
     <>

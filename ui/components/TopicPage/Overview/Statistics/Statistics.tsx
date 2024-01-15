@@ -171,5 +171,3 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
 }
 
 export default Statistics;
-
-

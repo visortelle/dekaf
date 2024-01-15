@@ -4,11 +4,12 @@ import HealthCheck from "./HealthCheck/HealthCheck";
 import Clusters from "./Clusters/Clusters";
 import * as AppContext from '../../app/contexts/AppContext';
 import s from "./Overview.module.css";
-import Ui from "./Ui/Ui";
+import DekafInfo from "./DekafInfo/DekafInfo";
 import sts from "../../ui/SimpleTable/SimpleTable.module.css";
 import { H2 } from "../../ui/H/H";
 import * as HealthCheckContext from '../../app/contexts/HealthCheckContext/HealthCheckContext';
 import NoData from "../../ui/NoData/NoData";
+import LibrarySidebar from "../../ui/LibrarySidebar/LibrarySidebar";
 
 const Overview: React.FC = () => {
   const { config } = AppContext.useContext();
@@ -16,10 +17,10 @@ const Overview: React.FC = () => {
 
   return (
     <div className={s.Overview}>
-      <div className={s.LeftPane}>
+      <div className={s.LeftPanel}>
         <div className={s.Section}>
           <div className={s.SubSection}>
-            <Ui />
+            <DekafInfo />
           </div>
 
           <div className={s.SubSection}>
@@ -29,7 +30,22 @@ const Overview: React.FC = () => {
 
         <div className={s.Section}>
           <div className={s.SectionHeader}>
-            <H2>Pulsar Instance</H2>
+            <H2 help={(
+              <>
+                <p>
+                  Pulsar <strong>Instance</strong> is a set of connected Pulsar <strong>Clusters</strong>.
+                  <br />
+                  You may need the setup with more than one <strong>Cluster</strong> if you want to use Pulsar <strong>Geo-Replication</strong> feature.
+                </p>
+                <p>
+                  A <strong>Cluster</strong> is a set of connected <strong>Brokers</strong> (compute nodes) and <strong>Bookies</strong> (storage nodes).
+                  <br />
+                  Additionally, <strong>Cluster</strong> can have a <strong>Proxy</strong> (load balancer) and <strong>Function Workers</strong> (compute nodes for running functions).
+                </p>
+              </>
+            )}>
+              Pulsar Instance
+            </H2>
           </div>
           <table className={sts.Table}>
             <tbody>
@@ -50,7 +66,7 @@ const Overview: React.FC = () => {
               <tr className={sts.Row}>
                 <td className={sts.HighlightedCell}>Web Service URL</td>
                 <td className={sts.Cell}>
-                  {config.pulsarHttpUrl}
+                  {config.pulsarWebUrl}
                 </td>
               </tr>
             </tbody>
@@ -72,6 +88,15 @@ const Overview: React.FC = () => {
         </div>
       </div>
 
+      <div className={s.RightPanel}>
+        <LibrarySidebar
+          libraryContext={{
+            pulsarResource: {
+              type: "instance"
+            }
+          }}
+        />
+      </div>
     </div>
   );
 };

@@ -1,0 +1,23 @@
+.ColorPicker {
+  background-color: var(--surface-color);
+  padding: 12rem 24rem;
+}
+
+.ColorSet {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  grid-gap: 0rem;
+}
+
+.Color {
+  width: 32rem;
+  height: 24rem;
+}
+
+.Color:hover,
+.IsCurrent {
+  cursor: pointer;
+  scale: 1.33;
+  border-radius: 4rem;
+  box-shadow: 0 0 0 1rem var(--border-color);
+}

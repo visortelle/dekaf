@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -13,6 +13,7 @@ export type ModalStackEntry = {
   id: string,
   title: string,
   content: ReactNode,
+  isNotCloseable?: boolean,
   styleMode?: 'no-content-padding',
 }
 
@@ -21,6 +22,7 @@ export type ModalStack = ModalStackEntry[];
 export type Value = {
   stack: ModalStack,
   push: (entry: ModalStackEntry) => void,
+  update: (id: string, entry: ModalStackEntry) => void,
   pop: () => void,
   clear: () => void,
 };
@@ -28,6 +30,7 @@ export type Value = {
 const defaultValue: Value = {
   stack: [],
   push: () => undefined,
+  update: () => undefined,
   pop: () => undefined,
   clear: () => undefined,
 };
@@ -39,6 +42,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 
   const pop = () => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - 1) }));
   const push = (entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: [...value.stack, entry] }));
+  const update = (id: string, entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: value.stack.map((e) => e.id === id ? entry : e) }));
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
 
   const modalPortal = ReactDOM.createPortal(
@@ -58,7 +62,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <Context.Provider value={{ ...value, pop, push, clear }}>
+    <Context.Provider value={{ ...value, pop, push, clear, update: update }}>
       {modalPortal}
       {children}
     </Context.Provider>
@@ -73,7 +77,7 @@ type ModalElementProps = {
 
 const ModalElement: React.FC<ModalElementProps> = (props) => {
   const isVisible = props.isVisible;
-  const rootRef = React.useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (props.isVisible) {
@@ -95,7 +99,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       transition={{ duration: 0.25, ease: 'easeInOut' }}
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') {
+        if (!props.entry.isNotCloseable && e.key === 'Escape') {
           props.onClose();
         }
       }}
@@ -105,7 +109,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
           <div className={s.TopBarTitle}>
             <H2>{props.entry.title}</H2>
           </div>
-          <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>
+          {!props.entry.isNotCloseable && <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>}
         </div>
         {(
           <div className={`${s.Content} ${props.entry.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{props.entry.content}</div>

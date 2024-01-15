@@ -4,15 +4,22 @@ import { tooltipId } from "../Tooltip/Tooltip";
 import { renderToStaticMarkup } from "react-dom/server";
 
 export type ToggleProps = {
-  value: boolean;
-  onChange: (value: boolean) => void;
-  label?: string;
-  help?: React.ReactElement | string;
+  value: boolean,
+  onChange: (value: boolean) => void,
+  label?: string,
+  help?: React.ReactElement | string,
+  isReadOnly?: boolean
 };
 
 const Toggle: React.FC<ToggleProps> = (props) => {
   const bodyRef = React.useRef<HTMLDivElement>(null);
-  const toggle = () => props.onChange(!props.value);
+  const toggle = () => {
+    if (props.isReadOnly) {
+      return;
+    }
+
+    props.onChange(!props.value)
+  };
 
   return (
     <div
@@ -22,6 +29,9 @@ const Toggle: React.FC<ToggleProps> = (props) => {
         bodyRef.current?.focus();
         toggle();
       }}
+      data-tooltip-id={tooltipId}
+      data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
+      data-tooltip-delay-show={500}
     >
       <div
         ref={bodyRef}
@@ -36,11 +46,7 @@ const Toggle: React.FC<ToggleProps> = (props) => {
       >
         <div className={s.Circle} />
       </div>
-      <div
-        className={s.Label}
-        data-tooltip-id={tooltipId}
-        data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
-      >
+      <div className={s.Label}>
         {props.label}
       </div>
     </div>

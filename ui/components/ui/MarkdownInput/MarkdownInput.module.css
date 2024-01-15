@@ -1,0 +1,92 @@
+.MarkdownInput {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-height: 30rem;
+}
+
+.ViewFullScreen {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, #fff 10%, #fff0 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  padding-bottom: 4rem;
+  height: 18rem;
+}
+
+.MarkdownInput:hover .ViewFullScreen {
+  transition: var(--transition-short);
+}
+
+.ViewFullScreenText {
+  opacity: 0;
+  background-color: #fff;
+  font-size: 12rem;
+  border-radius: 12rem;
+  box-shadow: 0 0 4rem rgba(0, 0, 0, 0.17);
+  padding: 2rem 12rem;
+}
+
+.MarkdownInput:hover .ViewFullScreenText {
+  opacity: 1;
+  transition: var(--transition-short);
+}
+
+.ViewFullScreen:hover {
+  cursor: pointer;
+}
+
+.ViewFullScreen:hover .ViewFullScreenText {
+  opacity: 1;
+}
+
+.Buttons {
+  position: absolute;
+  top: 0rem;
+  right: 32rem;
+  opacity: 0;
+  z-index: 1;
+}
+
+.MarkdownInput:hover .Buttons {
+  opacity: 1;
+  transition: var(--transition-short);
+}
+
+.ModalDialog {
+  height: calc(100vh - 120rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ModalDialogFooter {
+  padding: 12rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.MarkdownPreview {
+  width: 800rem;
+  height: calc(100vh - 120rem);
+  padding: 12rem
+}
+
+.EmptyMarkdown {
+  height: 32rem;
+  border-radius: 8rem;
+  background-color: var(--surface-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: var(--font-weight-bold);
+  color: #777;
+}

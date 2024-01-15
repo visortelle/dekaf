@@ -7,7 +7,7 @@
 }
 
 .Select {
-  height: 36rem;
+  height: 34rem;
   border: 1px solid var(--border-color);
   border-radius: 6rem;
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
@@ -22,6 +22,21 @@
   outline: none;
   border: 1px solid var(--accent-color-blue);
   transition: var(--transition-short);
+}
+
+.SmallSelect .Select {
+  height: 28rem;
+}
+
+.ReadOnly .Select {
+  color: var(--text-color);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.ReadOnly,
+.ReadOnly .Select:hover {
+  cursor: initial;
 }
 
 .NoBorders {

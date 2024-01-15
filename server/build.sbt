@@ -1,6 +1,6 @@
 val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
-val pulsarVersion = "3.1.0"
+val pulsarVersion = "3.1.1"
 val circeVersion = "0.14.5"
 val zioVersion = "2.0.18"
 val zioConfigVersion = "3.0.7"
@@ -44,6 +44,7 @@ Compile / sourceGenerators += Def.task {
 }.taskValue
 
 lazy val root = project
+    .enablePlugins(ClasspathJarPlugin)
     .enablePlugins(BuildInfoPlugin)
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
@@ -54,6 +55,7 @@ lazy val root = project
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,
+        Universal / packageName := "dekaf",
         buildInfoPackage := "buildinfo",
         buildInfoObject := "BuildInfo",
         buildInfoOptions += BuildInfoOption.BuildTime,
@@ -100,6 +102,7 @@ lazy val root = project
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.12.0",
+            "org.apache.commons" % "commons-text" % "1.11.0",
             "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
             "com.google.guava" % "guava" % "31.1-jre",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
@@ -113,6 +116,7 @@ lazy val root = project
 libraryDependencies ++= Seq(
     "com.google.protobuf" % "protobuf-java" % "3.23.4",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion

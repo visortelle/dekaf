@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './RelativeDateTimePicker.module.css'
-import { DateTimeUnit, RelativeDateTime } from '../../TopicPage/Messages/types';
+import { DateTimeUnit, RelativeDateTime } from '../ConsumerSession/types';
 import Select from '../Select/Select';
-import FormItem from '../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../ConfigurationTable/FormLabel/FormLabel';
 import Checkbox from '../Checkbox/Checkbox';
 import Input from '../Input/Input';
 
 export type RelativeDateTimePickerProps = {
   value: RelativeDateTime;
   onChange: (value: RelativeDateTime) => void;
+  isReadOnly?: boolean
 };
 
 const pluralize = (n: number, singular: string) => {
@@ -25,6 +24,7 @@ const RelativeDateTimePicker: React.FC<RelativeDateTimePickerProps> = (props) =>
             type="number"
             value={String(props.value.value)}
             onChange={(v) => props.onChange({ ...props.value, value: Number(v) })}
+            isReadOnly={props.isReadOnly}
           />
         </div>
 
@@ -41,6 +41,7 @@ const RelativeDateTimePicker: React.FC<RelativeDateTimePickerProps> = (props) =>
             ]}
             value={props.value.unit}
             onChange={v => props.onChange({ ...props.value, unit: v })}
+            isReadOnly={props.isReadOnly}
           />
         </div>
 
@@ -51,6 +52,7 @@ const RelativeDateTimePicker: React.FC<RelativeDateTimePickerProps> = (props) =>
         <Checkbox
           checked={props.value.isRoundedToUnitStart}
           onChange={(v) => props.onChange({ ...props.value, isRoundedToUnitStart: v })}
+          isReadOnly={props.isReadOnly}
         />
         <strong>Round to beginning of the {props.value.unit}</strong>
       </div>

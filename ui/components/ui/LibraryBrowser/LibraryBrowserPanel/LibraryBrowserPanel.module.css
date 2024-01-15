@@ -3,8 +3,27 @@
   position: relative;
 }
 
-.ItemName {
+.ItemNameAndDescription {
+  margin-top: 12rem;
+}
 
+.ItemName {}
+
+.ItemDescription {
+  position: relative;
+}
+
+.RemoveDescriptionButton {
+  position: absolute;
+  top: 0;
+  right: 8rem;
+
+  opacity: 0;
+}
+
+.ItemDescription:hover .RemoveDescriptionButton {
+  opacity: 1;
+  transition: var(--transition-short);
 }
 
 .ReferenceIcon {
@@ -24,20 +43,26 @@
 .Buttons {
   position: absolute;
   display: inline-flex;
-  right: -12rem;
-  top: -7rem;
+  right: -6rem;
+  top: -5rem;
   transform: translate(100%, 0);
   background-color: #fff;
   z-index: 10;
   animation: fade-in 0.2s ease-in-out;
 }
 
+.PostItemType {
+  position: relative;
+  left: 4rem;
+  top: 4rem;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
-

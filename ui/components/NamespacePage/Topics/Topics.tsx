@@ -13,8 +13,6 @@ import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import * as pbUtils from '../../../proto-utils/proto-utils';
 import {
-  GetTopicPropertiesResponse,
-  GetTopicsStatsResponse,
   PartitionedTopicStats,
   TopicProperties,
   TopicStats
@@ -80,10 +78,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
   const i18n = I18n.useContext();
 
   const dataLoaderCacheKey =
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({
       tenant: props.tenant,
       namespace: props.namespace
-    }).concat(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({
+    }).concat(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({
       tenant: props.tenant,
       namespace: props.namespace
     }));
@@ -183,7 +181,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 title: 'Name',
                 render: (de) => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
@@ -512,12 +510,12 @@ const Topics: React.FC<TopicsProps> = (props) => {
   );
 }
 
-type DetectPartitionedTopicsResult = {
+export type DetectPartitionedTopicsResult = {
   partitionedTopics: { topicFqn: string, partitions: string[] }[],
   nonPartitionedTopics: { topicFqn: string }[]
 };
 
-function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResult {
+export function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResult {
   let [allPartitions, nonPartitionedTopicFqns] = partition(topics, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
 
   const nonPartitionedTopics = nonPartitionedTopicFqns.map((topicFqn) => ({ topicFqn }));
@@ -528,7 +526,6 @@ function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResul
     const partitions = allPartitions.filter(p => regexp.test(p));
     return { topicFqn, partitions };
   });
-
 
   return { partitionedTopics, nonPartitionedTopics };
 }

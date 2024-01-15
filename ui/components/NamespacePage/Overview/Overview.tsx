@@ -21,8 +21,12 @@ import ClearBacklogBundle from "./ClearBacklogBundle/ClearBacklogBundle";
 import UnloadBundle from "./UnloadBundle/UnloadBundle";
 import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
-import JsonView from "../../ui/JsonView/JsonView";
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
+import FormLabel from '../../ui/ConfigurationTable/FormLabel/FormLabel';
+import FormItem from '../../ui/ConfigurationTable/FormItem/FormItem';
+import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
+import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 
 export type BundleKey = string
 
@@ -37,6 +41,7 @@ type TopicCountDataEntry = {
 export type OverviewProps = {
   tenant: string;
   namespace: string;
+  libraryContext: LibraryContext;
 };
 
 const Overview: React.FC<OverviewProps> = (props) => {
@@ -130,250 +135,263 @@ const Overview: React.FC<OverviewProps> = (props) => {
     if (clusters && !clustersError) {
       setActiveTab(clusters.at(0));
     }
-  }, [clusters, clustersError])
+  }, [clusters, clustersError]);
 
   return (
     <div className={s.Overview}>
-      <div className={`${s.Section} ${s.StatisticsSection}`}>
-        <table className={`${st.Table} ${s.Table}`}>
-          <tbody>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Namespace FQN</td>
-              <Td>
-                <div>{namespaceFqn}</div>
-              </Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Persistent topics count</td>
-              <Td>
-                {
-                  isTopicCountsLoading ? (
-                    <div className={s.LoadingPlaceholder} />
-                  ) : (
-                    <div>{topicCounts?.persistentTopicsCount}</div>
-                  )
-                }
-              </Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Non-persistent topics count</td>
-              <Td>
-                {
-                  isTopicCountsLoading ? (
-                    <div className={s.LoadingPlaceholder} />
-                  ) : (
-                    <div>{topicCounts?.nonPersistentTopicsCount}</div>
-                  )
-                }
-              </Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Topics count</td>
-              <Td>
-                {
-                  isTopicCountsLoading ? (
-                    <div className={s.LoadingPlaceholder} />
-                  ) : (
-                    <div>{topicCounts?.topicsCountExcludingPartitions}</div>
-                  )
-                }
-              </Td>
-            </tr>
-            <tr className={st.Row}>
-              <td className={st.HighlightedCell}>Topics count including partitions</td>
-              <Td>
-                {
-                  isTopicCountsLoading ? (
-                    <div className={s.LoadingPlaceholder} />
-                  ) : (
-                    <div>{topicCounts?.topicsCount}</div>
-                  )
-                }
-              </Td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div style={{ marginBottom: '24rem' }}>
-        <strong>Properties</strong>
-        <div className={s.JsonViewer}>
-          <JsonView
-            value={topicCounts?.properties}
-            height={'130rem'}
-            width={'100%'}
-          />
+      <div className={s.LeftPanel}>
+        <div className={`${s.Section} ${s.StatisticsSection}`}>
+          <table className={`${st.Table} ${s.Table}`}>
+            <tbody>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Namespace FQN</td>
+                <Td>
+                  <div>{namespaceFqn}</div>
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Persistent topics count</td>
+                <Td>
+                  {
+                    isTopicCountsLoading ? (
+                      <div className={s.LoadingPlaceholder} />
+                    ) : (
+                      <div>{topicCounts?.persistentTopicsCount}</div>
+                    )
+                  }
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Non-persistent topics count</td>
+                <Td>
+                  {
+                    isTopicCountsLoading ? (
+                      <div className={s.LoadingPlaceholder} />
+                    ) : (
+                      <div>{topicCounts?.nonPersistentTopicsCount}</div>
+                    )
+                  }
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Topics count</td>
+                <Td>
+                  {
+                    isTopicCountsLoading ? (
+                      <div className={s.LoadingPlaceholder} />
+                    ) : (
+                      <div>{topicCounts?.topicsCountExcludingPartitions}</div>
+                    )
+                  }
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Topics count including partitions</td>
+                <Td>
+                  {
+                    isTopicCountsLoading ? (
+                      <div className={s.LoadingPlaceholder} />
+                    ) : (
+                      <div>{topicCounts?.topicsCount}</div>
+                    )
+                  }
+                </Td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <div className={s.Section}>
-        <div className={s.SectionTitle}>
-          <TooltipElement
-            tooltipHelp={"A virtual group of topics that belong to the same namespace. A namespace bundle is defined as a range between two 32-bit hashes, such as 0x00000000 and 0xffffffff."}
-            link={"https://pulsar.apache.org/docs/3.0.x/administration-load-balance/#pulsar-load-manager-architecture"}>
-            Bundles
-          </TooltipElement>
+        <div className={s.Properties}>
+          <FormItem>
+            <FormLabel
+              content="Properties"
+              help={(
+                <div>Custom metadata associated with a namespace. <br /> They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and potential automation tasks.</div>
+              )}
+            />
+            <KeyValueEditor
+              value={recordToIndexedKv(topicCounts?.properties || {})}
+              onChange={() => { }}
+              height='240rem'
+              mode='readonly'
+            />
+          </FormItem>
         </div>
-        {
-          (!isClustersLoading && clusters) ? (
-            <div className={stt.Tabs}>
-              <div className={stt.TabsList}>
-                {clusters.map(tabKey => {
-                  return (
-                    <div
-                      key={tabKey}
-                      className={`${stt.Tab} ${tabKey === activeTab ? stt.ActiveTab : ''}`}
-                      onClick={() => setActiveTab(tabKey)}
-                    >
-                      <div>{tabKey}</div>
-                    </div>
-                  );
-                })}
-              </div>
 
-              <div className={stt.TabContent}>
-                {clusters.map(tabKey => {
-                  return (
-                    <TabContent key={tabKey} isShow={activeTab === tabKey} direction={'column'}>
-                      <div className={s.BundleTableHeader}>
-                        <div className={s.BundleTableHeaderLeft}>
-                          <SmallButton
-                            type="regular"
-                            onClick={() => {
-                              modals.push({
-                                id: "unload-all-bundles",
-                                title: `Unload all bundles`,
-                                content: (
-                                  <UnloadAll
-                                    namespaceFqn={namespaceFqn}
-                                  />
-                                ),
-                                styleMode: "no-content-padding",
-                              });
-                            }}
-                            text="Unload all"
-                          />
-                          <SmallButton
-                            type="danger"
-                            onClick={() => {
-                              modals.push({
-                                id: "clear-backlog",
-                                title: `Clear backlog`,
-                                content: (
-                                  <ClearBacklog
-                                    namespaceFqn={namespaceFqn}
-                                  />
-                                ),
-                                styleMode: "no-content-padding",
-                              });
-                            }}
-                            text="Clear backlog"
-                          />
-                        </div>
-                        <div className={s.BundleTableHeaderRight}>
-                        </div>
+        <div className={s.Section}>
+          <div className={s.SectionTitle}>
+            <TooltipElement
+              tooltipHelp={"A virtual group of topics that belong to the same namespace. A namespace bundle is defined as a range between two 32-bit hashes, such as 0x00000000 and 0xffffffff."}
+              link={"https://pulsar.apache.org/docs/3.0.x/administration-load-balance/#pulsar-load-manager-architecture"}>
+              Bundles
+            </TooltipElement>
+          </div>
+          {
+            (!isClustersLoading && clusters) ? (
+              <div className={stt.Tabs}>
+                <div className={stt.TabsList}>
+                  {clusters.map(tabKey => {
+                    return (
+                      <div
+                        key={tabKey}
+                        className={`${stt.Tab} ${tabKey === activeTab ? stt.ActiveTab : ''}`}
+                        onClick={() => setActiveTab(tabKey)}
+                      >
+                        <div>{tabKey}</div>
                       </div>
+                    );
+                  })}
+                </div>
 
-                      <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex' }}>
-                        <Table<'bundle' | 'actions', BundleKey, {}>
-                          itemNamePlural={'bundles'}
-                          tableId={"bundle-overview-table"}
-                          dataLoader={{
-                            cacheKey: dataLoaderCacheKey,
-                            loader: async () => {
-                              const req = new pbn.GetBundlesRequest();
-                              req.setNamespace(namespaceFqn);
+                <div className={stt.TabContent}>
+                  {clusters.map(tabKey => {
+                    return (
+                      <TabContent key={tabKey} isShow={activeTab === tabKey} direction={'column'}>
+                        <div className={s.BundleTableHeader}>
+                          <div className={s.BundleTableHeaderLeft}>
+                            <SmallButton
+                              type="regular"
+                              onClick={() => {
+                                modals.push({
+                                  id: "unload-all-bundles",
+                                  title: `Unload all bundles`,
+                                  content: (
+                                    <UnloadAll
+                                      namespaceFqn={namespaceFqn}
+                                    />
+                                  ),
+                                  styleMode: "no-content-padding",
+                                });
+                              }}
+                              text="Unload all"
+                            />
+                            <SmallButton
+                              type="danger"
+                              onClick={() => {
+                                modals.push({
+                                  id: "clear-backlog",
+                                  title: `Clear backlog`,
+                                  content: (
+                                    <ClearBacklog
+                                      namespaceFqn={namespaceFqn}
+                                    />
+                                  ),
+                                  styleMode: "no-content-padding",
+                                });
+                              }}
+                              text="Clear backlog"
+                            />
+                          </div>
+                          <div className={s.BundleTableHeaderRight}>
+                          </div>
+                        </div>
 
-                              const res = await namespaceServiceClient.getBundles(req, null);
-                              const bundles = res.getBundlesList().map(v => v as BundleKey);
+                        <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex' }}>
+                          <Table<'bundle' | 'actions', BundleKey, {}>
+                            itemNamePlural={'bundles'}
+                            tableId={"bundle-overview-table"}
+                            dataLoader={{
+                              cacheKey: dataLoaderCacheKey,
+                              loader: async () => {
+                                const req = new pbn.GetBundlesRequest();
+                                req.setNamespace(namespaceFqn);
 
-                              return bundles
-                            }
-                          }}
-                          columns={{
-                            columns: {
-                              bundle: {
-                                title: 'Bundle',
-                                render: (bundleKey) =>
-                                  <div className={s.BundleCell}>{bundleKey}</div>
-                              },
-                              actions: {
-                                title: 'Actions',
-                                render: (bundleKey: BundleKey) =>
-                                  <div className={s.ActionsCell}>
-                                    <SmallButton
-                                      type="regular"
-                                      onClick={() => {
-                                        modals.push({
-                                          id: "split-bundle",
-                                          title: `Split bundle`,
-                                          content: (
-                                            <SplitBundle
-                                              namespaceFqn={namespaceFqn}
-                                              bundleKey={bundleKey}
-                                            />
-                                          ),
-                                          styleMode: "no-content-padding",
-                                        });
-                                      }}
-                                      text="Split"
-                                    />
-                                    <SmallButton
-                                      type="regular"
-                                      onClick={() => {
-                                        modals.push({
-                                          id: "unload-bundle",
-                                          title: `Unload bundle`,
-                                          content: (
-                                            <UnloadBundle
-                                              namespaceFqn={namespaceFqn}
-                                              bundleKey={bundleKey}
-                                            />
-                                          ),
-                                          styleMode: "no-content-padding",
-                                        });
-                                      }}
-                                      text="Unload"
-                                    />
-                                    <SmallButton
-                                      type="danger"
-                                      onClick={() => {
-                                        modals.push({
-                                          id: "clear-backlog-bundle",
-                                          title: `Clear bundle backlog`,
-                                          content: (
-                                            <ClearBacklogBundle
-                                              namespaceFqn={namespaceFqn}
-                                              bundleKey={bundleKey}
-                                            />
-                                          ),
-                                          styleMode: "no-content-padding",
-                                        });
-                                      }}
-                                      text="Clear backlog"
-                                    />
-                                  </div>
+                                const res = await namespaceServiceClient.getBundles(req, null);
+                                const bundles = res.getBundlesList().map(v => v as BundleKey);
+
+                                return bundles
                               }
-                            },
-                            defaultConfig: [
-                              { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 300 },
-                              { columnKey: 'actions', visibility: 'visible', width: 300 },
-                            ],
-                          }}
-                          getId={d => d}
-                          autoRefresh={{ intervalMs: 5000 }}
-                        />
-                      </div>
+                            }}
+                            columns={{
+                              columns: {
+                                bundle: {
+                                  title: 'Bundle',
+                                  render: (bundleKey) =>
+                                    <div className={s.BundleCell}>{bundleKey}</div>
+                                },
+                                actions: {
+                                  title: 'Actions',
+                                  render: (bundleKey: BundleKey) =>
+                                    <div className={s.ActionsCell}>
+                                      <SmallButton
+                                        type="regular"
+                                        onClick={() => {
+                                          modals.push({
+                                            id: "split-bundle",
+                                            title: `Split bundle`,
+                                            content: (
+                                              <SplitBundle
+                                                namespaceFqn={namespaceFqn}
+                                                bundleKey={bundleKey}
+                                              />
+                                            ),
+                                            styleMode: "no-content-padding",
+                                          });
+                                        }}
+                                        text="Split"
+                                      />
+                                      <SmallButton
+                                        type="regular"
+                                        onClick={() => {
+                                          modals.push({
+                                            id: "unload-bundle",
+                                            title: `Unload bundle`,
+                                            content: (
+                                              <UnloadBundle
+                                                namespaceFqn={namespaceFqn}
+                                                bundleKey={bundleKey}
+                                              />
+                                            ),
+                                            styleMode: "no-content-padding",
+                                          });
+                                        }}
+                                        text="Unload"
+                                      />
+                                      <SmallButton
+                                        type="danger"
+                                        onClick={() => {
+                                          modals.push({
+                                            id: "clear-backlog-bundle",
+                                            title: `Clear bundle backlog`,
+                                            content: (
+                                              <ClearBacklogBundle
+                                                namespaceFqn={namespaceFqn}
+                                                bundleKey={bundleKey}
+                                              />
+                                            ),
+                                            styleMode: "no-content-padding",
+                                          });
+                                        }}
+                                        text="Clear backlog"
+                                      />
+                                    </div>
+                                }
+                              },
+                              defaultConfig: [
+                                { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 300 },
+                                { columnKey: 'actions', visibility: 'visible', width: 300 },
+                              ],
+                            }}
+                            getId={d => d}
+                            autoRefresh={{ intervalMs: 5000 }}
+                          />
+                        </div>
 
-                    </TabContent>
-                  );
-                })}
+                      </TabContent>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ) : (
-            <NothingToShow reason={'no-items-found'} />
-          )
-        }
+            ) : (
+              <NothingToShow reason={'no-items-found'} />
+            )
+          }
+        </div>
+      </div>
+      <div className={s.RightPanel}>
+        <LibrarySidebar
+          libraryContext={props.libraryContext}
+        />
       </div>
     </div>
   );

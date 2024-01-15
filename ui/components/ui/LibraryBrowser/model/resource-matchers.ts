@@ -1,18 +1,21 @@
 type WithReactKey = { reactKey: string };
 
+export type InstanceMatcher = WithReactKey & {
+  type: "instance-matcher"
+}
+
 export type ExactTenantMatcher = WithReactKey & {
   type: 'exact-tenant-matcher',
   tenant: string;
 };
 
-export type RegexTenantMatcher = WithReactKey & {
-  type: 'regex-tenant-matcher',
-  tenantRegex: string;
+export type AllTenantMatcher = WithReactKey & {
+  type: 'all-tenant-matcher'
 };
 
 export type TenantMatcher = WithReactKey & {
   type: 'tenant-matcher',
-  value: ExactTenantMatcher | RegexTenantMatcher
+  value: ExactTenantMatcher | AllTenantMatcher
 };
 
 export type TenantMatcherType = TenantMatcher['value']['type'];
@@ -23,39 +26,33 @@ export type ExactNamespaceMatcher = WithReactKey & {
   namespace: string;
 };
 
-export type RegexNamespaceMatcher = WithReactKey & {
-  type: 'regex-namespace-matcher',
-  tenant: TenantMatcher;
-  namespaceRegex: string;
+export type AllNamespaceMatcher = WithReactKey & {
+  type: 'all-namespace-matcher',
+  tenant: TenantMatcher
 };
 
 export type NamespaceMatcher = WithReactKey & {
   type: 'namespace-matcher',
-  value: ExactNamespaceMatcher | RegexNamespaceMatcher
+  value: ExactNamespaceMatcher | AllNamespaceMatcher
 };
 export type NamespaceMatcherType = NamespaceMatcher['value']['type'];
 
-export type TopicPersistency = 'persistent' | 'non-persistent' | 'any';
-
 export type ExactTopicMatcher = WithReactKey & {
   type: 'exact-topic-matcher',
-  persistency: TopicPersistency;
   namespace: NamespaceMatcher;
   topic: string;
 };
 
-export type RegexTopicMatcher = WithReactKey & {
-  type: 'regex-topic-matcher',
-  persistency: TopicPersistency;
-  namespace: NamespaceMatcher;
-  topicRegex: string;
+export type AllTopicMatcher = WithReactKey & {
+  type: 'all-topic-matcher',
+  namespace: NamespaceMatcher
 };
 
 export type TopicMatcher = WithReactKey & {
   type: 'topic-matcher',
-  value: ExactTopicMatcher | RegexTopicMatcher
+  value: ExactTopicMatcher | AllTopicMatcher
 };
 
 export type TopicMatcherType = TopicMatcher['value']['type'];
 
-export type ResourceMatcher = WithReactKey & (TopicMatcher | NamespaceMatcher | TenantMatcher);
+export type ResourceMatcher = WithReactKey & (InstanceMatcher | TopicMatcher | NamespaceMatcher | TenantMatcher);

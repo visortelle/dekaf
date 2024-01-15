@@ -1,0 +1,18 @@
+.SocialIcons {
+  display: flex;
+  gap: 12rem;
+}
+
+.Icon {
+  display: inline-flex;
+}
+
+.Icon:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.Icon svg {
+  width: 24rem;
+  height: 24rem;
+}

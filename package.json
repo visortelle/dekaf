@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "use-session-storage-state": "^18.2.0"
+  }
+}

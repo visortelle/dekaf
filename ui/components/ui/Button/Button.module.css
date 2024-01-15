@@ -78,11 +78,26 @@
   opacity: 1;
 }
 
+.ActiveButton::after {
+  content: '';
+  width: 100%;
+  height: 3rem;
+  background: var(--accent-color-blue);
+  position: absolute;
+  border-bottom-color: transparent;
+  left: 0;
+  right: 0;
+  bottom: -2rem;
+  border-bottom-left-radius: 4rem;
+  border-bottom-right-radius: 4rem;
+}
+
 .SmallSize {
   padding: 2rem 12rem;
   height: 26rem;
   font-size: 12rem;
 }
+
 .SmallSize svg {
   margin-right: 10rem;
   width: 16rem;

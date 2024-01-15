@@ -43,7 +43,7 @@ const DeleteDialog = (props: Props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
@@ -52,7 +52,7 @@ const DeleteDialog = (props: Props) => {
       }
       onConfirm={deleteResourceGroup}
       onCancel={modals.pop}
-      guard={props.resourceGroup}
+      guard={"CONFIRM"}
       type='danger'
     />
   );
