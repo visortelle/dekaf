@@ -1,0 +1,104 @@
+.Button {
+  position: relative;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 14rem;
+  font-weight: var(--font-weight-bold);
+  user-select: none;
+  transition: var(--transition-short);
+  border: 1px solid var(--border-color);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  margin: 1rem;
+  appearance: none;
+}
+
+.Button:hover {
+  cursor: pointer;
+  opacity: 0.5;
+  user-select: none;
+  transition: var(--transition-short);
+}
+
+.Button svg {
+  width: 20rem;
+  height: 20rem;
+  margin-right: 8rem;
+  fill: #fff;
+}
+
+.ButtonWithoutText {
+  padding: 2rem 3rem;
+}
+
+.ButtonWithoutText svg {
+  margin-right: 0;
+}
+
+.Regular {
+  background-color: #fff;
+  color: var(--text-color);
+}
+
+.Regular svg {
+  fill: var(--text-color);
+}
+
+.Primary {
+  background-color: var(--accent-color-blue);
+  border-color: var(--accent-color-blue);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
+  color: #fff;
+}
+
+.Danger {
+  background-color: var(--accent-color-red);
+  border-color: var(--accent-color-red);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
+  color: #fff;
+}
+
+.DisabledButton {
+  opacity: 1;
+  background-color: var(--surface-color) !important;
+  border-color: var(--border-color) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.27);
+  color: #999 !important;
+}
+
+.DisabledButton svg {
+  fill: #aaa;
+}
+
+.DisabledButton:hover {
+  cursor: default;
+  opacity: 1;
+}
+
+.ActiveButton::after {
+  content: '';
+  width: 100%;
+  height: 3rem;
+  background: var(--accent-color-blue);
+  position: absolute;
+  border-bottom-color: transparent;
+  left: 0;
+  right: 0;
+  bottom: -2rem;
+  border-bottom-left-radius: 4rem;
+  border-bottom-right-radius: 4rem;
+}
+
+.SmallSize {
+  padding: 2rem 12rem;
+  height: 26rem;
+  font-size: 12rem;
+}
+.SmallSize svg {
+  margin-right: 10rem;
+  width: 16rem;
+  height: 16rem;
+}

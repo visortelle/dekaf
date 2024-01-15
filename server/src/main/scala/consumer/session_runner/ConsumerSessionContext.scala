@@ -3,86 +3,88 @@ package consumer.session_runner
 import _root_.config.readConfigAsync
 import _root_.consumer.message_filter.*
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
-import com.typesafe.scalalogging.Logger
+import consumer.message_filter.basic_message_filter.BasicMessageFilter
+import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTarget
 import io.circe.generic.auto.*
-import io.circe.syntax.*
-import org.graalvm.polyglot.{Context}
-import org.graalvm.polyglot.proxy.*
+import org.graalvm.polyglot.{Context, Engine, Value}
 
+import scala.util.{Failure, Success, Try}
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 
-type JsonString = String
-type JsonAccumulator = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
-type FilterTestResult = (Either[String, Boolean], JsonAccumulator)
-
-val JsonAccumulatorVarName = "accum"
+type JsonStateValue = JsonValue // Cumulative state to produce user-defined calculations, preserved between messages.
+val VarPrefix = "__dekaf_"
+val JsonStateVarName = s"globalThis.${VarPrefix}state"
+val JsLibsVarName = s"globalThis.${VarPrefix}libs"
+val CurrentMessageVarName = s"globalThis.${VarPrefix}currentMessage"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
 
 case class ConsumerSessionContextConfig(
-    stdout: java.io.ByteArrayOutputStream
+    stdout: java.io.PrintStream | java.io.ByteArrayOutputStream,
+    engine: Engine
 )
 
 class ConsumerSessionContext(config: ConsumerSessionContextConfig):
-    private val context = Context
+    val context: Context = Context
         .newBuilder("js")
+        .engine(config.engine)
         .out(config.stdout)
         .err(config.stdout)
         .build
 
-    context.eval("js", s"globalThis.$JsonAccumulatorVarName = {}") // Create empty fold-like accumulator variable.
+    context.eval("js", s"$JsonStateVarName = {}") // Create empty fold-like accumulator variable.
 
     // Load JS libraries.
     context.eval("js", jsLibsBundle)
     // Make JS libraries available in the global scope.
-    context.eval("js", "Object.entries(globalThis.jsLibs).map(([k, v]) => globalThis[k] = v)")
+    context.eval("js", s"Object.entries(${JsLibsVarName}).map(([k, v]) => globalThis[k] = v)")
 
     // Provide better console output for debugging on client side.
     context.eval(
         "js",
-        """
-      |globalThis._consoleLog = console.log;
-      |globalThis._consoleInfo = console.info;
-      |globalThis._consoleWarn = console.warn;
-      |globalThis._consoleError = console.error;
-      |globalThis._consoleDebug = console.debug;
+        s"""
+      |globalThis.${VarPrefix}consoleLog = console.log;
+      |globalThis.${VarPrefix}consoleInfo = console.info;
+      |globalThis.${VarPrefix}consoleWarn = console.warn;
+      |globalThis.${VarPrefix}consoleError = console.error;
+      |globalThis.${VarPrefix}consoleDebug = console.debug;
       |
-      |console.log = (...args) => _consoleLog('[LOG]', ...args);
-      |globalThis.log = console.log;
-      |
-      |console.info = (...args) => _consoleInfo('[INFO]', ...args);
-      |globalThis.logInfo = console.info;
-      |
-      |console.warn = (...args) => _consoleWarn('[WARN]', ...args);
-      |globalThis.logWarn = console.warn;
-      |
-      |console.error = (...args) => _consoleError('[ERROR]', ...args);
-      |globalThis.logError = console.error;
-      |
-      |console.debug = (...args) => _consoleLog('[DEBUG]', ...(args.map(arg => stringify(arg, null, 4))));
-      |globalThis.logDebug = console.debug;
+      |console.log = (...args) => ${VarPrefix}consoleLog('[LOG]', ...args);
+      |console.info = (...args) => ${VarPrefix}consoleInfo('[INFO]', ...args);
+      |console.warn = (...args) => ${VarPrefix}consoleWarn('[WARN]', ...args);
+      |console.error = (...args) => ${VarPrefix}consoleError('[ERROR]', ...args);
+      |console.debug = (...args) => ${VarPrefix}consoleLog('[DEBUG]', ...(args.map(arg => stringify(arg, null, 4))));
       """.stripMargin
     )
 
-    def getStdout(): String =
+    def getStdout: String =
         val logs = config.stdout.toString
-        config.stdout.reset()
+        config.stdout match
+            case v: java.io.ByteArrayOutputStream => v.reset()
+            case v: java.io.OutputStream => v.flush() // For debug in test only
         logs
 
-    def test(filter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-        val result = filter.value match
-            case f: BasicMessageFilter => testBasicFilter(context, f, jsonMessage, jsonValue)
-            case f: JsMessageFilter    => testJsFilter(context, f, jsonMessage, jsonValue)
+    private val setCurrentMessageJsFnCode =
+        s"""
+           |((messageAsJsonOmittingValue, messageValueAsJson) => {
+           |  const message = JSON.parse(messageAsJsonOmittingValue);
+           |  message.value = JSON.parse(messageValueAsJson);
+           |  message.state = $JsonStateVarName;
+           |  $CurrentMessageVarName = message;
+           |})
+           |""".stripMargin
+    private val setCurrentMessageJsFn: Value = context.eval("js", setCurrentMessageJsFnCode)
 
-        (
-            result._1.fold(
-                err => Left(err),
-                bool => Right(if filter.isNegated then !bool else bool)
-            ),
-            result._2
-        )
+    def setCurrentMessage(messageAsJsonOmittingValue: MessageAsJsonOmittingValue, messageValueAsJson: MessageValueAsJson) =
+        setCurrentMessageJsFn.executeVoid(messageAsJsonOmittingValue, messageValueAsJson.getOrElse("undefined"))
+
+    def testMessageFilter(filter: MessageFilter): TestResult =
+        val result = filter.test(context)
+
+        if filter.isNegated then result.isOk = !result.isOk
+        result
 
     def runCode(code: String): String =
         try
@@ -91,107 +93,23 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-def testBasicFilter(context: Context, filter: BasicMessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-    val evalCode =
-        s"""
-           | (() => {
-           |    const message = ${jsonMessage.asJson};
-           |    message.value = ${jsonValue.getOrElse("undefined")};
-           |    message.accum = globalThis.$JsonAccumulatorVarName;
-           |
-           |    globalThis.lastMessage = message; // For debug on the client side.
-           |
-           |    return true // replace with actual BasicMessageFilter implementation.
-           | })();
-           |""".stripMargin
+    def getState: JsonStateValue =
+        Try(context.eval("js", s"stringify($JsonStateVarName)").asString) match
+            case Failure(_) => "{}"
+            case Success(v) => v
 
-    val testResult =
-        try
-            Right(context.eval("js", evalCode).asBoolean)
-        catch {
-            case err => Left(s"BasicMessageFilter error: ${err.getMessage}")
+    def testMessageFilterChain(filterChain: MessageFilterChain): ChainTestResult =
+        if !filterChain.isEnabled then
+            return ChainTestResult(isOk = true, results = Vector.empty)
+
+        val filterResults = filterChain.filters
+            .filter(_.isEnabled)
+            .map(testMessageFilter)
+
+        var isOk = filterChain.mode match {
+            case MessageFilterChainMode.All => filterResults.forall(fr => fr.isOk)
+            case MessageFilterChainMode.Any => filterResults.exists(fr => fr.isOk)
         }
+        if filterChain.isNegated then isOk = !isOk
 
-    val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
-    (testResult, cumulativeJsonState)
-
-def testJsFilter(context: Context, filter: JsMessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-    val evalCode =
-        s"""
-          | (() => {
-          |    const message = ${jsonMessage.asJson};
-          |    message.value = ${jsonValue.getOrElse("undefined")};
-          |    message.accum = globalThis.$JsonAccumulatorVarName;
-          |
-          |    globalThis.lastMessage = message; // For debug on the client side.
-          |
-          |    return (${filter.jsCode})(message);
-          | })();
-          |""".stripMargin
-
-    val testResult =
-        try
-            Right(context.eval("js", evalCode).asBoolean)
-        catch {
-            case err => Left(s"JsMessageFilter error: ${err.getMessage}")
-        }
-
-    val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
-    (testResult, cumulativeJsonState)
-
-def getFilterTestResult(
-    filter: MessageFilter,
-    messageFilterContext: ConsumerSessionContext,
-    jsonMessage: JsonMessage,
-    jsonValue: MessageValueToJsonResult
-): FilterTestResult =
-    messageFilterContext.test(filter, jsonMessage, jsonValue)
-
-def getFilterChainTestResult(
-    filterChain: MessageFilterChain,
-    consumerSessionContext: ConsumerSessionContext,
-    jsonMessage: JsonMessage,
-    jsonValue: MessageValueToJsonResult
-): FilterTestResult =
-    var chain = filterChain
-
-    // Each message filters mutate global state.
-    // For example: it stores the last message in the global variable `lastMessage`.
-    // To make it work properly, at least one filter should always present.
-    if (chain.filters.isEmpty || !chain.isEnabled)
-        chain = MessageFilterChain(
-            isEnabled = true,
-            isNegated = false,
-            mode = MessageFilterChainMode.All,
-            filters = List(
-                MessageFilter(
-                    isEnabled = true,
-                    isNegated = false,
-                    value = JsMessageFilter(jsCode = "() => true")
-                )
-            )
-        )
-
-    val filterResults = chain.filters
-        .filter(_.isEnabled)
-        .map(f => getFilterTestResult(f, consumerSessionContext, jsonMessage, jsonValue))
-
-    val maybeErr = filterResults.find(fr => fr._1.isLeft)
-    val filterChainResult = {
-        maybeErr match
-            case Some(Left(err), _) => Left(err)
-            case _ =>
-                chain.mode match
-                    case MessageFilterChainMode.All =>
-                        Right(filterResults.forall(fr => fr._1.getOrElse(false)))
-                    case MessageFilterChainMode.Any =>
-                        Right(filterResults.exists(fr => fr._1.getOrElse(false)))
-    }.fold(
-        err => Left(err),
-        bool => Right(if chain.isNegated then !bool else bool)
-    )
-
-    if filterResults.nonEmpty then
-        val (_, jsonAggregate) = filterResults.last
-        (filterChainResult, jsonAggregate)
-    else (filterChainResult, "{}")
+        ChainTestResult(isOk = isOk, results = filterResults)

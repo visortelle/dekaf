@@ -19,3 +19,8 @@
 .Required {
   transform: translate(0.2ch, -0.8ch);
 }
+
+.FormLabel.Small {
+  font-size: 12rem;
+  margin-bottom: 2rem;
+}

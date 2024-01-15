@@ -20,14 +20,16 @@ run / javaOptions ++= Seq("-Xmx8G")
 scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
 
 lazy val root = project
+    .enablePlugins(ClasspathJarPlugin)
     .enablePlugins(BuildInfoPlugin)
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
     .enablePlugins(GitVersioning)
     .in(file("."))
     .settings(
-        name := "demoapp",
+        name := "dekaf-demoapp",
         scalaVersion := scala3Version,
+        Universal / packageName := "dekaf-demoapp",
         libraryDependencies ++= Seq(
             // Serialization
             "io.circe" %% "circe-core" % circeVersion,

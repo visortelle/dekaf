@@ -1,0 +1,36 @@
+.ConfirmationDialog {
+  padding: 12rem 24rem;
+  max-width: 450px;
+}
+
+.ActionCheckbox {
+  margin: 12rem 0rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 12rem;
+}
+
+.ForceDeleteCheckbox {
+
+}
+
+.ForceDeleteInfo {
+  flex: 1;
+}
+
+.Guard {
+  margin-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.ActionButtons {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 10rem;
+}
+.ActionButtons > button {
+  margin: 4rem;
+}

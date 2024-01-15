@@ -2,7 +2,6 @@ import React from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
 import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
-import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
@@ -12,18 +11,31 @@ import referenceIcon from './icons/reference.svg';
 import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
+import MarkdownInput from '../../MarkdownInput/MarkdownInput';
+import { cloneDeep } from 'lodash';
+import LibraryItemName from './LibraryItemName/LibraryItemName';
+import DeleteButton from '../../DeleteButton/DeleteButton';
+
+export type HidableElement = 'save-button';
 
 export type LibraryBrowserPanelProps = {
   itemType: ManagedItemType;
-  itemToSave: ManagedItem | undefined;
-  onPick: (item: ManagedItem) => void;
+  value: ManagedItem;
   onSave: (item: ManagedItem) => void;
+  onChange: (item: ManagedItem) => void;
+  onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
+  hiddenElements?: HidableElement[];
   isForceShowButtons?: boolean;
   managedItemReference?: {
     id: string;
     onConvertToValue: () => void;
   };
+  extraElements?: {
+    preItemType?: React.ReactElement,
+    postItemType?: React.ReactElement,
+  },
+  isReadOnly?: boolean
 };
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
@@ -35,27 +47,27 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
       <div style={{ display: 'inline-flex', position: 'relative' }}>
         <FormLabel
           content={(
-            <strong>
-              {props.itemType === 'consumer-session-config' && 'Consumer Session Config'}
-              {props.itemType === 'message-filter' && 'Message Filter'}
-              {props.itemType === 'message-filter-chain' && 'Message Filter Chain'}
-              {props.itemType === 'consumer-session-start-from' && 'Start From'}
-              {props.itemType === 'topic-selector' && 'Topic Selector'}
-              {props.itemType === 'consumer-session-topic' && 'Consumer Session Target'}
-              {props.itemType === 'coloring-rule' && 'Coloring Rule'}
-              {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
-            </strong>
+            <div style={{ display: 'flex', gap: '8rem' }}>
+              {props.extraElements?.preItemType}
+              <strong>
+                {props.itemType === 'consumer-session-config' && 'Consumer Session'}
+                {props.itemType === 'message-filter' && 'Filter'}
+                {props.itemType === 'message-filter-chain' && ' Filter Chain'}
+                {props.itemType === 'consumer-session-start-from' && 'Start From'}
+                {props.itemType === 'topic-selector' && 'Topic Selector'}
+                {props.itemType === 'consumer-session-target' && 'Consumer Target'}
+                {props.itemType === 'coloring-rule' && 'Coloring Rule'}
+                {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
+                {props.itemType === 'markdown-document' && 'Markdown Document'}
+                {props.itemType === 'basic-message-filter-target' && 'Target Field'}
+                {props.itemType === 'value-projection' && 'Projection'}
+                {props.itemType === 'value-projection-list' && 'Projection List'}
+              </strong>
+            </div>
           )}
           help={(
             <div>
-              {props.itemType === 'consumer-session-config' && help.consumerSessionConfig}
-              {props.itemType === 'message-filter' && help.messageFilter}
-              {props.itemType === 'message-filter-chain' && help.messageFilterChain}
-              {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
-              {props.itemType === 'topic-selector' && help.topicSelector}
-              {props.itemType === 'consumer-session-topic' && help.consumerSessionTarget}
-              {props.itemType === 'coloring-rule' && help.coloringRule}
-              {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
+              {help[props.itemType] || undefined}
             </div>
           )}
         />
@@ -63,6 +75,10 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           <div
             className={s.ReferenceIcon}
             onClick={() => {
+              if (props.isReadOnly) {
+                return;
+              }
+
               notifySuccess(<>The referenced library item were stored as a part of the parent item value.<br />You can now modify it without affecting other items that use it.</>);
               props.managedItemReference?.onConvertToValue()
             }}
@@ -89,30 +105,72 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <SvgIcon svg={referenceIcon} />
           </div>
         )}
-        {(isHovered || props.isForceShowButtons) && (
+        {(!props.isReadOnly && (isHovered || props.isForceShowButtons)) && (
           <div className={s.Buttons}>
             <LibraryBrowserButtons
               itemType={props.itemType}
-              itemToSave={props.itemToSave}
+              value={props.value}
               onPick={props.onPick}
+              onChange={props.onChange}
               onSave={props.onSave}
               libraryContext={props.libraryContext}
+              isReadOnly={props.isReadOnly}
+              hiddenElements={props.hiddenElements}
             />
+
+            <div className={s.PostItemType}>
+              {props.extraElements?.postItemType}
+            </div>
           </div>
         )}
       </div>
-      {props.itemToSave?.metadata.name && (
-        <div className={s.ItemName}>
-          <H3>
-            {props.itemToSave === undefined ? 'Unnamed' : props.itemToSave.metadata.name}
-          </H3>
+
+      {(props.value.metadata.name.length !== 0 || props.value.metadata.descriptionMarkdown.length !== 0) && (
+        <div className={s.ItemNameAndDescription}>
+          {props.value.metadata.name.length !== 0 && (
+            <div className={s.ItemName}>
+              <LibraryItemName
+                value={props.value.metadata.name}
+                onChange={(v) => {
+                  const newValue = cloneDeep(props.value);
+                  newValue.metadata.name = v;
+
+                  props.onChange(newValue);
+                }}
+                isReadOnly={props.isReadOnly}
+              />
+            </div>
+          )}
+          {props.value.metadata.descriptionMarkdown.length !== 0 && (
+            <div className={s.ItemDescription}>
+              <MarkdownInput
+                value={props.value.metadata.descriptionMarkdown}
+                onChange={(v) => {
+                  const newValue = cloneDeep(props.value);
+                  newValue.metadata.descriptionMarkdown = v;
+
+                  props.onChange(newValue);
+                }}
+                maxHeight={160}
+              />
+              <div className={s.RemoveDescriptionButton}>
+                <DeleteButton
+                  appearance='borderless-semitransparent'
+                  isHideText
+                  onClick={() => {
+                    const newValue = cloneDeep(props.value);
+                    newValue.metadata.descriptionMarkdown = '';
+
+                    props.onChange(newValue);
+                  }}
+                  title="Remove library item description"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
-      {props.itemToSave?.metadata.descriptionMarkdown && (
-        <div className={s.ItemDescription}>
-          {props.itemToSave === undefined ? 'Empty description' : props.itemToSave.metadata.descriptionMarkdown}
-        </div>
-      )}
+
     </div>
   );
 }

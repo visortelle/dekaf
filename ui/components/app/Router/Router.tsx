@@ -11,6 +11,7 @@ import {
   useNavigate,
   Params,
   Navigate,
+  useSearchParams,
 } from "react-router-dom";
 import * as Modals from "../contexts/Modals/Modals";
 
@@ -62,6 +63,7 @@ const prepareRoutes = (): {
     withLayoutProps: WithLayoutProps;
   }) => RouteObject[];
 } => {
+  const [searchParams] = useSearchParams();
   const getRoutes = ({
     withLayout,
     withLayoutProps,
@@ -82,7 +84,7 @@ const prepareRoutes = (): {
         path: routes.instance.overview._.path,
         element: withLayout(
           <InstancePage view={{ type: "overview" }} />,
-          withLayoutProps
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
@@ -137,20 +139,30 @@ const prepareRoutes = (): {
           withLayoutProps
         ),
       },
+      {
+        path: routes.instance.consumerSession._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "consumer-session", managedConsumerSessionId: searchParams.get('id') || undefined }} />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
       /* Topics */
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
-          .messages._.path,
+          .consumerSession._.path,
         element: withLayout(
-          <RoutedTopicPage view="messages" />,
+          <RoutedTopicPage view="consumer-session" />,
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .overview._.path,
-        element: withLayout(<RoutedTopicPage view="overview" />, withLayoutProps),
+        element: withLayout(
+          <RoutedTopicPage view="overview" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
@@ -204,7 +216,7 @@ const prepareRoutes = (): {
         path: routes.tenants.tenant.namespaces.namespace.overview._.path,
         element: withLayout(
           <RoutedNamespacePage view="overview" />,
-          setScrollMode(withLayoutProps, "window")
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
@@ -242,6 +254,13 @@ const prepareRoutes = (): {
           withLayoutProps
         ),
       },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.consumerSession._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="consumer-session" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
       /* Subscriptions */
       {
@@ -257,7 +276,7 @@ const prepareRoutes = (): {
         path: routes.tenants.tenant.overview._.path,
         element: withLayout(
           <RoutedTenantPage view={"overview"} />,
-          withLayoutProps
+          setScrollMode(withLayoutProps, "page-own")
         ),
       },
       {
@@ -274,6 +293,15 @@ const prepareRoutes = (): {
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
+      {
+        path: routes.tenants.tenant.consumerSession._.path,
+        element: withLayout(
+          <RoutedTenantPage view="consumer-session" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+
+      /* Misc */
       {
         path: "*",
         element: withLayout(
@@ -363,24 +391,54 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 };
 
-const RoutedTenantPage = (props: { view: TenantPageView }) => {
+const RoutedTenantPage = (props: { view: TenantPageView['type'] }) => {
   const { tenant } = useParams();
-  return <TenantPage tenant={tenant!} view={props.view} />;
+  const [searchParams] = useSearchParams();
+
+  let view: TenantPageView;
+  switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
+    default: view = { type: props.view };
+  }
+
+  return <TenantPage tenant={tenant!} view={view} />;
 };
 
-const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
+const RoutedNamespacePage = (props: { view: NamespacePageView['type'] }) => {
   const { tenant, namespace } = useParams();
+  const [searchParams] = useSearchParams();
+
+  let view: NamespacePageView;
+  switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
+    default: view = { type: props.view };
+  }
+
   return (
-    <NamespacePage tenant={tenant!} namespace={namespace!} view={props.view} />
+    <NamespacePage tenant={tenant!} namespace={namespace!} view={view} />
   );
 };
 
 const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
   const { tenant, namespace, topic, topicPersistency, schemaVersion } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   let view: TopicPageView;
   switch (props.view) {
+    case "consumer-session": {
+      const managedConsumerSessionId = searchParams.get('id');
+      view = { type: "consumer-session", managedConsumerSessionId: managedConsumerSessionId || undefined };
+      break;
+    }
     case "schema-initial-screen":
       view = { type: "schema-initial-screen" };
       break;

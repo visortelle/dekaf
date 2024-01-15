@@ -9,6 +9,8 @@ import com.tools.teal.pulsar.ui.library.v1.library.{
     DeleteLibraryItemResponse,
     GetLibraryItemRequest,
     GetLibraryItemResponse,
+    GetLibraryItemsCountRequest,
+    GetLibraryItemsCountResponse,
     ListLibraryItemsRequest,
     ListLibraryItemsResponse,
     SaveLibraryItemRequest,
@@ -17,7 +19,6 @@ import com.tools.teal.pulsar.ui.library.v1.library.{
 import pulsar_auth.RequestContext
 import _root_.config.{readConfigAsync, Config}
 import com.fasterxml.uuid.Generators.timeBasedEpochGenerator as uuidV7
-
 import io.circe.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
@@ -27,6 +28,7 @@ import scala.jdk.CollectionConverters.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.{Duration, SECONDS}
+import _root_.licensing.{Licensing, ProductCode}
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val libraryRoot = s"${config.dataDir.get}/library"
@@ -37,6 +39,22 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
     override def saveLibraryItem(request: SaveLibraryItemRequest): Future[SaveLibraryItemResponse] =
         logger.debug(s"Updating library item: ${request.item}")
+
+        // PRODUCT PLAN LIMITATION START
+        if Vector(ProductCode.DekafFree, ProductCode.DekafDesktopFree, ProductCode.DekafForTeams).contains(Licensing.productCode) then
+            val itemsLimit = Licensing.productCode match
+                case ProductCode.DekafDesktopFree => 20
+                case ProductCode.DekafFree => 50
+                case ProductCode.DekafForTeams => 300
+                case _ => throw new Exception("Something went wrong")
+
+            if library.size > itemsLimit then
+                val status: Status = Status(
+                    code = Code.PERMISSION_DENIED.index,
+                    message = s"Limit of library items in your plan has been reached. Please upgrade your plan at https://dekaf.io"
+                )
+                return Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
+        // PRODUCT PLAN LIMITATION END
 
         try {
             if request.item.isEmpty then throw new Exception("Library item is empty")
@@ -98,13 +116,12 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
         try {
             val filter = ListItemsFilter(
-                types = request.types.map(ManagedItemType.fromPb).toList,
-                tags = request.tags.toList,
-                contextFqns = request.contextFqns.toList
+                types = request.types.map(ManagedItemType.fromPb).toVector,
+                contexts = request.contexts.map(resourceMatcherFromPb).toList
             )
             val libraryItems = library.listItems(filter)
 
-            val libraryItemsPb = libraryItems.map(LibraryItem.toPb).toList
+            val libraryItemsPb = libraryItems.map(LibraryItem.toPb)
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.ListLibraryItemsResponse(status = Some(status), items = libraryItemsPb))
@@ -113,4 +130,36 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
                 logger.warn(s"Failed to list library items: ${e.getMessage}")
                 val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to list library items. ${e.getMessage}")
                 Future.successful(pb.ListLibraryItemsResponse(status = Some(status)))
+        }
+
+    override def getLibraryItemsCount(request: GetLibraryItemsCountRequest): Future[GetLibraryItemsCountResponse] =
+        logger.debug(s"Getting library items count")
+
+        try {
+            val filter = ListItemsFilter(
+                types = request.types.map(ManagedItemType.fromPb).toVector,
+                contexts = request.contexts.map(resourceMatcherFromPb).toList
+            )
+
+            val libraryItems = library.listItems(filter)
+
+            val itemCountPerType = libraryItems
+                .groupBy(item => item.spec.metadata.`type`)
+                .map(t =>
+                    pb.LibraryItemsCount(
+                        itemType = ManagedItemType.toPb(t._1),
+                        itemCount = t._2.size
+                    )
+                ).toVector
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetLibraryItemsCountResponse(
+                status = Some(status),
+                itemCountPerType = itemCountPerType
+            ))
+        } catch {
+            case e: Exception =>
+                logger.warn(s"Failed to get library items count: ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library items count. ${e.getMessage}")
+                Future.successful(pb.GetLibraryItemsCountResponse(status = Some(status)))
         }

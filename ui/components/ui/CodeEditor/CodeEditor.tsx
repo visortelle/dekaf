@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Editor, { EditorProps, Monaco } from '@monaco-editor/react';
+import Editor, { EditorProps, Monaco, loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { IRange } from 'monaco-editor';
 
@@ -19,6 +19,7 @@ export type AutoCompleteConfig = {
 }
 export type CodeEditorProps = EditorProps & {
   autoCompleteConfig?: AutoCompleteConfig,
+  isReadOnly?: boolean
 };
 
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
@@ -34,8 +35,10 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
     const createDependencyProposals = (range: IRange) => {
 
       const newDependencies = autoCompleteConfig.dependencies.map(dependence => {
-        return { ...dependence, range: range,
-          kind: monaco.languages.CompletionItemKind[autoCompleteConfig.kind], }
+        return {
+          ...dependence, range: range,
+          kind: monaco.languages.CompletionItemKind[autoCompleteConfig.kind],
+        }
       });
 
       return newDependencies;
@@ -92,6 +95,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
           addAutoCompletion(monaco);
         }}
         options={{
+          readOnly: props.isReadOnly,
           minimap: { enabled: false },
           scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false, verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
           theme: 'vs',

@@ -1,17 +1,17 @@
 package consumer.session_runner
 
 import _root_.consumer.message_filter.MessageFilterChain
-import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
 import _root_.consumer.session_target.ConsumerSessionTarget
 import com.typesafe.scalalogging.Logger
 import consumer.coloring_rules.ColoringRuleChain
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.Consumer
-import com.google.rpc.code.Code
-import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
+import consumer.value_projections.{ValueProjectionList, ValueProjectionResult}
 import org.apache.pulsar.client.api.Message
+import scala.util.boundary
+import boundary.break
 
 import scala.util.{Failure, Success, Try}
 
@@ -20,55 +20,102 @@ type NonPartitionedTopicFqn = String
 val logger: Logger = Logger(getClass.getName)
 
 case class ConsumerSessionTargetRunner(
+    targetIndex: Int,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain,
+    valueProjectionList: ValueProjectionList,
     schemasByTopic: SchemasByTopic,
-    consumerSessionContext: ConsumerSessionContext,
+    sessionContextPool: ConsumerSessionContextPool,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
 ) {
     def resume(
-        onNext: (msg: Option[consumerPb.Message], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
+        onNext: (
+            msg: Option[ConsumerSessionMessage],
+            sessionContext: ConsumerSessionContext,
+            stats: ConsumerSessionTargetStats,
+            errors: Vector[String]
+        ) => Unit,
+        isDebug: Boolean
     ): Unit =
         val thisTarget = this
 
         val listener = thisTarget.consumerListener
         val targetMessageHandler = listener.targetMessageHandler
-        val consumerSessionContext = thisTarget.consumerSessionContext
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
-            thisTarget.stats.messagesProcessed += 1
+            boundary:
+                thisTarget.stats.messagesProcessed += 1
 
-            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+                val sessionContext = thisTarget.sessionContextPool.getNextContext
+                val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+                val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
+                val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
 
-            val messageFilterChain = thisTarget.messageFilterChain
+                sessionContext.setCurrentMessage(messageJson, messageValueToJsonResult)
 
-            val (filterResult, jsonAccumulator) =
-                getFilterChainTestResult(messageFilterChain, consumerSessionContext, jsonMessage, messageValueToJsonResult)
+                val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
+                    thisTarget.messageFilterChain
+                )
 
-            val messageToSend = messagePb
-                .withAccumulator(jsonAccumulator)
-                .withDebugStdout(consumerSessionContext.getStdout())
+                val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
 
-            val maybeMessage = filterResult match
-                case Right(true) => Some(messageToSend)
-                case _           => None
+                if !messageFilterChainResult.isOk then
+                    onNext(
+                        msg = None,
+                        sessionContext = sessionContext,
+                        stats = stats,
+                        errors = if isDebug then messageFilterChainErrors else Vector.empty
+                    )
+                    boundary.break()
 
-            val serializationErrors = messageValueToJsonResult match
-                case Left(err) => List(err.getMessage)
-                case _         => List.empty
-            val filterErrors = filterResult match
-                case Left(err) => List(err)
-                case _         => List.empty
-            val errors = serializationErrors ++ filterErrors
+                val coloringRuleChainResult: Vector[ChainTestResult] = if thisTarget.coloringRuleChain.isEnabled then
+                    thisTarget.coloringRuleChain.coloringRules
+                        .filter(cr => cr.isEnabled)
+                        .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
+                else
+                    Vector.empty
 
-            onNext(
-                msg = maybeMessage,
-                stats = stats,
-                errors = errors
-            )
+                val valueProjectionListResult: Vector[ValueProjectionResult] = if thisTarget.valueProjectionList.isEnabled then
+                    thisTarget.valueProjectionList.projections
+                        .filter(_.isEnabled)
+                        .map(_.project(sessionContext.context))
+                else
+                    Vector.empty
+
+                var msgToSend = if messageFilterChainResult.isOk then
+                    Some(consumerSessionMessage)
+                else
+                    None
+
+                val errors: Vector[String] =
+                    if isDebug then
+                        val serializationErrors = messageValueToJsonResult match
+                            case Left(err) => Vector(err.getMessage)
+                            case _         => Vector.empty
+                        val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
+                        serializationErrors ++ messageFilterChainErrors ++ coloringRuleChainErrors
+                    else Vector.empty
+
+                msgToSend = msgToSend.map(m =>
+                    m.copy(
+                        messagePb = m.messagePb
+                            .withSessionTargetIndex(targetIndex)
+                            .withDebugStdout(sessionContext.getStdout)
+                            .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
+                            .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                            .withSessionTargetValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
+                    )
+                )
+
+                onNext(
+                    msg = msgToSend,
+                    sessionContext = sessionContext,
+                    stats = stats,
+                    errors = errors
+                )
 
         listener.startAcceptingNewMessages()
         consumers.foreach((_, consumer) => consumer.resume())
@@ -88,8 +135,8 @@ case class ConsumerSessionTargetRunner(
 object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
-        targetName: String,
-        sessionContext: ConsumerSessionContext,
+        targetIndex: Int,
+        sessionContextPool: ConsumerSessionContextPool,
         targetConfig: ConsumerSessionTarget,
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
@@ -100,7 +147,7 @@ object ConsumerSessionTargetRunner:
             val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
 
             val consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]] = nonPartitionedTopicFqns.map { topicFqn =>
-                val consumerName = s"$sessionName-$targetName"
+                val consumerName = s"$sessionName-$targetIndex"
 
                 buildConsumer(
                     pulsarClient = pulsarClient,
@@ -116,11 +163,13 @@ object ConsumerSessionTargetRunner:
             }.toMap
 
             ConsumerSessionTargetRunner(
-                consumerSessionContext = sessionContext,
+                targetIndex = targetIndex,
+                sessionContextPool = sessionContextPool,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
                 messageFilterChain = targetConfig.messageFilterChain,
                 coloringRuleChain = targetConfig.coloringRuleChain,
+                valueProjectionList = targetConfig.valueProjectionList,
                 consumerListener = listener,
                 schemasByTopic = schemasByTopic,
                 stats = ConsumerSessionTargetStats(
