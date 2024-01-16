@@ -84,12 +84,12 @@ export const swrKeys = {
       },
       checkResourceExists: {
         _: (props: {
-          tenant: string,
-          namespace: string,
-          topic: string,
-          topicPersistency: string,
-          schemaVersion: string,
-          subscription: string
+          tenant: string | undefined,
+          namespace: string | undefined,
+          topic: string | undefined,
+          topicPersistency: string | undefined,
+          schemaVersion: string | undefined,
+          subscription: string | undefined
         }) => [
           "customApi",
           "checkResourceExists",

@@ -21,29 +21,29 @@ const ResourceExistsOr404: React.FC<{
 
   const { data: isResourceExists, isLoading: isResourceExistsLoading, error: isResourceExistsError } = useSWR(
     swrKeys.pulsar.customApi.checkResourceExists._({
-      tenant: tenant || "",
-      namespace: namespace || "",
-      topic: topic || "",
-      topicPersistency: topicPersistency || "",
-      schemaVersion: schemaVersion || "",
-      subscription: subscription || ""
+      tenant: tenant,
+      namespace: namespace,
+      topic: topic,
+      topicPersistency: topicPersistency,
+      schemaVersion: schemaVersion,
+      subscription: subscription
     }),
     async () => {
       const req = new CheckResourceExistsRequest();
 
-      if (schemaVersion && schemaVersion !== "" && tenant && namespace && topic && topicPersistency) {
+      if (schemaVersion !== undefined && tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setSchemaResource(new SchemaResource().setSchemaVersion(Number(schemaVersion)));
-      } else if (subscription && subscription !== "" && tenant && namespace && topic && topicPersistency) {
+      } else if (subscription !== undefined && tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}/${subscription}`);
         req.setSubscriptionResource(new SubscriptionResource().setSubscriptionName(subscription));
-      } else if (tenant && namespace && topic && topicPersistency) {
+      } else if (tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setTopicResource(new TopicResource());
-      } else if (tenant && namespace) {
+      } else if (tenant !== undefined && namespace !== undefined) {
         req.setResourceFqn(`${tenant}/${namespace}`);
         req.setNamespaceResource(new NamespaceResource());
-      } else if (tenant) {
+      } else if (tenant !== undefined) {
         req.setResourceFqn(`${tenant}`);
         req.setTenantResource(new TenantResource());
       } else {
@@ -63,14 +63,17 @@ const ResourceExistsOr404: React.FC<{
       }
 
       return res.getIsExists();
-    }, { refreshInterval: 60 * 1000 })
+    }, { refreshInterval: 0 })
 
-  if (!isResourceExistsLoading) {
-    return isResourceExists ? props.children : <PageNotFound />;
-  } else {
-    // To avoid topic auto-creation
-    return (tenant && namespace && topic && topicPersistency) ? <></> : props.children
+  if (isResourceExistsLoading) {
+    return <>Loading...</>;
   }
+
+  if (isResourceExists) {
+    return props.children;
+  }
+
+  return <PageNotFound />;
 }
 
 export default ResourceExistsOr404;
