@@ -114,6 +114,9 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
         </div>
       </div>
       <div className={s.List}>
+        {connectionsToShow.length === 0 && (
+          <div style={{ margin: '12rem', padding: '24rem 24rem', background: 'var(--surface-color)', borderRadius: '12rem', textAlign: 'center' }}>No connections found</div>
+        )}
         {connectionsToShow.map(conn => {
           if (conn.type === "LocalPulsarInstance") {
             return <LocalPulsarInstanceElement key={conn.metadata.id} pulsarInstance={conn} />;

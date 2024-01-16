@@ -1,5 +1,6 @@
 import electron from 'electron';
-import path from 'path';
+import path from 'node:path';
+import os from 'node:os';
 import { GetPathsResponse as GetPathsResult, Paths } from './types';
 import { apiChannel } from '../../channels';
 import { ErrorHappened } from '../api/types';
@@ -27,17 +28,14 @@ export function handleGetPaths(event: Electron.IpcMainEvent): void {
 }
 
 export const getUserDataDir = () => {
-  let dir: null | string = null;
-  if (
-    process.env.NODE_ENV === 'development' ||
-    process.env.DEBUG_PROD === 'true'
-  ) {
-    dir = path.resolve(process.cwd(), path.join("user-data"));
-  } else {
-    dir = path.resolve(path.join(electron.app.getPath("userData")));
+  // The default userDataDir is ~/Library/Application Support.
+  // It contains the space in the path, and Pulsar <=3.1.2 is unable to run with spaces in path
+  const isMac = os.platform() === "darwin";
+  if (isMac) {
+    return path.resolve(path.join(os.homedir(), '.dekaf'));
   }
 
-  return dir;
+  return path.resolve(path.join(electron.app.getPath("userData")));
 };
 
 export const getAssetsDir = () => {
@@ -48,7 +46,7 @@ export const getAssetsDir = () => {
   ) {
     dir = path.resolve(process.cwd(), path.join("dist_assets", "build"));
   } else {
-    dir = path.resolve(path.join(electron.app.getAppPath(), "dist_assets"));
+    dir = path.resolve(path.join(electron.app.getAppPath(), "..", "dist_assets"));
   }
 
   return dir;

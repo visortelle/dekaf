@@ -4,8 +4,13 @@
   display: flex;
   flex-direction: column;
   gap: 8rem;
+  position: relative;
 }
 
 .LocalPulsarInstanceElement:last-child {
   border-bottom: none;
+}
+
+.Name {
+  padding-right: 94rem;
 }

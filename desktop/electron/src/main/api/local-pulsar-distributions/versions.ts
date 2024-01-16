@@ -63,7 +63,7 @@ export const pulsarReleaseLines: PulsarReleaseLine[] = [
       {
         version: "2.11.3",
         downloadUrl: "https://apache-pulsar-releases.s3.us-east-2.amazonaws.com/apache-pulsar-2.11.3-bin.tar.gz",
-        sha512: "4510c16d6ec90847eb8dff0246bd09190f99bc10a30702ab5f521971b13b6cffe0f9d1de9637b85340154ee38764a39551fd871bd1132d7760fb3a7e931a20e3"
+        sha512: "521316ea9f01b54f0fb3981dc017d3529de4019360c57c38c72c1ecfa53030927b93608acd71d0eb58f3e7eb6b4a2583a94796462d577d7dca0ba935a2f68fcf"
       },
       {
         version: "2.11.2",
