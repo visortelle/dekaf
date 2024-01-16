@@ -45,7 +45,7 @@ const LicenseDialog: React.FC<LicenseDialogProps> = (props) => {
         </div>
 
         <div style={{ marginTop: '12rem', display: 'flex', gap: '12rem', justifyContent: 'flex-end'}}>
-          <A target='_blank' href="https://dekaf.io/support">🔑 Get License</A>
+          <A target='_blank' href="https://dekaf.io/pricing">🔑 Get License</A>
           <A target='_blank' href="https://dekaf.io/support">🛟 Get Help</A>
         </div>
       </div>
