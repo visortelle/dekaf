@@ -60,6 +60,32 @@ message HealthCheckResponse {
   bool is_ok = 2;
 }
 
+message TenantResource {}
+message NamespaceResource {}
+message TopicResource {}
+message SubscriptionResource {
+  string subscription_name = 1;
+}
+message SchemaResource {
+  int64 schema_version = 1;
+}
+
+message CheckResourceExistsRequest {
+  string resource_fqn = 1;
+  oneof resource {
+    TenantResource tenant_resource = 2;
+    NamespaceResource namespace_resource = 3;
+    TopicResource topic_resource = 4;
+    SubscriptionResource subscription_resource = 5;
+    SchemaResource schema_resource = 6;
+  }
+}
+
+message CheckResourceExistsResponse {
+  google.rpc.Status status = 1;
+  bool is_exists = 2;
+}
+
 message BacklogQuotaCheckRequest {}
 message BacklogQuotaCheckResponse {
   google.rpc.Status status = 1;
@@ -124,6 +150,7 @@ service BrokersService {
   rpc UpdateDynamicConfiguration(UpdateDynamicConfigurationRequest) returns (UpdateDynamicConfigurationResponse) {}
   rpc DeleteDynamicConfiguration(DeleteDynamicConfigurationRequest) returns (DeleteDynamicConfigurationResponse) {}
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+  rpc CheckResourceExists(CheckResourceExistsRequest) returns (CheckResourceExistsResponse) {}
   rpc BacklogQuotaCheck(BacklogQuotaCheckRequest) returns (BacklogQuotaCheckResponse) {}
 
   rpc GetResourceGroupsList(GetResourceGroupsListRequest) returns (GetResourceGroupsListResponse) {}

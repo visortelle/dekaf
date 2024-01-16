@@ -113,12 +113,12 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       autoScroll={false}
       onDragEnd={handleDragEnd}
     >
-      <div className={s.Header}>
-        {/* <div className={s.HeaderItemName}>
+      {props.isHasCollapsedRenderer && (
+        <div className={s.Header}>
+          {/* <div className={s.HeaderItemName}>
           {props.itemName === undefined ? '' : `${props.itemName}s`}: <strong>{props.value.length}</strong>
         </div> */}
-        <div className={s.HeaderControls}>
-          {props.isHasCollapsedRenderer && (
+          <div className={s.HeaderControls}>
             <SmallButton
               onClick={() => {
                 if (uncollapsedItems.length !== 0) {
@@ -131,13 +131,13 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
               title="Collapse or uncollapse all items"
               appearance='borderless-semitransparent'
             />
-          )}
+          </div>
         </div>
-      </div>
-      <div className={s.ListField} data-testid={props.testId}>
-        {!props.isHideNothingToShow && props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
-        {sortableItems.length !== 0 && (
-          <div className={s.ListFieldValues}>
+      )}
+        <div className={s.ListField} data-testid={props.testId}>
+      {!props.isHideNothingToShow && props.value.length === 0 && <NothingToShow content={props.nothingToShowContent}/>}
+      {sortableItems.length !== 0 && (
+        <div className={s.ListFieldValues}>
             <SortableContext
               items={sortableItems}
               strategy={verticalListSortingStrategy}
