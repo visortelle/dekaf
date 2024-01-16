@@ -182,7 +182,7 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
         sendError(event, errMessage);
       },
       onChecksumError: (err) => {
-        const message = `Unable to install Pulsar ${arg.version} distribution. ${err}`;
+        const message = `Unable to install Pulsar ${arg.version.version} distribution. ${err}`;
         const req: PulsarDistributionStatusChanged = {
           type: "PulsarDistributionStatusChanged",
           version: arg.version.version,
