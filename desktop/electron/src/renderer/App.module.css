@@ -4,17 +4,24 @@
 }
 
 .Logo {
-  padding: 12rem 18rem;
+  padding: 12rem 18rem 12rem 12rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   background-color: var(--accent-color-black);
   color: #fff;
+  position: relative;
 }
 
 .Logo img {
   height: 120rem;
   width: auto;
+}
+
+.LicenseButton {
+  position: absolute;
+  bottom: 8rem;
+  right: 8rem;
 }
 
 .ConnectionList {
