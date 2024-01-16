@@ -161,22 +161,52 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.11.0)
   if (props.topicPersistency === "persistent") {
-    buttons = buttons.concat([
-      {
-        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
-          tenant: props.tenant,
-          namespace: props.namespace,
-          topic: props.topic,
-          topicPersistency: props.topicPersistency,
-        }),
-        text: "Policies",
-        onClick: () => { },
-        position: 'right',
-        type: "regular",
-        testId: "topic-policies-button",
-        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
-      },
-    ]);
+    const partitionRegexp = /(.*)-(partition-\d+)$/;
+    const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
+
+    const isPartition = partitionRegexp.test(topicFqn);
+
+    if (isPartition) {
+      let mainTopicFqn = topicFqn.replace(partitionRegexp, "$1");
+
+      let lastSlashIndex = mainTopicFqn.lastIndexOf('/');
+
+      let mainTopicName = mainTopicFqn.substring(lastSlashIndex + 1);
+
+      buttons = buttons.concat([
+        {
+          linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
+            tenant: props.tenant,
+            namespace: props.namespace,
+            topic: mainTopicName,
+            topicPersistency: props.topicPersistency,
+          }),
+          text: "Policies",
+          onClick: () => { },
+          position: 'right',
+          type: "regular",
+          testId: "topic-policies-button",
+          active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
+        },
+      ]);
+    } else {
+      buttons = buttons.concat([
+        {
+          linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
+            tenant: props.tenant,
+            namespace: props.namespace,
+            topic: props.topic,
+            topicPersistency: props.topicPersistency,
+          }),
+          text: "Policies",
+          onClick: () => { },
+          position: 'right',
+          type: "regular",
+          testId: "topic-policies-button",
+          active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
+        },
+      ]);
+    }
   }
 
   buttons = buttons.concat([
