@@ -7,29 +7,30 @@ import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
 type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
+
 def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[String, TopicInternalStatsPb] =
-    Try(getIsPartitionedTopic(pulsarAdmin, topic)) match
-        case Success(TopicPartitioning.NonPartitioned) =>
+    Try(getTopicPartitioningType(pulsarAdmin, topic)) match
+        case Success(TopicPartitioningType.NonPartitioned) =>
             getNonPartitionedTopicInternalStats(pulsarAdmin, topic) match
                 case Right(stats) => Right(persistentTopicInternalStatsToPb(stats))
                 case _            => Left(s"Unable to get stats for topic: $topic")
-        case Success(TopicPartitioning.Partitioned) =>
+        case Success(TopicPartitioningType.Partitioned) =>
             getPartitionedTopicInternalStats(pulsarAdmin, topic) match
                 case Right(stats) => Right(partitionedTopicInternalStatsToPb(stats))
                 case _            => Left(s"Unable to get stats for topic: $topic")
         case Failure(err) => Left(err.getMessage)
 
-enum TopicPartitioning:
+enum TopicPartitioningType:
     case Partitioned, NonPartitioned
 
-def getIsPartitionedTopic(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioning =
+def getTopicPartitioningType(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioningType =
     val isPartitioned =
         try {
             pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn).partitions > 0
         } catch {
             case _: Throwable => false
         }
-    if isPartitioned then return TopicPartitioning.Partitioned
+    if isPartitioned then return TopicPartitioningType.Partitioned
 
     val isNonPartitioned =
         try
@@ -38,7 +39,7 @@ def getIsPartitionedTopic(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPart
         catch {
             case _: Throwable => false
         }
-    if isNonPartitioned then return TopicPartitioning.NonPartitioned
+    if isNonPartitioned then return TopicPartitioningType.NonPartitioned
     throw new Exception(s"Topic \"$topicFqn\" not found")
 
 def getTopicPartitions(pulsarAdmin: PulsarAdmin, topicFqn: String): Vector[String] =

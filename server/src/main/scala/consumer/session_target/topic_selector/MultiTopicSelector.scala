@@ -2,18 +2,18 @@ package consumer.session_target.topic_selector
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import org.apache.pulsar.client.admin.PulsarAdmin
-import _root_.topic.{getIsPartitionedTopic, getTopicPartitions, TopicPartitioning}
+import _root_.topic.{getTopicPartitioningType, getTopicPartitions, TopicPartitioningType}
 import scala.util.{Failure, Success, Try}
 
 case class MultiTopicSelector(topicFqns: Vector[String]):
     def getNonPartitionedTopics(adminClient: PulsarAdmin): Vector[String] =
         topicFqns.flatMap { topicFqn =>
-            Try(getIsPartitionedTopic(adminClient, topicFqn)) match
+            Try(getTopicPartitioningType(adminClient, topicFqn)) match
                 case Success(topicPartitioning) => topicPartitioning match
-                        case TopicPartitioning.Partitioned =>
+                        case TopicPartitioningType.Partitioned =>
                             val partitions = getTopicPartitions(adminClient, topicFqn)
                             partitions
-                        case TopicPartitioning.NonPartitioned => Vector(topicFqn)
+                        case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
                 case Failure(_) =>
                     println(s"Failed to get topic partitioning for topic $topicFqn")
                     Vector.empty

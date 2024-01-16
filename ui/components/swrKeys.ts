@@ -82,6 +82,25 @@ export const swrKeys = {
           ],
         }
       },
+      checkResourceExists: {
+        _: (props: {
+          tenant: string | undefined,
+          namespace: string | undefined,
+          topic: string | undefined,
+          topicPersistency: string | undefined,
+          schemaVersion: string | undefined,
+          subscription: string | undefined
+        }) => [
+          "customApi",
+          "checkResourceExists",
+          props.tenant,
+          props.namespace,
+          props.topic,
+          props.topicPersistency,
+          props.schemaVersion,
+          props.subscription
+        ]
+      }
     },
     batch: {
       getTenantsNamespacesCount: {

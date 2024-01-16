@@ -27,6 +27,7 @@ import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
 import PageNotFound from "../../ui/PageNotFound/PageNotFound";
 import { PulsarTopicPersistency } from "../../pulsar/pulsar-resources";
+import ResourceExistsOr404 from "./ResourceExistsOr404/ResourceExistsOr404";
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
 type WithLayout = (
@@ -42,7 +43,15 @@ type RouterProps = {
 }
 const Router: React.FC<RouterProps> = (props) => {
   const withLayout: WithLayout = (children, props) => (
-    <Layout {...props.layout}>{children}</Layout>
+    <Layout {...props.layout}>
+      <WithParams>
+        {(params) => (
+          <ResourceExistsOr404 params={params}>
+            {children}
+          </ResourceExistsOr404>
+        )}
+      </WithParams>
+    </Layout>
   );
 
   return (
@@ -513,7 +522,7 @@ const RoutedSubscriptionPage = (props: { view: SubscriptionPageView["type"] }) =
 };
 
 const WithParams = (props: {
-  children: (params: Readonly<Params<string>>) => React.ReactElement;
+  children: (params: Readonly<Params>) => React.ReactElement;
 }) => {
   const params = useParams();
   return props.children(params);
