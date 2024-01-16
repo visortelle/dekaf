@@ -31,7 +31,7 @@ const ResourceExistsOr404: React.FC<{
     async () => {
       const req = new CheckResourceExistsRequest();
 
-      if (schemaVersion && schemaVersion !== "" && tenant && namespace && topic && topicPersistency) {
+      if (schemaVersion && tenant && namespace && topic && topicPersistency) {
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setSchemaResource(new SchemaResource().setSchemaVersion(Number(schemaVersion)));
       } else if (subscription && subscription !== "" && tenant && namespace && topic && topicPersistency) {
