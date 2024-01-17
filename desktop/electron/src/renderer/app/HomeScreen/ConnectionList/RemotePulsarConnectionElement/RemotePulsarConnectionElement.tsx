@@ -145,7 +145,7 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
         />
 
         <EditRemotePulsarConnectionButton connectionId={props.connection.metadata.id} disabled={isRunning} />
-        <DeleteRemotePulsarConnectionButton connectionId={props.connection.metadata.id} connectionName={props.connection.metadata.name} disabled={isRunning} />
+        <DeleteRemotePulsarConnectionButton connectionId={props.connection.metadata.id} connectionName={props.connection.metadata.name} disabled={isRunning || isStopping} />
       </div>
     </div>
   );
