@@ -35,7 +35,7 @@ const ResourceExistsOr404: React.FC<{
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setSchemaResource(new SchemaResource().setSchemaVersion(Number(schemaVersion)));
       } else if (subscription !== undefined && tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
-        req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}/${subscription}`);
+        req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setSubscriptionResource(new SubscriptionResource().setSubscriptionName(subscription));
       } else if (tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);

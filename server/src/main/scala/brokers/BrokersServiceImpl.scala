@@ -10,7 +10,6 @@ import org.apache.pulsar.common.policies.data.ResourceGroup
 import _root_.pulsar_auth.RequestContext
 
 import scala.util.{Failure, Success, Try}
-import CheckResourceExistsRequest.Resource
 import topic.getTopicPartitioningType
 
 import scala.concurrent.Future
@@ -140,6 +139,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         }
 
     override def checkResourceExists(request: CheckResourceExistsRequest): Future[CheckResourceExistsResponse] =
+        import CheckResourceExistsRequest.Resource
+
         logger.debug(s"Check resource exists: $request")
         val adminClient = RequestContext.pulsarAdmin.get()
         val resourceFqn = request.resourceFqn
@@ -155,8 +156,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 Try(adminClient.namespaces.getBundles(resourceFqn)).isSuccess
             case Resource.TopicResource(_) =>
                 Try(getTopicPartitioningType(adminClient, resourceFqn)) match
-                    case Success(value) => true
-                    case Failure(exception) => false
+                    case Success(_) => true
+                    case Failure(_) => false
             case Resource.SubscriptionResource(value) =>
                 Try(adminClient.topics.getSubscriptionProperties(resourceFqn, value.subscriptionName)).isSuccess
             case Resource.SchemaResource(value) =>
