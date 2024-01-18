@@ -161,12 +161,24 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.11.0)
   if (props.topicPersistency === "persistent") {
+    const partitionRegexp = /(.*)-(partition-\d+)$/;
+    const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
+
+    let topic = props.topic;
+
+    const isPartition = partitionRegexp.test(topicFqn);
+    if (isPartition) {
+      const partitionedTopicFqn = topicFqn.replace(partitionRegexp, "$1");
+      const lastSlashIndex = partitionedTopicFqn.lastIndexOf('/');
+      topic = partitionedTopicFqn.substring(lastSlashIndex + 1);
+    }
+
     buttons = buttons.concat([
       {
         linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
           tenant: props.tenant,
           namespace: props.namespace,
-          topic: props.topic,
+          topic,
           topicPersistency: props.topicPersistency,
         }),
         text: "Policies",
