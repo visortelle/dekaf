@@ -48,7 +48,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'topics', value: 'Topics' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'policies', value: 'Policies' }]
+    extraCrumbs = [{ type: 'link', id: 'policies', value: 'Details' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.permissions._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'permissions', value: 'Permissions' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname)) {
@@ -101,18 +101,18 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.overview._.path, pathname))
           },
           {
+            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Details',
+            onClick: () => { },
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname))
+          },
+          {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Topics',
             onClick: () => { },
             type: 'regular',
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname))
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Policies',
-            onClick: () => { },
-            type: 'regular',
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.permissions._.get({ tenant: props.tenant, namespace: props.namespace }),
@@ -138,22 +138,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
               styleMode: 'no-content-padding'
             }),
             testId: "namespace-page-delete-button"
-          },
-          {
-            linkTo: '',
-            text: "Produce",
-            onClick: () => { },
-            type: "regular",
-            position: "right",
-            active: false
-          },
-          {
-            linkTo: '',
-            text: "Consume",
-            onClick: () => { },
-            type: "regular",
-            position: "right",
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),

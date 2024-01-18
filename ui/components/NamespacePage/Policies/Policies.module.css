@@ -1,4 +1,6 @@
 .Policies {
+  flex: 1;
+  display: flex;
 }
 
 .ConfigurationTable {
@@ -8,5 +10,5 @@
 }
 
 .Tabs {
-  padding: 12rem;
+  flex: 1;
 }

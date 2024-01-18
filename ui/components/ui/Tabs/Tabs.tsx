@@ -19,6 +19,7 @@ export type TabsProps<TK extends string> = {
   onActiveTabChange: (tab: TK) => void;
   closeTitle?: string,
   size?: 'regular' | 'small';
+  direction?: 'horizontal' | 'vertical';
   newTab?: {
     onNewTab: () => void,
     title: string
@@ -41,7 +42,7 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
     : Object.entries<Tab>(tabs);
 
   return (
-    <div className={`${s.Tabs} ${props.size === 'small' ? s.Small : ''}`}>
+    <div className={`${s.Tabs} ${props.size === 'small' ? s.Small : ''} ${props.direction === 'vertical' ? s.Vertical : ''}`}>
       <div style={{ display: 'flex' }}>
         <div className={s.TabsList}>
           {tabEntries.map(([tabKey, tab]) => {

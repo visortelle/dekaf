@@ -27,6 +27,7 @@ import FormLabel from '../../ui/ConfigurationTable/FormLabel/FormLabel';
 import FormItem from '../../ui/ConfigurationTable/FormItem/FormItem';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
+import { NamespacePropertiesEditor } from '../Policies/fields/NamespacePropertiesEditor/NamespacePropertiesEditor';
 
 export type BundleKey = string
 
@@ -202,20 +203,10 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
 
         <div className={s.Properties}>
-          <FormItem>
-            <FormLabel
-              content="Properties"
-              help={(
-                <div>Custom metadata associated with a namespace. <br /> They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and potential automation tasks.</div>
-              )}
-            />
-            <KeyValueEditor
-              value={recordToIndexedKv(topicCounts?.properties || {})}
-              onChange={() => { }}
-              height='240rem'
-              mode='readonly'
-            />
-          </FormItem>
+          <NamespacePropertiesEditor
+            tenant={props.tenant}
+            namespace={props.namespace}
+          />
         </div>
 
         <div className={s.Section}>

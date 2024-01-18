@@ -36,7 +36,6 @@ import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import publishRateField from './fields/publish-rate';
 import resourceGroupField from './fields/resource-group';
-import propertiesField from './fields/properties';
 import Tabs from '../../ui/Tabs/Tabs';
 
 import s from './Policies.module.css'
@@ -66,6 +65,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
       <div className={s.Tabs}>
         <Tabs<TabsKey>
           activeTab={activeTab}
+          direction='vertical'
           onActiveTabChange={setActiveTab}
           tabs={{
             "namespace-config": {
@@ -76,7 +76,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                     title="Namespace"
                     fields={[
                       replicationClustersField,
-                      propertiesField,
                       persistenceField,
                       maxTopicsPerNamespaceField,
                       compactionThresholdField,

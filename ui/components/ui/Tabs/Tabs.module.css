@@ -6,6 +6,11 @@
   overflow: hidden;
 }
 
+.Tabs.Vertical {
+  display: grid;
+  grid-template-columns: 240rem 1fr;
+}
+
 .TabsList {
   border-bottom: 1px solid var(--border-color);
   border-left: 1px solid var(--border-color);
@@ -17,6 +22,13 @@
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-x: contain;
   overscroll-behavior-y: contain;
+}
+
+.Vertical .TabsList {
+  flex-direction: column;
+  border-left: none;
+  border-bottom: none;
+  border-right: 1px solid var(--border-color);
 }
 
 .CloseTabs {
@@ -64,6 +76,14 @@
   cursor: pointer;
 }
 
+.Vertical .Tab {
+  text-align: left;
+}
+
+.Vertical .Tab:first-child {
+  border-top: none;
+}
+
 .Small .Tab {
   padding: 4rem 8rem;
 }
@@ -100,6 +120,19 @@
   right: 0;
   height: 3rem;
   background-color: var(--accent-color-blue);
+}
+
+.Vertical .ActiveTab {
+  box-shadow: none;
+}
+
+.Vertical .ActiveTab::after {
+  height: 100%;
+  width: 3rem;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: unset;
 }
 
 .TabContent {
