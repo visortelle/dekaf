@@ -146,7 +146,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max consumers per subscription',
-  description: <span>Max consumers per subscription.</span>,
+  description: (
+    <div>
+      Limit a maximum number of consumers per subscription for each topic in this namespace.
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

@@ -147,7 +147,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max subscriptions per topic',
-  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscriptions</TooltipElement> per topic.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
+      <div>Limit a maximum number of subscriptions per topic for each topic in this namespace.</div>
+      <div>A subscription is a named configuration rule that determines how messages are delivered to consumers.</div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

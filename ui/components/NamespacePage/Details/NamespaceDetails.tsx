@@ -98,7 +98,6 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     fields={[
                       replicationClustersField,
                       persistenceField,
-                      maxTopicsPerNamespaceField,
                       compactionThresholdField,
                       resourceGroupField,
                     ].map(field => field(props))}
@@ -127,9 +126,6 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     title="Topics"
                     fields={[
                       autoTopicCreationField,
-                      maxProducersPerTopicField,
-                      maxConsumersPerTopicField,
-                      maxSubscriptionsPerTopicField,
                     ].map(field => field(props))}
                   />
                 </div>
@@ -159,8 +155,24 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                       subscriptionTypesEnabledField,
                       subscriptionExpirationTimeField,
                       subscriptionAuthModeField,
-                      maxConsumersPerSubscriptionField,
                       maxUnackedMessagesPerSubscriptionField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            'limits': {
+              title: 'Limits',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Limits"
+                    fields={[
+                      maxConsumersPerTopicField,
+                      maxConsumersPerSubscriptionField,
+                      maxProducersPerTopicField,
+                      maxSubscriptionsPerTopicField,
+                      maxTopicsPerNamespaceField,
                     ].map(field => field(props))}
                   />
                 </div>

@@ -9,13 +9,11 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policie
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import * as generalHelp from "../../../ui/help";
 import React from "react";
 
 const policy = 'maxTopicsPerNamespace';
 
-type PolicyValue = { type: 'inherited-from-broker-config' } | { type: 'unlimited' } | {
+type PolicyValue = { type: 'inherited-from-broker-config' } | {
   type: 'specified-for-this-namespace',
   maxTopicsPerNamespace: number,
 };
@@ -54,7 +52,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const maxTopicsPerNamespace = res.getSpecified()?.getMaxTopicsPerNamespace() ?? 0;
 
           if (maxTopicsPerNamespace === 0) {
-            initialValue = { type: 'unlimited' };
+            initialValue = { type: 'inherited-from-broker-config' };
           } else {
             initialValue = { type: 'specified-for-this-namespace', maxTopicsPerNamespace };
           }
@@ -117,13 +115,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               <Select<PolicyValue['type']>
                 list={[
                   { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
-                  { type: 'item', value: 'unlimited', title: 'Unlimited' },
                   { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
                 ]}
                 onChange={(v) => {
                   switch (v) {
                     case 'inherited-from-broker-config': onChange({ type: 'inherited-from-broker-config' }); break;
-                    case 'unlimited': onChange({ type: 'unlimited' }); break;
                     case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', maxTopicsPerNamespace: 1 }); break;
                   }
                 }}
@@ -147,7 +143,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max topics per namespace',
-  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> per namespace.</span>,
+  description: (
+    <div>
+      Limit a maximum number of topics in this namespace.
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

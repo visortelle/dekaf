@@ -148,7 +148,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max consumers per topic',
-  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["consumer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-consumers/">consumers</TooltipElement> per topic.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
+      <div>Limits a maximum number of consumers per topic for each topic in this namespace.</div>
+      <div>
+        A consumer is a process that attaches to a topic via a subscription and then receives messages.
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

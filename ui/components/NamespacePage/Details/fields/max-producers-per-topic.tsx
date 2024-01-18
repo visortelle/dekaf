@@ -10,8 +10,6 @@ import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import { help } from "../../../ui/help";
 
 const policy = 'maxProducersPerTopic';
 
@@ -147,7 +145,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max producers per topic',
-  description: <span>Max <TooltipElement tooltipHelp={help["producer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-producers/">producers</TooltipElement> per topic.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
+      <div>Limit a maximum number of subscriptions per topic for each topic in this namespace.</div>
+      <div>
+      A producer is a process that attaches to a topic and publishes messages to a Pulsar broker. The Pulsar broker processes the messages.
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 
