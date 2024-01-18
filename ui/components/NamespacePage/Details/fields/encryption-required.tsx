@@ -9,6 +9,7 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
+import A from '../../../ui/A/A';
 
 const policy = 'encryptionRequired';
 
@@ -92,7 +93,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Encryption required',
-  description: <span>Enables or disables message encryption required for a namespace.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        Enforces a message encryption requirement for all messages across all topics within this namespace.
+      </div>
+      <A href="https://pulsar.apache.org/docs/next/security-encryption/" isExternalLink>Learn more</A>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

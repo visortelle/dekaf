@@ -89,14 +89,10 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Schema compatibility strategy',
   description:
-    <span>
-      Ensures that existing consumers can process the introduced messages.
-      <ul>
-        <li>
-          <A isExternalLink href="https://pulsar.apache.org/docs/3.0.x/schema-understand/#schema-compatibility-check">More info about properties</A>
-        </li>
-      </ul>
-    </span>,
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
+      The purpose of schema compatibility check is to ensure that existing consumers can process the introduced messages.
+      <A isExternalLink href="https://pulsar.apache.org/docs/next/schema-understand/#schema-compatibility-check">Learn more</A>
+    </div>,
   input: <FieldInput {...props} />
 });
 

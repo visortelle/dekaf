@@ -9,6 +9,7 @@ import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import * as generalHelp from "../../../ui/help";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import A from "../../../ui/A/A";
 
 const policy = 'schemaValidationEnforce';
 
@@ -91,7 +92,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Schema validation enforce',
-  description: <span>Enables brokers to reject producers/consumers without a <TooltipElement tooltipHelp={generalHelp.help["schema"]} link="https://pulsar.apache.org/docs/3.0.x/schema-overview/">schema</TooltipElement>.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
+      <div>
+        Schema validation enforcement enables brokers to reject producers/consumers without a schema.
+      </div>
+      <A href="https://pulsar.apache.org/docs/next/schema-understand/#schema-validation-enforcement" isExternalLink>Learn more</A>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

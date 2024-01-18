@@ -7,6 +7,7 @@ import { swrKeys } from "../../../swrKeys";
 import { GetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import A from "../../../ui/A/A";
 
 const policy = 'isAllowAutoUpdateSchema';
 
@@ -82,7 +83,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Allow auto update schema',
-  description: <span>Sets the namespace whether allow auto update schema.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
+      <div>When a schema passes the schema compatibility check, the producer automatically updates this schema to the topic it produces.</div>
+      <A href="https://pulsar.apache.org/docs/next/schema-understand/#schema-autoupdate" isExternalLink>Learn more</A>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 
