@@ -1,25 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
-import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
+import {BreadCrumbsAtPageTop, Crumb, CrumbType} from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./TopicPage.module.css";
-import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
+import Toolbar, {ToolbarButtonProps} from "../ui/Toolbar/Toolbar";
 import ConsumerSession from "../ui/ConsumerSession/ConsumerSession";
 import Schema from "./Schema/Schema";
 import Policies from "./Policies/Policies";
 import Subscriptions from './Subscriptions/Subscriptions';
 import DeleteDialog from "./DeleteDialog/DeleteDialog";
-import { routes } from "../routes";
-import { useNavigate } from "react-router";
+import {routes} from "../routes";
+import {useNavigate} from "react-router";
 import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
-import { matchPath, useLocation } from 'react-router-dom';
-import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
+import {matchPath, useLocation} from 'react-router-dom';
+import {PulsarTopicPersistency} from "../pulsar/pulsar-resources";
 import * as GrpcClient from '../app/contexts/GrpcClient/GrpcClient';
+import * as AppContext from '../app/contexts/AppContext';
 import * as pb from "../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
-import { LibraryContext } from "../ui/LibraryBrowser/model/library-context";
-import { getDefaultManagedItem } from "../ui/LibraryBrowser/default-library-items";
-import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-managed-items";
+import {LibraryContext} from "../ui/LibraryBrowser/model/library-context";
+import {getDefaultManagedItem} from "../ui/LibraryBrowser/default-library-items";
+import {ManagedConsumerSessionConfig} from "../ui/LibraryBrowser/model/user-managed-items";
+import {ProductCode} from "../app/licensing/ProductCode";
+import PremiumFunctionTitle from "../ui/PremiumFunctionTitle/PremiumFunctionTitle";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -45,6 +48,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
   const { topicServiceClient } = GrpcClient.useContext();
+  const { config } = AppContext.useContext();
 
   const { pathname } = useLocation();
 
@@ -164,31 +168,49 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     const partitionRegexp = /(.*)-(partition-\d+)$/;
     const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-    let topic = props.topic;
+    let topicName = props.topic;
 
     const isPartition = partitionRegexp.test(topicFqn);
     if (isPartition) {
       const partitionedTopicFqn = topicFqn.replace(partitionRegexp, "$1");
       const lastSlashIndex = partitionedTopicFqn.lastIndexOf('/');
-      topic = partitionedTopicFqn.substring(lastSlashIndex + 1);
+      topicName = partitionedTopicFqn.substring(lastSlashIndex + 1);
     }
 
-    buttons = buttons.concat([
-      {
-        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
-          tenant: props.tenant,
-          namespace: props.namespace,
-          topic,
-          topicPersistency: props.topicPersistency,
-        }),
-        text: "Policies",
-        onClick: () => { },
-        position: 'right',
-        type: "regular",
-        testId: "topic-policies-button",
-        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
-      },
-    ]);
+
+    switch (config.productCode) {
+      case ProductCode.DekafFree:
+      case ProductCode.DekafDesktopFree:
+
+        buttons = buttons.concat([
+          {
+            text: "Policies",
+            onClick: () => { },
+            position: 'right',
+            type: "regular",
+            testId: "topic-policies-button",
+            isPremium: true,
+          },
+        ]);
+        break;
+      default:
+        buttons = buttons.concat([
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
+              tenant: props.tenant,
+              namespace: props.namespace,
+              topic: topicName,
+              topicPersistency: props.topicPersistency,
+            }),
+            text: "Policies",
+            onClick: () => { },
+            position: 'right',
+            type: "regular",
+            testId: "topic-policies-button",
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
+          },
+        ]);
+    }
   }
 
   buttons = buttons.concat([
@@ -314,8 +336,15 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       {props.view.type === "overview" && (
         <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} />
       )}
-      {props.view.type === "policies" && (
+      {props.view.type === "policies" &&
+        config.productCode !== ProductCode.DekafDesktopFree &&
+        config.productCode !== ProductCode.DekafFree && (
         <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+      )}
+      {props.view.type === "policies" &&
+        (config.productCode === ProductCode.DekafDesktopFree ||
+          config.productCode === ProductCode.DekafFree) && (
+        <PremiumFunctionTitle isBlock/>
       )}
       {props.view.type === "producers" && (
         <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />

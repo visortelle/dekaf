@@ -3,6 +3,7 @@ import Link from '../Link/Link';
 import s from './Toolbar.module.css'
 import Button, { ButtonProps } from '../Button/Button';
 import { partition } from 'lodash';
+import PremiumFunctionTitle from "../PremiumFunctionTitle/PremiumFunctionTitle";
 
 export type ToolbarProps = {
   buttons: ToolbarButtonProps[];
@@ -29,6 +30,7 @@ export type ToolbarButtonProps = ButtonProps & {
   position?: 'left' | 'right';
   disabled?: boolean;
   active?: boolean;
+  isPremium?: boolean;
 }
 
 export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
@@ -40,9 +42,12 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
       testId={props.testId}
       disabled={props.disabled}
       active={props.active}
+      isPremiumFeature={props.isPremium}
+      premiumFeatureTitle={<PremiumFunctionTitle />}
     //state={props.state}
     />
   );
+
   return <div className={`${s.ToolbarButton} ${props.position === 'right' ? s.ToolbarButtonRight : ''}`}>
     {props.linkTo ? (
       <Link to={props.linkTo}>

@@ -9,6 +9,7 @@ import { SessionState, ConsumerSessionConfig } from './types';
 import SmallButton from '../SmallButton/SmallButton';
 import Input from '../Input/Input';
 import PremiumTitle from './PremiumTitle';
+import PremiumFunctionTitle from "../PremiumFunctionTitle/PremiumFunctionTitle";
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -50,7 +51,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             type={'primary'}
             disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
             isPremiumFeature={props.isProductPlanLimitReached && props.sessionState === 'paused'}
-            premiumFeatureTitle={<PremiumTitle />}
+            premiumFeatureTitle={<PremiumFunctionTitle />}
           />
         </div>
 

@@ -14,7 +14,6 @@ import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/u
 import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
 import * as _topicpoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/TopicpoliciesServiceClientPb';
 import * as _libraryServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/LibraryServiceClientPb';
-import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 export type Value = {
   pulsarAuthServiceClient: _pulsarAuthServiceClient.PulsarAuthServiceClient,

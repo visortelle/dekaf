@@ -17,12 +17,13 @@ message GetLicenseInfoRequest {}
 
 message GetLicenseInfoResponse {
   google.rpc.Status status = 1;
+  LicenseInfo license_info = 2;
 }
 
 message LicenseInfo {
   ProductCode product_code = 1;
 }
 
-service MetricsService {
+service LicensingService {
   rpc GetLicenseInfo(GetLicenseInfoRequest) returns (GetLicenseInfoResponse);
 }
