@@ -10,7 +10,6 @@ import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import React, { useState } from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'inactiveTopicPolicies';
 
@@ -160,25 +159,28 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   />
                 </div>
 
-                <strong className={sf.FormLabel}>Delete mode</strong>
-                <div className={sf.FormItem}>
-                  <Select<InactiveTopicDeleteMode>
-                    list={[
-                      { type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' },
-                      { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }
-                    ]}
-                    onChange={(v) => onChange({ ...value, inactiveTopicDeleteMode: v })}
-                    value={value.inactiveTopicDeleteMode}
-                  />
-                </div>
+                {value.deleteWhileInactive && (
+                  <>
+                    <strong className={sf.FormLabel}>Delete mode</strong>
+                    <div className={sf.FormItem}>
+                      <Select<InactiveTopicDeleteMode>
+                        list={[
+                          { type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' },
+                          { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }
+                        ]}
+                        onChange={(v) => onChange({ ...value, inactiveTopicDeleteMode: v })}
+                        value={value.inactiveTopicDeleteMode}
+                      />
+                    </div>
 
-                <strong className={sf.FormLabel}>Max inactive duration</strong>
-                <div className={sf.FormItem}>
-                  <DurationInput
-                    initialValue={value.maxInactiveDurationSeconds}
-                    onChange={(v) => onChange({ ...value, maxInactiveDurationSeconds: v })}
-                  />
-                </div>
+                    <strong className={sf.FormLabel}>Max inactive duration</strong>
+                    <div className={sf.FormItem}>
+                      <DurationInput
+                        initialValue={value.maxInactiveDurationSeconds}
+                        onChange={(v) => onChange({ ...value, maxInactiveDurationSeconds: v })}
+                      />
+                    </div>
+                  </>)}
               </div>
             )}
           </>
@@ -187,16 +189,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     </WithUpdateConfirmation>
   );
 }
-type TermKey =
-  'inactiveTopicPolicies';
 
-const help: Record<TermKey, React.ReactNode> = {
-  'inactiveTopicPolicies': <div>Dictate the handling of topics that lack active producers or consumers. These policies can determine if and when such topics should be deleted due to inactivity. By default, topics are deleted after 60 seconds.</div>
-}
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Inactive topic policies',
-  description: <span>Sets the <TooltipElement tooltipHelp={help["inactiveTopicPolicies"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/#configure-inactive-topic-policies">inactive topic policies</TooltipElement> on a namespace.</span>,
+  description: <span>Specifies if and when inactive topics should be deleted. Inactive topic is a topic that had no active producers or consumers for specified umount of time.</span>,
   input: <FieldInput {...props} />
 });
 

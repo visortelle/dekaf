@@ -1,16 +1,16 @@
-import * as pbn from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
-import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import * as pbn from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
 import React from "react";
-import { BundleKey } from "../Overview";
-import * as Modals from "../../../app/contexts/Modals/Modals";
-import * as Notifications from "../../../app/contexts/Notifications";
-import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
-import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
-import Select, { List, ListItem } from "../../../ui/Select/Select";
-import Checkbox from "../../../ui/Checkbox/Checkbox";
-import * as BrokerConfig from "../../../app/contexts/BrokersConfig";
+import { BundleKey } from "../../Overview";
+import * as Modals from "../../../../app/contexts/Modals/Modals";
+import * as Notifications from "../../../../app/contexts/Notifications";
+import * as GrpcClient from "../../../../app/contexts/GrpcClient/GrpcClient";
+import ConfirmationDialog from "../../../../ui/ConfirmationDialog/ConfirmationDialog";
+import Select, { List, ListItem } from "../../../../ui/Select/Select";
+import Checkbox from "../../../../ui/Checkbox/Checkbox";
+import * as BrokerConfig from "../../../../app/contexts/BrokersConfig";
 import s from "./SplitBundle.module.css";
-import Input from "../../../ui/Input/Input";
+import Input from "../../../../ui/Input/Input";
 
 export type SplitBundleProps = {
   namespaceFqn: string,

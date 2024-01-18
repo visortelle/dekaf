@@ -1,17 +1,17 @@
 import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
 
-import * as Notifications from '../../../../app/contexts/Notifications';
-import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
-import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../../../ui/KeyValueEditor/KeyValueEditor';
-import { swrKeys } from '../../../../swrKeys';
-import { mapToObject } from '../../../../../proto-utils/proto-utils';
-import WithUpdateConfirmation from "../../.././../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../../ui/KeyValueEditor/KeyValueEditor';
+import { swrKeys } from '../../../swrKeys';
+import { mapToObject } from '../../../../proto-utils/proto-utils';
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { FC, useState } from "react";
-import FormLabel from "../../../../ui/ConfigurationTable/FormLabel/FormLabel";
-import ActionButton from "../../../../ui/ActionButton/ActionButton";
+import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
+import ActionButton from "../../../ui/ActionButton/ActionButton";
 
 const policy = 'properties';
 

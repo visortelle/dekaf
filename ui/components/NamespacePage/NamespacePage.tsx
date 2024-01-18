@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import Topics from './Topics/Topics';
-import Policies from './Policies/Policies';
+import NamespaceDetails from './Details/NamespaceDetails';
 import CreateTopic from './CreateTopic/CreateTopic';
 import Permissions from './Permissions/Permissions';
 import DeleteDialog from './DeleteDialog/DeleteDialog'
@@ -152,7 +152,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
 
       {props.view.type === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
-      {props.view.type === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'policies' && <NamespaceDetails tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}

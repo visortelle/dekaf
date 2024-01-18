@@ -38,27 +38,32 @@ import publishRateField from './fields/publish-rate';
 import resourceGroupField from './fields/resource-group';
 import Tabs from '../../ui/Tabs/Tabs';
 
-import s from './Policies.module.css'
+import s from './NamespaceDetails.module.css'
 
-export type PoliciesProps = {
+export type NamespaceDetailsProps = {
   tenant: string;
   namespace: string;
 };
 
 type TabsKey =
-  'namespace-config' |
-  'topics' |
-  'consumers' |
-  'subscriptions' |
-  'retention' |
-  'deduplication' |
-  'schema' |
-  'affinity' |
+  'resource-management' |
+  'geo-replication' |
   'encryption' |
-  'tiered-storage';
+  'persistence' |
+  'limits' |
+  'tiered-storage' |
+  'bundles' |
+  'rate-limits' |
+  'compaction' |
+  'deduplication' |
+  'delayed-delivery' |
+  'retention' |
+  'messaging' |
+  'schema' |
+  'permissions'
 
-const Policies: React.FC<PoliciesProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabsKey>('namespace-config');
+const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
+  const [activeTab, setActiveTab] = React.useState<TabsKey>('retention');
 
   return (
     <div className={s.Policies}>
@@ -68,6 +73,22 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           direction='vertical'
           onActiveTabChange={setActiveTab}
           tabs={{
+            retention: {
+              title: 'Retention',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Retention"
+                    fields={[
+                      inactiveTopicPoliciesField,
+                      retentionField,
+                      backlogQuotaField,
+                      messageTtlField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
             "namespace-config": {
               title: 'Namespace',
               render: () => (
@@ -94,7 +115,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                     title="Topics"
                     fields={[
                       autoTopicCreationField,
-                      inactiveTopicPoliciesField,
                       maxProducersPerTopicField,
                       maxConsumersPerTopicField,
                       maxSubscriptionsPerTopicField,
@@ -139,21 +159,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                 </div>
               )
             },
-            retention: {
-              title: 'Retention',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Retention"
-                    fields={[
-                      retentionField,
-                      backlogQuotaField,
-                      messageTtlField,
-                    ].map(field => field(props))}
-                  />
-                </div>
-              )
-            },
+
             deduplication: {
               title: 'Deduplication',
               render: () => (
@@ -231,4 +237,4 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   );
 }
 
-export default Policies;
+export default NamespaceDetails;
