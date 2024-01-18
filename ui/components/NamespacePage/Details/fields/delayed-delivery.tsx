@@ -12,6 +12,8 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import { help } from "../../../ui/help";
+import A from '../../../ui/A/A';
+import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 const policy = 'delayedDelivery';
 
@@ -138,10 +140,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               />
             </div>
             {value.type === 'enabled' && (
-              <DurationInput
-                initialValue={value.tickTimeMs / 1000}
-                onChange={(seconds) => onChange({ ...value, tickTimeMs: seconds * 1000 })}
-              />
+              <>
+                <FormLabel
+                  content="Tick Time"
+                  help={(
+                    <div>
+                      The tick time for when retrying on delayed delivery messages, affecting the accuracy of the delivery time compared to the scheduled time.
+                    </div>
+                  )}
+                />
+                <DurationInput
+                  initialValue={value.tickTimeMs / 1000}
+                  onChange={(seconds) => onChange({ ...value, tickTimeMs: seconds * 1000 })}
+                />
+              </>
             )}
           </>
         );
@@ -153,7 +165,22 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Delayed delivery',
-  description: <span>Sets the <TooltipElement tooltipHelp={help["delayedDelivery"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#delayed-message-delivery">delayed delivery policy</TooltipElement> on a namespace.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        Delayed message delivery enables you to consume a message later. In this mechanism, a message is persistently stored in BookKeeper.
+      </div>
+      <div>
+        This message will be delivered to a consumer once the specified delay is over.
+      </div>
+      <div style={{ padding: '12rem', background: 'var(--surface-color)', borderRadius: '12rem' }}>
+        <strong>Only shared and key-shared subscriptions support delayed message delivery.</strong> In other subscriptions, delayed messages are dispatched immediately.
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <A isExternalLink href="https://pulsar.apache.org/docs/next/concepts-messaging/#delayed-message-delivery">Learn more</A>
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

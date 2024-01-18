@@ -100,8 +100,20 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                       persistenceField,
                       maxTopicsPerNamespaceField,
                       compactionThresholdField,
-                      delayedDeliveryField,
                       resourceGroupField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            "delayed-delivery": {
+              title: 'Delayed Delivery',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Delayed Delivery"
+                    fields={[
+                      delayedDeliveryField,
                     ].map(field => field(props))}
                   />
                 </div>
