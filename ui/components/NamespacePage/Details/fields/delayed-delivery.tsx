@@ -176,9 +176,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
       <div style={{ padding: '12rem', background: 'var(--surface-color)', borderRadius: '12rem' }}>
         <strong>Only shared and key-shared subscriptions support delayed message delivery.</strong> In other subscriptions, delayed messages are dispatched immediately.
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <A isExternalLink href="https://pulsar.apache.org/docs/next/concepts-messaging/#delayed-message-delivery">Learn more</A>
-      </div>
+      <A isExternalLink href="https://pulsar.apache.org/docs/next/concepts-messaging/#delayed-message-delivery">Learn more</A>
     </div>
   ),
   input: <FieldInput {...props} />

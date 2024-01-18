@@ -131,7 +131,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication snapshot interval',
-  description: <span><TooltipElement tooltipHelp={help["deduplicationSnapshot"]}>Deduplication snapshot</TooltipElement> interval. <code>brokerDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        The time period after which a deduplication informational snapshot is taken.
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 
