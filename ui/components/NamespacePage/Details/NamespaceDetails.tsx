@@ -130,10 +130,6 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                       maxProducersPerTopicField,
                       maxConsumersPerTopicField,
                       maxSubscriptionsPerTopicField,
-                      publishRateField,
-                      dispatchRateField,
-                      subscribeRateField,
-                      replicatorDispatchRateField,
                     ].map(field => field(props))}
                   />
                 </div>
@@ -161,7 +157,6 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     fields={[
                       autoSubscriptionCreationField,
                       subscriptionTypesEnabledField,
-                      subscriptionDispatchRateField,
                       subscriptionExpirationTimeField,
                       subscriptionAuthModeField,
                       maxConsumersPerSubscriptionField,
@@ -171,7 +166,23 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-
+            'rate-limits': {
+              title: 'Rate Limits',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Rate Limits"
+                    fields={[
+                      dispatchRateField,
+                      publishRateField,
+                      replicatorDispatchRateField,
+                      subscriptionDispatchRateField,
+                      subscribeRateField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
             deduplication: {
               title: 'Deduplication',
               render: () => (

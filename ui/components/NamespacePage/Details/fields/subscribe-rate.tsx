@@ -10,6 +10,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policie
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
+import NoData from '../../../ui/NoData/NoData';
 
 const policy = 'subscribeRate';
 
@@ -150,7 +151,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscribe rate',
-  description: <span><strong>TODO</strong> Ooops... We didn't write a good definition for this policy yet. Feel free to suggest it <a href="https://community.dekaf.io">here</a>.</span>,
+  description: <NoData />,
   input: <FieldInput {...props} />
 });
 

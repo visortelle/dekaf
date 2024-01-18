@@ -14,6 +14,7 @@ import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
 import {help} from "../../../ui/help";
 import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
+import NoData from '../../../ui/NoData/NoData';
 
 const policy = 'replicatorDispatchRate';
 
@@ -187,7 +188,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Replicator dispatch rate',
-  description: <span>Sets replicator <TooltipElement tooltipHelp={help["replicatorDispatchRate"]}>replicator</TooltipElement> for the topic.</span>,
+  description: <NoData />,
   input: <FieldInput {...props} />
 });
 

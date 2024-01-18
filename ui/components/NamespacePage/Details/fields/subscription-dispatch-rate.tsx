@@ -11,6 +11,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 import React from "react";
+import NoData from '../../../ui/NoData/NoData';
 
 const policy = 'subscriptionDispatchRate';
 
@@ -174,7 +175,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription dispatch rate',
-  description: <span>Specifies the rate at which messages are dispatched to a subscription from a Pulsar topic (subscription message-dispatch-rate) for all topics of the namespace.</span>,
+  description: <NoData />,
   input: <FieldInput {...props} />
 });
 

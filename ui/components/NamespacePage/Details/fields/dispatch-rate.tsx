@@ -13,6 +13,7 @@ import stringify from 'safe-stable-stringify';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import { help } from "../../../ui/help";
+import A from '../../../ui/A/A';
 
 const policy = 'dispatchRate';
 
@@ -176,7 +177,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Dispatch rate',
-  description: <span>Sets <TooltipElement tooltipHelp={help["dispatchRate"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-throttling/#what-is-message-dispatch-throttling">message-dispatch-rate</TooltipElement> for all topics of the namespace.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        Large message payloads can cause memory usage spikes that lead to performance decreases. Pulsar adopts a rate-limit throttling mechanism for message dispatch, avoiding a traffic surge and improving message deliverability.
+      </div>
+      <div>
+        You can set a threshold to limit the number of messages and the byte size of entries that can be delivered to clients, blocking subsequent deliveries when the traffic per unit of time exceeds the threshold.
+      </div>
+      <A href="https://pulsar.apache.org/docs/next/concepts-throttling/#what-is-message-dispatch-throttling" isExternalLink>Learn more</A>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 
