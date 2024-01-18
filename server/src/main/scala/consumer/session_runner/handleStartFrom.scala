@@ -4,7 +4,7 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 
 import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.{Consumer, Message as PulsarMessage, MessageId as PulsarMessageId, PulsarClient}
-import _root_.topic.{getIsPartitionedTopic, TopicPartitioning}
+import _root_.topic.{getTopicPartitioningType, TopicPartitioningType}
 import _root_.consumer.start_from.{
     ConsumerSessionStartFrom,
     DateTime,
@@ -45,10 +45,10 @@ def examinePartitionedTopicMessage(adminClient: PulsarAdmin, topicFqn: String, i
                 case "latest"   => Some(candidates.maxBy(msg => msg.getPublishTime))
 
 def findNthMessage(adminClient: PulsarAdmin, topicFqn: String, initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
-    getIsPartitionedTopic(adminClient, topicFqn) match
-        case TopicPartitioning.Partitioned =>
+    getTopicPartitioningType(adminClient, topicFqn) match
+        case TopicPartitioningType.Partitioned =>
             examinePartitionedTopicMessage(adminClient, topicFqn, initialPosition, n)
-        case TopicPartitioning.NonPartitioned =>
+        case TopicPartitioningType.NonPartitioned =>
             examineNonPartitionedTopicMessage(adminClient, topicFqn, initialPosition, n)
 
 def findNthMessageMultiTopic(adminClient: PulsarAdmin, topics: Vector[String], initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
@@ -60,7 +60,7 @@ def findNthMessageMultiTopic(adminClient: PulsarAdmin, topics: Vector[String], i
                 case "latest"   => Some(messages.maxBy(msg => msg.getPublishTime))
 
 def getIsSingleNonPartitionedTopic(adminClient: PulsarAdmin, topics: Vector[String]): Boolean =
-    topics.size == 1 && getIsPartitionedTopic(adminClient, topics.head) == TopicPartitioning.NonPartitioned
+    topics.size == 1 && getTopicPartitioningType(adminClient, topics.head) == TopicPartitioningType.NonPartitioned
 
 def getMessageById(pulsarClient: PulsarClient, topicFqn: String, messageId: Array[Byte]): Option[PulsarMessage[Array[Byte]]] =
     val subscriptionName = s"dekaf_${java.util.UUID.randomUUID.toString}"
@@ -97,9 +97,9 @@ def getMessageById(pulsarClient: PulsarClient, topicFqn: String, messageId: Arra
 
 def topicsToNonPartitionedTopic(pulsarAdmin: PulsarAdmin, topics: Vector[String]) =
     topics.flatMap { topicFqn =>
-        getIsPartitionedTopic(pulsarAdmin, topicFqn) match
-            case TopicPartitioning.NonPartitioned => Vector(topicFqn)
-            case TopicPartitioning.Partitioned    => getPartitions(pulsarAdmin, topicFqn)
+        getTopicPartitioningType(pulsarAdmin, topicFqn) match
+            case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
+            case TopicPartitioningType.Partitioned    => getPartitions(pulsarAdmin, topicFqn)
     }
 
 def getMessageByIdMultiTopic(

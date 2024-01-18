@@ -1,0 +1,14 @@
+.LicenseInput {
+  width: 480rem;
+}
+
+.DialogContent {
+  padding: 12rem;
+}
+.DialogFooter {
+  padding: 12rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+}

@@ -5,7 +5,7 @@ import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsar
 import { ErrorHappened } from './api/types';
 import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, LocalPulsarInstanceCreated, LocalPulsarInstanceDeleted, LocalPulsarInstanceUpdated, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
 import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
-import { ActiveProcessesUpdated, GetActiveProcesses, GetActiveProcessesResult, KillProcess, ProcessLogEntryReceived, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/types';
+import { ActiveProcessesUpdated, DekafWindowClosed, GetActiveProcesses, GetActiveProcessesResult, KillProcess, ProcessLogEntryReceived, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/types';
 import { handleGetActiveProcesses, handleKillProcess, handleResendProcessLogs, handleSpawnProcess } from './processes/handlers';
 import { CreateRemotePulsarConnection, DeleteRemotePulsarConnection, ListRemotePulsarConnections, ListRemotePulsarConnectionsResult, RemotePulsarConnectionCreated, RemotePulsarConnectionDeleted, RemotePulsarConnectionUpdated, UpdateRemotePulsarConnection } from './remote-pulsar-connections/types';
 import { handleCreateRemotePulsarConnection, handleDeleteRemotePulsarConnection, handleListRemotePulsarConnections, handleUpdateRemotePulsarConnection } from './remote-pulsar-connections/handlers';
@@ -47,7 +47,8 @@ export type ApiEvent = ErrorHappened |
   ProcessStatusUpdated |
   ResendProcessLogs |
   ResendProcessLogsResult |
-  ProcessLogEntryReceived
+  ProcessLogEntryReceived |
+  DekafWindowClosed
 
 export type ApiService = {
   handleEvent: (event: Electron.IpcMainEvent, arg: any) => void

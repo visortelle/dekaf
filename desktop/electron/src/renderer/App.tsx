@@ -16,6 +16,7 @@ import './ui/force-show-scrollbars-on-macos';
 import SmallButton from './ui/SmallButton/SmallButton';
 import SocialIcons from './ui/SocialIcons/SocialIcons';
 import A from './ui/A/A';
+import LicenseButton from './LicenseButton/LicenseButton';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
@@ -56,6 +57,9 @@ function InitialAppScreen() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                   <strong>Stay Connected</strong>
                   <SocialIcons fill='#fff' />
+                </div>
+                <div className={s.LicenseButton}>
+                  <LicenseButton />
                 </div>
               </div>
               <ConnectionList />
