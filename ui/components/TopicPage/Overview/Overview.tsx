@@ -129,10 +129,9 @@ const Overview: React.FC<OverviewProps> = (props) => {
           </table>
         </div>
 
-        {(partitioning === 'partitioned' || partitioning === 'non-partitioned') && (
+        {(props.topicPersistency !== 'non-persistent') && (partitioning === 'partitioned' || partitioning === 'non-partitioned') && (
           <div style={{ marginBottom: '24rem' }}>
             <TopicMetadataEditor
-              partitioning={partitioning}
               tenant={props.tenant}
               namespace={props.namespace}
               topic={props.topic}

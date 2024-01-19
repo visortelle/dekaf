@@ -141,7 +141,6 @@ const Topics: React.FC<TopicsProps> = (props) => {
     const topicStatsResponse = await topicServiceClient.getTopicsStats(topicsStatsRequest, null)
       .catch((err) => notifyError(`Unable to get topics stats: ${err}`));
 
-
     if (topicStatsResponse === undefined) {
       return {};
     }
@@ -152,7 +151,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
     }
 
     const topicPropertiesRequest = new pb.GetTopicPropertiesRequest();
-    topicPropertiesRequest.setTopicsList(entries.map(value => value.fqn))
+    topicPropertiesRequest.setTopicsList(
+      entries
+        .filter(t => t.persistency === 'persistent' && t.partitioning !== 'partition')
+        .map(value => value.fqn)
+    )
 
     const topicPropertiesResponse = await topicServiceClient.getTopicProperties(topicPropertiesRequest, null)
       .catch((err) => notifyError(`Unable to get topics properties: ${err}`));

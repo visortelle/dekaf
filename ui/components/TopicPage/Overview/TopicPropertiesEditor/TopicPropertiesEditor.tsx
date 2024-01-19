@@ -12,13 +12,12 @@ import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirm
 import { FC, useState } from "react";
 import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
 import ActionButton from "../../../ui/ActionButton/ActionButton";
-import { PulsarTopicPartitioning, PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'topic-metadata';
 
 export type TopicMetadataEditorProps = {
   persistency: PulsarTopicPersistency;
-  partitioning: PulsarTopicPartitioning;
   tenant: string;
   namespace: string;
   topic: string;
