@@ -21,7 +21,7 @@ import { ManagedConsumerSessionConfig } from '../ui/LibraryBrowser/model/user-ma
 export type NamespacePageView =
   { type: 'overview' } |
   { type: 'topics' } |
-  { type: 'policies' } |
+  { type: 'details' } |
   { type: 'create-topic' } |
   {
     type: 'consumer-session',
@@ -43,7 +43,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
     extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'topics', value: 'Topics' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname)) {
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.details._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'policies', value: 'Details' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'Create Topic' }]
@@ -93,11 +93,11 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.overview._.path, pathname))
           },
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
+            linkTo: routes.tenants.tenant.namespaces.namespace.details._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Details',
             onClick: () => { },
             type: 'regular',
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname))
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.details._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
@@ -130,7 +130,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
 
       {props.view.type === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
-      {props.view.type === 'policies' && <NamespaceDetails tenant={props.tenant} namespace={props.namespace} />}
+      {props.view.type === 'details' && <NamespaceDetails tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === "consumer-session" && (
         <ConsumerSession

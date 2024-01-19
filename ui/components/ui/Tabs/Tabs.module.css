@@ -78,6 +78,7 @@
 
 .Tab.TabVertical {
   text-align: left;
+  border-right: none;
 }
 
 .Tab.TabVertical:first-child {

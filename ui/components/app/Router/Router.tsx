@@ -236,9 +236,9 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.policies._.path,
+        path: routes.tenants.tenant.namespaces.namespace.details._.path,
         element: withLayout(
-          <RoutedNamespacePage view="policies" />,
+          <RoutedNamespacePage view="details" />,
           withLayoutProps
         ),
       },
