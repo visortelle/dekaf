@@ -6,7 +6,7 @@ import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import ConsumerSession from "../ui/ConsumerSession/ConsumerSession";
 import Schema from "./Schema/Schema";
-import Policies from "./Policies/Policies";
+import TopicDetails from "./TopicDetails/TopicDetails";
 import Subscriptions from './Subscriptions/Subscriptions';
 import DeleteDialog from "./DeleteDialog/DeleteDialog";
 import { routes } from "../routes";
@@ -28,7 +28,7 @@ export type TopicPageView =
   | { type: "schema-initial-screen" }
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
-  | { type: "policies" }
+  | { type: "details" }
   | { type: "subscriptions" }
   | { type: "producers" };
 export type TopicPageProps = {
@@ -88,8 +88,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'producers', value: 'Producers' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '*', pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'schema', value: 'Schema' }]);
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname)) {
-    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'policies', value: 'Policies' }]);
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.path, pathname)) {
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'details', value: 'Details' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]);
   }
@@ -175,18 +175,18 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
     buttons = buttons.concat([
       {
-        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
+        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.get({
           tenant: props.tenant,
           namespace: props.namespace,
           topic,
           topicPersistency: props.topicPersistency,
         }),
-        text: "Policies",
+        text: "Details",
         onClick: () => { },
         position: 'right',
         type: "regular",
-        testId: "topic-policies-button",
-        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
+        testId: "topic-details-button",
+        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.path, pathname))
       },
     ]);
   }
@@ -314,8 +314,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       {props.view.type === "overview" && (
         <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} />
       )}
-      {props.view.type === "policies" && (
-        <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+      {props.view.type === "details" && (
+        <TopicDetails key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
       )}
       {props.view.type === "producers" && (
         <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />

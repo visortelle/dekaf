@@ -1,14 +1,16 @@
-.Policies {
+.TopicDetails {
+  flex: 1;
+  display: flex;
 }
 
 .ConfigurationTable {
-  margin-bottom: 48rem;
   padding: 24rem 24rem 0 24rem;
   flex: 1;
 }
 
 .Tabs {
-  padding: 12rem;
+  flex: 1;
+  display: flex;
 }
 
 .IsGlobalCheckbox {

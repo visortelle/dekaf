@@ -13,7 +13,7 @@ const NothingToShow: React.FC<NothingToShowProps> = (props) => {
       content = 'Loading...';
       break;
     default:
-      content = 'No items to show.';
+      content = 'No items to show';
   }
 
   let className= s.NothingToShow;

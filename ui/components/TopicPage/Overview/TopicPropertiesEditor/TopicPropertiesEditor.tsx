@@ -3,7 +3,7 @@ import stringify from 'safe-stable-stringify';
 
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
@@ -12,38 +12,43 @@ import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirm
 import { FC, useState } from "react";
 import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
 import ActionButton from "../../../ui/ActionButton/ActionButton";
+import { PulsarTopicPartitioning, PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
-const policy = 'properties';
+const policy = 'topic-metadata';
 
-export type NamespacePropertiesEditorProps = {
+export type TopicMetadataEditorProps = {
+  persistency: PulsarTopicPersistency;
+  partitioning: PulsarTopicPartitioning;
   tenant: string;
   namespace: string;
+  topic: string;
 }
 
 type Properties = {
   [key: string]: string
 }
 
-export const NamespacePropertiesEditor: FC<NamespacePropertiesEditorProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+export const TopicMetadataEditor: FC<TopicMetadataEditorProps> = (props) => {
+  const { topicServiceClient } = GrpcClient.useContext();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
+  const topicFqn = `${props.persistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
-      const req = new pb.GetPropertiesRequest();
-      req.setNamespacesList([`${props.tenant}/${props.namespace}`]);
+      const req = new pb.GetTopicPropertiesRequest();
+      req.setTopicsList([topicFqn]);
 
-      const res = await namespaceServiceClient.getProperties(req, {});
+      const res = await topicServiceClient.getTopicProperties(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         throw new Error(`Unable to get properties. ${res.getStatus()?.getMessage()}`);
       }
 
-      const propertiesPb = mapToObject(res.getPropertiesMap())[`${props.tenant}/${props.namespace}`];
+      const propertiesPb = mapToObject(res.getTopicPropertiesMap())[topicFqn];
       const properties = mapToObject(propertiesPb.getPropertiesMap());
 
       return properties;
@@ -59,13 +64,13 @@ export const NamespacePropertiesEditor: FC<NamespacePropertiesEditorProps> = (pr
   }
 
   const onSave = async (properties: Properties) => {
-    const req = new pb.SetPropertiesRequest();
-    req.setNamespace(`${props.tenant}/${props.namespace}`);
+    const req = new pb.SetTopicPropertiesRequest();
+    req.setTopic(topicFqn);
 
     Object.entries(properties).map(([key, value]) => {
-      req.getPropertiesMap().set(key, value)
+      req.getTopicPropertiesMap().set(key, value)
     })
-    const res = await namespaceServiceClient.setProperties(req, null);
+    const res = await topicServiceClient.setTopicProperties(req, null);
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to set properties. ${res.getStatus()?.getMessage()}`);
@@ -88,9 +93,9 @@ export const NamespacePropertiesEditor: FC<NamespacePropertiesEditorProps> = (pr
               content="Properties"
               help={(
                 <div>
-                  Custom metadata associated with a namespace.
+                  Custom metadata associated with the topic.
                   <br />
-                  They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and automation tasks.
+                  They serve as annotations or labels that provide additional information about the topic, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and automation tasks.
                 </div>
               )}
             />
@@ -111,4 +116,4 @@ export const NamespacePropertiesEditor: FC<NamespacePropertiesEditorProps> = (pr
   )
 }
 
-export default NamespacePropertiesEditor;
+export default TopicMetadataEditor;

@@ -69,7 +69,7 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
   const [activeTab, setActiveTab] = useQueryParam('category', withDefault(StringParam, 'access-control'));
 
   return (
-    <div className={s.Policies}>
+    <div className={s.NamespaceDetails}>
       <div className={s.Tabs}>
         <Tabs<TabsKey>
           activeTab={activeTab as TabsKey}

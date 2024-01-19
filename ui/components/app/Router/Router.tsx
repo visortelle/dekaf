@@ -175,8 +175,8 @@ const prepareRoutes = (): {
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
-          .policies._.path,
-        element: withLayout(<RoutedTopicPage view="policies" />, withLayoutProps),
+          .details._.path,
+        element: withLayout(<RoutedTopicPage view="details" />, withLayoutProps),
       },
 
       {

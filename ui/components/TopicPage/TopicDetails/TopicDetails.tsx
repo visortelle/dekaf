@@ -29,11 +29,11 @@ import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic';
 import maxMessageSizeField from './fields/max-message-size';
 
-import s from './Policies.module.css'
+import s from './TopicDetails.module.css'
 import Tabs from "../../ui/Tabs/Tabs";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
-export type PoliciesProps = {
+export type TopicDetailsProps = {
   tenant: string;
   namespace: string;
   topic: string;
@@ -48,7 +48,7 @@ type TabsKey =
   'deduplication' |
   'schema';
 
-const Policies: React.FC<PoliciesProps> = (props) => {
+const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
   const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
   const [activeTab, setActiveTab] = React.useState<TabsKey>('topic-config');
 
@@ -67,7 +67,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
   return (
     <div className={s.Policies}>
-
       <div className={s.IsGlobalCheckbox}>
         <Checkbox
           checked={isGlobal}
@@ -79,6 +78,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
       <div className={s.Tabs}>
         <Tabs<TabsKey>
           activeTab={activeTab}
+          direction='vertical'
           onActiveTabChange={setActiveTab}
           tabs={{
             "topic-config": {
@@ -183,4 +183,4 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   );
 }
 
-export default Policies;
+export default TopicDetails;

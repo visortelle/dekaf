@@ -14,10 +14,9 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
-import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
-import { mapToObject } from '../../../proto-utils/proto-utils';
 import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
+import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
 
 export type OverviewProps = {
   tenant: string;
@@ -68,28 +67,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
     }
   );
 
-  const { data: propertiesResponse, error: propertiesResponseError, isLoading: isPropertiesResponseLoading } = useSwr(
-    swrKeys.pulsar.customApi.metrics.topicsProperties._([topicFqn]),
-    async () => {
-      const req = new pb.GetTopicPropertiesRequest();
-      req.setTopicsList([topicFqn])
-
-      const res = await topicServiceClient.getTopicProperties(req, null)
-        .catch((err) => notifyError(`Unable to get topics properties: ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get topics properties: ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      return res;
-    }
-  )
-
   if (statsError !== undefined) {
     notifyError(`Unable to get topic stats. ${statsError}`);
   }
@@ -111,9 +88,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   const partitionedTopicMetadata = statsResponse.getPartitionedTopicStatsMap().get(topicFqn)?.getMetadata();
   const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
-  let properties = propertiesResponse &&
-    propertiesResponse.getTopicPropertiesMap().get(topicFqn) &&
-    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap();
 
   return (
     <div className={s.Overview}>
@@ -155,17 +129,17 @@ const Overview: React.FC<OverviewProps> = (props) => {
           </table>
         </div>
 
-        <div style={{ marginBottom: '24rem' }}>
-          <strong>Properties</strong>
-          <div className={s.JsonViewer}>
-            <KeyValueEditor
-              value={properties === undefined ? [] : recordToIndexedKv(mapToObject(properties))}
-              mode='readonly'
-              onChange={() => { }}
-              height='240rem'
+        {(partitioning === 'partitioned' || partitioning === 'non-partitioned') && (
+          <div style={{ marginBottom: '24rem' }}>
+            <TopicMetadataEditor
+              partitioning={partitioning}
+              tenant={props.tenant}
+              namespace={props.namespace}
+              topic={props.topic}
+              persistency={props.topicPersistency}
             />
           </div>
-        </div>
+        )}
 
         <div className={s.Section}>
           <div className={s.Tabs}>
