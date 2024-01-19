@@ -134,7 +134,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
                     onChange({ ...value, primary: uniq([...value.primary, v]) });
                   }}
-                  validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Group name is required'))}
                 />
               </div>
             )}
@@ -164,7 +163,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
                     onChange({ ...value, secondary: uniq([...value.secondary, v]) });
                   }}
-                  validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Group name is required'))}
                 />
               </div>
             )}

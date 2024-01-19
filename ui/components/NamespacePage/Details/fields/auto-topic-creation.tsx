@@ -208,7 +208,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto topic creation',
-  description: <span>Enables or disable auto <TooltipElement tooltipHelp={help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> creation for this namespace, overriding broker settings.</span>,
+  description: <div>Automatically create a topic if it doesn't exist when a client (producer or consumer) attempts to produce or consume.</div>,
   input: <FieldInput {...props} />
 });
 

@@ -49,21 +49,21 @@ export type NamespaceDetailsProps = {
 };
 
 type TabsKey =
-  'other' |
-  'geo-replication' |
-  'encryption' |
-  'persistence' |
-  'limits' |
-  'tiered-storage' |
+  'access-control' |
   'bundles' |
-  'rate-limits' |
-  'topic-compaction' |
-  'message-deduplication' |
+  'compute-resources' |
   'delayed-delivery' |
-  'retention' |
+  'encryption' |
+  'geo-replication' |
+  'limits' |
+  'message-deduplication' |
   'messaging' |
+  'persistence' |
+  'rate-limits' |
+  'retention' |
   'schema' |
-  'access-control'
+  'tiered-storage' |
+  'topic-compaction';
 
 const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
   const [activeTab, setActiveTab] = useQueryParam('category', withDefault(StringParam, 'access-control'));
@@ -110,14 +110,16 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            encryption: {
-              title: 'Encryption',
+            "compute-resources": {
+              title: 'Compute Resources',
               render: () => (
                 <div className={s.ConfigurationTable}>
                   <ConfigurationTable
-                    title="Encryption"
+                    title="Compute Resources"
                     fields={[
-                      encryptionRequiredField,
+                      resourceGroupField,
+                      antiAffinityGroupField,
+                      bookieAffinityGroupField,
                     ].map(field => field(props))}
                   />
                 </div>
@@ -131,6 +133,19 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     title="Delayed Delivery"
                     fields={[
                       delayedDeliveryField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            encryption: {
+              title: 'Encryption',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Encryption"
+                    fields={[
+                      encryptionRequiredField,
                     ].map(field => field(props))}
                   />
                 </div>
@@ -281,21 +296,6 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     title="Topic Compaction"
                     fields={[
                       compactionThresholdField,
-                    ].map(field => field(props))}
-                  />
-                </div>
-              )
-            },
-            "other": {
-              title: 'Other',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Other"
-                    fields={[
-                      resourceGroupField,
-                      antiAffinityGroupField,
-                      bookieAffinityGroupField,
                     ].map(field => field(props))}
                   />
                 </div>

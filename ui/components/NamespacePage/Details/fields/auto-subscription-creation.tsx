@@ -117,7 +117,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto subscription creation',
-  description: <span>Enables or disable auto <TooltipElement tooltipHelp={help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscription</TooltipElement> creation.</span>,
+  description: <div>Automatically create a subscription if it doesn't exist when a client (producer or consumer) attempts to produce or consume.</div>,
   input: <FieldInput {...props} />
 });
 
