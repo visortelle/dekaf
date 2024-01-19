@@ -26,46 +26,6 @@
   gap: 12rem;
 }
 
-.SectionTitle {
-  margin-bottom: 12rem;
-}
-
-.BundleTableHeader {
-  margin-top: 5rem;
-  margin-bottom: 5rem;
-  display: flex;
-  width: 100%;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.BundleTableHeaderLeft {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  gap: 12rem;
-}
-
-.BundleTableHeaderRight {
-  display: flex;
-  width: 40%;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-evenly;
-}
-
-.SplitSettings {
-  padding-right: 5rem;
-}
-
-.ActionsCell {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12rem;
-  width: 420rem;
-}
-
 .Properties {
   margin-bottom: 24rem;
 }

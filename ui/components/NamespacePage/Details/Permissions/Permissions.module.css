@@ -1,5 +1,4 @@
 .Title {
-  padding: 12rem;
   margin-bottom: 12rem;
 }
 .TableContainer {
@@ -8,8 +7,8 @@
 }
 
 .Buttons {
-  display: flex;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8rem;
 }
 

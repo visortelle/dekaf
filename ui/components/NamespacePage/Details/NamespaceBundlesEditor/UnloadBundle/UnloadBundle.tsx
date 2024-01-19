@@ -1,4 +1,4 @@
-import { BundleKey } from "../../Overview";
+import { BundleKey } from "../NamespaceBundlesEditor";
 import * as pbn from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
 import * as Modals from "../../../../app/contexts/Modals/Modals";
@@ -11,9 +11,10 @@ import React from "react";
 export type UnloadBundleProps = {
   namespaceFqn: string,
   bundleKey: BundleKey,
+  onUnload: () => void
 }
 
-const UnloadBundle: React.FC<UnloadBundleProps> = ({ namespaceFqn, bundleKey }) => {
+const UnloadBundle: React.FC<UnloadBundleProps> = ({ namespaceFqn, bundleKey, onUnload }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
@@ -25,6 +26,8 @@ const UnloadBundle: React.FC<UnloadBundleProps> = ({ namespaceFqn, bundleKey }) 
 
     const res =
       await namespaceServiceClient.unloadNamespaceBundle(req, null);
+
+    onUnload();
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(

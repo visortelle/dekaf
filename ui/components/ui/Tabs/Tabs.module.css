@@ -6,7 +6,7 @@
   overflow: hidden;
 }
 
-.Tabs.Vertical {
+.Tabs.TabsVertical {
   display: grid;
   grid-template-columns: 240rem 1fr;
 }
@@ -24,7 +24,7 @@
   overscroll-behavior-y: contain;
 }
 
-.Vertical .TabsList {
+.TabsList.TabsListVertical {
   flex-direction: column;
   border-left: none;
   border-bottom: none;
@@ -76,11 +76,11 @@
   cursor: pointer;
 }
 
-.Vertical .Tab {
+.Tab.TabVertical {
   text-align: left;
 }
 
-.Vertical .Tab:first-child {
+.Tab.TabVertical:first-child {
   border-top: none;
 }
 
@@ -122,11 +122,11 @@
   background-color: var(--accent-color-blue);
 }
 
-.Vertical .ActiveTab {
+.ActiveTab.TabVertical {
   box-shadow: none;
 }
 
-.Vertical .ActiveTab::after {
+.ActiveTab.TabVertical::after {
   height: 100%;
   width: 3rem;
   top: 0;

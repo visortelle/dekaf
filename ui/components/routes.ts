@@ -107,20 +107,6 @@ export const routes = {
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/create-topic`,
             },
           },
-          permissions: {
-            _: {
-              path: "/tenants/:tenant/namespaces/:namespace/permissions",
-              get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/permissions`,
-            },
-          },
-          subscriptionPermissions: {
-            _: {
-              path: "/tenants/:tenant/namespaces/:namespace/subscription-permissions",
-              get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/subscription-permissions`,
-            },
-          },
           consumerSession: {
             _: {
               path: "tenants/:tenant/namespaces/:namespace/consumer-session",

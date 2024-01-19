@@ -1,5 +1,5 @@
-import { BundleKey } from "../../Overview";
 import React from "react";
+import { BundleKey } from "../NamespaceBundlesEditor";
 import * as pbn from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
 import * as Modals from "../../../../app/contexts/Modals/Modals";
@@ -11,17 +11,13 @@ import s from './ClearBacklogBundle.module.css';
 export type ClearBacklogBundleProps = {
   namespaceFqn: string,
   bundleKey: BundleKey,
+  onClear: () => void
 }
 
-const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({ namespaceFqn, bundleKey }) => {
+const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({ namespaceFqn, bundleKey, onClear }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
-  const [forceDelete, setForceDelete] = React.useState(false);
-
-  const switchForceDelete = () => {
-    setForceDelete(!forceDelete);
-  }
 
   const clearBacklogBundle = async () => {
     const req = new pbn.ClearBundleBacklogRequest();
@@ -30,6 +26,8 @@ const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({ namespaceFqn, b
 
     const res =
       await namespaceServiceClient.clearBundleBacklog(req, null);
+
+    onClear();
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
@@ -48,7 +46,8 @@ const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({ namespaceFqn, b
       content={
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
-          <div>It will permanently clear <strong>FULL backlog</strong> of this bundle and could lead to severe consequences.</div>
+          <br />
+          <div><strong>It will clear all messages in backlog of this bundle and could lead to a permanent data loss.</strong></div>
         </div>
       }
       onConfirm={clearBacklogBundle}

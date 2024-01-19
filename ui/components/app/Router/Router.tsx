@@ -250,20 +250,6 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.permissions._.path,
-        element: withLayout(
-          <RoutedNamespacePage view="permissions" />,
-          withLayoutProps
-        ),
-      },
-      {
-        path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path,
-        element: withLayout(
-          <RoutedNamespacePage view="subscription-permissions" />,
-          withLayoutProps
-        ),
-      },
-      {
         path: routes.tenants.tenant.namespaces.namespace.consumerSession._.path,
         element: withLayout(
           <RoutedNamespacePage view="consumer-session" />,

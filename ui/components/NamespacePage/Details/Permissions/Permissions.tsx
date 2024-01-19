@@ -2,21 +2,22 @@ import { useState } from 'react';
 import useSWR, { useSWRConfig } from "swr";
 import _ from 'lodash';
 
-import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../../app/contexts/Notifications';
-import * as Modals from '../../app/contexts/Modals/Modals';
-import Checkbox from '../../ui/Checkbox/Checkbox';
-import SmallButton from '../../ui/SmallButton/SmallButton';
-import Input from '../../ui/Input/Input';
-import { swrKeys } from '../../swrKeys';
-import { mapToObject } from '../../../proto-utils/proto-utils';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as Modals from '../../../app/contexts/Modals/Modals';
+import Checkbox from '../../../ui/Checkbox/Checkbox';
+import SmallButton from '../../../ui/SmallButton/SmallButton';
+import Input from '../../../ui/Input/Input';
+import { swrKeys } from '../../../swrKeys';
+import { mapToObject } from '../../../../proto-utils/proto-utils';
 
 import s from './Permissions.module.css';
-import ts from '../../ui/SimpleTable/SimpleTable.module.css';
+import ts from '../../../ui/SimpleTable/SimpleTable.module.css';
 import RevokeDialog from './RevokeDialog/RevokeDialog';
-import { H1 } from '../../ui/H/H';
+import { H3 } from '../../../ui/H/H';
+import A from '../../../ui/A/A';
 
 export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
 export type AuthAction = typeof actionsList[number];
@@ -192,9 +193,9 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
   };
 
   return (
-    <div>
+    <div className={s.Permissions}>
       <div className={s.Title}>
-        <H1>Permissions</H1>
+        <H3>Permissions</H3>
       </div>
       <div className={s.TableContainer}>
         <table className={ts.Table}>
@@ -305,13 +306,15 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                   </td>
                 ))}
                 <td className={`${ts.Cell}`}>
-                  <SmallButton
-                    onClick={() => grant(formValue, true)}
-                    type='primary'
-                    text='Grant'
-                    disabled={formValue.role.length < 1}
-                    className={s.Button}
-                  />
+                  <div className={s.Buttons}>
+                    <SmallButton
+                      onClick={() => grant(formValue, true)}
+                      type='primary'
+                      text='Grant'
+                      disabled={formValue.role.length < 1}
+                      className={s.Button}
+                    />
+                  </div>
                 </td>
               </tr>
             }

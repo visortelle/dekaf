@@ -4,9 +4,7 @@ import { useNavigate } from 'react-router';
 import Topics from './Topics/Topics';
 import NamespaceDetails from './Details/NamespaceDetails';
 import CreateTopic from './CreateTopic/CreateTopic';
-import Permissions from './Permissions/Permissions';
 import DeleteDialog from './DeleteDialog/DeleteDialog'
-import SubscriptionPermissions from './SubscriptionPermissions/SubscriptionPermissions';
 import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import * as Modals from '../app/contexts/Modals/Modals';
@@ -24,8 +22,6 @@ export type NamespacePageView =
   { type: 'overview' } |
   { type: 'topics' } |
   { type: 'policies' } |
-  { type: 'permissions' } |
-  { type: 'subscription-permissions' } |
   { type: 'create-topic' } |
   {
     type: 'consumer-session',
@@ -49,10 +45,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
     extraCrumbs = [{ type: 'link', id: 'topics', value: 'Topics' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'policies', value: 'Details' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.permissions._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'permissions', value: 'Permissions' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'subscription-permissions', value: 'Subscription Permissions' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'Create Topic' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.consumerSession._.path, pathname)) {
@@ -115,20 +107,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname))
           },
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.permissions._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Permissions',
-            onClick: () => { },
-            type: 'regular',
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.permissions._.path, pathname))
-          },
-          // {
-          //   linkTo: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.get({ tenant: props.tenant, namespace: props.namespace }),
-          //   text: 'Subscription Permissions',
-          //   onClick: () => { },
-          //   type: 'regular',
-          //   active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname))
-          // },
-          {
             text: 'Delete',
             type: 'danger',
             onClick: () => modals.push({
@@ -153,8 +131,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       {props.view.type === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} libraryContext={libraryContext} />}
       {props.view.type === 'policies' && <NamespaceDetails tenant={props.tenant} namespace={props.namespace} />}
-      {props.view.type === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
-      {props.view.type === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
       {props.view.type === "consumer-session" && (
         <ConsumerSession

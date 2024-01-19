@@ -5,33 +5,36 @@ import * as GrpcClient from "../../../../app/contexts/GrpcClient/GrpcClient";
 import * as pbn from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
 import ConfirmationDialog from "../../../../ui/ConfirmationDialog/ConfirmationDialog";
-import s from "../UnloadBundle/UnloadBundle.module.css";
+import s from "../ClearBacklogBundle/ClearBacklogBundle.module.css";
 
-export type UnloadAllProps = {
+export type ClearBacklogProps = {
   namespaceFqn: string,
+  onClear: () => void
 }
 
-const UnloadAll: React.FC<UnloadAllProps> = ({ namespaceFqn }) => {
+const ClearBacklog: React.FC<ClearBacklogProps> = ({ namespaceFqn, onClear }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
 
-  const unloadAll = async () => {
-    const req = new pbn.UnloadNamespaceRequest();
+  const clearBacklog = async () => {
+    const req = new pbn.ClearNamespaceBacklogRequest();
     req.setNamespace(namespaceFqn);
 
     const res =
-      await namespaceServiceClient.unloadNamespace(req, null);
+      await namespaceServiceClient.clearNamespaceBacklog(req, null);
+
+    onClear();
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
-        `Unable to unload namespace. ${res.getStatus()?.getMessage()}`,
+        `Unable to clear namespace backlog. ${res.getStatus()?.getMessage()}`,
         crypto.randomUUID()
       );
       return;
     }
 
-    notifySuccess('Namespace successfully unloaded', crypto.randomUUID());
+    notifySuccess('Namespace backlog successfully cleared', crypto.randomUUID());
     modals.pop();
   }
 
@@ -41,14 +44,15 @@ const UnloadAll: React.FC<UnloadAllProps> = ({ namespaceFqn }) => {
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>This releases the ownership of all topics under a specific namespace from the current broker, allowing them to be reassigned to another broker based on load conditions and could lead to severe consequences.</div>
+          <div><strong>It will clear all messages in backlog of this bundle and could lead to a permanent data loss.</strong></div>
         </div>
       }
-      onConfirm={unloadAll}
+      onConfirm={clearBacklog}
       onCancel={modals.pop}
+      guard={"CONFIRM"}
       type='danger'
     />
   );
 }
 
-export default UnloadAll;
+export default ClearBacklog;

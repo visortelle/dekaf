@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import replicationClustersField from './fields/replication-clusters';
@@ -36,9 +36,12 @@ import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import publishRateField from './fields/publish-rate';
 import resourceGroupField from './fields/resource-group';
+import Permissions from './Permissions/Permissions';
 import Tabs from '../../ui/Tabs/Tabs';
 
 import s from './NamespaceDetails.module.css'
+import NamespaceBundlesEditor from './NamespaceBundlesEditor/NamespaceBundlesEditor';
+import { StringParam, useQueryParam, withDefault } from 'use-query-params';
 
 export type NamespaceDetailsProps = {
   tenant: string;
@@ -60,19 +63,53 @@ type TabsKey =
   'retention' |
   'messaging' |
   'schema' |
-  'permissions'
+  'access-control'
 
 const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabsKey>('retention');
+  const [activeTab, setActiveTab] = useQueryParam('category', withDefault(StringParam, 'access-control'));
 
   return (
     <div className={s.Policies}>
       <div className={s.Tabs}>
         <Tabs<TabsKey>
-          activeTab={activeTab}
+          activeTab={activeTab as TabsKey}
           direction='vertical'
           onActiveTabChange={setActiveTab}
           tabs={{
+            'access-control': {
+              title: 'Access Control',
+              render: () => (
+                <div>
+                  <div className={s.ConfigurationTable}>
+                    <ConfigurationTable
+                      title="Access Control"
+                      fields={[
+                        subscriptionAuthModeField,
+                      ].map(field => field(props))}
+                    />
+                  </div>
+                  <div style={{ padding: '0 24rem', overflow: 'auto' }}>
+                    <Permissions tenant={props.tenant} namespace={props.namespace} />
+                  </div>
+                </div>
+              )
+            },
+            bundles: {
+              title: 'Bundles',
+              render: () => (
+                <div>
+                  <div className={s.ConfigurationTable}>
+                    <ConfigurationTable
+                      title="Bundles"
+                      fields={[]}
+                    />
+                  </div>
+                  <div style={{ padding: '0 24rem' }}>
+                    <NamespaceBundlesEditor tenant={props.tenant} namespace={props.namespace} />
+                  </div>
+                </div>
+              )
+            },
             encryption: {
               title: 'Encryption',
               render: () => (
@@ -81,6 +118,19 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     title="Encryption"
                     fields={[
                       encryptionRequiredField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            "delayed-delivery": {
+              title: 'Delayed Delivery',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Delayed Delivery"
+                    fields={[
+                      delayedDeliveryField,
                     ].map(field => field(props))}
                   />
                 </div>
@@ -95,19 +145,6 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     fields={[
                       replicationClustersField,
                       replicatorDispatchRateField,
-                    ].map(field => field(props))}
-                  />
-                </div>
-              )
-            },
-            "delayed-delivery": {
-              title: 'Delayed Delivery',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Delayed Delivery"
-                    fields={[
-                      delayedDeliveryField,
                     ].map(field => field(props))}
                   />
                 </div>
@@ -142,21 +179,7 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                       maxUnackedMessagesPerConsumerField,
                       maxUnackedMessagesPerSubscriptionField,
                       subscriptionTypesEnabledField,
-                      subscriptionExpirationTimeField,
-                      subscriptionAuthModeField,
-                    ].map(field => field(props))}
-                  />
-                </div>
-              )
-            },
-            "persistence": {
-              title: 'Persistence',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Persistence"
-                    fields={[
-                      persistenceField,
+                      subscriptionExpirationTimeField
                     ].map(field => field(props))}
                   />
                 </div>
@@ -171,6 +194,19 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                     fields={[
                       deduplicationField,
                       deduplicationSnapshotIntervalField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            "persistence": {
+              title: 'Persistence',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Persistence"
+                    fields={[
+                      persistenceField,
                     ].map(field => field(props))}
                   />
                 </div>

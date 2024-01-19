@@ -1,7 +1,7 @@
 import * as pbn from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
 import React from "react";
-import { BundleKey } from "../../Overview";
+import { BundleKey } from "../NamespaceBundlesEditor";
 import * as Modals from "../../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../../app/contexts/GrpcClient/GrpcClient";
@@ -15,6 +15,7 @@ import Input from "../../../../ui/Input/Input";
 export type SplitBundleProps = {
   namespaceFqn: string,
   bundleKey: BundleKey,
+  onSplit: () => void
 }
 
 export type SplitParams = {
@@ -41,7 +42,7 @@ const getSupportedAlgorithms = (brokersConfig: BrokerConfig.Value): string[] => 
     []
 }
 
-const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) => {
+const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey, onSplit }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const brokersConfig = BrokerConfig.useContext();
@@ -97,6 +98,8 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
 
     const res =
       await namespaceServiceClient.splitNamespaceBundle(req, null);
+
+    onSplit();
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(

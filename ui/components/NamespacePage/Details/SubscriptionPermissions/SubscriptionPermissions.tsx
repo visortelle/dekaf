@@ -3,15 +3,15 @@ import useSWR, { useSWRConfig } from 'swr';
 import _ from 'lodash';
 import CreatableSelect from 'react-select/creatable';
 
-import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../../app/contexts/Notifications';
-import Input from '../../ui/Input/Input';
-import { H1, H3 } from '../../ui/H/H';
-import Button from '../../ui/Button/Button';
-import { swrKeys } from '../../swrKeys';
-import { mapToObject } from '../../../proto-utils/proto-utils';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import Input from '../../../ui/Input/Input';
+import { H1, H3 } from '../../../ui/H/H';
+import Button from '../../../ui/Button/Button';
+import { swrKeys } from '../../../swrKeys';
+import { mapToObject } from '../../../../proto-utils/proto-utils';
 
 import s from './SubscriptionPermissions.module.css';
 

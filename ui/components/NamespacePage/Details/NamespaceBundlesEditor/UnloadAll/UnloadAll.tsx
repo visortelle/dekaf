@@ -5,38 +5,36 @@ import * as GrpcClient from "../../../../app/contexts/GrpcClient/GrpcClient";
 import * as pbn from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
 import ConfirmationDialog from "../../../../ui/ConfirmationDialog/ConfirmationDialog";
-import s from "../ClearBacklogBundle/ClearBacklogBundle.module.css";
+import s from "../UnloadBundle/UnloadBundle.module.css";
 
-export type ClearBacklogProps = {
+export type UnloadAllProps = {
   namespaceFqn: string,
+  onUnload: () => void
 }
 
-const ClearBacklog: React.FC<ClearBacklogProps> = ({ namespaceFqn }) => {
+const UnloadAll: React.FC<UnloadAllProps> = ({ namespaceFqn, onUnload }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
-  const [forceDelete, setForceDelete] = React.useState(false);
 
-  const switchForceDelete = () => {
-    setForceDelete(!forceDelete);
-  }
-
-  const clearBacklog = async () => {
-    const req = new pbn.ClearNamespaceBacklogRequest();
+  const unloadAll = async () => {
+    const req = new pbn.UnloadNamespaceRequest();
     req.setNamespace(namespaceFqn);
 
     const res =
-      await namespaceServiceClient.clearNamespaceBacklog(req, null);
+      await namespaceServiceClient.unloadNamespace(req, null);
+
+    onUnload();
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
-        `Unable to clear namespace backlog. ${res.getStatus()?.getMessage()}`,
+        `Unable to unload namespace. ${res.getStatus()?.getMessage()}`,
         crypto.randomUUID()
       );
       return;
     }
 
-    notifySuccess('Namespace backlog successfully cleared', crypto.randomUUID());
+    notifySuccess('Namespace successfully unloaded', crypto.randomUUID());
     modals.pop();
   }
 
@@ -46,15 +44,14 @@ const ClearBacklog: React.FC<ClearBacklogProps> = ({ namespaceFqn }) => {
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently clear FULL backlog of this namespace and could lead to severe consequences.</div>
+          <div>This releases the ownership of all topics under a specific namespace from the current broker, allowing them to be reassigned to another broker based on load conditions and could lead to severe consequences.</div>
         </div>
       }
-      onConfirm={clearBacklog}
+      onConfirm={unloadAll}
       onCancel={modals.pop}
-      guard={"CONFIRM"}
       type='danger'
     />
   );
 }
 
-export default ClearBacklog;
+export default UnloadAll;
