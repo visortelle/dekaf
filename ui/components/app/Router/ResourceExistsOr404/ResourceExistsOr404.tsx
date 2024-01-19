@@ -1,14 +1,14 @@
 import React from "react";
-import {Params} from "react-router-dom";
+import { Params } from "react-router-dom";
 import * as GrpcClient from "../../contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../contexts/Notifications";
 import useSWR from "swr";
-import {swrKeys} from "../../../swrKeys";
+import { swrKeys } from "../../../swrKeys";
 import {
   CheckResourceExistsRequest, NamespaceResource,
   SchemaResource, SubscriptionResource, TenantResource, TopicResource
 } from "../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb";
-import {Code} from "../../../../grpc-web/google/rpc/code_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import PageNotFound from "../../../ui/PageNotFound/PageNotFound";
 
 const ResourceExistsOr404: React.FC<{
@@ -35,7 +35,7 @@ const ResourceExistsOr404: React.FC<{
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setSchemaResource(new SchemaResource().setSchemaVersion(Number(schemaVersion)));
       } else if (subscription !== undefined && tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
-        req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}/${subscription}`);
+        req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
         req.setSubscriptionResource(new SubscriptionResource().setSubscriptionName(subscription));
       } else if (tenant !== undefined && namespace !== undefined && topic !== undefined && topicPersistency !== undefined) {
         req.setResourceFqn(`${topicPersistency}://${tenant}/${namespace}/${topic}`);
@@ -66,7 +66,7 @@ const ResourceExistsOr404: React.FC<{
     }, { refreshInterval: 0 })
 
   if (isResourceExistsLoading) {
-    return <>Loading...</>;
+    return <div style={{ padding: '12rem' }}>Loading...</div>;
   }
 
   if (isResourceExists) {

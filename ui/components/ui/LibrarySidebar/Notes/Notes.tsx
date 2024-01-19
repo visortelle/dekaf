@@ -15,23 +15,29 @@ import { v4 as uuid } from 'uuid';
 import Tabs, { Tab } from '../../../ui/Tabs/Tabs';
 import ConfirmationButton from '../../../ui/ConfirmationButton/ConfirmationButton';
 import deleteIcon from './delete.svg';
+import backIcon from './back-icon.svg';
 import { helpNote } from './help-note';
+import { blogNote } from './blog-note';
 import defaultMarkdown from './default.md';
 import RenameButton from '../../../ui/RenameButton/RenameButton';
 import { cloneDeep } from 'lodash';
 import MarkdownInput from '../../../ui/MarkdownInput/MarkdownInput';
+import SmallButton from '../../SmallButton/SmallButton';
 
 export type NotesProps = {
   libraryContext: LibraryContext,
   onCount: (count: number) => void
 };
 
+const factoryNotes = [helpNote, blogNote];
+
 const Notes: React.FC<NotesProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [notes, setNotes] = useState<ManagedMarkdownDocument[]>([]);
   const [fetchCount, setFetchCount] = useState(0);
-  const [selectedNoteId, setSelectedNoteId] = useState<string>(helpNote.metadata.id);
+  const [selectedNoteId, setSelectedNoteId] = useState<string>(props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : helpNote.metadata.id);
+  const [refreshIframeKey, setRefreshIframeKey] = useState(0);
   const modals = Modals.useContext();
 
   const fetchNotes = async () => {
@@ -165,9 +171,8 @@ const Notes: React.FC<NotesProps> = (props) => {
 
     setNotes(v => {
       const newNotes = v.filter(nt => nt.metadata.id !== id);
-
-      setSelectedNoteId(newNotes.length > 0 ? newNotes[0].metadata.id : helpNote.metadata.id);
-
+      const defaultNoteId = props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : helpNote.metadata.id;
+      setSelectedNoteId(newNotes.length > 0 ? newNotes[0].metadata.id : defaultNoteId);
       return newNotes;
     });
   }
@@ -176,7 +181,12 @@ const Notes: React.FC<NotesProps> = (props) => {
     fetchNotes();
   }, [props.libraryContext]);
 
-  const notesToShow = notes.concat([helpNote]);
+  let notesToShow: ManagedMarkdownDocument[] = notes;
+  if (props.libraryContext.pulsarResource.type === 'instance') {
+    notesToShow = notesToShow.concat([blogNote]);
+  }
+  notesToShow = notesToShow.concat([helpNote]);
+
   const selectedNote = notesToShow?.find(note => note.metadata.id === selectedNoteId);
 
   if (fetchCount === 0) {
@@ -188,11 +198,25 @@ const Notes: React.FC<NotesProps> = (props) => {
       <div className={s.NoteTabs}>
         <Tabs
           tabs={Object.fromEntries(notesToShow.map(note => {
+            const isFactoryNote = factoryNotes.some(n => n.metadata.id === note.metadata.id);
             const tab: Tab = {
               title: note.metadata.name,
               render: () => (
                 <div className={s.MarkdownPreview}>
-                  {selectedNote && (
+                  {selectedNoteId === blogNote.metadata.id && (
+                    <div className={s.ExternalContent}>
+                      <div className={s.ExternalContentControls}>
+                        <SmallButton
+                          appearance='borderless'
+                          onClick={() => setRefreshIframeKey(v => v + 1)}
+                          text='Show all updates'
+                          svgIcon={backIcon}
+                        />
+                      </div>
+                      <iframe key={refreshIframeKey} src="https://dekaf.io/blog?isCropPage=true" className={s.ExternalContentIframe} />
+                    </div>
+                  )}
+                  {selectedNote && selectedNoteId !== blogNote.metadata.id && (
                     <MarkdownInput
                       value={selectedNote.spec.markdown}
                       onChange={async (v) => {
@@ -201,12 +225,12 @@ const Notes: React.FC<NotesProps> = (props) => {
 
                         await updateNote(newNote);
                       }}
-                      isReadOnly={note.metadata.id === helpNote.metadata.id}
+                      isReadOnly={isFactoryNote}
                     />
                   )}
                 </div>
               ),
-              extraControls: note.metadata.id === helpNote.metadata.id ? undefined : (
+              extraControls: isFactoryNote ? undefined : (
                 <div style={{ display: 'flex' }}>
                   <RenameButton
                     modal={{

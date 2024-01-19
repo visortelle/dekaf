@@ -93,11 +93,11 @@ export const routes = {
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/overview`,
             }
           },
-          policies: {
+          details: {
             _: {
-              path: "/tenants/:tenant/namespaces/:namespace/policies",
+              path: "/tenants/:tenant/namespaces/:namespace/details",
               get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/policies`,
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/details`,
             },
           },
           createTopic: {
@@ -105,20 +105,6 @@ export const routes = {
               path: "/tenants/:tenant/namespaces/:namespace/create-topic",
               get: (props: { tenant: string; namespace: string }) =>
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/create-topic`,
-            },
-          },
-          permissions: {
-            _: {
-              path: "/tenants/:tenant/namespaces/:namespace/permissions",
-              get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/permissions`,
-            },
-          },
-          subscriptionPermissions: {
-            _: {
-              path: "/tenants/:tenant/namespaces/:namespace/subscription-permissions",
-              get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/subscription-permissions`,
             },
           },
           consumerSession: {
