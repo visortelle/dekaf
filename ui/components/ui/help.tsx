@@ -24,7 +24,7 @@ export type TermKey =
   'replicatorDispatchRate' |
   'tenant';
 
-export const help: Record<TermKey, React.ReactNode> = {
+export const help: Partial<Record<TermKey, React.ReactNode>> = {
   ledger: <div>An append-only data structure in BookKeeper that is used to persistently store messages in Pulsar topics. It is used by a Pulsar broker to create and append entries(messages), and once closed, it becomes read-only. The ledger can be deleted when its entries are no longer required.</div>,
   persistentStorage: <div>Mechanism that ensures message delivery by retaining non-acknowledged messages until they are delivered to and acknowledged by consumers.</div>,
   bookie: <div>Bookie is the name of an individual BookKeeper server. It is effectively the storage server of Pulsar.</div>,
@@ -32,8 +32,6 @@ export const help: Record<TermKey, React.ReactNode> = {
   acknowledgement: <div>A message sent to a Pulsar broker by a consumer that a message has been successfully processed and it can be deleted from the system.</div>,
   subscription: <div>Describes who the consumers of a topic are and how they would like to consume it. Pulsar has four subscription modes (Exclusive, Shared, Failover and Key_Shared).</div>,
   topic: <div>A named channel used to pass messages published by producers to consumers who process those messages.</div>,
-  consumer: <div>A process that establishes a subscription to a Pulsar topic and processes messages published to that topic by producers.</div>,
-  producer: <div>A process that publishes messages to a Pulsar topic.</div>,
   schema: <div>Metadata that defines how to translate the raw message bytes into a more formal structure type, serving as a protocol between the applications that generate messages and the applications that consume them.</div>,
   backlog: <div>Set of unacknowledged messages for a topic that have been stored by bookies.</div>,
   throttlingRateMarkDelete: <div>Refers to the maximum rate at which acknowledgements (mark-delete operations) can be processed by the broker. This is a form of rate limiting that can be used to prevent overloading the system with too many acknowledgement operations in a short period of time.</div>,
@@ -43,7 +41,5 @@ export const help: Record<TermKey, React.ReactNode> = {
   deduplicationSnapshot: <div>Refers to a periodic record taken for the purpose of message deduplication. Snapshot is taken after a certain number of entries or a specific time period to assure <A isExternalLink href={"https://github.com/aahmed-se/pulsar-wiki/blob/master/PIP-6:-Guaranteed-Message-Deduplication.md"}>guaranteed message deduplication</A></div>,
   messagePublishRate: <div>Specifies total rate of messages (message per second) and total throughput (byte per second) of the messages published by this publisher</div>,
   inactiveTopicPolicies: <div>Dictate the handling of topics that lack active producers or consumers. These policies can determine if and when such topics should be deleted due to inactivity. By default, topics are deleted after 60 seconds.</div>,
-  dispatchRate: <div>Sets a limit on the number of messages that can be delivered to clients from all topics within a namespace. This rate control helps to prevent traffic surges and maintain system performance by avoiding memory usage spikes due to large message payloads.</div>,
-  replicatorDispatchRate: <div>Rate at which replicated messages are dispatched for all topics within a namespace. Allows you to control the speed of message replication across clusters, helping to manage resource usage and network traffic.</div>,
   tenant: <div>An administrative unit for allocating capacity and enforcing an authentication/authorization scheme.</div>,
 }
