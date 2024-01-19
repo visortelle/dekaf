@@ -32,12 +32,15 @@ import maxMessageSizeField from './fields/max-message-size';
 import s from './TopicDetails.module.css'
 import Tabs from "../../ui/Tabs/Tabs";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
+import { PartitioningWithActivePartitions } from '../TopicPage';
+import NothingToShow from '../../ui/NothingToShow/NothingToShow';
 
 export type TopicDetailsProps = {
   tenant: string;
   namespace: string;
   topic: string;
   topicPersistency: PulsarTopicPersistency;
+  partitioning: PartitioningWithActivePartitions;
 };
 
 type TabsKey =
@@ -65,6 +68,19 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
     );
   }
 
+  const isNoActivePartitions = props.partitioning.isPartitioned && props.partitioning.activePartitionsCount === 0;
+  const noActivePartitionsError = isNoActivePartitions ? (
+    <div style={{ padding: '12rem', marginTop: '48rem', maxWidth: '480rem' }}>
+      <NothingToShow
+        content={(
+          <div style={{ textAlign: 'center' }}>
+            The topic is partitioned, but no active partitions found. In this case topic policies can't be loaded.
+          </div>
+        )}
+      />
+    </div>
+  ) : null;
+
   return (
     <div className={s.Policies}>
       <div className={s.IsGlobalCheckbox}>
@@ -83,7 +99,7 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
           tabs={{
             "topic-config": {
               title: 'Topic ',
-              render: () => (
+              render: () => isNoActivePartitions ? noActivePartitionsError : (
                 <div className={s.ConfigurationTable}>
                   <ConfigurationTable
                     title="Topic"

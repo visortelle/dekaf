@@ -6,6 +6,7 @@ import * as pbUtils from '../../../../../proto-utils/proto-utils';
 import PersistentTopicInternalStats from '../PersistentTopicInternalStats/PersistentTopicInternalStats';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import { PulsarTopicPersistency } from '../../../../pulsar/pulsar-resources';
+import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 
 export type PartitionedTopicInternalStatsProps = {
   stats: pb.PartitionedTopicInternalStats;
@@ -18,6 +19,14 @@ export type PartitionedTopicInternalStatsProps = {
 const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps> = (props) => {
   const partitions = pbUtils.mapToObject(props.stats.getPartitionsMap());
   const [selectedPartition, setSelectedPartition] = React.useState<string>(Object.keys(partitions)[0] || '');
+
+  if (Object.keys(partitions).length === 0) {
+    return (
+      <div style={{ marginTop: '12rem' }}>
+        <NothingToShow content="No active topic partitions found" />
+      </div>
+    );
+  }
 
   return (
     <div className={s.PartitionedTopicInternalStats}>

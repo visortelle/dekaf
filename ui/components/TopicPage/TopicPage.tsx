@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
+import * as Notifications from "../app/contexts/Notifications";
 import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
@@ -20,6 +21,7 @@ import * as pb from "../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
 import { LibraryContext } from "../ui/LibraryBrowser/model/library-context";
 import { getDefaultManagedItem } from "../ui/LibraryBrowser/default-library-items";
 import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-managed-items";
+import { Code } from "../../grpc-web/google/rpc/code_pb";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -41,24 +43,44 @@ export type TopicPageProps = {
 
 const partitionRegexp = /^(.*)-(partition-\d+)$/;
 
+export type PartitioningWithActivePartitions = { isPartitioned: boolean, partitionsCount: number | undefined, activePartitionsCount: number | undefined };
+
 const TopicPage: React.FC<TopicPageProps> = (props) => {
   const modals = Modals.useContext();
+  const { notifyError } = Notifications.useContext();
   const navigate = useNavigate();
   const { topicServiceClient } = GrpcClient.useContext();
 
   const { pathname } = useLocation();
 
-  const [isPartitioned, setIsPartitioned] = useState<boolean>();
+  const [partitioning, setPartitioning] = useState<undefined | PartitioningWithActivePartitions>(undefined);
 
   useEffect(() => {
-    setIsPartitioned(false);
+    async function refreshPartitioning(): Promise<void> {
+      setPartitioning(undefined);
 
-    const req = new pb.GetIsPartitionedTopicRequest();
-    const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`.replace(partitionRegexp, "$1");
-    req.setTopicFqn(topicFqn);
-    topicServiceClient.getIsPartitionedTopic(req, null)
-      .then(res => setIsPartitioned(res.getIsPartitioned()))
-      .catch(() => { });
+      const req = new pb.GetIsPartitionedTopicRequest();
+      const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`.replace(partitionRegexp, "$1");
+      req.setTopicFqn(topicFqn);
+
+      const res = await topicServiceClient.getIsPartitionedTopic(req, null).catch(err => notifyError(`Unable to get topic partitioning: ${err}`));
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topic partitioning: ${res.getStatus()?.getMessage()}`)
+        return;
+      }
+
+      setPartitioning({
+        isPartitioned: res.getIsPartitioned(),
+        partitionsCount: res.getPartitionsCount()?.getValue(),
+        activePartitionsCount: res.getActivePartitionsCount()?.getValue()
+      });
+    }
+
+    refreshPartitioning();
   }, [props]);
 
   const isPartition = partitionRegexp.test(props.topic);
@@ -66,7 +88,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const partitionName = isPartition ? props.topic.replace(partitionRegexp, "$2") : undefined;
 
   let topicCrumbType: CrumbType;
-  if (isPartitioned) {
+  if (partitioning) {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic-partitioned" : "non-persistent-topic-partitioned"
   } else {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic"
@@ -312,10 +334,10 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         />
       )}
       {props.view.type === "overview" && (
-        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} />
+        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} partitioning={partitioning} />
       )}
-      {props.view.type === "details" && (
-        <TopicDetails key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+      {props.view.type === "details" && partitioning !== undefined && (
+        <TopicDetails key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} partitioning={partitioning} />
       )}
       {props.view.type === "producers" && (
         <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />

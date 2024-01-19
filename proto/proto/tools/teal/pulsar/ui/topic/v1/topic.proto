@@ -317,6 +317,8 @@ message GetIsPartitionedTopicRequest {
 message GetIsPartitionedTopicResponse {
   google.rpc.Status status = 1;
   bool is_partitioned = 2;
+  google.protobuf.Int32Value partitions_count = 3;
+  google.protobuf.Int32Value active_partitions_count = 4;
 }
 
 service TopicService {

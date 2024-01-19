@@ -17,6 +17,7 @@ import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
+import { PartitioningWithActivePartitions } from '../TopicPage';
 
 export type OverviewProps = {
   tenant: string;
@@ -24,6 +25,7 @@ export type OverviewProps = {
   topic: string;
   topicPersistency: PulsarTopicPersistency;
   libraryContext: LibraryContext;
+  partitioning: PartitioningWithActivePartitions | undefined;
 };
 
 type TabKey = 'stats' | 'stats-internal';
@@ -87,7 +89,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
   }
 
   const partitionedTopicMetadata = statsResponse.getPartitionedTopicStatsMap().get(topicFqn)?.getMetadata();
-  const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
+  const partitionsCount = props.partitioning?.partitionsCount;
+  const activePartitionsCount = props.partitioning?.activePartitionsCount;
 
   return (
     <div className={s.Overview}>
@@ -111,7 +114,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 <td className={st.HighlightedCell}>Partitioning</td>
                 <Td>
                   {partitioning}
-                  {partitionsCount === undefined ? undefined : <span> (<strong>{partitionsCount}</strong> partitions)</span>}
+                  {partitioning === 'partitioned' && <span>, <strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions</span>}
                 </Td>
               </tr>
               {partitioning === 'partitioned' && (

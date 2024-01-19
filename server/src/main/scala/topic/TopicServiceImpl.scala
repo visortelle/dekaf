@@ -222,8 +222,6 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     override def setTopicProperties(request: SetTopicPropertiesRequest): Future[SetTopicPropertiesResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        given ExecutionContext = ExecutionContext.global
-
         try {
             adminClient.topics.updateProperties(request.topic, request.topicProperties.asJava)
 
@@ -240,16 +238,17 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     override def getIsPartitionedTopic(request: pb.GetIsPartitionedTopicRequest): Future[pb.GetIsPartitionedTopicResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        val isPartitioned =
-            try
-                _root_.topic.getTopicPartitioningType(adminClient, request.topicFqn) match
-                    case TopicPartitioningType.Partitioned => true
-                    case TopicPartitioningType.NonPartitioned => false
-            catch {
-                case err: Throwable =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                    return Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status)))
-            }
+        Try(_root_.topic.getTopicPartitioning(adminClient, request.topicFqn)) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status)))
+            case Success(partitioning: TopicPartitioning) =>
+                val isPartitioned = partitioning.`type` == TopicPartitioningType.Partitioned
+                val status: Status = Status(code = Code.OK.index)
 
-        val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status), isPartitioned))
+                Future.successful(pb.GetIsPartitionedTopicResponse(
+                    status = Some(status),
+                    isPartitioned = isPartitioned,
+                    partitionsCount = partitioning.partitionsCount,
+                    activePartitionsCount = partitioning.activePartitionsCount
+                ))

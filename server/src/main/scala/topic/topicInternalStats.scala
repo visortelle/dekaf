@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
 
 def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[String, TopicInternalStatsPb] =
-    Try(getTopicPartitioningType(pulsarAdmin, topic)) match
+    Try({ getTopicPartitioning(pulsarAdmin, topic).`type` }) match
         case Success(TopicPartitioningType.NonPartitioned) =>
             getNonPartitionedTopicInternalStats(pulsarAdmin, topic) match
                 case Right(stats) => Right(persistentTopicInternalStatsToPb(stats))
@@ -22,15 +22,37 @@ def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[Str
 
 enum TopicPartitioningType:
     case Partitioned, NonPartitioned
+case class TopicPartitioning(
+    `type`: TopicPartitioningType,
+    partitionsCount: Option[Int],
+    activePartitionsCount: Option[Int]
+)
 
-def getTopicPartitioningType(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioningType =
+def getTopicPartitioning(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioning =
+    var partitionsCount: Option[Int] = None
+    var activePartitionsCount: Option[Int] = None
+
     val isPartitioned =
-        try {
-            pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn).partitions > 0
-        } catch {
+        try
+            val topicMetadata = pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn)
+            partitionsCount = Some(topicMetadata.partitions)
+            val isPartitioned = topicMetadata.partitions > 0
+
+            if isPartitioned then
+                val internalStats = pulsarAdmin.topics.getPartitionedInternalStats(topicFqn)
+                activePartitionsCount = Some(internalStats.partitions.asScala.size)
+
+            isPartitioned
+        catch {
             case _: Throwable => false
         }
-    if isPartitioned then return TopicPartitioningType.Partitioned
+
+    if isPartitioned then
+        return TopicPartitioning(
+            `type` = TopicPartitioningType.Partitioned,
+            partitionsCount = partitionsCount,
+            activePartitionsCount = activePartitionsCount
+        )
 
     val isNonPartitioned =
         try
@@ -39,7 +61,12 @@ def getTopicPartitioningType(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicP
         catch {
             case _: Throwable => false
         }
-    if isNonPartitioned then return TopicPartitioningType.NonPartitioned
+    if isNonPartitioned then return TopicPartitioning(
+        `type` = TopicPartitioningType.NonPartitioned,
+        partitionsCount = None,
+        activePartitionsCount = activePartitionsCount
+
+    )
     throw new Exception(s"Topic \"$topicFqn\" not found")
 
 def getTopicPartitions(pulsarAdmin: PulsarAdmin, topicFqn: String): Vector[String] =
