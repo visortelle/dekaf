@@ -1,0 +1,183 @@
+import React, { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import stringify from 'safe-stable-stringify';
+
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import Select from '../../../ui/Select/Select';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import { swrKeys } from '../../../swrKeys';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { routes } from '../../../routes';
+import Link from "../../../ui/Link/Link";
+import A from "../../../ui/A/A";
+import NoData from "../../../ui/NoData/NoData";
+
+const policy = 'resourceGroup';
+
+type PolicyValue = { type: 'undefined' } | {
+  type: 'specified-for-this-namespace',
+  resourceGroup: string;
+};
+
+export type FieldInputProps = {
+  tenant: string;
+  namespace: string;
+}
+
+export const FieldInput: React.FC<FieldInputProps> = (props) => {
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext()
+  const { notifyError } = Notifications.useContext()
+  const { mutate } = useSWRConfig()
+  const [resourceGroupsList, setResourceGroupsList] = useState<string[]>([''])
+
+  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
+
+  const { data: initialValue, error: initialValueError } = useSWR(
+    swrKey,
+    async () => {
+      const req = new pb.GetResourceGroupRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespacePoliciesServiceClient.getResourceGroup(req, {});
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return;
+      }
+
+      let value: PolicyValue = { type: 'undefined' };
+      setResourceGroupsList(res.getResourceGroupsList())
+
+      switch (res.getResourceGroupCase()) {
+        case pb.GetResourceGroupResponse.ResourceGroupCase.UNSPECIFIED: {
+          value = { type: 'undefined' };
+          break;
+        }
+        case pb.GetResourceGroupResponse.ResourceGroupCase.SPECIFIED: {
+          const resourceGroup = res.getSpecified()?.getResourceGroup() || '';
+          value = { type: 'specified-for-this-namespace', resourceGroup: resourceGroup };
+          break;
+        }
+      }
+
+      return value;
+    }
+  );
+
+  if (initialValueError) {
+    notifyError(`Unable to get resource group policy. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
+  }
+
+  return (
+    <WithUpdateConfirmation<PolicyValue>
+      key={stringify(initialValue)}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        switch (value.type) {
+          case 'undefined': {
+            const req = new pb.RemoveResourceGroupRequest();
+            req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+            const res = await namespacePoliciesServiceClient.removeResourceGroup(req, {});
+
+            if (res === undefined) {
+              return;
+            }
+            if (res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(res.getStatus()?.getMessage());
+              return;
+            }
+
+            break;
+          }
+          case 'specified-for-this-namespace': {
+            const req = new pb.SetResourceGroupRequest();
+            req.setNamespace(`${props.tenant}/${props.namespace}`);
+            req.setResourceGroup(value.resourceGroup);
+
+            const res = await namespacePoliciesServiceClient.setResourceGroup(req, {});
+            if (res === undefined) {
+              return;
+            }
+            if (res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(res.getStatus()?.getMessage());
+              return;
+            }
+
+            break;
+          }
+        }
+
+        await mutate(swrKey);
+      }}
+    >
+      {({ value, onChange }) => (
+        <>
+          <div className={sf.FormItem}>
+            <Select<PolicyValue['type']>
+              list={[
+                { type: 'item', title: 'Undefined', value: 'undefined' },
+                { type: 'item', title: 'Specified for this namespace', value: 'specified-for-this-namespace' },
+              ]}
+              value={value.type}
+              onChange={(type) => {
+                if (type === 'specified-for-this-namespace') {
+                  onChange({
+                    type: 'specified-for-this-namespace', resourceGroup: resourceGroupsList[0]
+                  });
+                  return;
+                }
+
+                onChange({ type });
+              }}
+            />
+          </div>
+          {value.type === 'specified-for-this-namespace' && (
+            <>
+              <div className={sf.FormItem}>
+                <Select<string>
+                  list={resourceGroupsList.map(resourceGroup => {
+                    return { type: 'item', value: resourceGroup, title: resourceGroup }
+                  })}
+                  value={value.resourceGroup}
+                  onChange={(v) => {
+                    onChange({
+                      ...value,
+                      resourceGroup: v
+                    })
+                  }}
+                />
+                <div style={{ marginTop: '8rem' }}>
+                  <Link target={'_blank'} to={routes.instance.resourceGroups._.get()}>
+                    <A isExternalLink>
+                      Open resource groups editor
+                    </A>
+                  </Link>
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </WithUpdateConfirmation>
+  )
+}
+
+const field = (props: FieldInputProps): ConfigurationField => ({
+  id: policy,
+  title: 'Resource group',
+  description: <NoData />,
+  input: <FieldInput {...props} />
+});
+
+export default field;
