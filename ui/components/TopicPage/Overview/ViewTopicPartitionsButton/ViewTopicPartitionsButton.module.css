@@ -1,0 +1,9 @@
+.ViewTopicPartitionsButton {
+  display: inline-block;
+}
+
+.Topics {
+  display: flex;
+  width: calc(100vw - 96rem);
+  height: calc(100vh - 96rem);
+}
