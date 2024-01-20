@@ -18,6 +18,7 @@ import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
 import { PartitioningWithActivePartitions } from '../TopicPage';
+import UpdatePartitionedTopicButton from './UpdatePartitionedTopicButton/UpdatePartitionedTopicButton';
 
 export type OverviewProps = {
   tenant: string;
@@ -114,7 +115,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 <td className={st.HighlightedCell}>Partitioning</td>
                 <Td>
                   {partitioning}
-                  {partitioning === 'partitioned' && <span>, <strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions</span>}
+                  {partitioning === 'partitioned' && partitionsCount !== undefined && <span>, <strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions&nbsp;&nbsp;<UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount} /></span>}
                 </Td>
               </tr>
               {partitioning === 'partitioned' && (

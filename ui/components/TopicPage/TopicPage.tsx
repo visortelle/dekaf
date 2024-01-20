@@ -22,6 +22,8 @@ import { LibraryContext } from "../ui/LibraryBrowser/model/library-context";
 import { getDefaultManagedItem } from "../ui/LibraryBrowser/default-library-items";
 import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-managed-items";
 import { Code } from "../../grpc-web/google/rpc/code_pb";
+import useSwr from 'swr';
+import { swrKeys } from "../swrKeys";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -50,20 +52,18 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const navigate = useNavigate();
   const { topicServiceClient } = GrpcClient.useContext();
-
   const { pathname } = useLocation();
 
-  const [partitioning, setPartitioning] = useState<undefined | PartitioningWithActivePartitions>(undefined);
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  useEffect(() => {
-    async function refreshPartitioning(): Promise<void> {
-      setPartitioning(undefined);
-
+  const { data: partitioning, error: partitioningError } = useSwr(
+    swrKeys.pulsar.customApi.metrics.isPartitionedTopic._(topicFqn),
+    async () => {
       const req = new pb.GetIsPartitionedTopicRequest();
-      const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`.replace(partitionRegexp, "$1");
       req.setTopicFqn(topicFqn);
 
-      const res = await topicServiceClient.getIsPartitionedTopic(req, null).catch(err => notifyError(`Unable to get topic partitioning: ${err}`));
+      const res = await topicServiceClient.getIsPartitionedTopic(req, null)
+        .catch(err => notifyError(`Unable to get topic partitioning: ${err}`));
       if (res === undefined) {
         return;
       }
@@ -73,22 +73,26 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         return;
       }
 
-      setPartitioning({
+      const result: PartitioningWithActivePartitions = {
         isPartitioned: res.getIsPartitioned(),
         partitionsCount: res.getPartitionsCount()?.getValue(),
         activePartitionsCount: res.getActivePartitionsCount()?.getValue()
-      });
-    }
+      };
 
-    refreshPartitioning();
-  }, [props]);
+      return result;
+    }
+  );
+
+  if (partitioningError !== undefined) {
+    notifyError(`Unable to get topic partitioning. ${partitioningError}`);
+  }
 
   const isPartition = partitionRegexp.test(props.topic);
   const topicName = isPartition ? props.topic.replace(partitionRegexp, "$1") : props.topic;
   const partitionName = isPartition ? props.topic.replace(partitionRegexp, "$2") : undefined;
 
   let topicCrumbType: CrumbType;
-  if (partitioning) {
+  if (partitioning !== undefined) {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic-partitioned" : "non-persistent-topic-partitioned"
   } else {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic"

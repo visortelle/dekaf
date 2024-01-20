@@ -321,6 +321,17 @@ message GetIsPartitionedTopicResponse {
   google.protobuf.Int32Value active_partitions_count = 4;
 }
 
+message UpdatePartitionedTopicRequest {
+  string topic_fqn = 1;
+  int32 num_partitions = 2;
+  bool update_local_topic_only = 3;
+  bool force = 4;
+}
+
+message UpdatePartitionedTopicResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -332,4 +343,5 @@ service TopicService {
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
   rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
+  rpc UpdatePartitionedTopic(UpdatePartitionedTopicRequest) returns (UpdatePartitionedTopicResponse);
 }
