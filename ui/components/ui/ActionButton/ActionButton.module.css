@@ -1,22 +1,2 @@
 .ActionButton {
-  appearance: none;
-  border: none;
-  padding: 0;
-  background-color: var(--surface-color);
-  width: 24rem;
-  height: 24rem;
-  border-radius: 4rem;
-  border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
-  transition: var(--transition-short);
-  margin-left: auto;
-}
-.ActionButton:hover {
-  cursor: pointer;
-  opacity: 0.5;
-  transition: var(--transition-short);
-}
-.ActionButton svg {
-  width: 18rem;
-  height: 18rem;
-  fill: var(--text-color);
 }

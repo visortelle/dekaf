@@ -39,15 +39,13 @@ const CreateMissedPartitionsButton: React.FC<CreateMissedPartitionsButtonProps> 
   }
 
   return (
-    <div className={s.CreateMissedPartitionsButton}>
-      <SmallButton
-        type='regular'
-        onClick={createMissedPartitions}
-        text='Create missed partitions'
-        appearance='borderless'
-        svgIcon={createMissedPartitionsIcon}
-      />
-    </div>
+    <SmallButton
+      type='regular'
+      onClick={createMissedPartitions}
+      text='Create missed partitions'
+      svgIcon={createMissedPartitionsIcon}
+      className={s.CreateMissedPartitionsButton}
+    />
   );
 }
 

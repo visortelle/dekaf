@@ -16,41 +16,40 @@ const ViewTopicPartitionsButton: React.FC<ViewTopicPartitionsButtonProps> = (pro
   const modals = Modals.useContext();
 
   return (
-    <div className={s.ViewTopicPartitionsButton}>
-      <ActionButton
-        action={{ type: 'predefined', action: 'view' }}
-        title="View topic partitions"
-        onClick={() => {
-          modals.push({
-            id: 'topic-partitions',
-            title: `Topic Partitions`,
-            content: (
-              <div className={s.Topics}>
-                <Topics
-                  tenant={props.tenant}
-                  namespace={props.namespace}
-                  defaultFilters={{
-                    'topicName': {
-                      state: 'active',
-                      value: { 'type': 'string', value: `${props.topic}-partition-` }
-                    },
-                    'persistency': {
-                      state: 'active',
-                      value: { 'type': 'singleOption', value: 'all' }
-                    },
-                    'partitioning': {
-                      state: 'active',
-                      value: { 'type': 'singleOption', value: 'show-partitions' }
-                    }
-                  }}
-                />
-              </div>
-            ),
-            styleMode: 'no-content-padding'
-          });
-        }}
-      />
-    </div>
+    <ActionButton
+      action={{ type: 'predefined', action: 'view' }}
+      title="View topic partitions"
+      buttonProps={{ text: 'View', className: s.ViewTopicPartitionsButton }}
+      onClick={() => {
+        modals.push({
+          id: 'topic-partitions',
+          title: `Topic Partitions`,
+          content: (
+            <div className={s.Topics}>
+              <Topics
+                tenant={props.tenant}
+                namespace={props.namespace}
+                defaultFilters={{
+                  'topicName': {
+                    state: 'active',
+                    value: { 'type': 'string', value: `${props.topic}-partition-` }
+                  },
+                  'persistency': {
+                    state: 'active',
+                    value: { 'type': 'singleOption', value: 'all' }
+                  },
+                  'partitioning': {
+                    state: 'active',
+                    value: { 'type': 'singleOption', value: 'show-partitions' }
+                  }
+                }}
+              />
+            </div>
+          ),
+          styleMode: 'no-content-padding'
+        });
+      }}
+    />
   );
 }
 

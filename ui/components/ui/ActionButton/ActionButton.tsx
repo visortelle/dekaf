@@ -1,5 +1,4 @@
 import React, { ReactElement } from 'react';
-import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './ActionButton.module.css'
 import Link from '../Link/Link';
 
@@ -8,6 +7,7 @@ import closeIcon from './close.svg';
 import viewIcon from './view.svg';
 import { tooltipId } from '../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import SmallButton, { SmallButtonProps } from '../SmallButton/SmallButton';
 
 export type ActionButtonProps = {
   action: { type: 'predefined', action: 'edit' | 'close' | 'view' }
@@ -15,6 +15,7 @@ export type ActionButtonProps = {
   linkTo?: string;
   testId?: string;
   title?: string | ReactElement;
+  buttonProps?: Partial<SmallButtonProps>;
 };
 
 const ActionButton: React.FC<ActionButtonProps> = (props) => {
@@ -35,16 +36,16 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
   }
 
   const button = (
-    <button
-      type="button"
+    <SmallButton
+      type='regular'
       className={s.ActionButton}
       onClick={props.onClick}
       data-testid={props.testId}
       data-tooltip-id={tooltipId}
       data-tooltip-html={tooltipHtml}
-    >
-      <SvgIcon svg={svgIcon} />
-    </button>
+      svgIcon={svgIcon}
+      {...props.buttonProps}
+    />
   );
 
   return props.linkTo ? (
