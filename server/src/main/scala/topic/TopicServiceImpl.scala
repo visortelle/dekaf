@@ -2,6 +2,7 @@ package topic
 
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
+import api.LongRunningProcessStatus
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
 import com.typesafe.scalalogging.Logger
 
@@ -12,7 +13,7 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.topic.v1.topic.{CreateMissedPartitionsRequest, CreateMissedPartitionsResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties, UpdatePartitionedTopicRequest, UpdatePartitionedTopicResponse}
+import com.tools.teal.pulsar.ui.topic.v1.topic.{CreateMissedPartitionsRequest, CreateMissedPartitionsResponse, GetCompactionStatusRequest, GetCompactionStatusResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties, TriggerCompactionRequest, TriggerCompactionResponse, UpdatePartitionedTopicRequest, UpdatePartitionedTopicResponse}
 
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
@@ -284,3 +285,28 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             case Success(_) =>
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(pb.CreateMissedPartitionsResponse(status = Some(status)))
+
+    override def getCompactionStatus(request: GetCompactionStatusRequest): Future[GetCompactionStatusResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(adminClient.topics.compactionStatus(request.topicFqn)) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetCompactionStatusResponse(status = Some(status)))
+            case Success(lrps) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.GetCompactionStatusResponse(
+                    status = Some(status),
+                    processStatus = Some(LongRunningProcessStatus.toPb(lrps))
+                ))
+
+    override def triggerCompaction(request: TriggerCompactionRequest): Future[TriggerCompactionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(adminClient.topics.triggerCompaction(request.topicFqn)) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.TriggerCompactionResponse(status = Some(status)))
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.TriggerCompactionResponse(status = Some(status)))

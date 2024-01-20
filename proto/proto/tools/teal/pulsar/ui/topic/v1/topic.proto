@@ -4,6 +4,7 @@ package tools.teal.pulsar.ui.topic.v1;
 
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
+import "tools/teal/pulsar/ui/api/v1/long_running_process_status.proto";
 
 enum TopicDomain {
   TOPIC_DOMAIN_UNSPECIFIED = 0;
@@ -340,6 +341,23 @@ message CreateMissedPartitionsResponse {
   google.rpc.Status status = 1;
 }
 
+message GetCompactionStatusRequest {
+  string topic_fqn = 1;
+}
+
+message GetCompactionStatusResponse {
+  google.rpc.Status status = 1;
+  tools.teal.pulsar.ui.api.v1.LongRunningProcessStatus process_status = 2;
+}
+
+message TriggerCompactionRequest {
+  string topic_fqn = 1;
+}
+
+message TriggerCompactionResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -353,4 +371,7 @@ service TopicService {
   rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
   rpc UpdatePartitionedTopic(UpdatePartitionedTopicRequest) returns (UpdatePartitionedTopicResponse);
   rpc CreateMissedPartitions(CreateMissedPartitionsRequest) returns (CreateMissedPartitionsResponse);
+
+  rpc GetCompactionStatus(GetCompactionStatusRequest) returns (GetCompactionStatusResponse);
+  rpc TriggerCompaction(TriggerCompactionRequest) returns (TriggerCompactionResponse);
 }
