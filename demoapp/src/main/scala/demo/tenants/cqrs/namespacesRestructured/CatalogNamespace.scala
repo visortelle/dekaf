@@ -2,8 +2,8 @@ package demo.tenants.cqrs.namespacesRestructured
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 import demo.tenants.cqrs.model.Catalog.*
-import com.tools.teal.demoapp.catalog.v1 as pb
-import com.tools.teal.demoapp.dto.v1 as pbDto
+import com.tools.teal.pulsar.demoapp.catalog.v1 as pb
+import com.tools.teal.pulsar.demoapp.dto.v1 as pbDto
 import demo.tenants.cqrs.model
 import demo.tenants.cqrs.shared.*
 import generators.{ConsumerPlanGenerator, Message, NamespacePlanGenerator, ProcessorMessageListenerBuilder, ProcessorPlanGenerator, ProcessorWorker, ProducerPlanGenerator, Serde, SubscriptionPlanGenerator, TenantName, TopicPlanGenerator}
@@ -91,7 +91,7 @@ object CatalogNamespace:
             val inventoryId = mkRandomKeyFromMap(WarehouseNamespace.inventoryIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-              
+
             val addCatalogItemPb = pb.AddCatalogItem.newBuilder()
               .setCatalogId(addCatalogItem.catalogId.toString)
               .setInventoryId(inventoryId.toString)
@@ -216,7 +216,7 @@ object CatalogNamespace:
             val inventoryId = mkRandomKeyFromMap(WarehouseNamespace.inventoryIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-              
+
             val catalogItemIncreasedPb = pb.CatalogItemIncreased.newBuilder()
               .setCatalogId(catalogItemIncreased.catalogId.toString)
               .setItemId(catalogItemIncreased.itemId.toString)

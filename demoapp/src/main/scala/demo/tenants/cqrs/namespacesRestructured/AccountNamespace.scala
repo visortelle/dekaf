@@ -1,8 +1,8 @@
 package demo.tenants.cqrs.namespacesRestructured
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
-import com.tools.teal.demoapp.account.v1 as pb
-import com.tools.teal.demoapp.dto.v1 as pbDto
+import com.tools.teal.pulsar.demoapp.account.v1 as pb
+import com.tools.teal.pulsar.demoapp.dto.v1 as pbDto
 import demo.tenants.cqrs.model.Account.*
 import demo.tenants.cqrs.shared.{DemoappTopicConfig, mkDefaultPersistency, mkDefaultTopicPartitioning, mkMessageWithRandomKeyFromMap, mkSubscriptionPlan, mkTopicPlan}
 import demo.tenants.cqrs.model
@@ -19,7 +19,7 @@ object AccountNamespace:
   val accountIdsMap = ConcurrentLinkedHashMap.Builder[UUID, Unit]()
     .maximumWeightedCapacity(10000)
     .build()
-  
+
   def mkPlanGenerator = (tenantName: TenantName) =>
     val namespaceName = "Account"
 
@@ -449,7 +449,7 @@ object AccountNamespace:
 
               try accountIdsMap.put(UUID.fromString(createAccountPb.getId), ())
               catch case _: Throwable => ()
-              
+
               pb.AccountEventsSchema.newBuilder()
                 .setAccountCreated(accountCreatedPb)
                 .build()
@@ -506,7 +506,7 @@ object AccountNamespace:
 
               try accountIdsMap.remove(UUID.fromString(deleteAccountPb.getAccountId))
               catch case _: Throwable => ()
-              
+
               pb.AccountEventsSchema.newBuilder()
                 .setAccountDeleted(accountDeletedPb)
                 .build()

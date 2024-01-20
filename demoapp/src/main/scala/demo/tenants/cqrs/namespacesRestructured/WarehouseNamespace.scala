@@ -3,8 +3,8 @@ package demo.tenants.cqrs.namespacesRestructured
 import com.google.protobuf.Timestamp
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 import demo.tenants.cqrs.model.Warehouse.*
-import com.tools.teal.demoapp.warehouse.v1 as pb
-import com.tools.teal.demoapp.dto.v1 as pbDto
+import com.tools.teal.pulsar.demoapp.warehouse.v1 as pb
+import com.tools.teal.pulsar.demoapp.dto.v1 as pbDto
 import demo.tenants.cqrs.model
 import demo.tenants.cqrs.shared.*
 import generators.{ConsumerPlanGenerator, Message, NamespacePlanGenerator, ProcessorMessageListenerBuilder, ProcessorPlanGenerator, ProcessorWorker, ProducerPlanGenerator, Serde, SubscriptionPlanGenerator, TenantName, TopicPlanGenerator}
@@ -16,11 +16,11 @@ import java.util.UUID
 import scala.jdk.FutureConverters.*
 
 object WarehouseNamespace:
-  
+
   val inventoryIdsMap = ConcurrentLinkedHashMap.Builder[UUID, Unit]()
     .maximumWeightedCapacity(10000)
     .build()
-  
+
   def mkPlanGenerator(tenantName: TenantName) =
     val namespaceName = "Warehouse"
 
@@ -62,13 +62,13 @@ object WarehouseNamespace:
               .setCategory(receiveInventoryItem.product.category)
               .setUnit(receiveInventoryItem.product.unit)
               .setSku(receiveInventoryItem.product.sku)
-            
+
             val receiveInventoryItemPb = pb.ReceiveInventoryItem.newBuilder()
               .setInventoryId(receiveInventoryItem.inventoryId.toString)
               .setProduct(product)
               .setCost(receiveInventoryItem.cost.toString)
               .setQuantity(receiveInventoryItem.quantity)
-            
+
             pb.WarehouseCommandsSchema.newBuilder()
               .setReceiveInventoryItem(receiveInventoryItemPb)
               .build()
@@ -88,7 +88,7 @@ object WarehouseNamespace:
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-              
+
             val increaseInventoryAdjustPb = pb.IncreaseInventoryAdjust.newBuilder()
               .setInventoryId(increaseInventoryAdjust.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -114,7 +114,7 @@ object WarehouseNamespace:
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-              
+
             val decreaseInventoryAdjustPb = pb.DecreaseInventoryAdjust.newBuilder()
               .setInventoryId(decreaseInventoryAdjust.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -136,7 +136,7 @@ object WarehouseNamespace:
         mkMessage = _ => _ =>
           mkMessageWithRandomKeyFromMap[pb.WarehouseCommandsSchema](inventoryIdsMap, randomInventoryId => {
             val reserveInventoryItem = model.Message.random[ReserveInventoryItem].copy(inventoryId = randomInventoryId)
-              
+
             val catalogId = mkRandomKeyFromMap(CatalogNamespace.catalogIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
@@ -148,7 +148,7 @@ object WarehouseNamespace:
               .setCategory(reserveInventoryItem.product.category)
               .setUnit(reserveInventoryItem.product.unit)
               .setSku(reserveInventoryItem.product.sku)
-            
+
             val reserveInventoryItemPb = pb.ReserveInventoryItem.newBuilder()
               .setInventoryId(reserveInventoryItem.inventoryId.toString)
               .setCatalogId(catalogId.toString)
@@ -174,11 +174,11 @@ object WarehouseNamespace:
         mkMessage = _ => _ =>
           mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](inventoryIdsMap, randomInventoryId => {
             val inventoryAdjustmentNotDecreased = model.Message.random[InventoryAdjustmentNotDecreased].copy(inventoryId = randomInventoryId)
-            
+
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-              
+
             val inventoryAdjustmentNotDecreasedPb = pb.InventoryAdjustmentNotDecreased.newBuilder()
               .setInventoryId(inventoryAdjustmentNotDecreased.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -197,11 +197,11 @@ object WarehouseNamespace:
         mkMessage = _ => _ =>
           mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](inventoryIdsMap, randomInventoryId => {
             val stockDepleted = model.Message.random[StockDepleted].copy(inventoryId = randomInventoryId)
-            
+
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-              
+
             val product = pbDto.Product.newBuilder()
               .setDescription(stockDepleted.product.description)
               .setName(stockDepleted.product.name)
@@ -209,7 +209,7 @@ object WarehouseNamespace:
               .setCategory(stockDepleted.product.category)
               .setUnit(stockDepleted.product.unit)
               .setSku(stockDepleted.product.sku)
-            
+
             val stockDepletedPb = pb.StockDepleted.newBuilder()
               .setInventoryId(stockDepleted.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -226,11 +226,11 @@ object WarehouseNamespace:
         mkMessage = _ => _ =>
           mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](inventoryIdsMap, randomInventoryId => {
             val inventoryItemNotReserved = model.Message.random[InventoryItemNotReserved].copy(inventoryId = randomInventoryId)
-            
+
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-            
+
             val inventoryItemNotReservedPb = pb.InventoryItemNotReserved.newBuilder()
               .setInventoryId(inventoryItemNotReserved.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -249,11 +249,11 @@ object WarehouseNamespace:
         mkMessage = _ => _ =>
           mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](inventoryIdsMap, randomInventoryId => {
             val inventoryItemIncreased = model.Message.random[InventoryItemIncreased].copy(inventoryId = randomInventoryId)
-            
+
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-            
+
             val inventoryItemIncreasedPb = pb.InventoryItemIncreased.newBuilder()
               .setInventoryId(inventoryItemIncreased.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -270,11 +270,11 @@ object WarehouseNamespace:
         mkMessage = _ => _ =>
           mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](inventoryIdsMap, randomInventoryId => {
             val inventoryItemDecreased = model.Message.random[InventoryItemDecreased].copy(inventoryId = randomInventoryId)
-            
+
             val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
               case Some(value) => value
               case None => UUID.randomUUID()
-            
+
             val inventoryItemDecreasedPb = pb.InventoryItemDecreased.newBuilder()
               .setInventoryId(inventoryItemDecreased.inventoryId.toString)
               .setItemId(itemId.toString)
@@ -360,31 +360,31 @@ object WarehouseNamespace:
           val msgValue = pb.WarehouseCommandsSchema.parseFrom(msg.getData)
 
           val eventMessageValue: pb.WarehouseEventsSchema = msgValue.getCommandCase match
-            case pb.WarehouseCommandsSchema.CommandCase.CREATE_INVENTORY => 
+            case pb.WarehouseCommandsSchema.CommandCase.CREATE_INVENTORY =>
               val createInventoryPb = msgValue.getCreateInventory
-              
+
               val inventoryCreated = model.Message.random[InventoryCreated]
-              
+
               val inventoryCreatedPb = pb.InventoryCreated.newBuilder()
                 .setInventoryId(createInventoryPb.getInventoryId)
                 .setOwnerId(createInventoryPb.getOwnerId)
                 .setVersion(inventoryCreated.version)
-              
+
               try inventoryIdsMap.put(UUID.fromString(createInventoryPb.getInventoryId), ())
               catch case e: Throwable => ()
-              
-              pb.WarehouseEventsSchema.newBuilder()   
+
+              pb.WarehouseEventsSchema.newBuilder()
                 .setInventoryCreated(inventoryCreatedPb)
                 .build()
-            case pb.WarehouseCommandsSchema.CommandCase.RECEIVE_INVENTORY_ITEM => 
+            case pb.WarehouseCommandsSchema.CommandCase.RECEIVE_INVENTORY_ITEM =>
               val receiveInventoryItemPb = msgValue.getReceiveInventoryItem
-              
+
               val inventoryItemReceived = model.Message.random[InventoryItemReceived]
-              
+
               val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
                 case Some(value) => value
                 case None => UUID.randomUUID()
-                
+
               val inventoryItemReceivedPb = pb.InventoryItemReceived.newBuilder()
                 .setInventoryId(receiveInventoryItemPb.getInventoryId)
                 .setItemId(itemId.toString)
@@ -393,15 +393,15 @@ object WarehouseNamespace:
                 .setQuantity(receiveInventoryItemPb.getQuantity)
                 .setSku(inventoryItemReceived.sku)
                 .setVersion(inventoryItemReceived.version)
-              
+
               pb.WarehouseEventsSchema.newBuilder()
                 .setInventoryItemReceived(inventoryItemReceivedPb)
                 .build()
             case pb.WarehouseCommandsSchema.CommandCase.INCREASE_INVENTORY_ADJUST =>
               val increaseInventoryAdjust = msgValue.getIncreaseInventoryAdjust
-              
+
               val inventoryAdjustmentIncreased = model.Message.random[InventoryAdjustmentIncreased]
-                
+
               val inventoryAdjustmentIncreasedPb = pb.InventoryAdjustmentIncreased.newBuilder()
                 .setInventoryId(increaseInventoryAdjust.getInventoryId)
                 .setItemId(increaseInventoryAdjust.getItemId)
@@ -412,38 +412,38 @@ object WarehouseNamespace:
               pb.WarehouseEventsSchema.newBuilder()
                 .setInventoryAdjustmentIncreased(inventoryAdjustmentIncreasedPb)
                 .build()
-            case pb.WarehouseCommandsSchema.CommandCase.DECREASE_INVENTORY_ADJUST => 
+            case pb.WarehouseCommandsSchema.CommandCase.DECREASE_INVENTORY_ADJUST =>
               val decreaseInventoryAdjustPb = msgValue.getDecreaseInventoryAdjust
-              
+
               val inventoryAdjustmentDecreased = model.Message.random[InventoryAdjustmentDecreased]
-              
+
               val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
                 case Some(value) => value
                 case None => UUID.randomUUID()
-                
+
               val inventoryAdjustmentDecreasedPb = pb.InventoryAdjustmentDecreased.newBuilder()
                 .setInventoryId(decreaseInventoryAdjustPb.getInventoryId)
                 .setItemId(itemId.toString)
                 .setReason(decreaseInventoryAdjustPb.getReason)
                 .setQuantity(decreaseInventoryAdjustPb.getQuantity)
                 .setVersion(inventoryAdjustmentDecreased.version)
-              
+
               pb.WarehouseEventsSchema.newBuilder()
                 .setInventoryAdjustmentDecreased(inventoryAdjustmentDecreasedPb)
                 .build()
-            case pb.WarehouseCommandsSchema.CommandCase.RESERVE_INVENTORY_ITEM => 
+            case pb.WarehouseCommandsSchema.CommandCase.RESERVE_INVENTORY_ITEM =>
               val reserveInventoryItemPb = msgValue.getReserveInventoryItem
-              
+
               val inventoryItemReserved = model.Message.random[InventoryItemReserved]
-              
+
               val itemId = mkRandomKeyFromMap(CatalogNamespace.itemIdsMap) match
                 case Some(value) => value
                 case None => UUID.randomUUID()
-                
+
               val expirationDate = Timestamp.newBuilder()
                 .setSeconds(inventoryItemReserved.expirationDate.toInstant.getEpochSecond)
                 .setNanos(inventoryItemReserved.expirationDate.toInstant.getNano)
-              
+
               val inventoryItemReservedPb = pb.InventoryItemReserved.newBuilder()
                 .setInventoryId(reserveInventoryItemPb.getInventoryId)
                 .setItemId(itemId.toString)
@@ -453,12 +453,12 @@ object WarehouseNamespace:
                 .setQuantity(reserveInventoryItemPb.getQuantity)
                 .setExpirationDate(expirationDate)
                 .setVersion(inventoryItemReserved.version)
-              
+
               pb.WarehouseEventsSchema.newBuilder()
                 .setInventoryItemReserved(inventoryItemReservedPb)
                 .build()
             case pb.WarehouseCommandsSchema.CommandCase.COMMAND_NOT_SET => throw RuntimeException("Command not set")
-          
+
           val effect = for {
             _ <- worker.producerPlan.messageIndex.update(_ + 1)
             _ <- ZIO.fromFuture(e =>

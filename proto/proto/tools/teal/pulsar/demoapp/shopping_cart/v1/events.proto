@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.demoapp.shopping_cart.v1;
+
+import "tools/teal/pulsar/demoapp/dto/v1/dto.proto";
+
+message CartCreated {
+  string cart_id = 1;
+  string customer_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money total = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message CartItemAdded {
+  string cart_id = 1;
+  string item_id = 2;
+  string inventory_id = 3;
+  tools.teal.pulsar.demoapp.dto.v1.Product product = 4;
+  int32 quantity = 5;
+  tools.teal.pulsar.demoapp.dto.v1.Money unit_price = 6;
+  tools.teal.pulsar.demoapp.dto.v1.Money new_cart_total = 7;
+  int64 version = 8;
+}
+
+message CartItemIncreased {
+  string cart_id = 1;
+  string item_id = 2;
+  int32 new_quantity = 3;
+  tools.teal.pulsar.demoapp.dto.v1.Money unit_price = 4;
+  tools.teal.pulsar.demoapp.dto.v1.Money new_cart_total = 5;
+  int64 version = 6;
+}
+
+message CartItemDecreased {
+  string cart_id = 1;
+  string item_id = 2;
+  int32 new_quantity = 3;
+  tools.teal.pulsar.demoapp.dto.v1.Money unit_price = 4;
+  tools.teal.pulsar.demoapp.dto.v1.Money new_cart_total = 5;
+  int64 version = 6;
+}
+
+message CartItemRemoved {
+  string cart_id = 1;
+  string item_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money unit_price = 3;
+  int32 quantity = 4;
+  tools.teal.pulsar.demoapp.dto.v1.Money new_cart_total = 5;
+  int64 version = 6;
+}
+
+message CartCheckedOut {
+  string cart_id = 1;
+  string status = 2;
+  int64 version = 3;
+}
+
+message ShippingAddressAdded {
+  string cart_id = 1;
+  tools.teal.pulsar.demoapp.dto.v1.Address address = 2;
+  int64 version = 3;
+}
+
+message BillingAddressAdded {
+  string cart_id = 1;
+  tools.teal.pulsar.demoapp.dto.v1.Address address = 2;
+  int64 version = 3;
+}
+
+message CartDiscarded {
+  string cart_id = 1;
+  string status = 2;
+  int64 version = 3;
+}
+
+message CreditCardAdded {
+  string cart_id = 1;
+  string method_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.CreditCard credit_card = 4;
+  int64 version = 5;
+}
+
+message DebitCardAdded {
+  string cart_id = 1;
+  string method_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.DebitCard debit_card = 4;
+  int64 version = 5;
+}
+
+message PayPalAdded {
+  string cart_id = 1;
+  string method_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.PayPal pay_pal = 4;
+  int64 version = 5;
+}
+
+message ShoppingCartEventsSchema {
+  oneof event {
+    CartCreated cart_created = 1;
+    CartItemAdded cart_item_added = 2;
+    CartItemIncreased cart_item_increased = 3;
+    CartItemDecreased cart_item_decreased = 4;
+    CartItemRemoved cart_item_removed = 5;
+    CartCheckedOut cart_checked_out = 6;
+    ShippingAddressAdded shipping_address_added = 7;
+    BillingAddressAdded billing_address_added = 8;
+    CartDiscarded cart_discarded = 9;
+    CreditCardAdded credit_card_added = 10;
+    DebitCardAdded debit_card_added = 11;
+    PayPalAdded pay_pal_added = 12;
+  }
+}
