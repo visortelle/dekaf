@@ -19,6 +19,7 @@ import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
 import { PartitioningWithActivePartitions } from '../TopicPage';
 import UpdatePartitionedTopicButton from './UpdatePartitionedTopicButton/UpdatePartitionedTopicButton';
+import CreateMissedPartitionsButton from './CreateMissedPartitionsButton/CreateMissedPartitionsButton';
 
 export type OverviewProps = {
   tenant: string;
@@ -115,7 +116,12 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 <td className={st.HighlightedCell}>Partitioning</td>
                 <Td>
                   {partitioning}
-                  {partitioning === 'partitioned' && partitionsCount !== undefined && <span>, <strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions&nbsp;&nbsp;<UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount} /></span>}
+                  {partitioning === 'partitioned' && partitionsCount !== undefined && <span>, <strong>{activePartitionsCount}</strong> active partitions of <strong>{partitionsCount}</strong> total&nbsp;&nbsp;<UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount} /></span>}
+                  {(partitionsCount !== undefined) && (activePartitionsCount !== undefined) && (partitionsCount > activePartitionsCount) && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8rem', marginRight: '-8rem' }}>
+                      <CreateMissedPartitionsButton topicFqn={topicFqn} />
+                    </div>
+                  )}
                 </Td>
               </tr>
               {partitioning === 'partitioned' && (

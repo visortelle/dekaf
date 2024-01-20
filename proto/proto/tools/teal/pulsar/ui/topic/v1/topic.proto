@@ -332,6 +332,14 @@ message UpdatePartitionedTopicResponse {
   google.rpc.Status status = 1;
 }
 
+message CreateMissedPartitionsRequest {
+  string topic_fqn = 1;
+}
+
+message CreateMissedPartitionsResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -344,4 +352,5 @@ service TopicService {
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
   rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
   rpc UpdatePartitionedTopic(UpdatePartitionedTopicRequest) returns (UpdatePartitionedTopicResponse);
+  rpc CreateMissedPartitions(CreateMissedPartitionsRequest) returns (CreateMissedPartitionsResponse);
 }

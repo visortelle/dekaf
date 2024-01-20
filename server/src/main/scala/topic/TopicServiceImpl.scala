@@ -12,15 +12,7 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.topic.v1.topic.{
-    GetTopicPropertiesRequest,
-    GetTopicPropertiesResponse,
-    SetTopicPropertiesRequest,
-    SetTopicPropertiesResponse,
-    TopicProperties,
-    UpdatePartitionedTopicRequest,
-    UpdatePartitionedTopicResponse
-}
+import com.tools.teal.pulsar.ui.topic.v1.topic.{CreateMissedPartitionsRequest, CreateMissedPartitionsResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties, UpdatePartitionedTopicRequest, UpdatePartitionedTopicResponse}
 
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
@@ -281,3 +273,14 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             case Success(_) =>
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(pb.UpdatePartitionedTopicResponse(status = Some(status)))
+
+    override def createMissedPartitions(request: CreateMissedPartitionsRequest): Future[CreateMissedPartitionsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(adminClient.topics.createMissedPartitions(request.topicFqn)) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.CreateMissedPartitionsResponse(status = Some(status)))
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.CreateMissedPartitionsResponse(status = Some(status)))

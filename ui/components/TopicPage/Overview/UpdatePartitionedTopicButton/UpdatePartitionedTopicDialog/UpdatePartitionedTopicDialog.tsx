@@ -46,6 +46,7 @@ const UpdatePartitionedTopicDialog: React.FC<UpdatePartitionedTopicDialogProps> 
     }
 
     mutate(swrKeys.pulsar.customApi.metrics.topicsStats._([props.topicFqn]));
+    mutate(swrKeys.pulsar.customApi.metrics.topicsInternalStats._([props.topicFqn]));
     mutate(swrKeys.pulsar.customApi.metrics.isPartitionedTopic._(props.topicFqn));
 
     props.onSuccess();
