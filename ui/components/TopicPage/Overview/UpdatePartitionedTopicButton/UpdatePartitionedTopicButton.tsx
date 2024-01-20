@@ -15,7 +15,7 @@ const UpdatePartitionedTopicButton: React.FC<UpdatePartitionedTopicButtonProps> 
     <ActionButton
       action={{ type: 'predefined', action: 'edit' }}
       title="Update partitions count"
-      buttonProps={{ text: 'Update', className: s.UpdatePartitionedTopicButton }}
+      buttonProps={{ className: s.UpdatePartitionedTopicButton }}
       onClick={() => {
         modals.push({
           id: 'update-partitions-count',

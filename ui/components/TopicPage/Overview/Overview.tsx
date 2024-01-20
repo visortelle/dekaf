@@ -102,7 +102,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
           <table className={st.Table} style={{ width: '100%' }}>
             <tbody>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic Name</td>
+                <td className={st.HighlightedCell} style={{ width: '120rem' }}>Topic Name</td>
                 <Td>{props.topic}</Td>
               </tr>
               <tr className={st.Row}>
@@ -117,23 +117,23 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 <td className={st.HighlightedCell}>Partitioning</td>
                 <Td>
                   {partitioning}
-                  {partitioning === 'partitioned' && partitionsCount !== undefined && (
+                  {partitioning === 'partitioned' && partitionsCount !== undefined && activePartitionsCount !== undefined && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', marginTop: '4rem', padding: '4rem 0' }}>
                       <div>
-                        <strong>{activePartitionsCount}</strong> active partitions of <strong>{partitionsCount}</strong> total
+                        {partitionsCount === activePartitionsCount && <span><strong>{partitionsCount}</strong> partition{partitionsCount === 1 ? <></> : <span>s</span>}</span>}
+                        {partitionsCount > activePartitionsCount && <span><strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions</span>}
                       </div>
-                      {(partitionsCount !== undefined) && (activePartitionsCount !== undefined) && (partitionsCount > activePartitionsCount) && (
-                        <div style={{ display: 'grid', marginTop: '4rem', gridTemplateColumns: '1fr', width: '240rem' }}>
-                          <CreateMissedPartitionsButton topicFqn={topicFqn} />
-                        </div>
-                      )}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8rem', width: '240rem' }}>
+
+                      <div style={{ display: 'flex', gap: '8rem' }}>
                         <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
                         <UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount} />
+
+                        {partitionsCount > activePartitionsCount && (
+                          <CreateMissedPartitionsButton topicFqn={topicFqn} />
+                        )}
                       </div>
                     </div>
                   )}
-
                 </Td>
               </tr>
               {partitioning === 'partitioned' && (
