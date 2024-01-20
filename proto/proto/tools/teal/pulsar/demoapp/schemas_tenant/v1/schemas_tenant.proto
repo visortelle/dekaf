@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tools.teal.pulsar.ui.demoapp.schemas_tenant.v1;
+package tools.teal.pulsar.demoapp.schemas_tenant.v1;
 
 enum CoffeeEnum {
   COFFEE_ENUM_UNSPECIFIED = 0;

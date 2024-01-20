@@ -32,5 +32,5 @@ metals.sbt
 /.worksheet/
 
 /config.yaml.example
-src/main/java/com/tools/teal/pulsar/
+src/main/java/com/tools/teal/pulsar/demoapp
 src/main/java/com/google/

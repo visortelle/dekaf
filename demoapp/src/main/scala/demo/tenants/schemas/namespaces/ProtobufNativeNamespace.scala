@@ -7,7 +7,7 @@ import conversions.Conversions.{float32ToBytes, int64ToBytes}
 import generators.*
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema
 import zio.{Duration, Schedule}
-import com.tools.teal.pulsar.ui.demoapp.schemas_tenant.v1 as pb
+import com.tools.teal.pulsar.demoapp.schemas_tenant.v1 as pb
 import com.google.protobuf.ByteString
 
 import java.util
