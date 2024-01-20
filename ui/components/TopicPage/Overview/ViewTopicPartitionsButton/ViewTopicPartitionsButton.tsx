@@ -29,6 +29,20 @@ const ViewTopicPartitionsButton: React.FC<ViewTopicPartitionsButtonProps> = (pro
                 <Topics
                   tenant={props.tenant}
                   namespace={props.namespace}
+                  defaultFilters={{
+                    'topicName': {
+                      state: 'active',
+                      value: { 'type': 'string', value: `${props.topic}-partition-` }
+                    },
+                    'persistency': {
+                      state: 'active',
+                      value: { 'type': 'singleOption', value: 'all' }
+                    },
+                    'partitioning': {
+                      state: 'active',
+                      value: { 'type': 'singleOption', value: 'show-partitions' }
+                    }
+                  }}
                 />
               </div>
             ),

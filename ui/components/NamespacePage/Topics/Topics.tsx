@@ -18,6 +18,7 @@ import {
   TopicStats
 } from "../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
 import {customTopicsNamesSort} from "./sorting";
+import { FilterInUse } from '../../ui/Table/FiltersToolbar/FiltersToolbar';
 
 export type ColumnKey =
   'topicName' |
@@ -70,6 +71,7 @@ type LazyDataEntry = {
 type TopicsProps = {
   tenant: string;
   namespace: string;
+  defaultFilters?: Partial<Record<ColumnKey, FilterInUse>> | undefined
 }
 
 const Topics: React.FC<TopicsProps> = (props) => {
@@ -485,7 +487,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
           getId={(d) => d.fqn}
           tableId='topics-table'
           defaultSort={{ type: 'by-single-column', column: 'topicName', direction: 'asc' }}
-          defaultFiltersInUse={{
+          defaultFiltersInUse={props.defaultFilters === undefined ? {
             'topicName': {
               state: 'active',
               value: { 'type': 'string', value: '' }
@@ -498,7 +500,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               state: 'active',
               value: { 'type': 'singleOption', value: 'hide-partitions' }
             }
-          }}
+          } : props.defaultFilters}
           dataLoader={{
             cacheKey: dataLoaderCacheKey,
             loader: dataLoader
