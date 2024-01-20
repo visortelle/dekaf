@@ -17,6 +17,11 @@
 
 .HeaderCell {
   background-color: var(--surface-color);
+  border-top: none;
+}
+
+.HeaderCell:first-child {
+  border-left: none;
 }
 
 tr .HighlightedCell:first-child {

@@ -8,6 +8,7 @@ import { mutate } from 'swr';
 import { swrKeys } from '../../../swrKeys';
 import SmallButton from '../../../ui/SmallButton/SmallButton';
 import createMissedPartitionsIcon from './create-missed-partitions.svg';
+import { pulsarResourceFromFqn } from '../../../pulsar/pulsar-resources';
 
 export type CreateMissedPartitionsButtonProps = {
   topicFqn: string
@@ -33,9 +34,16 @@ const CreateMissedPartitionsButton: React.FC<CreateMissedPartitionsButtonProps> 
       return;
     }
 
+    const topicResource = pulsarResourceFromFqn(props.topicFqn);
+    if (topicResource.type !== 'topic') {
+      return;
+    }
+
     mutate(swrKeys.pulsar.customApi.metrics.topicsStats._([props.topicFqn]));
     mutate(swrKeys.pulsar.customApi.metrics.topicsInternalStats._([props.topicFqn]));
     mutate(swrKeys.pulsar.customApi.metrics.isPartitionedTopic._(props.topicFqn));
+    mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: topicResource.tenant, namespace: topicResource.namespace }));
+    mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: topicResource.tenant, namespace: topicResource.namespace }));
   }
 
   return (
