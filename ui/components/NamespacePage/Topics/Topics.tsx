@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactElement } from 'react';
 import s from './Topics.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
@@ -7,7 +7,7 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import { swrKeys } from '../../swrKeys';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Table from '../../ui/Table/Table';
-import { partition, uniq } from 'lodash';
+import { partition } from 'lodash';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
@@ -58,8 +58,9 @@ export type ColumnKey =
 type DataEntry = {
   fqn: string,
   name: string,
-  partitioning: 'partitioned' | 'non-partitioned' | 'partition',
   persistency: 'persistent' | 'non-persistent',
+  partitioning: 'partitioned' | 'non-partitioned' | 'partition',
+  activePartitionCount?: number
 };
 
 type LazyDataEntry = {
@@ -189,7 +190,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
       entries
         .filter(t => t.persistency === 'persistent' && t.partitioning !== 'partition')
         .map(value => value.fqn)
-    )
+    );
 
     const topicPropertiesResponse = await topicServiceClient.getTopicProperties(topicPropertiesRequest, null)
       .catch((err) => notifyError(`Unable to get topics properties: ${err}`));
@@ -246,7 +247,20 @@ const Topics: React.FC<TopicsProps> = (props) => {
               partitionsCount: {
                 title: 'Partitions',
                 isLazy: true,
-                render: (_, ld) => i18n.withVoidDefault(ld?.partitionedTopicMetadata?.getPartitions()?.getValue(), v => v),
+                render: (de, ld) => {
+                  let v: ReactElement | undefined;
+
+                  const partitionCount = ld?.partitionedTopicMetadata?.getPartitions()?.getValue();
+                  if (partitionCount === undefined) {
+                    v = undefined;
+                  } else if ((de.activePartitionCount !== undefined) && partitionCount > de.activePartitionCount) {
+                    v = <><strong>{de.activePartitionCount}</strong> of <strong>{partitionCount}</strong></>
+                  } else {
+                    v = <strong>{partitionCount}</strong>;
+                  }
+
+                  return i18n.withVoidDefault(v, v => v);
+                },
               },
               producersCount: {
                 title: 'Producers',
@@ -547,21 +561,29 @@ const Topics: React.FC<TopicsProps> = (props) => {
   );
 }
 
+type TopicFqn = string;
+type TopicPartitionFqn = TopicFqn;
 export type DetectPartitionedTopicsResult = {
-  partitionedTopics: { topicFqn: string, partitions: string[] }[],
-  nonPartitionedTopics: { topicFqn: string }[]
+  partitionedTopics: Record<TopicFqn, TopicPartitionFqn[]>,
+  nonPartitionedTopics: Record<TopicFqn, undefined>
 };
 
 export function detectPartitionedTopics(topicFqns: string[], partitionedTopicFqns: string[]): DetectPartitionedTopicsResult {
   let [allPartitions, nonPartitionedTopicFqns] = partition(topicFqns, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
 
-  const nonPartitionedTopics = nonPartitionedTopicFqns.map((topicFqn) => ({ topicFqn }));
+  const nonPartitionedTopics: DetectPartitionedTopicsResult['nonPartitionedTopics'] = Object.fromEntries(
+    nonPartitionedTopicFqns.map(
+      (topicFqn) => [topicFqn, undefined]
+    )
+  );
 
-  const partitionedTopics = partitionedTopicFqns.map((topicFqn) => {
-    const regexp = new RegExp(`^${topicFqn}-partition-\\d+$`);
-    const partitions = allPartitions.filter(p => regexp.test(p));
-    return { topicFqn, partitions };
-  });
+  const partitionedTopics: DetectPartitionedTopicsResult['partitionedTopics'] = Object.fromEntries(
+    partitionedTopicFqns.map((topicFqn) => {
+      const regexp = new RegExp(`^${topicFqn}-partition-\\d+$`);
+      const partitions = allPartitions.filter(p => regexp.test(p));
+      return [topicFqn, partitions];
+    })
+  );
 
   return { partitionedTopics, nonPartitionedTopics };
 }
@@ -577,26 +599,27 @@ function getTopicName(topicFqn: string): string {
 function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): DataEntry[] {
   let result: DataEntry[] = [];
 
-  for (const topic of topics.nonPartitionedTopics) {
+  for (const topicFqn in topics.nonPartitionedTopics) {
     result.push({
-      fqn: topic.topicFqn,
-      name: getTopicName(topic.topicFqn),
+      fqn: topicFqn,
+      name: getTopicName(topicFqn),
       partitioning: 'non-partitioned',
-      persistency: detectPersistenceType(topic.topicFqn),
+      persistency: detectPersistenceType(topicFqn),
     });
   }
 
-  for (const topic of topics.partitionedTopics) {
+  for (const [topicFqn, partitionFqns] of Object.entries(topics.partitionedTopics)) {
     result.push(
       {
-        fqn: topic.topicFqn,
-        name: getTopicName(topic.topicFqn),
+        fqn: topicFqn,
+        name: getTopicName(topicFqn),
         partitioning: 'partitioned',
-        persistency: detectPersistenceType(topic.topicFqn)
+        activePartitionCount: partitionFqns.length || 0,
+        persistency: detectPersistenceType(topicFqn)
       }
     );
 
-    for (const partitionFqn of topic.partitions) {
+    for (const partitionFqn of partitionFqns) {
       result.push(
         {
           fqn: partitionFqn,
