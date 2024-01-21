@@ -12,9 +12,10 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 import React from "react";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
+import A from "../../../ui/A/A";
 
 const policy = 'compactionThreshold';
 
@@ -187,7 +188,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Compaction threshold',
-  description: <span>Sets <TooltipElement tooltipHelp={help["compactionThreshold"]} link={"https://pulsar.apache.org/docs/3.0.x/cookbooks-compaction/"}>compactionThreshold</TooltipElement> for the topic.</span>,
+  description: <div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      Pulsar's topic compaction feature enables you to create compacted topics in which older, "obscured" entries are pruned from the topic, allowing for faster reads through the topic's history (which messages are deemed obscured/outdated/irrelevant will depend on your use case).
+    </div>
+    <A href="https://pulsar.apache.org/docs/next/cookbooks-compaction/" isExternalLink>Learn more</A>
+  </div>,
   input: <FieldInput {...props} />
 });
 

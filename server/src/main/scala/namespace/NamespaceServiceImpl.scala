@@ -129,90 +129,81 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         Future.successful(pb.ListNamespacesResponse(status = Some(status), namespaces = namespaces.toSeq))
 
     override def getTopicsCount(request: GetTopicsCountRequest): Future[GetTopicsCountResponse] =
+        import org.apache.pulsar.common.naming.TopicDomain
+
         val adminClient = RequestContext.pulsarAdmin.get()
 
         given ExecutionContext = ExecutionContext.global
 
         try {
-            val options = org.apache.pulsar.client.admin.ListNamespaceTopicsOptions.builder
+            val getTopicsOptions = org.apache.pulsar.client.admin.ListTopicsOptions.builder
                 .includeSystemTopic(request.isIncludeSystemTopics)
-                .mode(org.apache.pulsar.client.admin.Mode.ALL)
                 .build
 
-            val getTopicsFutures = request.namespaces.map(t => adminClient.namespaces.getTopicsAsync(t, options).asScala)
-            val topicsPerNamespace = Await.result(Future.sequence(getTopicsFutures), Duration(1, TimeUnit.MINUTES)).map(_.asScala)
+            val getPersistentTopicsFutures = request.namespaces.map(t => adminClient.topics().getListAsync(t, TopicDomain.persistent, getTopicsOptions).asScala)
+            val getNonPersistentTopicsFutures =
+                request.namespaces.map(t => adminClient.topics().getListAsync(t, TopicDomain.non_persistent, getTopicsOptions).asScala)
+            val getPartitionedTopicsFutures = request.namespaces.map(t => adminClient.topics().getPartitionedTopicListAsync(t, getTopicsOptions).asScala)
 
-            val partitionRegex = """(.*)(-partition-)(\d+)$""".r
+            val nonPartitionedTopicsPerNamespace = request.namespaces.zip(
+                Await.result(
+                    Future.sequence(getPersistentTopicsFutures ++ getNonPersistentTopicsFutures),
+                    Duration(1, TimeUnit.MINUTES)
+                ).map(_.asScala.toVector).toVector
+            ).toMap
 
-            if request.isIncludePersistedAndNonPersistedTopics then
-                val topicsAndPartitionsCountsPerNamespace = topicsPerNamespace.map { topics =>
-                    val partitionsAndNonPartitionedTopicsCount = topics.size
-                    val partitionedAndNonPartitionedTopicsExcludingPartitions = topics
-                        .map {
-                            case partitionRegex(topicFqn, _, _) => topicFqn
-                            case topic                          => topic
-                        }
-                        .distinct
-                        .size
+            val partitionedTopicsPerNamespace = request.namespaces.zip(
+                Await.result(
+                    Future.sequence(getPartitionedTopicsFutures),
+                    Duration(1, TimeUnit.MINUTES)
+                ).map(_.asScala.toVector).toVector
+            ).toMap
 
-                    (partitionsAndNonPartitionedTopicsCount, partitionedAndNonPartitionedTopicsExcludingPartitions)
-                }
+            val PartitionRegexPattern = """^(.*)(-partition-)(\d+)$"""
+            val partitionsPerNamespace = nonPartitionedTopicsPerNamespace.map {
+                case (k, v) => (k, v.filter(_.matches(PartitionRegexPattern)))
+            }
 
-                val topicsCountPerNamespace = topicsAndPartitionsCountsPerNamespace.map((x, y) => x + y)
+            val topicCount: Map[String, Int] = request.namespaces.map(ns =>
+                val count = nonPartitionedTopicsPerNamespace(ns).size + partitionedTopicsPerNamespace(ns).size
+                (ns, count)
+            ).toMap
 
-                val topicsCountPerNamespaceExcludingPartitions = topicsAndPartitionsCountsPerNamespace.map(_._2)
+            val topicCountExcludingPartitions: Map[String, Int] = request.namespaces.map(ns =>
+                val count = nonPartitionedTopicsPerNamespace(ns).size -
+                    partitionsPerNamespace(ns).size +
+                    partitionedTopicsPerNamespace(ns).size
+                (ns, count)
+            ).toMap
 
-                val topicsCountPersisted = topicsPerNamespace.map(topics =>
-                    topics.count(_.startsWith("persistent://")) +
-                        topics
-                            .map {
-                                case partitionRegex(topicFqn, _, _) => topicFqn
-                                case topic                          => topic
-                            }
-                            .distinct
-                            .size
+            val topicCountPersistent: Map[String, Int] = request.namespaces.map(ns =>
+                val partitionedTopics = partitionedTopicsPerNamespace(ns).filter(_.startsWith("persistent://"))
+                val nonPartitionedTopics = nonPartitionedTopicsPerNamespace(ns)
+                    .filter(t => !t.matches(PartitionRegexPattern) && t.startsWith("persistent://"))
+
+                val count = partitionedTopics.size + nonPartitionedTopics.size
+                (ns, count)
+            ).toMap
+
+            val topicCountNonPersistent: Map[String, Int] = request.namespaces.map(ns =>
+                val partitionedTopics = partitionedTopicsPerNamespace(ns).filter(_.startsWith("non-persistent://"))
+                val nonPartitionedTopics = nonPartitionedTopicsPerNamespace(ns)
+                    .filter(t => !t.matches(PartitionRegexPattern) && t.startsWith("non-persistent://"))
+
+                val count = partitionedTopics.size + nonPartitionedTopics.size
+                (ns, count)
+            ).toMap
+
+            val status = Status(code = Code.OK.index)
+            Future.successful(
+                GetTopicsCountResponse(
+                    status = Some(status),
+                    topicCount = topicCount,
+                    topicCountExcludingPartitions = topicCountExcludingPartitions,
+                    topicCountPersistent = topicCountPersistent,
+                    topicCountNonPersistent = topicCountNonPersistent
                 )
-
-                val topicsCountNonPersisted = topicsPerNamespace.map(_.count(_.startsWith("non-persistent://")))
-
-                val status = Status(code = Code.OK.index)
-                Future.successful(
-                    GetTopicsCountResponse(
-                        status = Some(status),
-                        topicsCount = request.namespaces.zip(topicsCountPerNamespace).toMap,
-                        topicsCountExcludingPartitions = request.namespaces.zip(topicsCountPerNamespaceExcludingPartitions).toMap,
-                        topicsCountPersisted = request.namespaces.zip(topicsCountPersisted).toMap,
-                        topicsCountNonPersisted = request.namespaces.zip(topicsCountNonPersisted).toMap
-                    )
-                )
-            else
-                val topicsAndPartitionsCountsPerNamespace = topicsPerNamespace.map { topics =>
-                    val partitionsAndNonPartitionedTopicsCount = topics.size
-                    val partitionedAndNonPartitionedTopicsExcludingPartitions = topics
-                        .map {
-                            case partitionRegex(topicFqn, _, _) => topicFqn
-                            case topic                          => topic
-                        }
-                        .distinct
-                        .size
-
-                    (partitionsAndNonPartitionedTopicsCount, partitionedAndNonPartitionedTopicsExcludingPartitions)
-                }
-
-                val topicsCountPerNamespace = topicsAndPartitionsCountsPerNamespace.map((x, y) => x + y)
-
-                val topicsCountPerNamespaceExcludingPartitions = topicsAndPartitionsCountsPerNamespace.map(_._2)
-
-                val status = Status(code = Code.OK.index)
-                Future.successful(
-                    GetTopicsCountResponse(
-                        status = Some(status),
-                        topicsCount = request.namespaces.zip(topicsCountPerNamespace).toMap,
-                        topicsCountExcludingPartitions = request.namespaces.zip(topicsCountPerNamespaceExcludingPartitions).toMap,
-                        topicsCountPersisted = request.namespaces.map(_ -> 0).toMap,
-                        topicsCountNonPersisted = request.namespaces.map(_ -> 0).toMap
-                    )
-                )
+            )
         } catch {
             case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)

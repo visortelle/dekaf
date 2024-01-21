@@ -49,7 +49,8 @@ type TabsKey =
   'subscriptions' |
   'retention' |
   'deduplication' |
-  'schema';
+  'schema' |
+  'compaction';
 
 const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
   const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
@@ -105,7 +106,6 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
                     title="Topic"
                     fields={[
                       delayedDeliveryField,
-                      compactionThresholdField,
                       persistenceField,
                       publishRateField,
                       subscribeRateField,
@@ -116,6 +116,19 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
                       maxSubscriptionsPerTopicField,
                       dispatchRateField,
                       replicatorDispatchRateField,
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+            compaction: {
+              title: 'Topic Compaction',
+              render: () => isNoActivePartitions ? noActivePartitionsError : (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Topic Compaction"
+                    fields={[
+                      compactionThresholdField,
                     ].map(field => field({ ...props, isGlobal }))}
                   />
                 </div>

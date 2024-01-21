@@ -181,7 +181,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
         Pulsar's topic compaction feature enables you to create compacted topics in which older, "obscured" entries are pruned from the topic, allowing for faster reads through the topic's history (which messages are deemed obscured/outdated/irrelevant will depend on your use case).
       </div>
-      <A href="https://pulsar.apache.org/docs/3.0.x/cookbooks-compaction/" isExternalLink>Learn more</A>
+      <A href="https://pulsar.apache.org/docs/next/cookbooks-compaction/" isExternalLink>Learn more</A>
     </div>
   ),
   input: <FieldInput {...props} />
