@@ -15,6 +15,7 @@ export type NodeIconsProps = {
   addon?: string;
   title?: string;
   svgIcon?: string;
+  imgIcon?: string;
   size?: 'regular' | 'small'
 }
 export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
@@ -39,6 +40,9 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
       onClick={props.onClick}
     >
       {props.title}
+      {props.imgIcon && (
+        <img className={s.ImgIcon} src={props.imgIcon} />
+      )}
       {props.svgIcon && (
         <div className={s.SvgIcon}>
           <SvgIcon svg={props.svgIcon} />
