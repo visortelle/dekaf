@@ -5,7 +5,9 @@ export function updateTenants(props: { tree: Tree; tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = props.tenants.map((tenant) => ({
     rootLabel: { type: "tenant", tenant },
-    subForest: [],
+    subForest: _tree.subForest.find(t =>
+      t.rootLabel.type === 'tenant' && t.rootLabel.tenant === tenant
+    )?.subForest || [],
   }));
   return _tree;
 }
