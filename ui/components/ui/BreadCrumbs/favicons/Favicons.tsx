@@ -60,7 +60,7 @@ const Favicons: React.FC<FaviconsProps> = (props) => {
   return (
     <Helmet>
       {crumb && <title>{pageTitle}</title>}
-      {favicon && <link rel="icon" type="image/png" href={`data:image/png;base64,${favicon}`} />}
+      {favicon && <link rel="icon" type="image/png" href={favicon} />}
     </Helmet>
   );
 };

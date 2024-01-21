@@ -1,4 +1,18 @@
 .SettingsBar {
-  padding: 12rem 12rem 8rem;
-  border-bottom: 1px solid var(--border-color);
+  padding: 12rem 12rem 0 8rem;
+  position: relative;
+  height: 94rem;
+  background-color: #fff;
+}
+
+.ProductLogo {
+  position: absolute;
+  inset: 12rem;
+  left: 8rem;
+  display: grid;
+}
+
+.ProductLogo:hover {
+  cursor: pointer;
+  opacity: 0.6;
 }
