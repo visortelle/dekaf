@@ -2,7 +2,8 @@ package topic
 
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb
-import org.apache.pulsar.client.admin.PulsarAdmin
+import org.apache.pulsar.client.admin.{Mode, PulsarAdmin}
+
 import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
@@ -39,8 +40,22 @@ def getTopicPartitioning(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicParti
             val isPartitioned = topicMetadata.partitions > 0
 
             if isPartitioned then
-                val internalStats = pulsarAdmin.topics.getPartitionedInternalStats(topicFqn)
-                activePartitionsCount = Some(internalStats.partitions.asScala.size)
+                val getTopicsOptions = org.apache.pulsar.client.admin.ListNamespaceTopicsOptions
+                    .builder
+                    .includeSystemTopic(true)
+                    .mode(Mode.ALL)
+                    .build()
+
+                val topicFqnChunks = topicFqn.split("/")
+                val persistency = topicFqnChunks(0).dropRight(1)
+                val namespace = topicFqnChunks(2) + "/" + topicFqnChunks(3)
+                val topic = topicFqnChunks(4)
+
+                val namespaceTopics = pulsarAdmin.namespaces.getTopics(namespace, getTopicsOptions).asScala.toVector
+
+                val partitionRegexPattern = "^" + persistency + "://.*/" + topic + "-partition-\\d+$"
+                val activePartitions = namespaceTopics.filter(_.matches(partitionRegexPattern))
+                activePartitionsCount = Some(activePartitions.size)
 
             isPartitioned
         catch {
