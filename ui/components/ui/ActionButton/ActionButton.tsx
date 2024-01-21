@@ -44,6 +44,7 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
       data-tooltip-id={tooltipId}
       data-tooltip-html={tooltipHtml}
       svgIcon={svgIcon}
+      title={props.title}
       {...props.buttonProps}
     />
   );

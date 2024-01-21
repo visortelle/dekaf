@@ -17,7 +17,7 @@ import {
   TopicProperties,
   TopicStats
 } from "../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
-import {customTopicsNamesSort} from "./sorting";
+import { customTopicsNamesSort } from "./sorting";
 import { FilterInUse } from '../../ui/Table/FiltersToolbar/FiltersToolbar';
 
 export type ColumnKey =
@@ -89,41 +89,73 @@ const Topics: React.FC<TopicsProps> = (props) => {
     }));
 
   const dataLoader = async () => {
-    const fetchPersistentTopics = async () => {
+    const fetchPersistentTopics = async (): Promise<string[]> => {
       const req = new pb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
 
-      const res = await topicServiceClient.listTopics(req, {});
+      const res = await topicServiceClient.listTopics(req, {})
+        .catch(err => notifyError(`Unable to get persistent topics: ${err}`));
+
+      if (res === undefined) {
+        return [];
+      }
+
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get persistent topics: ${res.getStatus()?.getMessage()}`);
-        return;
+        return [];
       }
 
       return res.getTopicsList();
     }
 
-    const fetchNonPersistentTopics = async () => {
+    const fetchNonPersistentTopics = async (): Promise<string[]> => {
       const req = new pb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
 
-      const res = await topicServiceClient.listTopics(req, {});
+      const res = await topicServiceClient.listTopics(req, {})
+        .catch(err => notifyError(`Unable to get non persistent topics: ${err}`));
+
+      if (res === undefined) {
+        return [];
+      }
+
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get non persistent topics: ${res.getStatus()?.getMessage()}`);
-        return;
+        return [];
       }
 
       return res.getTopicsList();
     }
 
-    const [persistentTopics, nonPersistentTopics] = await Promise.all([
+    const fetchPartitionedTopics = async (): Promise<string[]> => {
+      const req = new pb.ListPartitionedTopicsRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await topicServiceClient.listPartitionedTopics(req, {})
+        .catch(err => notifyError(`Unable to get persistent topics: ${err}`));
+
+      if (res === undefined) {
+        return [];
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get partitioned topics: ${res.getStatus()?.getMessage()}`);
+        return [];
+      }
+
+      return res.getTopicsList();
+    }
+
+    const [partitionedTopics, persistentTopics, nonPersistentTopics] = await Promise.all([
+      fetchPartitionedTopics(),
       fetchPersistentTopics(),
       fetchNonPersistentTopics(),
     ]);
 
-    const allTopics = (persistentTopics?.concat(nonPersistentTopics || []) || []);
-    return makeTopicDataEntries(detectPartitionedTopics(allTopics || []));
+    const topics = (persistentTopics?.concat(nonPersistentTopics));
+    return makeTopicDataEntries(detectPartitionedTopics(topics, partitionedTopics));
   };
 
   const lazyDataLoader = async (entries: DataEntry[]) => {
@@ -200,7 +232,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 filter: {
                   descriptor: {
                     type: 'string',
-                    defaultValue: {type: 'string', value: ''}
+                    defaultValue: { type: 'string', value: '' }
                   },
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'string') {
@@ -520,12 +552,11 @@ export type DetectPartitionedTopicsResult = {
   nonPartitionedTopics: { topicFqn: string }[]
 };
 
-export function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResult {
-  let [allPartitions, nonPartitionedTopicFqns] = partition(topics, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
+export function detectPartitionedTopics(topicFqns: string[], partitionedTopicFqns: string[]): DetectPartitionedTopicsResult {
+  let [allPartitions, nonPartitionedTopicFqns] = partition(topicFqns, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
 
   const nonPartitionedTopics = nonPartitionedTopicFqns.map((topicFqn) => ({ topicFqn }));
 
-  const partitionedTopicFqns = uniq(allPartitions.map((partition) => partition.replace(/^(.*)(-partition-)(\d+)$/, '$1')));
   const partitionedTopics = partitionedTopicFqns.map((topicFqn) => {
     const regexp = new RegExp(`^${topicFqn}-partition-\\d+$`);
     const partitions = allPartitions.filter(p => regexp.test(p));
