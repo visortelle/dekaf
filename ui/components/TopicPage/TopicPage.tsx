@@ -80,7 +80,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       };
 
       return result;
-    }
+    },
+    { refreshInterval: 15_000 }
   );
 
   if (partitioningError !== undefined) {

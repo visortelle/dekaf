@@ -69,7 +69,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
       }
 
       return res;
-    }
+    },
+    { refreshInterval: 15_000 }
   );
 
   if (statsError !== undefined) {
