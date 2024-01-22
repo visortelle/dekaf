@@ -8,7 +8,6 @@
 .ProductLogo {
   position: absolute;
   inset: 12rem;
-  left: 8rem;
   display: grid;
 }
 

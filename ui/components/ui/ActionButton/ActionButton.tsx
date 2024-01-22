@@ -5,12 +5,13 @@ import Link from '../Link/Link';
 import editIcon from './edit.svg';
 import closeIcon from './close.svg';
 import viewIcon from './view.svg';
+import refreshIcon from './refresh.svg';
 import { tooltipId } from '../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import SmallButton, { SmallButtonProps } from '../SmallButton/SmallButton';
 
 export type ActionButtonProps = {
-  action: { type: 'predefined', action: 'edit' | 'close' | 'view' }
+  action: { type: 'predefined', action: 'edit' | 'close' | 'view' | 'refresh' }
   onClick: () => void;
   linkTo?: string;
   testId?: string;
@@ -24,6 +25,7 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
     case 'edit': svgIcon = editIcon; break;
     case 'close': svgIcon = closeIcon; break;
     case 'view': svgIcon = viewIcon; break;
+    case 'refresh': svgIcon = refreshIcon; break;
   }
 
   let tooltipHtml: undefined | string | ReactElement;

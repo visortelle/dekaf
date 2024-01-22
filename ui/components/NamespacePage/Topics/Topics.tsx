@@ -254,9 +254,9 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   if (partitionCount === undefined) {
                     v = undefined;
                   } else if ((de.activePartitionCount !== undefined) && partitionCount > de.activePartitionCount) {
-                    v = <><strong>{de.activePartitionCount}</strong> of <strong>{partitionCount}</strong></>
+                    v = <>{partitionCount} ({de.activePartitionCount} active)</>
                   } else {
-                    v = <strong>{partitionCount}</strong>;
+                    v = <>{partitionCount}</>;
                   }
 
                   return i18n.withVoidDefault(v, v => v);
@@ -454,25 +454,25 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getNonContiguousDeletedMessagesRangesSerializedSize()?.getValue(), i18n.formatBytes),
               },
-              lastCompactionRemovedEventCount: {
-                title: 'Last Compaction Removed Event Count',
-                isLazy: true,
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), v => v.toString()),
-              },
               lastCompactionSucceedTimestamp: {
                 title: 'Last Compaction Succeed Timestamp',
                 isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
               },
-              lastCompactionFailedTimestamp: {
-                title: 'Last Compaction Failed Timestamp',
-                isLazy: true,
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
-              },
               lastCompactionDurationTimeInMills: {
                 title: 'Last Compaction Duration Time',
                 isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionDurationTimeInMills()?.getValue() || undefined, i18n.formatDuration),
+              },
+              lastCompactionRemovedEventCount: {
+                title: 'Last Compaction Removed Event Count',
+                isLazy: true,
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), v => v.toString()),
+              },
+              lastCompactionFailedTimestamp: {
+                title: 'Last Compaction Failed Timestamp',
+                isLazy: true,
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
               },
               ownerBroker: {
                 title: 'Owner Broker',
@@ -493,7 +493,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
             defaultConfig: [
               { columnKey: 'topicName', visibility: 'visible', stickyTo: 'left', width: 200 },
               { columnKey: 'persistency', visibility: 'visible', width: 90 },
-              { columnKey: 'partitionsCount', visibility: 'visible', width: 60 },
+              { columnKey: 'partitionsCount', visibility: 'visible', width: 80 },
               { columnKey: 'subscriptionsCount', visibility: 'visible', width: 100 },
               { columnKey: 'producersCount', visibility: 'visible', width: 100 },
               { columnKey: 'msgRateIn', visibility: 'visible', width: 100 },
@@ -517,10 +517,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
               { columnKey: 'topicEpoch', visibility: 'visible', width: 100 },
               { columnKey: 'nonContiguousDeletedMessagesRanges', visibility: 'visible', width: 100 },
               { columnKey: 'nonContiguousDeletedMessagesRangesSerializedSize', visibility: 'visible', width: 100 },
-              { columnKey: 'lastCompactionRemovedEventCount', visibility: 'visible', width: 100 },
               { columnKey: 'lastCompactionSucceedTimestamp', visibility: 'visible', width: 200 },
-              { columnKey: 'lastCompactionFailedTimestamp', visibility: 'visible', width: 200 },
               { columnKey: 'lastCompactionDurationTimeInMills', visibility: 'visible', width: 100 },
+              { columnKey: 'lastCompactionRemovedEventCount', visibility: 'visible', width: 100 },
+              { columnKey: 'lastCompactionFailedTimestamp', visibility: 'visible', width: 200 },
               { columnKey: 'ownerBroker', visibility: 'visible', width: 100 },
               { columnKey: 'delayedMessageIndexSizeInBytes', visibility: 'visible', width: 100 },
               { columnKey: 'partitioning', visibility: 'visible', width: 100 },

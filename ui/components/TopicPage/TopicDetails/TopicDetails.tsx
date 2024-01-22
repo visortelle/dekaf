@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQueryParam, withDefault, BooleanParam } from 'use-query-params';
+import { useQueryParam, withDefault, BooleanParam, StringParam } from 'use-query-params';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import Checkbox from '../../ui/Checkbox/Checkbox';
@@ -34,6 +34,7 @@ import Tabs from "../../ui/Tabs/Tabs";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import { PartitioningWithActivePartitions } from '../TopicPage';
 import NothingToShow from '../../ui/NothingToShow/NothingToShow';
+import TopicCompactionEditor from './fields/TopicCompactionEditor/TopicCompactionEditor';
 
 export type TopicDetailsProps = {
   tenant: string;
@@ -52,9 +53,12 @@ type TabsKey =
   'schema' |
   'compaction';
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/;
+
 const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
   const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
-  const [activeTab, setActiveTab] = React.useState<TabsKey>('topic-config');
+  const [activeTab, setActiveTab] = useQueryParam('category', withDefault(StringParam, 'compaction'));
+  const isPartition = partitionRegexp.test(props.topic);
 
   const brokersConfig = BrokersConfig.useContext();
   const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
@@ -94,7 +98,7 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
 
       <div className={s.Tabs}>
         <Tabs<TabsKey>
-          activeTab={activeTab}
+          activeTab={activeTab as TabsKey}
           direction='vertical'
           onActiveTabChange={setActiveTab}
           tabs={{
@@ -127,10 +131,19 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
                 <div className={s.ConfigurationTable}>
                   <ConfigurationTable
                     title="Topic Compaction"
-                    fields={[
-                      compactionThresholdField,
+                    fields={isPartition ? [] : [
+                      !isPartition && compactionThresholdField,
                     ].map(field => field({ ...props, isGlobal }))}
                   />
+                  {isPartition && (
+                    <TopicCompactionEditor
+                      tenant={props.tenant}
+                      namespace={props.namespace}
+                      partitioning={props.partitioning}
+                      topic={props.topic}
+                      topicPersistency={props.topicPersistency}
+                    />
+                  )}
                 </div>
               )
             },

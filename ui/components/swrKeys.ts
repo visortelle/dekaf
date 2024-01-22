@@ -212,6 +212,13 @@ export const swrKeys = {
                 "subscriptionPermissions",
               ],
             },
+            topic: {
+              topicCompactionStatus: (props: { topicFqn: string }) => [
+                "pulsar",
+                "topics",
+                props.topicFqn
+              ]
+            },
             nonPartitionedTopics: {
               _: (props: { tenant: string; namespace: string }) => [
                 "pulsar",
