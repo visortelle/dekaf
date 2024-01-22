@@ -1,8 +1,9 @@
-import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef, ManagedValueProjectionListValOrRef, ManagedValueProjectionValOrRef } from "./user-managed-items";
+import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedDeserializerValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef, ManagedValueProjectionListValOrRef, ManagedValueProjectionValOrRef } from "./user-managed-items";
 import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../ConsumerSession/types";
 import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/value-projections/value-projections";
+import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -174,6 +175,9 @@ export function consumerSessionTargetFromValOrRef(v: ManagedConsumerSessionTarge
   const spec = v.val.spec;
 
   return {
+    isEnabled: spec.isEnabled,
+    consumptionMode: spec.consumptionMode,
+    messageValueDeserializer: deserializerFromValOrRef(spec.messageValueDeserializer),
     topicSelector: topicSelectorFromValOrRef(spec.topicSelector, currentTopicFqn),
     coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
     messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
@@ -219,4 +223,14 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
     pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain),
     valueProjectionList: valueProjectionListFromValOrRef(spec.valueProjectionList)
   }
+}
+
+export function deserializerFromValOrRef(v: ManagedDeserializerValOrRef): Deserializer {
+  if (v.val === undefined) {
+    throw new Error('Deserializer reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return spec.deserializer;
 }

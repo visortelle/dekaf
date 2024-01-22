@@ -10,7 +10,7 @@ case class Deserializer(
 object Deserializer:
     def fromPb(v: pb.Deserializer): Deserializer =
         val deserializer = v.deserializer match
-            case pb.Deserializer.Deserializer.DeserializerLatestTopicSchema(v) =>
+            case pb.Deserializer.Deserializer.DeserializerUseLatestTopicSchema(v) =>
                 UseLatestTopicSchema.fromPb(v)
             case pb.Deserializer.Deserializer.DeserializerTreatBytesAsJson(v) =>
                 TreatBytesAsJson.fromPb(v)
@@ -21,7 +21,7 @@ object Deserializer:
     def toPb(v: Deserializer): pb.Deserializer =
         val deserializerPb = v.deserializer match
         case v: UseLatestTopicSchema =>
-            pb.Deserializer.Deserializer.DeserializerLatestTopicSchema(UseLatestTopicSchema.toPb(v))
+            pb.Deserializer.Deserializer.DeserializerUseLatestTopicSchema(UseLatestTopicSchema.toPb(v))
         case v: TreatBytesAsJson =>
             pb.Deserializer.Deserializer.DeserializerTreatBytesAsJson(TreatBytesAsJson.toPb(v))
 

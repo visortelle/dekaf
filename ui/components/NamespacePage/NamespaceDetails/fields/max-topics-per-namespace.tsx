@@ -87,17 +87,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        if (value.type === 'unlimited' || value.type === 'specified-for-this-namespace') {
+        if (value.type === 'specified-for-this-namespace') {
           const req = new pb.SetMaxTopicsPerNamespaceRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-
-          if (value.type === 'unlimited') {
-            req.setMaxTopicsPerNamespace(0);
-          }
-
-          if (value.type === 'specified-for-this-namespace') {
-            req.setMaxTopicsPerNamespace(value.maxTopicsPerNamespace);
-          }
+          req.setMaxTopicsPerNamespace(value.maxTopicsPerNamespace);
 
           const res = await namespacePoliciesServiceClient.setMaxTopicsPerNamespace(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {

@@ -20,5 +20,6 @@ export function getReadableItemType(managedItemType: ManagedItemType): string {
     case "basic-message-filter-target": return "Field";
     case "value-projection": return "Projection";
     case "value-projection-list": return "Projection List";
+    case "deserializer": return "Deserializer"
   }
 }

@@ -41,6 +41,8 @@ import {
 import { Int32Value, StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
 import { ValueProjection, ValueProjectionList } from "../value-projections/value-projections";
+import { consumerSessionTargetConsumptionModeFromPb, consumerSessionTargetConsumptionModeToPb } from "../consumption-mode/consumption-mode";
+import { deserializerFromPb, deserializerToPb } from "../deserializer/deserializer";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -727,6 +729,9 @@ export function consumerSessionPauseTriggerChainToPb(v: ConsumerSessionPauseTrig
 
 export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): ConsumerSessionTarget {
   return {
+    isEnabled: v.getIsEnabled(),
+    consumptionMode: consumerSessionTargetConsumptionModeFromPb(v.getConsumptionMode()!),
+    messageValueDeserializer: deserializerFromPb(v.getMessageValueDeserializer()!),
     topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
     messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
     coloringRuleChain: coloringRuleChainFromPb(v.getColoringRuleChain()!),
@@ -735,13 +740,16 @@ export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): Consum
 }
 
 export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget {
-  const consumerSessionTargetPb = new pb.ConsumerSessionTarget();
-  consumerSessionTargetPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
-  consumerSessionTargetPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
-  consumerSessionTargetPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
-  consumerSessionTargetPb.setValueProjectionList(valueProjectionListToPb(v.valueProjectionList));
+  const targetPb = new pb.ConsumerSessionTarget();
+  targetPb.setIsEnabled(v.isEnabled);
+  targetPb.setConsumptionMode(consumerSessionTargetConsumptionModeToPb(v.consumptionMode));
+  targetPb.setMessageValueDeserializer(deserializerToPb(v.messageValueDeserializer));
+  targetPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
+  targetPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
+  targetPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
+  targetPb.setValueProjectionList(valueProjectionListToPb(v.valueProjectionList));
 
-  return consumerSessionTargetPb;
+  return targetPb;
 }
 
 function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {

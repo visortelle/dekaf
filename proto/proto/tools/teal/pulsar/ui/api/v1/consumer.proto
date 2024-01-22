@@ -255,7 +255,7 @@ message Deserializer {
   // };
 
   oneof deserializer {
-    UseLatestTopicSchema deserializer_latest_topic_schema = 1;
+    UseLatestTopicSchema deserializer_use_latest_topic_schema = 1;
     TreatBytesAsJson deserializer_treat_bytes_as_json = 2;
     // TreatBytesAsXml deserializer_treat_bytes_as_xml = 3;
     // JsFunction deserializer_js_function = 4;

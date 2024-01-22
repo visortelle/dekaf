@@ -1,6 +1,8 @@
 import { ValueProjectionList } from "./value-projections/value-projections";
 import { BasicMessageFilter, BasicMessageFilterTarget } from "./basic-message-filter-types";
 import { TopicSelector } from "./topic-selector/topic-selector";
+import { ConsumerSessionTargetConsumptionMode } from "./consumption-mode/consumption-mode";
+import { Deserializer } from "./deserializer/deserializer";
 
 export type SessionState =
   | "paused"
@@ -61,6 +63,9 @@ export type ConsumerSessionPauseTriggerChain = {
 };
 
 export type ConsumerSessionTarget = {
+  isEnabled: boolean,
+  consumptionMode: ConsumerSessionTargetConsumptionMode,
+  messageValueDeserializer: Deserializer,
   topicSelector: TopicSelector;
   messageFilterChain: MessageFilterChain;
   coloringRuleChain: ColoringRuleChain;
