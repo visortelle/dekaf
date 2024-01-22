@@ -214,7 +214,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Inactive topic policies',
-  description: <span>Sets the <TooltipElement tooltipHelp={help["inactiveTopicPolicies"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/#configure-inactive-topic-policies">inactive topic policies</TooltipElement> on a namespace.</span>,
+  description: <span>Specifies if and when inactive topic should be deleted. Inactive topic is a topic that had no active producers or consumers for specified umount of time.</span>,
   input: <FieldInput {...props} />
 });
 

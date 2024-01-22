@@ -1,4 +1,4 @@
-import stringify from 'safe-stable-stringify';
+import stringify from "safe-stable-stringify";
 
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
@@ -11,16 +11,14 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import * as generalHelp from "../../../ui/help";
 import React from "react";
-import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
-const policy = 'maxSubscriptionsPerTopic';
+const policy = 'maxProducers';
 
 type PolicyValue = { type: 'inherited-from-namespace-config' } | { type: 'unlimited' } | {
   type: 'specified-for-this-topic',
-  maxSubscriptionsPerTopic: number,
+  maxProducers: number,
 };
 
 export type FieldInputProps = {
@@ -43,29 +41,29 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
-      const req = new pb.GetMaxSubscriptionsPerTopicRequest();
+      const req = new pb.GetMaxProducersRequest();
       req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicPoliciesServiceClient.getMaxSubscriptionsPerTopic(req, {});
+      const res = await topicPoliciesServiceClient.getMaxProducers(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get max subscription per topic: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get max producers per topic: ${res.getStatus()?.getMessage()}`);
         return;
       }
 
       let initialValue: PolicyValue = { type: 'inherited-from-namespace-config' };
-      switch (res.getMaxSubscriptionsPerTopicCase()) {
-        case pb.GetMaxSubscriptionsPerTopicResponse.MaxSubscriptionsPerTopicCase.UNSPECIFIED: {
+      switch (res.getMaxProducersCase()) {
+        case pb.GetMaxProducersResponse.MaxProducersCase.UNSPECIFIED: {
           initialValue = { type: 'inherited-from-namespace-config' };
           break;
         }
-        case pb.GetMaxSubscriptionsPerTopicResponse.MaxSubscriptionsPerTopicCase.SPECIFIED: {
-          const maxSubscriptionsPerTopic = res.getSpecified()?.getMaxSubscriptionsPerTopic() ?? 0;
+        case pb.GetMaxProducersResponse.MaxProducersCase.SPECIFIED: {
+          const maxProducers = res.getSpecified()?.getMaxProducers() ?? 0;
 
-          if (maxSubscriptionsPerTopic === 0) {
+          if (maxProducers === 0) {
             initialValue = { type: 'unlimited' };
           } else {
-            initialValue = { type: 'specified-for-this-topic', maxSubscriptionsPerTopic };
+            initialValue = { type: 'specified-for-this-topic', maxProducers };
           }
 
           break;
@@ -77,7 +75,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (initialValueError) {
-    notifyError(`Unable to get max subscriptions per topic. ${initialValueError}`);
+    notifyError(`Unable to get max producers per topic. ${initialValueError}`);
   }
 
   if (initialValue === undefined) {
@@ -90,30 +88,30 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       key={stringify(initialValue)}
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
-          const req = new pb.RemoveMaxSubscriptionsPerTopicRequest();
+          const req = new pb.RemoveMaxProducersRequest();
           req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicPoliciesServiceClient.removeMaxSubscriptionsPerTopic(req, {});
+          const res = await topicPoliciesServiceClient.removeMaxProducers(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
         }
 
         if (value.type === 'unlimited' || value.type === 'specified-for-this-topic') {
-          const req = new pb.SetMaxSubscriptionsPerTopicRequest();
+          const req = new pb.SetMaxProducersRequest();
           req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           if (value.type === 'unlimited') {
-            req.setMaxSubscriptionsPerTopic(0);
+            req.setMaxProducers(0);
           }
 
           if (value.type === 'specified-for-this-topic') {
-            req.setMaxSubscriptionsPerTopic(value.maxSubscriptionsPerTopic);
+            req.setMaxProducers(value.maxProducers);
           }
 
-          const res = await topicPoliciesServiceClient.setMaxSubscriptionsPerTopic(req, {});
+          const res = await topicPoliciesServiceClient.setMaxProducers(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
@@ -138,7 +136,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   switch (v) {
                     case 'inherited-from-namespace-config': onChange({ type: 'inherited-from-namespace-config' }); break;
                     case 'unlimited': onChange({ type: 'unlimited' }); break;
-                    case 'specified-for-this-topic': onChange({ type: 'specified-for-this-topic', maxSubscriptionsPerTopic: 1 }); break;
+                    case 'specified-for-this-topic': onChange({ type: 'specified-for-this-topic', maxProducers: 1 }); break;
                   }
                 }}
                 value={value.type}
@@ -147,8 +145,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.type === 'specified-for-this-topic' && (
               <Input
                 type="number"
-                value={value.maxSubscriptionsPerTopic.toString()}
-                onChange={v => onChange({ type: 'specified-for-this-topic', maxSubscriptionsPerTopic: parseInt(v) })}
+                value={value.maxProducers.toString()}
+                onChange={v => onChange({ type: 'specified-for-this-topic', maxProducers: parseInt(v) })}
               />
             )}
           </>
@@ -160,8 +158,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Max subscriptions per topic',
-  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscriptions</TooltipElement> per topic.</span>,
+  title: 'Max producers',
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>Limit a maximum number of producers for this topic.</div>
+      <div>
+        A producer is a process that attaches to a topic and publishes messages to a Pulsar broker. The Pulsar broker processes the messages.
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

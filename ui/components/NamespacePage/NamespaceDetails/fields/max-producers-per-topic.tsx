@@ -147,7 +147,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   title: 'Max producers per topic',
   description: (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
-      <div>Limit a maximum number of subscriptions per topic for each topic in this namespace.</div>
+      <div>Limit a maximum number of producers per topic for each topic in this namespace.</div>
       <div>
       A producer is a process that attaches to a topic and publishes messages to a Pulsar broker. The Pulsar broker processes the messages.
       </div>

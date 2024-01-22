@@ -21,16 +21,16 @@ import subscriptionDispatchRateField from './fields/subscription-dispatch-rate';
 import compactionThresholdField from './fields/compaction-threshold';
 import publishRateField from './fields/publish-rate';
 import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
-import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
-import maxProducersPerTopicField from './fields/max-producers-per-topic';
+import maxConsumersField from './fields/max-consumers';
+import maxProducersField from './fields/max-producers';
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
 import subscribeRateField from './fields/subscribe-rate';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
-import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic';
+import maxSubscriptionsField from './fields/max-subscriptions';
 import maxMessageSizeField from './fields/max-message-size';
 
 import s from './TopicDetails.module.css'
-import Tabs from "../../ui/Tabs/Tabs";
+import Tabs, { Tab } from "../../ui/Tabs/Tabs";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import { PartitioningWithActivePartitions } from '../TopicPage';
 import NothingToShow from '../../ui/NothingToShow/NothingToShow';
@@ -45,20 +45,24 @@ export type TopicDetailsProps = {
 };
 
 type TabsKey =
-  'topic-config' |
-  'consumers' |
-  'subscriptions' |
+  'delayed-delivery' |
+  'geo-replication' |
+  'limits' |
+  'message-deduplication' |
+  'messaging' |
+  'persistence' |
+  'rate-limits' |
   'retention' |
-  'deduplication' |
   'schema' |
-  'compaction';
+  'topic-compaction';
 
 const partitionRegexp = /^(.*)-(partition-\d+)$/;
 
 const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
   const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
-  const [activeTab, setActiveTab] = useQueryParam('category', withDefault(StringParam, 'compaction'));
+
   const isPartition = partitionRegexp.test(props.topic);
+  const [activeTab, setActiveTab] = useQueryParam('category', withDefault(StringParam, isPartition ? 'topic-compaction' : 'delayed-delivery'));
 
   const brokersConfig = BrokersConfig.useContext();
   const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
@@ -86,6 +90,182 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
     </div>
   ) : null;
 
+  const tabs: Partial<Record<TabsKey, Tab>> = isPartition ? {
+    'topic-compaction': {
+      title: 'Topic Compaction',
+      render: () => (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Topic Compaction"
+            fields={[]}
+          />
+          <TopicCompactionEditor
+            tenant={props.tenant}
+            namespace={props.namespace}
+            partitioning={props.partitioning}
+            topic={props.topic}
+            topicPersistency={props.topicPersistency}
+          />
+        </div>
+      )
+    },
+  } : {
+    "delayed-delivery": {
+      title: 'Delayed Delivery',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Delayed Delivery"
+            fields={[
+              delayedDeliveryField,
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "geo-replication": {
+      title: 'Geo Replication',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Geo Replication"
+            fields={[
+              replicatorDispatchRateField,
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "limits": {
+      title: 'Limits',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Limits"
+            fields={[
+              maxConsumersField,
+              maxConsumersPerSubscriptionField,
+              maxProducersField,
+              maxSubscriptionsField
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "message-deduplication": {
+      title: 'Message Deduplication',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Message Deduplication"
+            fields={[
+              deduplicationField,
+              deduplicationSnapshotIntervalField
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "messaging": {
+      title: 'Messaging',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Messaging"
+            fields={[
+              maxMessageSizeField,
+              maxUnackedMessagesPerConsumerField,
+              maxUnackedMessagesPerSubscriptionField,
+              subscriptionTypesEnabledField
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "persistence": {
+      title: 'Persistence',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Persistence"
+            fields={[
+              persistenceField,
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "rate-limits": {
+      title: 'Rate Limits',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Rate Limits"
+            fields={[
+              dispatchRateField,
+              publishRateField,
+              replicatorDispatchRateField,
+              subscriptionDispatchRateField,
+              subscribeRateField,
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "retention": {
+      title: 'Retention',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Retention"
+            fields={[
+              inactiveTopicPoliciesField,
+              retentionField,
+              backlogQuotaField,
+              messageTtlField
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    "schema": {
+      title: 'Schema',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Schema"
+            fields={[
+              schemaCompatibilityStrategyField
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+        </div>
+      )
+    },
+    'topic-compaction': {
+      title: 'Topic Compaction',
+      render: () => isNoActivePartitions ? noActivePartitionsError : (
+        <div className={s.ConfigurationTable}>
+          <ConfigurationTable
+            title="Topic Compaction"
+            fields={[
+              compactionThresholdField,
+            ].map(field => field({ ...props, isGlobal }))}
+          />
+          {!props.partitioning.isPartitioned && (
+            <TopicCompactionEditor
+              tenant={props.tenant}
+              namespace={props.namespace}
+              partitioning={props.partitioning}
+              topic={props.topic}
+              topicPersistency={props.topicPersistency}
+              isHideDescription={true}
+            />
+          )}
+        </div>
+      )
+    },
+  };
+
   return (
     <div className={s.Policies}>
       <div className={s.IsGlobalCheckbox}>
@@ -101,124 +281,7 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
           activeTab={activeTab as TabsKey}
           direction='vertical'
           onActiveTabChange={setActiveTab}
-          tabs={{
-            "topic-config": {
-              title: 'Topic ',
-              render: () => isNoActivePartitions ? noActivePartitionsError : (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Topic"
-                    fields={[
-                      delayedDeliveryField,
-                      persistenceField,
-                      publishRateField,
-                      subscribeRateField,
-                      maxMessageSizeField,
-                      inactiveTopicPoliciesField,
-                      maxProducersPerTopicField,
-                      maxConsumersPerTopicField,
-                      maxSubscriptionsPerTopicField,
-                      dispatchRateField,
-                      replicatorDispatchRateField,
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                </div>
-              )
-            },
-            compaction: {
-              title: 'Topic Compaction',
-              render: () => isNoActivePartitions ? noActivePartitionsError : (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Topic Compaction"
-                    fields={isPartition ? [] : [
-                      !isPartition && compactionThresholdField,
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                  {isPartition && (
-                    <TopicCompactionEditor
-                      tenant={props.tenant}
-                      namespace={props.namespace}
-                      partitioning={props.partitioning}
-                      topic={props.topic}
-                      topicPersistency={props.topicPersistency}
-                    />
-                  )}
-                </div>
-              )
-            },
-            consumers: {
-              title: 'Consumers',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Consumers"
-                    fields={[
-                      maxUnackedMessagesPerConsumerField
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                </div>
-              )
-            },
-            subscriptions: {
-              title: 'Subscriptions',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Subscriptions"
-                    fields={[
-                      subscriptionTypesEnabledField,
-                      subscriptionDispatchRateField,
-                      maxConsumersPerSubscriptionField,
-                      maxUnackedMessagesPerSubscriptionField
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                </div>
-              )
-            },
-            retention: {
-              title: 'Retention',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Retention"
-                    fields={[
-                      retentionField,
-                      backlogQuotaField,
-                      messageTtlField,
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                </div>
-              )
-            },
-            deduplication: {
-              title: 'Deduplication',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Deduplication"
-                    fields={[
-                      deduplicationField,
-                      deduplicationSnapshotIntervalField
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                </div>
-              )
-            },
-            schema: {
-              title: 'Schema',
-              render: () => (
-                <div className={s.ConfigurationTable}>
-                  <ConfigurationTable
-                    title="Schema"
-                    fields={[
-                      schemaCompatibilityStrategyField,
-                    ].map(field => field({ ...props, isGlobal }))}
-                  />
-                </div>
-              )
-            },
-          }}
+          tabs={tabs}
         />
       </div>
     </div>

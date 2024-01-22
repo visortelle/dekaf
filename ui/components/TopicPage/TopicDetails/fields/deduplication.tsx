@@ -9,10 +9,9 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
 import React from "react";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
+import A from "../../../ui/A/A";
 
 const policy = 'deduplication';
 
@@ -123,7 +122,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication',
-  description: <span>Enables or disable <TooltipElement tooltipHelp={help["deduplication"]} link="https://pulsar.apache.org/docs/3.0.x/cookbooks-deduplication/">deduplication</TooltipElement> for the topic.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        When Message deduplication is enabled, it ensures that each message produced on Pulsar topics is persisted to disk only once, even if the message is produced more than once. Message deduplication is handled automatically on the server side.
+      </div>
+      <div style={{ padding: '12rem', borderRadius: '12rem', background: 'var(--surface-color)' }}>
+        Message deduplication could affect the performance of the brokers during informational snapshots.
+      </div>
+      <A href="https://pulsar.apache.org/docs/next/cookbooks-deduplication/" isExternalLink>Learn more</A>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

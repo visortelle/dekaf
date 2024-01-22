@@ -12,6 +12,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import stringify from 'safe-stable-stringify';
 import React from "react";
 import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
+import NoData from '../../../ui/NoData/NoData';
 
 const policy = 'subscriptionDispatchRate';
 
@@ -185,7 +186,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription dispatch rate',
-  description: <span>Specifies the rate at which messages are dispatched to a subscription from a the topic (subscription message-dispatch-rate).</span>,
+  description: <NoData />,
   input: <FieldInput {...props} />
 });
 

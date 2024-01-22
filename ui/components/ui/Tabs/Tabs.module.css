@@ -85,6 +85,10 @@
   border-top: none;
 }
 
+.Tab.TabVertical:last-child {
+  border-bottom: 1px solid var(--border-color);
+}
+
 .Small .Tab {
   padding: 4rem 8rem;
 }

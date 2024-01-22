@@ -12,9 +12,10 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 import React from "react";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
+import A from "../../../ui/A/A";
 
 const policy = 'delayedDelivery';
 
@@ -170,7 +171,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Delayed delivery',
-  description: <span>Sets the <TooltipElement tooltipHelp={help["delayedDelivery"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#delayed-message-delivery">delayed delivery policy</TooltipElement> on the topic.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        Delayed message delivery enables you to consume a message later. In this mechanism, a message is persistently stored in BookKeeper.
+      </div>
+      <div>
+        This message will be delivered to a consumer once the specified delay is over.
+      </div>
+      <div style={{ padding: '12rem', background: 'var(--surface-color)', borderRadius: '12rem' }}>
+        <strong>Only shared and key-shared subscriptions support delayed message delivery.</strong> In other subscriptions, delayed messages are dispatched immediately.
+      </div>
+      <A isExternalLink href="https://pulsar.apache.org/docs/next/concepts-messaging/#delayed-message-delivery">Learn more</A>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

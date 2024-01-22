@@ -150,7 +150,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   title: 'Max consumers per topic',
   description: (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
-      <div>Limits a maximum number of consumers per topic for each topic in this namespace.</div>
+      <div>Limits a maximum number of consumers per subscription for each topic in this namespace.</div>
       <div>
         A consumer is a process that attaches to a topic via a subscription and then receives messages.
       </div>

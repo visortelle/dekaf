@@ -14,11 +14,10 @@ import { longRunningProcessStatusFromPb } from '../../../../../pulsar/LongRunnin
 import SmallButton from '../../../../../ui/SmallButton/SmallButton';
 import ActionButton from '../../../../../ui/ActionButton/ActionButton';
 import NothingToShow from '../../../../../ui/NothingToShow/NothingToShow';
-import A from '../../../../../ui/A/A';
 import Ledgers from '../../../../Overview/InternalStatistics/PersistentTopicInternalStats/ManagedLedgerInternalStats/Ledgers/Ledgers';
 
 export type TopicCompactionStatusProps = {
-  topicFqn: string
+  topicFqn: string,
 };
 
 const TopicCompactionStatus: React.FC<TopicCompactionStatusProps> = (props) => {
@@ -47,14 +46,14 @@ const TopicCompactionStatus: React.FC<TopicCompactionStatusProps> = (props) => {
 
       return longRunningProcessStatusFromPb(res.getProcessStatus()!);
     },
-    { refreshInterval: 15_000 }
+    { refreshInterval: 5_000 }
   );
 
   if (statusError) {
     notifyError(`Can't get topic compaction status: ${statusError}`);
   }
 
-  const statsKey = swrKeys.pulsar.customApi.metrics.topicsStats._([props.topicFqn]);
+  const statsKey = swrKeys.pulsar.customApi.metrics.topicsStats._([props.topicFqn]).concat(['-compaction-status']);
   const { data: stats, error: statsError, isLoading: isStatsLoading } = useSWR(
     statsKey,
     async () => {
@@ -82,16 +81,16 @@ const TopicCompactionStatus: React.FC<TopicCompactionStatusProps> = (props) => {
 
       return res.getTopicStatsMap().get(props.topicFqn) || res.getPartitionedTopicStatsMap().get(props.topicFqn)?.getStats();
     },
-    { refreshInterval: 15_000 }
+    { refreshInterval: 5_000 }
   );
 
   if (statsError !== undefined) {
     notifyError(`Unable to get topic stats. ${statsError}`);
   }
 
-  const internalStatsKey = swrKeys.pulsar.customApi.metrics.topicsInternalStats._([props.topicFqn]);
+  const internalStatsKey = swrKeys.pulsar.customApi.metrics.topicsInternalStats._([props.topicFqn]).concat(['-compaction-status']);
 
-  const { data: internalStats, error: internalStatsError, isLoading } = useSWR(
+  const { data: internalStats, error: internalStatsError } = useSWR(
     internalStatsKey,
     async () => {
       const req = new pb.GetTopicsInternalStatsRequest();
@@ -110,7 +109,7 @@ const TopicCompactionStatus: React.FC<TopicCompactionStatusProps> = (props) => {
 
       return res.getStatsMap().get(props.topicFqn);
     },
-    { refreshInterval: 15_000 }
+    { refreshInterval: 5_000 }
   );
 
   if (internalStatsError) {
@@ -141,13 +140,6 @@ const TopicCompactionStatus: React.FC<TopicCompactionStatusProps> = (props) => {
 
   return (
     <div className={s.TopicCompactionStatus}>
-      <div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem', maxWidth: '480rem' }}>
-          Pulsar's topic compaction feature enables you to create compacted topics in which older, "obscured" entries are pruned from the topic, allowing for faster reads through the topic's history (which messages are deemed obscured/outdated/irrelevant will depend on your use case).
-        </div>
-        <A href="https://pulsar.apache.org/docs/next/cookbooks-compaction/" isExternalLink>Learn more</A>
-      </div>
-
       <div style={{ marginTop: '24rem' }}>
         <strong>Status:</strong> {<span style={{ color: statusColor }}>{status?.status}</span> || <NoData />}
       </div>

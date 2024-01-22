@@ -10,9 +10,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
-import {help} from "../../../ui/help";
 import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
 import NoData from '../../../ui/NoData/NoData';
 

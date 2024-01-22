@@ -218,7 +218,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription types enabled',
-  description: <span>Defines subscription types enabled for a namespace.</span>,
+  description: <span>Defines allowed subscription types for this topic.</span>,
   input: <FieldInput {...props} />
 });
 

@@ -12,8 +12,6 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'publishRate';
@@ -167,7 +165,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Configured <TooltipElement tooltipHelp={help["messagePublishRate"]} link="https://pulsar.apache.org/docs/3.0.x/administration-stats/#producer-stats">message-publish-rate</TooltipElement> for all topics of the topic.</span>,
+  description: (
+    <div>The rate at which messages can be published to a topic.</div>
+  ),
   input: <FieldInput {...props} />
 });
 

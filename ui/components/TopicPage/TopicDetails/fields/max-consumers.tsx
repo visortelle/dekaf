@@ -11,8 +11,6 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import * as generalHelp from "../../../ui/help";
 import React from "react";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
@@ -161,8 +159,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Max consumers per topic',
-  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["consumer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-consumers/">consumers</TooltipElement> for the topic.</span>,
+  title: 'Max consumers',
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>Limits a maximum number of consumers per subscription for this topic.</div>
+      <div>
+        A consumer is a process that attaches to a topic via a subscription and then receives messages.
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

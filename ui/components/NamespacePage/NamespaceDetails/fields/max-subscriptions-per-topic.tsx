@@ -149,7 +149,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   title: 'Max subscriptions per topic',
   description: (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem'}}>
-      <div>Limit a maximum number of subscriptions per topic for each topic in this namespace.</div>
+      <div>Limits a maximum number of subscriptions per topic for each topic in this namespace.</div>
       <div>A subscription is a named configuration rule that determines how messages are delivered to consumers.</div>
     </div>
   ),

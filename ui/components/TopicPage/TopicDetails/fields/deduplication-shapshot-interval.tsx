@@ -12,7 +12,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../../swrKeys';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 import React from "react";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
@@ -143,7 +143,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication snapshot interval',
-  description: <span><TooltipElement tooltipHelp={help["deduplicationSnapshot"]}>Deduplication snapshot</TooltipElement> interval. <code>namespaceDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        The time period after which a deduplication informational snapshot is taken.
+      </div>
+    </div>
+  ),
   input: <FieldInput {...props} />
 });
 

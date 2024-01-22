@@ -211,16 +211,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Persistence',
-  description: <div>Determines how BookKeeper handles <TooltipElement tooltipHelp={generalHelp.help["persistentStorage"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-architecture-overview/#persistent-storage">persistent storage</TooltipElement> of messages. Policies determine four things:
+  description: <div>Determines how BookKeeper handles <TooltipElement tooltipHelp={generalHelp.help["persistentStorage"]} link="https://pulsar.apache.org/docs/next/concepts-architecture-overview/#persistent-storage">persistent storage</TooltipElement> of messages. Policies determine four things:
     <ul>
       <li>
-        The ensemble size (E): number of  <TooltipElement tooltipHelp={generalHelp.help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipElement> the <TooltipElement tooltipHelp={generalHelp.help["ledger"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-architecture-overview/#ledgers">ledger</TooltipElement> will be stored on.
+        The ensemble size (E): number of  <TooltipElement tooltipHelp={generalHelp.help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipElement> the <TooltipElement tooltipHelp={generalHelp.help["ledger"]} link="https://pulsar.apache.org/docs/next/concepts-architecture-overview/#ledgers">ledger</TooltipElement> will be stored on.
       </li>
       <li>
         The quorum write size (Q<sub>w</sub>): number of bookies each <TooltipElement tooltipHelp={generalHelp.help["message"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#messages">entry (message)</TooltipElement> will be written to.
       </li>
       <li>
-        <TooltipElement tooltipHelp={generalHelp.help["acknowledgement"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#acknowledgment-ack">Acknowledgment(ack)</TooltipElement> quorum (Q<sub>a</sub>) size: number of nodes an entry must be acknowledged by (number of guaranteed copies).
+        <TooltipElement tooltipHelp={generalHelp.help["acknowledgement"]} link="https://pulsar.apache.org/docs/next/reference-terminology/#acknowledgment-ack">Acknowledgment(ack)</TooltipElement> quorum (Q<sub>a</sub>) size: number of nodes an entry must be acknowledged by (number of guaranteed copies).
       </li>
       <li>
         The <TooltipElement tooltipHelp={generalHelp.help["throttlingRateMarkDelete"]} link="https://streamnative.io/blog/deep-dive-into-topic-data-lifecycle-apache-pulsar">throttling rate for mark-delete operations</TooltipElement>.

@@ -10,8 +10,6 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import { help } from "../../../ui/help";
 import A from '../../../ui/A/A';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
