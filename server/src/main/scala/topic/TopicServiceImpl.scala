@@ -234,6 +234,14 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
+            val oldProperties = adminClient.topics.getProperties(request.topic).asScala
+            val newProperties = request.topicProperties
+
+            val keysDiff = oldProperties.keys.toSet.diff(newProperties.keys.toSet)
+            val propertiesToRemove = keysDiff.intersect(oldProperties.keys.toSet)
+            
+            propertiesToRemove.foreach(key => adminClient.topics.removeProperties(request.topic, key))
+
             adminClient.topics.updateProperties(request.topic, request.topicProperties.asJava)
 
             val status: Status = Status(code = Code.OK.index)
