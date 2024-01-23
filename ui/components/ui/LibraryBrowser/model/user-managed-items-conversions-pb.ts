@@ -54,6 +54,7 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET: return "basic-message-filter-target";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION: return "value-projection";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST: return "value-projection-list";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER: return "deserializer";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -74,6 +75,7 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "basic-message-filter-target": return pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET;
     case "value-projection": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION;
     case "value-projection-list": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST;
+    case "deserializer": return pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }

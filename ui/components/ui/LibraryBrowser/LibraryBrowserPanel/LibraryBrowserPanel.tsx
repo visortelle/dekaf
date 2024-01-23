@@ -62,6 +62,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
                 {props.itemType === 'basic-message-filter-target' && 'Target Field'}
                 {props.itemType === 'value-projection' && 'Projection'}
                 {props.itemType === 'value-projection-list' && 'Projection List'}
+                {props.itemType === 'deserializer' && 'Deserializer'}
               </strong>
             </div>
           )}

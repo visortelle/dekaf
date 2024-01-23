@@ -14,12 +14,13 @@ import { cloneDeep } from 'lodash';
 import IconToggle from '../../../IconToggle/IconToggle';
 import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
 import A from '../../../A/A';
+import DeserializerInput from './DeserializerInput/DeserializerInput';
 
 const readCompactedHelp = (
   <div>
     <p>Read compacted topic</p>
     <p>
-    Pulsar's topic compaction feature enables you to create compacted topics in which older, "obscured" entries are pruned from the topic, allowing for faster reads through the topic's history (which messages are deemed obscured/outdated/irrelevant will depend on your use case).
+      Pulsar's topic compaction feature enables you to create compacted topics in which older, "obscured" entries are pruned from the topic, allowing for faster reads through the topic's history (which messages are deemed obscured/outdated/irrelevant will depend on your use case).
     </p>
     <A href="https://pulsar.apache.org/docs/next/cookbooks-compaction/" isExternalLink>Learn more</A>
   </div>
@@ -143,6 +144,13 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       <ColoringRuleChainInput
         value={itemSpec.coloringRuleChain}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+        libraryContext={props.libraryContext}
+        isReadOnly={props.isReadOnly}
+      />
+
+      <DeserializerInput
+        value={itemSpec.messageValueDeserializer}
+        onChange={(v) => onSpecChange({ ...itemSpec, messageValueDeserializer: v })}
         libraryContext={props.libraryContext}
         isReadOnly={props.isReadOnly}
       />
