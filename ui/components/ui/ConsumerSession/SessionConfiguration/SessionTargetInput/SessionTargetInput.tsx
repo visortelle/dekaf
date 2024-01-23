@@ -9,6 +9,7 @@ import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, Managed
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 import ValueProjectionListInput from '../../value-projections/ValueProjectionListInput/ValueProjectionListInput';
+import OnOffToggle from '../../../IconToggle/OnOffToggle/OnOffToggle';
 
 export type SessionTargetInputProps = {
   value: ManagedConsumerSessionTargetValOrRef,
@@ -41,8 +42,10 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
+
   return (
-    <div className={s.SessionTargetInput}>
+    <div className={s.SessionTargetInput} style={{ filter: cssFilter }}>
       {props.targetIndex !== undefined && <div className={s.TargetIndex}>Target {props.targetIndex + 1}</div>}
       <div ref={hoverRef}>
         <LibraryBrowserPanel
@@ -67,6 +70,17 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          extraElements={{
+            preItemType: (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4rem' }}>
+                <OnOffToggle
+                  value={itemSpec.isEnabled}
+                  onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+                  isReadOnly={props.isReadOnly}
+                />
+              </div>
+            )
+          }}
           isReadOnly={props.isReadOnly}
           {...props.libraryBrowserPanel}
         />

@@ -15,6 +15,10 @@ import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput'
 import Toggle from '../../Toggle/Toggle';
 import { getDefaultManagedItem } from '../../LibraryBrowser/default-library-items';
 import ValueProjectionListInput from '../value-projections/ValueProjectionListInput/ValueProjectionListInput';
+import SmallButton from '../../SmallButton/SmallButton';
+import { arrayMove } from './array-move';
+import moveLeftIcon from './icons/move-left.svg';
+import moveRightIcon from './icons/move-right.svg';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -182,7 +186,33 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                 isReadOnly={props.isReadOnly}
               />
               {!props.isReadOnly && (
-                <div className={s.DeleteTargetButton}>
+                <div className={s.TopRightButtons}>
+                  {itemSpec.targets.length > 1 && (
+                    <>
+                      <SmallButton
+                        type='regular'
+                        appearance='borderless-semitransparent'
+                        svgIcon={moveLeftIcon}
+                        title="Move left"
+                        onClick={() => {
+                          const newTargets = arrayMove(itemSpec.targets, i, i - 1);
+                          onSpecChange({ ...itemSpec, targets: newTargets });
+                        }}
+                        disabled={i === 0}
+                      />
+                      <SmallButton
+                        type='regular'
+                        appearance='borderless-semitransparent'
+                        svgIcon={moveRightIcon}
+                        title="Move right"
+                        onClick={() => {
+                          const newTargets = arrayMove(itemSpec.targets, i, i + 1);
+                          onSpecChange({ ...itemSpec, targets: newTargets });
+                        }}
+                        disabled={i === (itemSpec.targets.length - 1)}
+                      />
+                    </>
+                  )}
                   <DeleteButton
                     title='Remove this Consumer Session Target'
                     onClick={() => {
