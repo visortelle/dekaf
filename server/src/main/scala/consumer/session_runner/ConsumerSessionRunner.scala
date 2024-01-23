@@ -29,7 +29,12 @@ case class ConsumerSessionRunner(
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
-        def onNext(messageFromTarget: Option[ConsumerSessionMessage], sessionContext: ConsumerSessionContext, stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
+        def onNext(
+            messageFromTarget: Option[ConsumerSessionMessage],
+            sessionContext: ConsumerSessionContext,
+            stats: ConsumerSessionTargetStats,
+            errors: Vector[String]
+        ): Unit = boundary:
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
                 val allErrors = errors ++ additionalErrors
 
@@ -51,7 +56,7 @@ case class ConsumerSessionRunner(
 
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
-                        sessionConfig.messageFilterChain,
+                        sessionConfig.messageFilterChain
                     )
 
                     if !messageFilterChainResult.isOk then
@@ -60,9 +65,11 @@ case class ConsumerSessionRunner(
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules
                             .filter(_.isEnabled)
-                            .map(cr => sessionContext.testMessageFilterChain(
-                                cr.messageFilterChain,
-                            ))
+                            .map(cr =>
+                                sessionContext.testMessageFilterChain(
+                                    cr.messageFilterChain
+                                )
+                            )
                     else
                         Vector.empty
 
@@ -72,7 +79,7 @@ case class ConsumerSessionRunner(
                             .map(_.project(sessionContext.context))
                     else
                         Vector.empty
-                        
+
                     val errors: Vector[String] = if isDebug then
                         val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
                         val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
@@ -105,17 +112,19 @@ object ConsumerSessionRunner:
     ): ConsumerSessionRunner =
         val sessionContextPool = ConsumerSessionContextPool()
 
-        var targets = sessionConfig.targets.zipWithIndex.map { case (targetConfig, i) =>
-            i -> ConsumerSessionTargetRunner.make(
-                sessionName = sessionName,
-                targetIndex = i,
-                pulsarClient = pulsarClient,
-                adminClient = adminClient,
-                schemasByTopic = Map.empty,
-                sessionContextPool = sessionContextPool,
-                targetConfig = targetConfig
-            )
-        }.toMap
+        var targets = sessionConfig.targets
+            .filter(_.isEnabled)
+            .zipWithIndex.map { case (targetConfig, i) =>
+                i -> ConsumerSessionTargetRunner.make(
+                    sessionName = sessionName,
+                    targetIndex = i,
+                    pulsarClient = pulsarClient,
+                    adminClient = adminClient,
+                    schemasByTopic = Map.empty,
+                    sessionContextPool = sessionContextPool,
+                    targetConfig = targetConfig
+                )
+            }.toMap
 
         val nonPartitionedTopicFqns = targets.values.flatMap(_.nonPartitionedTopicFqns).toVector
         val schemasByTopic = getSchemasByTopic(adminClient, nonPartitionedTopicFqns)
