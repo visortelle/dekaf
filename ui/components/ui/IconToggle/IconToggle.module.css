@@ -21,9 +21,12 @@
   height: 16rem;
 }
 
+.IconToggle.IconToggleWithLabel:not(.WithShadow) {
+  box-shadow: none;
+}
+
 .IconToggle.IconToggleWithLabel {
   height: 20rem;
-  box-shadow: none;
 }
 
 .Label {
@@ -32,5 +35,8 @@
   padding: 0 4rem;
   border-radius: 4rem;
   user-select: none;
+}
+
+.IconToggle:not(.WithShadow) .Label {
   text-decoration: underline dotted;
 }

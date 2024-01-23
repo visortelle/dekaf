@@ -10,9 +10,9 @@ import org.apache.pulsar.client.api.Consumer
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.value_projections.{ValueProjectionList, ValueProjectionResult}
 import org.apache.pulsar.client.api.Message
+
 import scala.util.boundary
 import boundary.break
-
 import scala.util.{Failure, Success, Try}
 
 type NonPartitionedTopicFqn = String
@@ -153,7 +153,8 @@ object ConsumerSessionTargetRunner:
                     pulsarClient = pulsarClient,
                     consumerName = consumerName,
                     topicsToConsume = Vector(topicFqn),
-                    listener = listener
+                    listener = listener,
+                    targetConfig = targetConfig
                 ) match
                     case Right(consumerBuilder) =>
                         val consumer = consumerBuilder.subscribe()

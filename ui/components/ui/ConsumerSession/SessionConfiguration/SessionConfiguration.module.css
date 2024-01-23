@@ -54,7 +54,7 @@
 
 .TopRightButtons {
   position: absolute;
-  top: 18rem;
+  top: 8rem;
   right: 12rem;
   z-index: 1;
   display: flex;
