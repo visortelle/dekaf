@@ -735,12 +735,15 @@ export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): Consum
     topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
     messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
     coloringRuleChain: coloringRuleChainFromPb(v.getColoringRuleChain()!),
-    valueProjectionList: valueProjectionListFromPb(v.getValueProjectionList()!)
+    valueProjectionList: valueProjectionListFromPb(v.getValueProjectionList()!),
   };
 }
 
 export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget {
   const targetPb = new pb.ConsumerSessionTarget();
+
+  console.log('t', v, targetPb)
+
   targetPb.setIsEnabled(v.isEnabled);
   targetPb.setConsumptionMode(consumerSessionTargetConsumptionModeToPb(v.consumptionMode));
   targetPb.setMessageValueDeserializer(deserializerToPb(v.messageValueDeserializer));

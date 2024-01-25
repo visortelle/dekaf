@@ -322,7 +322,6 @@ const Session: React.FC<SessionProps> = (props) => {
       setSort
     }) : [];
   }, [config, sort, setSort]);
-  console.log('sw', sort);
 
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
     if (config === undefined) {

@@ -37,7 +37,7 @@ export function deserializerFromPb(v: pb.Deserializer): Deserializer {
       break;
     }
     case pb.Deserializer.DeserializerCase.DESERIALIZER_TREAT_BYTES_AS_JSON: {
-      deserializer = { type: 'use-latest-topic-schema' };
+      deserializer = { type: 'treat-bytes-as-json' };
       break;
     }
     default: throw new Error(`Unable to parse Deserializer`)
@@ -58,7 +58,7 @@ export function deserializerToPb(v: Deserializer): pb.Deserializer {
       break;
     }
     case "treat-bytes-as-json": {
-      resultPb.setDeserializerUseLatestTopicSchema(treatBytesAsJsonToPb(v.deserializer));
+      resultPb.setDeserializerTreatBytesAsJson(treatBytesAsJsonToPb(v.deserializer));
       break;
     }
   }

@@ -21,10 +21,8 @@ val logger: Logger = Logger(getClass.getName)
 
 case class ConsumerSessionTargetRunner(
     targetIndex: Int,
+    targetConfig: ConsumerSessionTarget,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
-    messageFilterChain: MessageFilterChain,
-    coloringRuleChain: ColoringRuleChain,
-    valueProjectionList: ValueProjectionList,
     schemasByTopic: SchemasByTopic,
     sessionContextPool: ConsumerSessionContextPool,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
@@ -40,24 +38,22 @@ case class ConsumerSessionTargetRunner(
         ) => Unit,
         isDebug: Boolean
     ): Unit =
-        val thisTarget = this
-
-        val listener = thisTarget.consumerListener
+        val listener = consumerListener
         val targetMessageHandler = listener.targetMessageHandler
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             boundary:
-                thisTarget.stats.messagesProcessed += 1
+                stats.messagesProcessed += 1
 
-                val sessionContext = thisTarget.sessionContextPool.getNextContext
-                val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+                val sessionContext = sessionContextPool.getNextContext
+                val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
                 val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
                 val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
 
                 sessionContext.setCurrentMessage(messageJson, messageValueToJsonResult)
 
                 val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
-                    thisTarget.messageFilterChain
+                    targetConfig.messageFilterChain
                 )
 
                 val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
@@ -71,15 +67,15 @@ case class ConsumerSessionTargetRunner(
                     )
                     boundary.break()
 
-                val coloringRuleChainResult: Vector[ChainTestResult] = if thisTarget.coloringRuleChain.isEnabled then
-                    thisTarget.coloringRuleChain.coloringRules
+                val coloringRuleChainResult: Vector[ChainTestResult] = if targetConfig.coloringRuleChain.isEnabled then
+                    targetConfig.coloringRuleChain.coloringRules
                         .filter(cr => cr.isEnabled)
                         .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
                 else
                     Vector.empty
 
-                val valueProjectionListResult: Vector[ValueProjectionResult] = if thisTarget.valueProjectionList.isEnabled then
-                    thisTarget.valueProjectionList.projections
+                val valueProjectionListResult: Vector[ValueProjectionResult] = if targetConfig.valueProjectionList.isEnabled then
+                    targetConfig.valueProjectionList.projections
                         .filter(_.isEnabled)
                         .map(_.project(sessionContext.context))
                 else
@@ -136,8 +132,8 @@ object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
         targetIndex: Int,
-        sessionContextPool: ConsumerSessionContextPool,
         targetConfig: ConsumerSessionTarget,
+        sessionContextPool: ConsumerSessionContextPool,
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
         pulsarClient: PulsarClient
@@ -165,12 +161,10 @@ object ConsumerSessionTargetRunner:
 
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
+                targetConfig = targetConfig,
                 sessionContextPool = sessionContextPool,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
-                messageFilterChain = targetConfig.messageFilterChain,
-                coloringRuleChain = targetConfig.coloringRuleChain,
-                valueProjectionList = targetConfig.valueProjectionList,
                 consumerListener = listener,
                 schemasByTopic = schemasByTopic,
                 stats = ConsumerSessionTargetStats(
