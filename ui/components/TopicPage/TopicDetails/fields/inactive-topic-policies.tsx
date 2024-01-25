@@ -13,7 +13,7 @@ import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { swrKeys } from "../../../swrKeys";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'inactiveTopicPolicies';
@@ -183,25 +183,29 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   />
                 </div>
 
-                <strong className={sf.FormLabel}>Delete mode</strong>
-                <div className={sf.FormItem}>
-                  <Select<InactiveTopicDeleteMode>
-                    list={[
-                      { type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' },
-                      { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }
-                    ]}
-                    onChange={(v) => onChange({ ...value, inactiveTopicDeleteMode: v })}
-                    value={value.inactiveTopicDeleteMode}
-                  />
-                </div>
+                {value.deleteWhileInactive && (
+                  <>
+                    <strong className={sf.FormLabel}>Delete mode</strong>
+                    <div className={sf.FormItem}>
+                      <Select<InactiveTopicDeleteMode>
+                        list={[
+                          { type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' },
+                          { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }
+                        ]}
+                        onChange={(v) => onChange({ ...value, inactiveTopicDeleteMode: v })}
+                        value={value.inactiveTopicDeleteMode}
+                      />
+                    </div>
 
-                <strong className={sf.FormLabel}>Max inactive duration</strong>
-                <div className={sf.FormItem}>
-                  <DurationInput
-                    initialValue={value.maxInactiveDurationSeconds}
-                    onChange={(v) => onChange({ ...value, maxInactiveDurationSeconds: v })}
-                  />
-                </div>
+                    <strong className={sf.FormLabel}>Max inactive duration</strong>
+                    <div className={sf.FormItem}>
+                      <DurationInput
+                        initialValue={value.maxInactiveDurationSeconds}
+                        onChange={(v) => onChange({ ...value, maxInactiveDurationSeconds: v })}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </>

@@ -35,6 +35,7 @@ import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import { PartitioningWithActivePartitions } from '../TopicPage';
 import NothingToShow from '../../ui/NothingToShow/NothingToShow';
 import TopicCompactionEditor from './fields/TopicCompactionEditor/TopicCompactionEditor';
+import CreateMissedPartitionsButton from '../Overview/CreateMissedPartitionsButton/CreateMissedPartitionsButton';
 
 export type TopicDetailsProps = {
   tenant: string;
@@ -83,7 +84,10 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
       <NothingToShow
         content={(
           <div style={{ textAlign: 'center' }}>
-            The topic is partitioned, but no active partitions found. In this case topic policies can't be loaded.
+            <div style={{ marginBottom: '12rem'}}>
+              The topic is partitioned, but no active partitions found. In this case topic policies can't be loaded.
+            </div>
+            <CreateMissedPartitionsButton topicFqn={`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`} />
           </div>
         )}
       />
