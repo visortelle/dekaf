@@ -12,7 +12,7 @@ export function genMessageDescriptor(
     rawValue: textEncoder.encode(faker.datatype.json()),
     debugStdout: faker.datatype.string(),
     eventTime: faker.date.past().getTime(),
-    index: faker.datatype.number(),
+    displayIndex: faker.datatype.number(),
     isReplicated: faker.datatype.boolean(),
     key: faker.git.shortSha(),
     messageId: textEncoder.encode(faker.datatype.json()),
@@ -34,6 +34,8 @@ export function genMessageDescriptor(
     sessionTargetMessageFilterChainTestResult: undefined,
     sessionTargetValueProjectionListResult: [],
     sessionValueProjectionListResult: [],
+    numMessageProcessed: 0,
+    numMessageSent: 0,
     ...override,
   };
 }
@@ -49,7 +51,7 @@ export function genEmptyMessageDescriptor(
     brokerPublishTime: 0,
     debugStdout: "",
     eventTime: 0,
-    index: 0,
+    displayIndex: 0,
     isReplicated: false,
     key: null,
     messageId: Uint8Array.from([]),
@@ -69,6 +71,8 @@ export function genEmptyMessageDescriptor(
     sessionTargetMessageFilterChainTestResult: undefined,
     sessionTargetValueProjectionListResult: [],
     sessionValueProjectionListResult: [],
+    numMessageProcessed: 0,
+    numMessageSent: 0,
     ...override,
   };
 }

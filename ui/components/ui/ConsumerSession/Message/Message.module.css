@@ -14,7 +14,7 @@
   white-space: nowrap;
 }
 
-tr:has(> .Td:hover) .Td {
+tr:has(> .Td:hover:not(.SelectedTd)) .Td {
   background-color: var(--surface-color) !important;
   color: var(--text-color) !important;
 }

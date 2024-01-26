@@ -50,7 +50,9 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
   const sessionTargetMessageFilterChainTestResultPb = message.getSessionTargetMessageFilterChainTestResult();
 
   return {
-    index: -1, // This value will be set in another place.
+    displayIndex: -1, // This value will be set in another place.
+    numMessageProcessed: message.getNumMessageProcessed(),
+    numMessageSent: message.getNumMessageSent(),
     messageId: message.getMessageId()?.getValue_asU8() ?? null,
     rawValue: message.getRawValue()?.getValue_asU8() ?? null,
     value: message.getValue()?.getValue() ?? null,
@@ -127,7 +129,7 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
   }
 
   return {
-    index: message.index,
+    index: message.displayIndex,
     messageId,
     rawValue,
     value,
@@ -741,8 +743,6 @@ export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): Consum
 
 export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget {
   const targetPb = new pb.ConsumerSessionTarget();
-
-  console.log('t', v, targetPb)
 
   targetPb.setIsEnabled(v.isEnabled);
   targetPb.setConsumptionMode(consumerSessionTargetConsumptionModeToPb(v.consumptionMode));

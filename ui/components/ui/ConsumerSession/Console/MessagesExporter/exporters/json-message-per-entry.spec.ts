@@ -22,7 +22,7 @@ describe("genFile", () => {
             rawValue: null,
             debugStdout: "hello\nworld",
             eventTime: 123,
-            index: 5,
+            displayIndex: 5,
             isReplicated: true,
             messageId: Uint8Array.from([1, 2, 3]),
             orderingKey: Uint8Array.from([1, 2, 3]),
@@ -44,7 +44,7 @@ describe("genFile", () => {
             rawValue: Uint8Array.from([1, 2, 3]),
             debugStdout: "hello\nworld",
             eventTime: 123,
-            index: 10,
+            displayIndex: 10,
             isReplicated: true,
             messageId: Uint8Array.from([1, 2, 3]),
             orderingKey: Uint8Array.from([1, 2, 3]),
@@ -158,7 +158,7 @@ describe("genFile", () => {
 describe("genFiles", () => {
   it("generates .json files", async () => {
     const messageValue = JSON.stringify(Array.from({ length: 1024 * 10 }).map((_, i) => i));
-    const messages = Array.from({ length: 1024 * 100 }).map((_, i) => genMessageDescriptor({ index: i, value: messageValue }));
+    const messages = Array.from({ length: 1024 * 100 }).map((_, i) => genMessageDescriptor({ displayIndex: i, value: messageValue }));
 
     const config: ExportConfig = genExportConfig();
 

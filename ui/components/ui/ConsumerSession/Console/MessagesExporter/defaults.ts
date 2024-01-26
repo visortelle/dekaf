@@ -2,7 +2,7 @@ import { ExportConfig, MessageFieldsConfig } from "./types";
 
 export const defaultFieldsConfig: MessageFieldsConfig = {
   fields: [
-    { id: "index", name: "Index", isActive: true },
+    { id: "displayIndex", name: "Index", isActive: true },
     { id: "publishTime", name: "Publish Time", isActive: true },
     { id: "value", name: "Value", isActive: true },
     { id: "eventTime", name: "Event Time", isActive: true },

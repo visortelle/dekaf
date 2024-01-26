@@ -88,8 +88,8 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
               list={[
                 { type: 'item', title: 'message value', value: 'BasicMessageFilterValueTarget' },
                 { type: 'item', title: 'message key', value: 'BasicMessageFilterKeyTarget' },
-                { type: 'item', title: 'message property', value: 'BasicMessageFilterPropertyTarget' },
-                { type: 'item', title: 'state', value: 'BasicMessageFilterSessionContextStateTarget' }
+                // { type: 'item', title: 'message property', value: 'BasicMessageFilterPropertyTarget' },
+                // { type: 'item', title: 'state', value: 'BasicMessageFilterSessionContextStateTarget' }
               ]}
               value={target.type}
               onChange={v => {

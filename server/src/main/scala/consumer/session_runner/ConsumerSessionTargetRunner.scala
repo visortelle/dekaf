@@ -36,14 +36,16 @@ case class ConsumerSessionTargetRunner(
             stats: ConsumerSessionTargetStats,
             errors: Vector[String]
         ) => Unit,
-        isDebug: Boolean
+        isDebug: Boolean,
+        incrementNumMessageProcessed: () => Unit
     ): Unit =
         val listener = consumerListener
         val targetMessageHandler = listener.targetMessageHandler
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             boundary:
-                stats.messagesProcessed += 1
+                stats.messageProcessed += 1
+                incrementNumMessageProcessed()
 
                 val sessionContext = sessionContextPool.getNextContext
                 val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
@@ -69,7 +71,7 @@ case class ConsumerSessionTargetRunner(
 
                 val coloringRuleChainResult: Vector[ChainTestResult] = if targetConfig.coloringRuleChain.isEnabled then
                     targetConfig.coloringRuleChain.coloringRules
-                        .filter(cr => cr.isEnabled)
+                        .filter(_.isEnabled)
                         .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
                 else
                     Vector.empty
@@ -168,7 +170,7 @@ object ConsumerSessionTargetRunner:
                 consumerListener = listener,
                 schemasByTopic = schemasByTopic,
                 stats = ConsumerSessionTargetStats(
-                    messagesProcessed = 0
+                    messageProcessed = 0
                 )
             )
         } match {

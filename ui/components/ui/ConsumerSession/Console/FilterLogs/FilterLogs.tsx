@@ -120,7 +120,7 @@ const LogLine: React.FC<LogLineProps> = (props) => {
 
   return (
     <div className={s.LogLine}>
-      <div className={s.LogLineMessageIndex}>{props.isShowMessageIndex ? props.message.index : ''}</div>
+      <div className={s.LogLineMessageIndex}>{props.isShowMessageIndex ? props.message.displayIndex : ''}</div>
       <div className={s.LogLineLevel} style={{ color }}>{props.logLevel === 'UNKNOWN' ? '' : props.logLevel}</div>
       <pre className={s.LogLineLogMessage} style={{ color }}>
         <Highlighter

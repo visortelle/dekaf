@@ -15,12 +15,12 @@ describe("genFile", () => {
     props: {
       chunk: {
         messages: [
-          genMessageDescriptor({ value: null, index: 10 }),
+          genMessageDescriptor({ value: null, displayIndex: 10 }),
           genMessageDescriptor({
             value: JSON.stringify({ a: 2, b: { c: 4 } }),
-            index: 11,
+            displayIndex: 11,
           }),
-          genMessageDescriptor({ value: JSON.stringify(null), index: 15 }),
+          genMessageDescriptor({ value: JSON.stringify(null), displayIndex: 15 }),
         ],
       },
       config: genExportConfig({
@@ -46,7 +46,7 @@ describe("genFile", () => {
 describe("genFiles", () => {
   it("generates .json files", async () => {
     const messageValue = JSON.stringify(Array.from({ length: 1024 * 10 }).map((_, i) => i));
-    const messages = Array.from({ length: 1024 * 100 }).map((_, i) => genMessageDescriptor({ index: i, value: messageValue }));
+    const messages = Array.from({ length: 1024 * 100 }).map((_, i) => genMessageDescriptor({ displayIndex: i, value: messageValue }));
 
     const config: ExportConfig = genExportConfig();
 

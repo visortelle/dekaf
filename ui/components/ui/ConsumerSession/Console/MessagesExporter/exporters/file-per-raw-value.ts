@@ -10,7 +10,7 @@ export function genFiles(props: GenFilesProps): File[] {
   return props.messages
     .filter((msg) => msg.rawValue !== null)
     .map((msg) => ({
-      name: `${msg.index}${
+      name: `${msg.displayIndex}${
         props.config.filePerRawValueConfig.fileExtension === "" ? "" : `.${props.config.filePerRawValueConfig.fileExtension}`
       }`,
       content: new Blob([msg.rawValue || new Uint8Array(0)], {

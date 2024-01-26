@@ -39,6 +39,21 @@
   margin: 12rem;
 }
 
+.Content {
+  display: grid;
+  grid-template-columns: 1fr 600rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.MessageDetails {
+  overflow: auto;
+  border-left: 1px solid var(--border-color);
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+}
+
 .TableSpinner {
   position: absolute;
   top: 0;
@@ -55,6 +70,6 @@
 }
 
 .Virtuoso {
-  overscroll-behavior-x: contain;
   /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
 }

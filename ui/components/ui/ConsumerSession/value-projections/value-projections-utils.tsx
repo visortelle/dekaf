@@ -86,7 +86,8 @@ export type GetValueProjectionTdsProps = {
   coloring: Coloring,
   sessionConfig: ConsumerSessionConfig,
   message: MessageDescriptor,
-  valueProjectionThs: ValueProjectionTh[]
+  valueProjectionThs: ValueProjectionTh[],
+  isSelected: boolean
 };
 
 export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactElement[] {
@@ -162,6 +163,7 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
         key={`projection-${i}`}
         width={`${props.valueProjectionThs[i].widthPx}px`}
         coloring={props.coloring}
+        isSelected={props.isSelected}
       >
         {displayValue}
       </Td>

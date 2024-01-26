@@ -48,7 +48,7 @@ export const sortMessages = (
   }
 
   if (sort.key === "index") {
-    const sortFn: SortFn = (a, b) => a.index - b.index;
+    const sortFn: SortFn = (a, b) => a.displayIndex - b.displayIndex;
     return s(messages, [], sortFn);
   }
 

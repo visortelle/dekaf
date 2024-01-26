@@ -8,7 +8,7 @@ describe("genFiles", () => {
   it("test1", async () => {
     const messageRawValue = Uint8Array.from(Array.from({ length: 1024 * 100 }).map((_, i) => i));
 
-    const messages = Array.from({ length: 10 }).map((_, i) => genMessageDescriptor({ index: i, rawValue: messageRawValue }));
+    const messages = Array.from({ length: 10 }).map((_, i) => genMessageDescriptor({ displayIndex: i, rawValue: messageRawValue }));
 
     const config: ExportConfig = genExportConfig();
 
@@ -28,9 +28,9 @@ describe("genFiles", () => {
 
   it("test2", async () => {
     const messages = [
-      genMessageDescriptor({ rawValue: Uint8Array.from([0, 1, 2, 3]), index: 1 }),
-      genMessageDescriptor({ rawValue: null, index: 2 }),
-      genMessageDescriptor({ rawValue: Uint8Array.from([4, 5, 6, 7]), index: 3 }),
+      genMessageDescriptor({ rawValue: Uint8Array.from([0, 1, 2, 3]), displayIndex: 1 }),
+      genMessageDescriptor({ rawValue: null, displayIndex: 2 }),
+      genMessageDescriptor({ rawValue: Uint8Array.from([4, 5, 6, 7]), displayIndex: 3 }),
     ];
 
     const config: ExportConfig = genExportConfig();
@@ -49,7 +49,7 @@ describe("genFiles", () => {
   });
 
   it("all files have extension provided by user", async () => {
-    const messages = Array.from({ length: 10 }).map((_, i) => genMessageDescriptor({ index: i }));
+    const messages = Array.from({ length: 10 }).map((_, i) => genMessageDescriptor({ displayIndex: i }));
 
     const config1 = genExportConfig({ filePerRawValueConfig: { fileExtension: "foo" } });
     const files1 = genFiles({ messages, config: config1 });

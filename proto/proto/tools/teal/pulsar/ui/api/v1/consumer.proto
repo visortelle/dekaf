@@ -30,6 +30,9 @@ message Message {
   // Not a part of Pulsar message.
   google.protobuf.StringValue session_context_state_json = 50;
 
+  int64 num_message_processed = 59;
+  int64 num_message_sent = 60;
+
   // Evaluated message filter code can produce logs or errors.
   // We need to store them in the message to be able to show them in the UI.
   // Both, stdout and stderr are stored in the same field.
@@ -511,7 +514,6 @@ message ConsumerStats {}
 message ResumeResponse {
   google.rpc.Status status = 1;
   repeated Message messages = 2;
-  int64 processed_messages = 3;
   ConsumerStats consumer_stats = 4;
 }
 

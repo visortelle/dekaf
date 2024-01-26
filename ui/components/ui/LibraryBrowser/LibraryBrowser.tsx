@@ -219,6 +219,70 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const isHideSearchResults = (props.mode.type === "save" && (props.mode.appearance === "create" || props.mode.appearance === "edit"));
 
+  const pickItem = () => {
+    if (props.mode.type !== 'pick') return;
+    if (props.mode.onPick === undefined) return;
+    if (selectedItemId === undefined) return;
+
+    props.mode.onPick(selectedItem!.spec);
+  }
+
+  const saveItem = () => {
+    const save = async () => {
+      if (props.mode.type !== 'save') return;
+      if (selectedItemId === undefined) return;
+      if (itemToSaveMetadata === undefined) return;
+      if (itemToSave === undefined) return;
+
+      const libraryItemMetadata: LibraryItemMetadata = {
+        ...selectedItem!.metadata,
+        availableForContexts: searchEditorValue.resourceMatchers,
+        updatedAt: new Date().toISOString()
+      };
+
+      const managedItem: ManagedItem = {
+        ...itemToSave.spec,
+        metadata: itemToSaveMetadata
+      };
+
+      await saveLibraryItem({
+        metadata: libraryItemMetadata,
+        spec: managedItem
+      });
+
+      modals.pop();
+    }
+
+    if (props.mode.type !== 'save') {
+      return;
+    }
+
+    if (isOverwriteExistingItem) {
+      modals.push({
+        id: 'save-library-item',
+        title: 'Save Library Item',
+        content: (
+          <ConfirmationDialog
+            content={(
+              <div>
+                Are you sure you want to overwrite this library item?
+                <br />
+                It will affect all other items where the item you are going to override is used by reference.
+              </div>
+            )}
+            onCancel={modals.pop}
+            onConfirm={save}
+            type='danger'
+          />
+        ),
+        styleMode: 'no-content-padding'
+      });
+      return;
+    }
+
+    save();
+  }
+
   return (
     <div className={s.LibraryBrowser}>
       <div
@@ -260,6 +324,14 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                 selectedItemId={selectedItemId}
                 onSelect={(itemId) => {
                   setSelectedItemId(itemId);
+                }}
+                onSelectAndConfirm={itemId => {
+                  setSelectedItemId(itemId);
+
+                  switch (props.mode.type) {
+                    case 'pick': pickItem(); break;
+                    case 'save': saveItem(); break;
+                  }
                 }}
                 onDeleted={() => {
                   setSelectedItemId(undefined);
@@ -304,13 +376,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         {props.mode.type === 'pick' && props.mode.onPick !== undefined && (
           <Button
             disabled={!selectedItemId}
-            onClick={() => {
-              if (props.mode.type !== 'pick') return;
-              if (props.mode.onPick === undefined) return;
-              if (selectedItemId === undefined) return;
-
-              props.mode.onPick(selectedItem!.spec)
-            }}
+            onClick={pickItem}
             type='primary'
             text='Select'
           />
@@ -318,61 +384,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         {props.mode.type === 'save' && (
           <Button
             disabled={!selectedItemId || !selectedItem?.spec.metadata.name}
-            onClick={() => {
-              const save = async () => {
-                if (props.mode.type !== 'save') return;
-                if (selectedItemId === undefined) return;
-                if (itemToSaveMetadata === undefined) return;
-                if (itemToSave === undefined) return;
-
-                const libraryItemMetadata: LibraryItemMetadata = {
-                  ...selectedItem!.metadata,
-                  availableForContexts: searchEditorValue.resourceMatchers,
-                  updatedAt: new Date().toISOString()
-                };
-
-                const managedItem: ManagedItem = {
-                  ...itemToSave.spec,
-                  metadata: itemToSaveMetadata
-                };
-
-                await saveLibraryItem({
-                  metadata: libraryItemMetadata,
-                  spec: managedItem
-                });
-
-                modals.pop();
-              }
-
-              if (props.mode.type !== 'save') {
-                return;
-              }
-
-              if (isOverwriteExistingItem) {
-                modals.push({
-                  id: 'save-library-item',
-                  title: 'Save Library Item',
-                  content: (
-                    <ConfirmationDialog
-                      content={(
-                        <div>
-                          Are you sure you want to overwrite this library item?
-                          <br />
-                          It will affect all other items where the item you are going to override is used by reference.
-                        </div>
-                      )}
-                      onCancel={modals.pop}
-                      onConfirm={save}
-                      type='danger'
-                    />
-                  ),
-                  styleMode: 'no-content-padding'
-                });
-                return;
-              }
-
-              save();
-            }}
+            onClick={saveItem}
             type={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'primary' : 'danger'}
             text={(() => {
               if (props.mode.appearance === 'create') {

@@ -16,7 +16,7 @@
   opacity: 0.5;
 }
 
-.SvgIcon {
+.SvgIcon svg {
   width: 16rem;
   height: 16rem;
 }

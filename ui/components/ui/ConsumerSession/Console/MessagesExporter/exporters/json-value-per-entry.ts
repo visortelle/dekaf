@@ -25,13 +25,13 @@ export function genFile(props: GenFileProps): File {
       name = "-.json";
       break;
     default: {
-      const firstMessageIndex = props.chunk.messages[0].index;
-      const lastMessageIndex = props.chunk.messages[props.chunk.messages.length - 1].index;
+      const firstMessageIndex = props.chunk.messages[0].displayIndex;
+      const lastMessageIndex = props.chunk.messages[props.chunk.messages.length - 1].displayIndex;
       const isUseFileNameFallback = firstMessageIndex === undefined || lastMessageIndex === undefined;
 
       name = isUseFileNameFallback
         ? props.fileNameFallback
-        : `${props.chunk.messages[0].index}-${props.chunk.messages[props.chunk.messages.length - 1].index}.json`;
+        : `${props.chunk.messages[0].displayIndex}-${props.chunk.messages[props.chunk.messages.length - 1].displayIndex}.json`;
     }
     break;
   }

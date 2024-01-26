@@ -17,6 +17,7 @@ export type SearchResultsProps = {
   items: LibraryItem[];
   selectedItemId?: string;
   onSelect: (id: string) => void;
+  onSelectAndConfirm: (id: string) => void;
   onDeleted: () => void;
   extraLabels: Record<string, ExtraLabel>;
   itemsToKeepAtTop: string[];
@@ -95,6 +96,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
                     updatedAt={item.metadata.updatedAt}
                     onClick={() => props.onSelect(id)}
+                    onDoubleClick={() => props.onSelectAndConfirm(id)}
                     selectedItemId={props.selectedItemId}
                     extraLabel={props.extraLabels[id]}
                     onDeleted={props.onDeleted}
@@ -115,6 +117,7 @@ export type ItemProps = {
   descriptionMarkdown: string;
   updatedAt: string;
   onClick: () => void;
+  onDoubleClick: () => void;
   onDeleted: () => void;
   selectedItemId?: string;
   extraLabel?: ExtraLabel;
@@ -125,7 +128,7 @@ const Item: React.FC<ItemProps> = (props) => {
   const i18n = I18n.useContext();
 
   return (
-    <div className={className} onClick={props.onClick}>
+    <div className={className} onClick={props.onClick} onDoubleClick={props.onDoubleClick}>
       <div className={s.ItemName}>
         {props.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>

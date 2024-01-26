@@ -37,6 +37,7 @@ import { getValueProjectionThs } from './value-projections/value-projections-uti
 import { Th } from './Th';
 import { ProductCode } from '../../app/licensing/ProductCode';
 import PremiumTitle from './PremiumTitle';
+import MessageDetails from './Message/MessageDetails/MessageDetails';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
 const productPlanMessagesLimit = 100 as const;
@@ -77,6 +78,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
+  const [selectedMessages, setSelectedMessages] = useState<number[]>([]); // stringified message ids
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
   const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
@@ -117,7 +119,7 @@ const Session: React.FC<SessionProps> = (props) => {
         .slice(-displayMessagesLimit);
 
       newMessages.forEach((message, i) => {
-        message.index = (i + 1);
+        message.displayIndex = (i + 1);
       });
 
       messagesBuffer.current = [];
@@ -133,7 +135,7 @@ const Session: React.FC<SessionProps> = (props) => {
       messagesBuffer.current.push(newMessages[i]);
     }
 
-    messagesProcessed.current = res.getProcessedMessages();
+    messagesProcessed.current = newMessages[newMessages.length - 1].getNumMessageProcessed()
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`${res.getStatus()?.getMessage()}`);
@@ -329,18 +331,26 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     const coloring = getColoring(config, message);
-
     return (
       <MessageComponent
         key={i}
         message={message}
         sessionConfig={config}
         isShowTooltips={isShowTooltips}
+        sessionState={sessionState}
+        selectedMessages={selectedMessages}
         coloring={coloring}
         valueProjectionThs={valueProjectionThs}
+        onClick={() => {
+          if (sessionState !== 'paused') {
+            setSessionState('pausing');
+          }
+
+          setSelectedMessages([message.numMessageProcessed]);
+        }}
       />
     );
-  }, [sessionState, config]);
+  }, [sessionState, config, selectedMessages]);
 
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
@@ -379,177 +389,187 @@ const Session: React.FC<SessionProps> = (props) => {
         </div>
       )}
       {currentView === 'messages' && messages.length > 0 && (
-        <div
-          className={cts.Table}
-          style={{ position: 'relative' }}
-          ref={tableRef}
-          onWheel={onWheel}
-        >
-          {sessionState === 'pausing' && (
-            <div className={s.TableSpinner}>
-              <div className={s.TableSpinnerContent}>Pausing session...</div>
+        <div className={s.Content}>
+          <div
+            className={`${cts.Table} ${s.Table}`}
+            style={{ position: 'relative' }}
+            ref={tableRef}
+            onWheel={onWheel}
+          >
+            {sessionState === 'pausing' && (
+              <div className={s.TableSpinner}>
+                <div className={s.TableSpinnerContent}>Pausing session...</div>
+              </div>
+            )}
+            <TableVirtuoso
+              className={s.Virtuoso}
+              ref={virtuosoRef}
+              data={sortedMessages}
+              totalCount={sortedMessages.length}
+              itemContent={itemContent}
+              followOutput={sessionState === 'running'}
+              fixedHeaderContent={() => (
+                <tr>
+                  <Th
+                    key="index"
+                    title="#"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="index"
+                    style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                    help={(
+                      <>
+                        <p>
+                          When consuming from multiple topics or a single partitioned topic, the order of messages cannot be assured.
+                        </p>
+                        <p>
+                          The order of numbers in in this column represents the order in which messages were received by the consumer.
+                        </p>
+                      </>
+                    )}
+                  />
+                  <Th
+                    key="publishTime"
+                    title="Publish time"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="publishTime"
+                    style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }}
+                    help={help.publishTime}
+                  />
+                  <Th
+                    key="key"
+                    title="Key"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="key"
+                    help={help.key}
+                  />
+
+                  {valueProjectionThs.map(vp => vp.th)}
+
+                  <Th
+                    key="value"
+                    title="Value"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="value"
+                    help={help.value}
+                  />
+                  <Th
+                    key="target"
+                    title="Target"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="sessionTargetIndex"
+                    help={help.sessionTargetIndex}
+                  />
+                  <Th
+                    key="topic"
+                    title="Topic"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="topic"
+                    help={help.topic}
+                  />
+                  <Th
+                    key="producer"
+                    title="Producer"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="producerName"
+                    help={help.producerName}
+                  />
+                  <Th
+                    key="schemaVersion"
+                    title="Schema version"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="schemaVersion"
+                    help={help.schemaVersion}
+                  />
+                  <Th
+                    key="size"
+                    title="Size"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="size"
+                    help={help.size}
+                  />
+                  <Th
+                    key="properties"
+                    title="Properties"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="properties"
+                    help={help.propertiesMap}
+                  />
+                  <Th
+                    key="eventTime"
+                    title="Event time"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="eventTime"
+                    help={help.eventTime}
+                  />
+                  <Th
+                    key="brokerPublishTime"
+                    title="Broker pub. time"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="brokerPublishTime"
+                    help={help.brokerPublishTime}
+                  />
+                  <Th
+                    key="messageId"
+                    title="Message Id"
+                    sort={sort}
+                    setSort={setSort}
+                    help={help.messageId}
+                  />
+                  <Th
+                    key="sequenceId"
+                    title="Sequence Id"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="sequenceId"
+                    help={help.sequenceId}
+                  />
+                  <Th
+                    key="orderingKey"
+                    title="Ordering key"
+                    sort={sort}
+                    setSort={setSort}
+                    help={help.orderingKey}
+                  />
+                  <Th
+                    key="redeliveryCount"
+                    title="Redelivery count"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="redeliveryCount"
+                    help={help.redeliveryCount}
+                  />
+                  <Th
+                    key="sessionContextState"
+                    title="Session Context State"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="sessionContextStateJson"
+                    help={help.sessionContextStateJson}
+                  />
+                </tr>
+              )}
+            />
+          </div>
+
+          {selectedMessages?.length === 1 && (
+            <div className={s.MessageDetails}>
+              <MessageDetails
+                message={messages.find(msg => msg.numMessageProcessed === selectedMessages[0])!}
+              />
             </div>
           )}
-          <TableVirtuoso
-            className={s.Virtuoso}
-            ref={virtuosoRef}
-            data={sortedMessages}
-            totalCount={sortedMessages.length}
-            itemContent={itemContent}
-            followOutput={sessionState === 'running'}
-            fixedHeaderContent={() => (
-              <tr>
-                <Th
-                  key="index"
-                  title="#"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="index"
-                  style={{ position: 'sticky', left: 0, zIndex: 10 }}
-                  help={(
-                    <>
-                      <p>
-                        When consuming from multiple topics or a single partitioned topic, the order of messages cannot be assured.
-                      </p>
-                      <p>
-                        The order of numbers in in this column represents the order in which messages were received by the consumer.
-                      </p>
-                    </>
-                  )}
-                />
-                <Th
-                  key="publishTime"
-                  title="Publish time"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="publishTime"
-                  style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }}
-                  help={help.publishTime}
-                />
-                <Th
-                  key="key"
-                  title="Key"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="key"
-                  help={help.key}
-                />
-
-                {valueProjectionThs.map(vp => vp.th)}
-
-                <Th
-                  key="value"
-                  title="Value"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="value"
-                  help={help.value}
-                />
-                <Th
-                  key="target"
-                  title="Target"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="sessionTargetIndex"
-                  help={help.sessionTargetIndex}
-                />
-                <Th
-                  key="topic"
-                  title="Topic"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="topic"
-                  help={help.topic}
-                />
-                <Th
-                  key="producer"
-                  title="Producer"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="producerName"
-                  help={help.producerName}
-                />
-                <Th
-                  key="schemaVersion"
-                  title="Schema version"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="schemaVersion"
-                  help={help.schemaVersion}
-                />
-                <Th
-                  key="size"
-                  title="Size"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="size"
-                  help={help.size}
-                />
-                <Th
-                  key="properties"
-                  title="Properties"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="properties"
-                  help={help.propertiesMap}
-                />
-                <Th
-                  key="eventTime"
-                  title="Event time"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="eventTime"
-                  help={help.eventTime}
-                />
-                <Th
-                  key="brokerPublishTime"
-                  title="Broker pub. time"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="brokerPublishTime"
-                  help={help.brokerPublishTime}
-                />
-                <Th
-                  key="messageId"
-                  title="Message Id"
-                  sort={sort}
-                  setSort={setSort}
-                  help={help.messageId}
-                />
-                <Th
-                  key="sequenceId"
-                  title="Sequence Id"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="sequenceId"
-                  help={help.sequenceId}
-                />
-                <Th
-                  key="orderingKey"
-                  title="Ordering key"
-                  sort={sort}
-                  setSort={setSort}
-                  help={help.orderingKey}
-                />
-                <Th
-                  key="redeliveryCount"
-                  title="Redelivery count"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="redeliveryCount"
-                  help={help.redeliveryCount}
-                />
-                <Th
-                  key="sessionContextState"
-                  title="Session Context State"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="sessionContextStateJson"
-                  help={help.sessionContextStateJson}
-                />
-              </tr>
-            )}
-          />
         </div>
       )}
 

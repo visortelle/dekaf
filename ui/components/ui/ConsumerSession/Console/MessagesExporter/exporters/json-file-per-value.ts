@@ -10,7 +10,7 @@ export function genFiles(props: GenFilesProps): File[] {
   return props.messages
     .filter((msg) => msg.value !== null && msg.value !== undefined)
     .map((msg) => ({
-      name: `${msg.index}.json`,
+      name: `${msg.displayIndex}.json`,
       content: new Blob([msg.value!], {
         type: "application/json",
       }),

@@ -21,8 +21,12 @@ case class ConsumerSessionRunner(
     sessionContextPool: ConsumerSessionContextPool,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
-    var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner]
+    var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
+    var numMessageProcessed: Long = 0,
+    var numMessageSent: Long = 0
 ) {
+    def incrementNumMessageProcessed(): Unit = numMessageProcessed = numMessageProcessed + 1
+
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
         isDebug: Boolean
@@ -44,7 +48,6 @@ case class ConsumerSessionRunner(
 
                 val response = consumerPb.ResumeResponse(
                     messages = messages,
-                    processedMessages = 0,
                     status = Some(status)
                 )
                 grpcResponseObserver.onNext(response)
@@ -65,11 +68,7 @@ case class ConsumerSessionRunner(
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules
                             .filter(_.isEnabled)
-                            .map(cr =>
-                                sessionContext.testMessageFilterChain(
-                                    cr.messageFilterChain
-                                )
-                            )
+                            .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
                     else
                         Vector.empty
 
@@ -86,16 +85,24 @@ case class ConsumerSessionRunner(
                         messageFilterChainErrors ++ coloringRuleChainErrors
                     else Vector.empty
 
+                    numMessageSent = numMessageSent + 1
+
                     val messageToSendPb = msg.messagePb
                         .withSessionContextStateJson(sessionContext.getState)
                         .withDebugStdout(msg._1.debugStdout.getOrElse("") + "\n" + sessionContext.getStdout)
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
                         .withSessionValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
+                        .withNumMessageSent(numMessageSent)
+                        .withNumMessageProcessed(numMessageProcessed)
 
                     createAndSendResponse(Seq(messageToSendPb), errors)
 
-        targets.values.foreach(_.resume(onNext = onNext, isDebug = isDebug))
+        targets.values.foreach(_.resume(
+            onNext = onNext,
+            isDebug = isDebug,
+            incrementNumMessageProcessed = incrementNumMessageProcessed
+        ))
     def pause(): Unit =
         targets.values.foreach(_.pause())
     def stop(): Unit =

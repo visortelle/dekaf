@@ -119,7 +119,9 @@ export type MessageDescriptor = {
   rawValue: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
   sessionContextStateJson: Nullable<string>; // JSON string
-  index: number;
+  displayIndex: number;
+  numMessageProcessed: number;
+  numMessageSent: number;
   debugStdout: Nullable<string>;
 
   sessionTargetIndex: Nullable<number>,

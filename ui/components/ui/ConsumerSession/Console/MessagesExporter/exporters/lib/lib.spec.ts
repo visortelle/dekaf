@@ -82,14 +82,14 @@ describe("splitMessagesToChunks", () => {
         genMessageDescriptor({
           value: oneMbString,
           rawValue: Uint8Array.from([]),
-          index: 1, // Message index starts from 1, as user sees it on UI.
+          displayIndex: 1, // Message index starts from 1, as user sees it on UI.
         }),
       ],
       maxBytesPerChunk: 1024 * 4,
       expectedChunksCount: 1,
     },
     {
-      messages: [genEmptyMessageDescriptor({ index: 1 }), genEmptyMessageDescriptor({ index: 2 })],
+      messages: [genEmptyMessageDescriptor({ displayIndex: 1 }), genEmptyMessageDescriptor({ displayIndex: 2 })],
       maxBytesPerChunk: 1024,
       expectedChunksCount: 1,
     },
@@ -98,12 +98,12 @@ describe("splitMessagesToChunks", () => {
         genMessageDescriptor({
           value: oneMbString,
           rawValue: Uint8Array.from([]),
-          index: 1, // Message index starts from 1, as user sees it on UI.
+          displayIndex: 1, // Message index starts from 1, as user sees it on UI.
         }),
         genMessageDescriptor({
           value: oneMbString,
           rawValue: Uint8Array.from([]),
-          index: 1, // Message index starts from 1, as user sees it on UI.
+          displayIndex: 1, // Message index starts from 1, as user sees it on UI.
         }),
       ],
       maxBytesPerChunk: 1024,
@@ -124,7 +124,7 @@ describe("splitMessagesToChunks", () => {
         genMessageDescriptor({
           value: oneMbString,
           rawValue: Uint8Array.from([]),
-          index: i + 1, // Message index starts from 1, as user sees it on UI.
+          displayIndex: i + 1, // Message index starts from 1, as user sees it on UI.
         }),
       ),
       maxBytesPerChunk: 16 * bytesInMb,

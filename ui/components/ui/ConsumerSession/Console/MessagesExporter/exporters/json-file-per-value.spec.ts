@@ -7,7 +7,7 @@ import { genFiles } from "./json-file-per-value";
 describe("genFiles", () => {
   it("generates .json files", async () => {
     const messageValue = JSON.stringify(Array.from({ length: 1024 * 10 }).map((_, i) => i));
-    const messages = Array.from({ length: 100 }).map((_, i) => genMessageDescriptor({ index: i, value: messageValue }));
+    const messages = Array.from({ length: 100 }).map((_, i) => genMessageDescriptor({ displayIndex: i, value: messageValue }));
 
     const config: ExportConfig = genExportConfig();
 
@@ -22,15 +22,15 @@ describe("genFiles", () => {
       const fileContent = await file.content.text();
 
       expect(fileContent).toEqual(message.value);
-      expect(file.name).toEqual(`${message.index}.json`);
+      expect(file.name).toEqual(`${message.displayIndex}.json`);
     }
   });
 
   it("drops messages with no value", async () => {
     const messages: MessageDescriptor[] = [
-      genMessageDescriptor({ value: `""`, index: 1 }),
-      genMessageDescriptor({ value: null, index: 2 }),
-      genMessageDescriptor({ value: `"foo"`, index: 3 }),
+      genMessageDescriptor({ value: `""`, displayIndex: 1 }),
+      genMessageDescriptor({ value: null, displayIndex: 2 }),
+      genMessageDescriptor({ value: `"foo"`, displayIndex: 3 }),
     ];
 
     const config: ExportConfig = genExportConfig();
