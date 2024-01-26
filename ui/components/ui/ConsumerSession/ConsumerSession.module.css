@@ -41,17 +41,27 @@
 
 .Content {
   display: grid;
-  grid-template-columns: 1fr 600rem;
+  grid-template-columns: 1fr min-content;
   flex: 1;
   overflow: hidden;
 }
 
 .MessageDetails {
-  overflow: auto;
+  position: relative;
+  overflow: hidden;
+  display: flex;
   border-left: 1px solid var(--border-color);
+  width: 600rem;
 
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-x: contain;
+}
+
+.CloseMessageDetails {
+  position: absolute;
+  top: 5rem;
+  right: 12rem;
+  z-index: 10;
 }
 
 .TableSpinner {

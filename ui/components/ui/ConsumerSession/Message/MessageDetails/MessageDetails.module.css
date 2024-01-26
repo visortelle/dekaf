@@ -1,5 +1,9 @@
 .MessageDetails {
   display: flex;
+  overflow: hidden;
+  flex: 1;
+
+  margin-top: -1px;
 }
 
 .LeftColumn {
@@ -18,4 +22,8 @@
 
 .FieldTitle {
   font-weight: var(--font-weight-bold);
+}
+
+.TabContent {
+  padding: 24rem;
 }

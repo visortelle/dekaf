@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, useState } from 'react';
 import s from './MessageDetails.module.css'
 import { MessageDescriptor } from '../../types';
 import JsonView from '../../../JsonView/JsonView';
@@ -6,49 +6,90 @@ import { SessionContextStateJsonField, BrokerPublishTimeField, EventTimeField, K
 import { renderToStaticMarkup } from 'react-dom/server';
 import { tooltipId } from '../../../Tooltip/Tooltip';
 import { help } from '../fields';
+import Tabs from '../../../Tabs/Tabs';
+import NoData from '../../../NoData/NoData';
 
 export type MessageDetailsProps = {
   message: MessageDescriptor;
 };
 
+type TabKey = 'value' | 'metadata' | 'properties';
+
 const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
+  const [activeTab, setActiveTab] = useState<TabKey>('value');
+
+  const keyField = <Field title={'Key'} value={<KeyField isShowTooltips={true} message={props.message} />} help={help.key} />
+
+  const propertiesCount = Object.keys(props.message.properties).length;
+  const propertiesFieldTitle = <span style={{ display: 'inline-flex', gap: '1ch' }}>Properties {propertiesCount === 0 ? <NoData /> : <strong>{propertiesCount}</strong>}</span>;
+
   return (
     <div className={s.MessageDetails}>
-      <div className={s.LeftColumn}>
-        <Field title={'Publish time'} value={<PublishTimeField isShowTooltips={true} message={props.message} />} help={help.publishTime} />
-        <Field title={'Key'} value={<KeyField isShowTooltips={true} message={props.message} />} help={help.key} />
-        <Field title={'Topic'} value={<TopicField isShowTooltips={true} message={props.message} />} help={help.topic} />
-        <Field title={'Producer'} value={<ProducerNameField isShowTooltips={true} message={props.message} />} help={help.producerName} />
-        <Field title={'Schema version'} value={<SchemaVersionField isShowTooltips={true} message={props.message} />} help={help.schemaVersion} />
-        <Field title={'Size'} value={<SizeField isShowTooltips={true} message={props.message} />} help={help.size} />
-        <Field title={'Properties'} value={<PropertiesField isShowTooltips={true} message={props.message} />} help={help.propertiesMap} />
-        <Field title={'Event time'} value={<EventTimeField isShowTooltips={true} message={props.message} />} help={help.eventTime} />
-        <Field title={'Broker pub. time'} value={<BrokerPublishTimeField isShowTooltips={true} message={props.message} />} help={help.brokerPublishTime} />
-        <Field title={'Message Id'} value={<MessageIdField isShowTooltips={true} message={props.message} />} help={help.messageId} />
-        <Field title={'Sequence Id'} value={<SequenceIdField isShowTooltips={true} message={props.message} />} help={help.sequenceId} />
-        <Field title={'Ordering key'} value={<OrderingKeyField isShowTooltips={true} message={props.message} />} help={help.orderingKey} />
-        <Field title={'Redelivery count'} value={<RedeliveryCountField isShowTooltips={true} message={props.message} />} help={help.redeliveryCount} />
-        <Field title={'Session Context State Json'} value={<SessionContextStateJsonField isShowTooltips={true} message={props.message} />} help={help.sessionContextStateJson} />
-      </div>
-      <div className={s.RightColumn}>
-        <Field
-          title='Value'
-          value={(
-            <JsonView
-              json={props.message.value === null ? undefined : props.message.value}
-              width="480rem"
-              height="480rem"
-            />
-          )}
-          help={help.value}
-        />
-      </div>
+      <Tabs<TabKey>
+        activeTab={activeTab}
+        onActiveTabChange={setActiveTab}
+        tabs={{
+          value: {
+            title: 'Value',
+            render: () => {
+              return (
+                <div className={s.TabContent}>
+                  {keyField}
+                  <Field
+                    title='Value'
+                    value={(
+                      <JsonView
+                        json={props.message.value === null ? undefined : props.message.value}
+                        width="480rem"
+                        height="480rem"
+                      />
+                    )}
+                    help={help.value}
+                  />
+                </div>
+              );
+            }
+          },
+          metadata: {
+            title: 'Metadata',
+            render: () => {
+              return (
+                <div className={s.TabContent}>
+                  {keyField}
+                  <Field title={'Publish time'} value={<PublishTimeField isShowTooltips={true} message={props.message} />} help={help.publishTime} />
+                  <Field title={'Topic'} value={<TopicField isShowTooltips={true} message={props.message} />} help={help.topic} />
+                  <Field title={'Producer'} value={<ProducerNameField isShowTooltips={true} message={props.message} />} help={help.producerName} />
+                  <Field title={'Schema version'} value={<SchemaVersionField isShowTooltips={true} message={props.message} />} help={help.schemaVersion} />
+                  <Field title={'Size'} value={<SizeField isShowTooltips={true} message={props.message} />} help={help.size} />
+                  <Field title={'Event time'} value={<EventTimeField isShowTooltips={true} message={props.message} />} help={help.eventTime} />
+                  <Field title={'Broker pub. time'} value={<BrokerPublishTimeField isShowTooltips={true} message={props.message} />} help={help.brokerPublishTime} />
+                  <Field title={'Message Id'} value={<MessageIdField isShowTooltips={true} message={props.message} />} help={help.messageId} />
+                  <Field title={'Sequence Id'} value={<SequenceIdField isShowTooltips={true} message={props.message} />} help={help.sequenceId} />
+                  <Field title={'Ordering key'} value={<OrderingKeyField isShowTooltips={true} message={props.message} />} help={help.orderingKey} />
+                  <Field title={'Redelivery count'} value={<RedeliveryCountField isShowTooltips={true} message={props.message} />} help={help.redeliveryCount} />
+                  <Field title={'Session Context State Json'} value={<SessionContextStateJsonField isShowTooltips={true} message={props.message} />} help={help.sessionContextStateJson} />
+                </div>
+              );
+            }
+          },
+          properties: {
+            title: propertiesFieldTitle,
+            render: () => {
+              return (
+                <div className={s.TabContent}>
+                  <Field title="Properties" value={<PropertiesField isShowTooltips={true} message={props.message} />} help={help.propertiesMap} />
+                </div>
+              );
+            }
+          }
+        }}
+      />
     </div>
   );
 }
 
 type FieldProps = {
-  title: string;
+  title: ReactElement | string;
   value: ReactNode;
   help: ReactElement;
 }

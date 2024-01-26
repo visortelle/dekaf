@@ -38,6 +38,7 @@ import { Th } from './Th';
 import { ProductCode } from '../../app/licensing/ProductCode';
 import PremiumTitle from './PremiumTitle';
 import MessageDetails from './Message/MessageDetails/MessageDetails';
+import ActionButton from '../ActionButton/ActionButton';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
 const productPlanMessagesLimit = 100 as const;
@@ -565,6 +566,15 @@ const Session: React.FC<SessionProps> = (props) => {
 
           {selectedMessages?.length === 1 && (
             <div className={s.MessageDetails}>
+              <div className={s.CloseMessageDetails}>
+                <ActionButton
+                  onClick={() => setSelectedMessages([])}
+                  title="Close Message Details"
+                  action={{ type: 'predefined', action: 'close' }}
+                  buttonProps={{ appearance: 'borderless-semitransparent' }}
+                />
+              </div>
+
               <MessageDetails
                 message={messages.find(msg => msg.numMessageProcessed === selectedMessages[0])!}
               />
