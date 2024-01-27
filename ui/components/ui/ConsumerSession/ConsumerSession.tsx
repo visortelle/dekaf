@@ -21,7 +21,7 @@ import { createDeadline } from '../../../proto-utils/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
-import Toolbar from './Toolbar';
+import Toolbar from './Toolbar/Toolbar';
 import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
@@ -366,7 +366,10 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [messages, sort, sessionState]);
 
   return (
-    <div className={s.ConsumerSession}>
+    <div
+      className={s.ConsumerSession}
+      style={{ gridTemplateRows: props.isShowConsole ? 'min-content 1fr 400rem' : 'min-content 1fr 0'}}
+    >
       <Toolbar
         config={config}
         sessionState={sessionState}

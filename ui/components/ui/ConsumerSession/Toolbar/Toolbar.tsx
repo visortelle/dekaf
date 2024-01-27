@@ -4,11 +4,11 @@ import pauseIcon from './icons/pause.svg';
 import resumeIcon from './icons/resume.svg';
 import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
-import * as I18n from '../../app/contexts/I18n/I18n';
-import { SessionState, ConsumerSessionConfig } from './types';
-import SmallButton from '../SmallButton/SmallButton';
-import Input from '../Input/Input';
-import PremiumTitle from './PremiumTitle';
+import * as I18n from '../../../app/contexts/I18n/I18n';
+import { SessionState, ConsumerSessionConfig } from '../types';
+import SmallButton from '../../SmallButton/SmallButton';
+import Input from '../../Input/Input';
+import PremiumTitle from '../PremiumTitle';
 
 export type ToolbarProps = {
   sessionState: SessionState;

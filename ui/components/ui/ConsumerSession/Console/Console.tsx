@@ -4,12 +4,11 @@ import Producer from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
 import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, ConsumerSessionConfig, SessionState } from '../types';
-import EnteringFromBottomDiv from '../../animations/EnteringFromBottomDiv';
 import Tabs from '../../Tabs/Tabs';
 
 import s from './Console.module.css'
-import DebugLogs from './FilterLogs/FilterLogs';
-import ExpressionInspector from './FilterRepl/FilterRepl';
+import DebugLogs from './ContextLogs/ContextLogs';
+import ExpressionInspector from './ContextRepl/ContextRepl';
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -34,15 +33,10 @@ const Console: React.FC<ConsoleProps> = (props) => {
   }
 
   return (
-    <EnteringFromBottomDiv
-      className={`${s.Console} ${props.isShow ? s.VisibleConsole : ''}`}
-      isVisible={props.isShow}
-      motionKey='consumer-console'
-    >
+    <div className={`${s.Console} ${props.isShow ? s.VisibleConsole : ''}`}>
       <Tabs<TabKey>
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}
-        onClose={props.onClose}
         tabs={{
           'producer': {
             title: 'Produce',
@@ -56,7 +50,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
                 <Producer
                   preset={{
                     topic: props.currentTopic,
-                    key: props.sessionKey.toString()
+                    key: ''
                   }}
                 />
               )
@@ -108,7 +102,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
           }
         }}
       />
-    </EnteringFromBottomDiv>
+    </div>
   );
 }
 

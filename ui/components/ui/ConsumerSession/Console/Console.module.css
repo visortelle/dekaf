@@ -3,12 +3,7 @@
   flex-direction: column;
   background-color: #fff;
   overflow: auto;
-  margin-top: auto;
-}
-
-.VisibleConsole {
   border-top: 4px solid var(--border-color);
-  height: 480rem;
 }
 
 .SubscriptionsCursors {

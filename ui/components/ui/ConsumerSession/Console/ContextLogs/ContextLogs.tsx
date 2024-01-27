@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { MessageDescriptor, SessionState } from '../../types';
-import s from './FilterLogs.module.css'
+import s from './ContextLogs.module.css'
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import Highlighter from 'react-highlight-words';
 import { useDebounce } from 'use-debounce';
@@ -28,7 +28,11 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
     }
   }, [props.sessionState]);
 
-  let messagesWithLogs = props.messages.filter(message => message.debugStdout !== null && message.debugStdout.length > 0)
+  let messagesWithLogs = props.messages.filter(message =>
+    message.debugStdout !== null &&
+    message.debugStdout.length > 0 &&
+    message.debugStdout !== '\n'
+  );
 
   if (props.sessionState === 'running') {
     messagesWithLogs = messagesWithLogs.slice(-displayLogEntriesRealTimeLimit);
@@ -39,7 +43,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
   }
 
   return (
-    <div className={s.DebugLogs}>
+    <div className={s.ContextLogs}>
        <div className={s.Logs} ref={scrollParentRef}>
         <Virtuoso<MessageDescriptor>
           ref={virtuosoRef}
