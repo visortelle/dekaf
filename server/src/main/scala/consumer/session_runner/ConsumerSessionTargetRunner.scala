@@ -124,9 +124,11 @@ case class ConsumerSessionTargetRunner(
 
     def stop(): Unit =
         consumers.foreach((_, consumer) =>
-            Try(consumer.unsubscribe()) match
+            Try {
+                consumer.unsubscribe()
+            } match
                 case Success(_)   => ()
-                case Failure(err) => println(s"Failed to unsubscribe consumer. ${err.getMessage}")
+                case Failure(err) => println(s"Failed to stop consumer session target. ${err.getMessage}")
         )
 }
 

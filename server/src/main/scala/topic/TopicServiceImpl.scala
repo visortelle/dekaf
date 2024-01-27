@@ -13,7 +13,23 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.topic.v1.topic.{CreateMissedPartitionsRequest, CreateMissedPartitionsResponse, GetCompactionStatusRequest, GetCompactionStatusResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties, TriggerCompactionRequest, TriggerCompactionResponse, UpdatePartitionedTopicRequest, UpdatePartitionedTopicResponse}
+import com.tools.teal.pulsar.ui.topic.v1.topic.{
+    CreateMissedPartitionsRequest,
+    CreateMissedPartitionsResponse,
+    DeleteSubscriptionRequest,
+    DeleteSubscriptionResponse,
+    GetCompactionStatusRequest,
+    GetCompactionStatusResponse,
+    GetTopicPropertiesRequest,
+    GetTopicPropertiesResponse,
+    SetTopicPropertiesRequest,
+    SetTopicPropertiesResponse,
+    TopicProperties,
+    TriggerCompactionRequest,
+    TriggerCompactionResponse,
+    UpdatePartitionedTopicRequest,
+    UpdatePartitionedTopicResponse
+}
 
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
@@ -239,7 +255,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
             val keysDiff = oldProperties.keys.toSet.diff(newProperties.keys.toSet)
             val propertiesToRemove = keysDiff.intersect(oldProperties.keys.toSet)
-            
+
             propertiesToRemove.foreach(key => adminClient.topics.removeProperties(request.topic, key))
 
             adminClient.topics.updateProperties(request.topic, request.topicProperties.asJava)
@@ -318,3 +334,14 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             case Success(_) =>
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(pb.TriggerCompactionResponse(status = Some(status)))
+
+    override def deleteSubscription(request: DeleteSubscriptionRequest): Future[DeleteSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(adminClient.topics.deleteSubscription(request.topicFqn, request.subscriptionName, request.isForce)) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.DeleteSubscriptionResponse(status = Some(status)))
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.DeleteSubscriptionResponse(status = Some(status)))

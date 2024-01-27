@@ -8,6 +8,8 @@ import { tooltipId } from '../../../Tooltip/Tooltip';
 import { help } from '../fields';
 import Tabs from '../../../Tabs/Tabs';
 import NoData from '../../../NoData/NoData';
+import KeyValueEditor, { recordToIndexedKv } from '../../../KeyValueEditor/KeyValueEditor';
+import FormLabel from '../../../ConfigurationTable/FormLabel/FormLabel';
 
 export type MessageDetailsProps = {
   message: MessageDescriptor;
@@ -77,7 +79,18 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
             render: () => {
               return (
                 <div className={s.TabContent}>
-                  <Field title="Properties" value={<PropertiesField isShowTooltips={true} message={props.message} />} help={help.propertiesMap} />
+                  <FormLabel
+                    content="Properties"
+                    help={help.propertiesMap}
+                  />
+                  <div>
+                    <KeyValueEditor
+                      value={recordToIndexedKv(props.message.properties)}
+                      onChange={() => { }}
+                      mode='readonly'
+                      height='480rem'
+                    />
+                  </div>
                 </div>
               );
             }

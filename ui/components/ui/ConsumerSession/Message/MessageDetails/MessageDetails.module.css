@@ -22,6 +22,7 @@
 
 .FieldTitle {
   font-weight: var(--font-weight-bold);
+  display: inline-flex;
 }
 
 .TabContent {

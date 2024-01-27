@@ -62,17 +62,17 @@ const Console: React.FC<ConsoleProps> = (props) => {
               )
             }
           },
-          'visualize': {
-            title: 'Visualize',
-            isRenderAlways: true,
-            render: () => (
-              <Visualization
-                messages={props.messages}
-                isVisible={activeTab === 'visualize'}
-                sessionState={props.sessionState}
-              />
-            )
-          },
+          // 'visualize': {
+          //   title: 'Visualize',
+          //   isRenderAlways: true,
+          //   render: () => (
+          //     <Visualization
+          //       messages={props.messages}
+          //       isVisible={activeTab === 'visualize'}
+          //       sessionState={props.sessionState}
+          //     />
+          //   )
+          // },
           'context-repl': {
             title: 'Context REPL',
             isRenderAlways: true,
