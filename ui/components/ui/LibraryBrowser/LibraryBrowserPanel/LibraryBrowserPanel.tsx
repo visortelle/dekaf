@@ -111,6 +111,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           </div>
         )}
         <LibraryBrowserPickButton
+          key={refreshKey}
           itemType={props.itemType}
           onPick={(v) => {
             props.onPick(v);
