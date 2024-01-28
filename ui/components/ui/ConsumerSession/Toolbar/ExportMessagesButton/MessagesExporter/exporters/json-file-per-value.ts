@@ -1,4 +1,4 @@
-import { MessageDescriptor } from "../../../types";
+import { MessageDescriptor } from "../../../../types";
 import { ExportConfig } from "../types";
 import { saveZipFile, File } from "./lib/files";
 

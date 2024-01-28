@@ -1,4 +1,4 @@
-import { MessageDescriptor } from "../../types";
+import { MessageDescriptor } from "../../../types";
 
 export type MessageField = {
   id: keyof MessageDescriptor;

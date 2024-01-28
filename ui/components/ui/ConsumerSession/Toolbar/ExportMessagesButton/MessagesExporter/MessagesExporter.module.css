@@ -1,17 +1,11 @@
 .MessagesExporter {
-  display: flex;
-  flex: 1;
+  display: grid;
+  grid-template-columns: 320rem 240rem;
   overflow: auto;
   padding: 24rem;
   gap: 24rem;
   position: relative;
-}
-
-.ResetSettingsButton {
-  top: 24rem;
-  right: 24rem;
-  position: absolute;
-  z-index: 10;
+  height: 600rem;
 }
 
 .MessageFieldsConfig {

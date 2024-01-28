@@ -5,14 +5,16 @@ import resumeIcon from './icons/resume.svg';
 import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import { SessionState, ConsumerSessionConfig } from '../types';
+import { SessionState, ConsumerSessionConfig, MessageDescriptor } from '../types';
 import SmallButton from '../../SmallButton/SmallButton';
 import Input from '../../Input/Input';
 import PremiumTitle from '../PremiumTitle';
+import ExportMessagesButton from './ExportMessagesButton/ExportMessagesButton';
 
 export type ToolbarProps = {
   sessionState: SessionState;
   config: ConsumerSessionConfig | undefined;
+  messages: MessageDescriptor[];
   onSessionStateChange: (state: SessionState) => void;
   onStopSession: () => void;
   messagesLoaded: number;
@@ -111,8 +113,15 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <span className={s.MessagesLoadedStatTitle}>&nbsp; max messages shown</span>
           </div>
         </div>
+
+        <div>
+          <ExportMessagesButton
+            messages={props.messages}
+            sessionState={props.sessionState}
+          />
+        </div>
       </div>
-    </div >
+    </div>
   );
 }
 

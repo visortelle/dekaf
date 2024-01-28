@@ -44,7 +44,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
 
   return (
     <div className={s.ContextLogs}>
-       <div className={s.Logs} ref={scrollParentRef}>
+      <div className={s.Logs} ref={scrollParentRef}>
         <Virtuoso<MessageDescriptor>
           ref={virtuosoRef}
           itemContent={(i, message) => {
@@ -64,14 +64,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
           components={{
             EmptyPlaceholder: () => <div className={s.NoDataToShow} style={{ width: 'calc(100% - 24rem)' }}>
               Message filters errors and console output will be shown here.<br /><br />
-              Use the following functions to log messages:<br />
-              <ul className={s.NoDataToShowFunctions}>
-                <li className={s.NoDataToShowFunction}><code>log(a)</code></li>
-                <li className={s.NoDataToShowFunction}><code>logInfo(a)</code></li>
-                <li className={s.NoDataToShowFunction}><code>logWarn(a)</code></li>
-                <li className={s.NoDataToShowFunction}><code>logError(a)</code></li>
-                <li className={s.NoDataToShowFunction}>Use <code>logDebug(a)</code> to print the argument(s) as JSON.</li>
-              </ul>
+              <p>Use <code>logDebug(a)</code> to print the argument(s) as JSON.</p>
             </div>
           }}
           totalCount={messagesWithLogs.length}

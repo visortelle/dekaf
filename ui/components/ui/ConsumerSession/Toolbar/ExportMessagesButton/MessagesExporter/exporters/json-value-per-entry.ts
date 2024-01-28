@@ -1,4 +1,4 @@
-import { MessageDescriptor } from "../../../types";
+import { MessageDescriptor } from "../../../../types";
 import { ExportConfig } from "../types";
 import { encodeBigArrayAsJsonBytes, splitMessagesToChunks, MessagesChunk } from "./lib/lib";
 import { saveZipFile, File } from "./lib/files";

@@ -9,16 +9,6 @@
   text-align: left;
 }
 
-.NoDataToShowFunctions {
-  text-align: left;
-  max-width: 60ch;
-}
-
-.NoDataToShowFunction {
-  margin-bottom: 8rem;
-  list-style: disc;
-}
-
 .SearchQueryInput {
   flex: 1;
   max-width: 480rem;

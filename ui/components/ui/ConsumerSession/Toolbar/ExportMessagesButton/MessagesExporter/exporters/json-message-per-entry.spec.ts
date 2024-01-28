@@ -1,5 +1,5 @@
-import { genMessageDescriptor } from "../../../testing";
-import { MessageDescriptor } from "../../../types";
+import { genMessageDescriptor } from "../../../../testing";
+import { MessageDescriptor } from "../../../../types";
 import { genExportConfig, genMessageFieldsConfig } from "../testing";
 import { ExportConfig } from "../types";
 import { genFile, genFiles, GenFileProps } from "./json-message-per-entry";

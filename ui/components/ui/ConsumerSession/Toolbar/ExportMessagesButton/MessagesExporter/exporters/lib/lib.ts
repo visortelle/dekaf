@@ -1,4 +1,4 @@
-import { MessageDescriptor, PartialMessageDescriptor } from "../../../../types";
+import { MessageDescriptor, PartialMessageDescriptor } from "../../../../../types";
 import { MessageFieldsConfig } from "../../types";
 import sizeof from "object-sizeof";
 

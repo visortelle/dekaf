@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { findIndex } from 'lodash';
 // import SvgIcon from '../../../../../ui/SvgIcon/SvgIcon';
 // import dragIcon from './drag.svg';
-import Checkbox from '../../../../Checkbox/Checkbox';
+import Checkbox from '../../../../../Checkbox/Checkbox';
 
 export type MessageFieldsConfigProps = {
   value: MessageFieldsConfig,

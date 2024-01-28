@@ -373,6 +373,7 @@ const Session: React.FC<SessionProps> = (props) => {
       <Toolbar
         config={config}
         sessionState={sessionState}
+        messages={messages}
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}

@@ -1,6 +1,6 @@
-import { genEmptyMessageDescriptor, genMessageDescriptor } from "../../../../testing";
+import { genEmptyMessageDescriptor, genMessageDescriptor } from "../../../../../testing";
 import { genMessageFieldsConfig } from "../../testing";
-import { MessageDescriptor, PartialMessageDescriptor } from "../../../../types";
+import { MessageDescriptor, PartialMessageDescriptor } from "../../../../../types";
 import { MessageFieldsConfig } from "../../types";
 import { takeMessageFields, splitMessagesToChunks, encodeBigArrayAsJsonBytes } from "./lib";
 import sizeof from "object-sizeof";

@@ -1,8 +1,6 @@
 import React from 'react';
 
 import Producer from './Producer/Producer';
-import Visualization from './Visualization/Visualization';
-import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, ConsumerSessionConfig, SessionState } from '../types';
 import Tabs from '../../Tabs/Tabs';
 
@@ -26,7 +24,7 @@ export type ConsoleProps = {
 type TabKey = 'producer' | 'visualize' | 'context-logs' | 'context-repl' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabKey>('export');
+  const [activeTab, setActiveTab] = React.useState<TabKey>('producer');
 
   if (props.sessionConfig === undefined) {
     return null;
@@ -86,17 +84,6 @@ const Console: React.FC<ConsoleProps> = (props) => {
                 messages={props.messages}
                 sessionState={props.sessionState}
                 isVisible={activeTab === 'context-logs'}
-              />
-            )
-          },
-          'export': {
-            title: 'Export',
-            isRenderAlways: true,
-            render: () => (
-              <MessagesExporter
-                messages={props.messages}
-                sessionState={props.sessionState}
-                isVisible={activeTab === 'export'}
               />
             )
           }
