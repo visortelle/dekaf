@@ -1,10 +1,8 @@
 import React from 'react';
 import s from './LibraryBrowserButtons.module.css'
 import LibraryBrowserSaveButton from './LibraryBrowserSaveButton/LibraryBrowserSaveButton';
-import LibraryBrowserPickButton from './LibraryBrowserPickButton/LibraryBrowserPickButton';
 import { ManagedItem, ManagedItemType } from '../../model/user-managed-items';
 import { LibraryContext } from '../../model/library-context';
-import * as Modals from '../../../../app/contexts/Modals/Modals';
 import addNameIcon from './add-name.svg';
 import addDescriptionIcon from './add-description.svg';
 import SmallButton from '../../../SmallButton/SmallButton';
@@ -25,19 +23,8 @@ export type LibraryBrowserButtonsProps = {
 };
 
 const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
-  const modals = Modals.useContext();
-
   return (
     <div className={s.LibraryBrowserButtons}>
-      <LibraryBrowserPickButton
-        itemType={props.itemType}
-        onPick={(v) => {
-          props.onPick(v);
-          modals.pop();
-        }}
-        libraryContext={props.libraryContext}
-      />
-
       {!props.hiddenElements?.includes('save-button') && (
         <LibraryBrowserSaveButton
           itemToSave={props.value}

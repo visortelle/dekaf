@@ -1,25 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
 import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
-import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
-import { LibraryContext, resourceMatcherFromContext } from '../model/library-context';
+import { LibraryContext } from '../model/library-context';
 import SvgIcon from '../../SvgIcon/SvgIcon';
 import referenceIcon from './icons/reference.svg';
 import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as Modals from '../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../app/contexts/Notifications';
 import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 import { cloneDeep } from 'lodash';
 import LibraryItemName from './LibraryItemName/LibraryItemName';
 import DeleteButton from '../../DeleteButton/DeleteButton';
-import { managedItemTypeToPb } from '../model/user-managed-items-conversions-pb';
-import { resourceMatcherToPb } from '../model/resource-matchers-conversions-pb';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import LibraryBrowserPickButton from './LibraryBrowserButtons/LibraryBrowserPickButton/LibraryBrowserPickButton';
 
 export type HidableElement = 'save-button';
 
@@ -45,37 +42,9 @@ export type LibraryBrowserPanelProps = {
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
-  const { notifySuccess, notifyError } = Notifications.useContext();
-  const { libraryServiceClient } = GrpcClient.useContext();
-  const [itemCount, setItemCount] = useState<number | undefined>(undefined);
-  const [fetchItemCountKey, setFetchItemCountKey] = useState(0);
-
-  useEffect(() => {
-    async function fetchItemCount() {
-      const req = new pb.GetLibraryItemsCountRequest();
-      req.setTypesList([managedItemTypeToPb(props.itemType)]);
-
-      const resourceMatcher = resourceMatcherFromContext(props.libraryContext);
-      const resourceMatcherPb = resourceMatcherToPb(resourceMatcher);
-      req.setContextsList([resourceMatcherPb]);
-
-      const res = await libraryServiceClient.getLibraryItemsCount(req, null)
-        .catch(err => notifyError(`Unable to fetch library item count: ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to fetch library item count: ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      setItemCount(res.getItemCountPerTypeList()[0].getItemCount());
-    }
-
-    fetchItemCount();
-  }, [props.itemType, fetchItemCountKey]);
+  const modals = Modals.useContext();
+  const { notifySuccess } = Notifications.useContext();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <div className={s.LibraryBrowserPanel} ref={hoverRef}>
@@ -107,7 +76,6 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             </div>
           )}
         />
-        {(isHovered || itemCount === undefined) ? null : <strong className={s.ItemCount}>{itemCount} found</strong>}
         {props.managedItemReference && (
           <div
             className={s.ReferenceIcon}
@@ -142,15 +110,24 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <SvgIcon svg={referenceIcon} />
           </div>
         )}
+        <LibraryBrowserPickButton
+          itemType={props.itemType}
+          onPick={(v) => {
+            props.onPick(v);
+            modals.pop();
+          }}
+          libraryContext={props.libraryContext}
+        />
         {(!props.isReadOnly && (isHovered || props.isForceShowButtons)) && (
           <div className={s.Buttons}>
             <LibraryBrowserButtons
+              key={refreshKey}
               itemType={props.itemType}
               value={props.value}
               onPick={props.onPick}
               onChange={props.onChange}
               onSave={(item) => {
-                setFetchItemCountKey(v => v + 1);
+                setRefreshKey(v => v + 1);
                 props.onSave(item);
               }}
               libraryContext={props.libraryContext}

@@ -5,7 +5,7 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDeserializer, ManagedMarkdownDocument, ManagedMessageFilter, ManagedMessageFilterChain, ManagedTopicSelector } from '../model/user-managed-items';
+import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDeserializer, ManagedMarkdownDocument, ManagedMessageFilter, ManagedMessageFilterChain, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
@@ -20,6 +20,8 @@ import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 import MarkdownDocumentEditor from '../../MarkdownDocumentEditor/MarkdownDocumentEditor';
 import BasicMessageFilterTargetInput from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterEditor/BasicFilterEditor/BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
 import DeserializerInput from '../../ConsumerSession/SessionConfiguration/SessionTargetInput/DeserializerInput/DeserializerInput';
+import ValueProjectionInput from '../../ConsumerSession/value-projections/ValueProjectionListInput/ValueProjectionInput/ValueProjectionInput';
+import ValueProjectionListInput from '../../ConsumerSession/value-projections/ValueProjectionListInput/ValueProjectionListInput';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
@@ -246,6 +248,48 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
           value={{
             type: 'value',
             val: value.spec as ManagedBasicMessageFilterTarget
+          }}
+          onChange={v => {
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.val });
+          }}
+          libraryContext={props.libraryContext}
+          isReadOnly={isReadOnly}
+          libraryBrowserPanel={props.libraryBrowserPanel}
+        />
+      );
+      break;
+    }
+    case 'value-projection': {
+      descriptorEditor = (
+        <ValueProjectionInput
+          value={{
+            type: 'value',
+            val: value.spec as ManagedValueProjection
+          }}
+          onChange={v => {
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.val });
+          }}
+          libraryContext={props.libraryContext}
+          isReadOnly={isReadOnly}
+          libraryBrowserPanel={props.libraryBrowserPanel}
+        />
+      );
+      break;
+    }
+    case 'value-projection-list': {
+      descriptorEditor = (
+        <ValueProjectionListInput
+          value={{
+            type: 'value',
+            val: value.spec as ManagedValueProjectionList
           }}
           onChange={v => {
             if (v.type === 'reference') {

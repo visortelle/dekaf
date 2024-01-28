@@ -1,0 +1,25 @@
+.ItemCount {
+  background-color: var(--surface-color);
+  color: var(--accent-color-blue);
+  padding: 0 6rem;
+  border-radius: 6rem;
+  margin-left: 6rem;
+  margin-right: -4rem;
+  font-size: 12rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 20rem;
+  white-space: nowrap;
+}
+
+.ItemCount:hover {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.Icon svg {
+  width: 16rem;
+  height: 16rem;
+  fill: var(--accent-color-blue);
+}

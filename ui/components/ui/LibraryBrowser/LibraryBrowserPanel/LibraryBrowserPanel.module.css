@@ -9,19 +9,6 @@
 
 .ItemName {}
 
-.ItemCount {
-  background-color: var(--surface-color);
-  color: var(--accent-color-blue);
-  padding: 0 6rem;
-  border-radius: 6rem;
-  margin-left: 6rem;
-  font-size: 12rem;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  height: 20rem;
-}
-
 .ItemDescription {
   position: relative;
 }
