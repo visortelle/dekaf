@@ -80,12 +80,12 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
         data-tooltip-id={tooltipId}
         data-tooltip-html="Browse saved items"
       >
-        <div className={s.Icon}>
+        {/* <div className={s.Icon}>
           <SvgIcon
             svg={pickIcon}
           />
-        </div>
-        &nbsp;<strong>{itemCount}</strong>
+        </div> */}
+        <strong>{itemCount}&nbsp;found</strong>
       </span>
     );
 }

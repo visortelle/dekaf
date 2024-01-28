@@ -18,7 +18,6 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
 import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
 import { ResourceMatcher } from './model/resource-matchers';
-import RenameButton from '../RenameButton/RenameButton';
 import EditNameDialog from '../RenameButton/EditNameDialog/EditNameDialog';
 import { cloneDeep } from 'lodash';
 
@@ -69,9 +68,20 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [isNewItem, setIsNewItem] = useState(false);
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
+
+  // XXX - this is very very bad, I know. :)
+  const [saveItemRequested, setSaveItemRequested] = useState<boolean>(false);
+
   const modals = Modals.useContext();
 
   const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (saveItemRequested) {
+      saveItem();
+      setSaveItemRequested(false);
+    }
+  }, [saveItemRequested]);
 
   useEffect(() => {
     if (props.onSelectedItemIdChange !== undefined) {
@@ -205,43 +215,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     }
   };
 
-  const setNameAndSaveLibraryName = () => {
-    modals.push({
-      id: 'set-library-item-name',
-      title: `Set Library Item Name`,
-      content: (
-        <EditNameDialog
-          initialValue={itemToSave?.spec.metadata.name || ''}
-          onCancel={modals.pop}
-          onConfirm={(v) => {
-            if (itemToSave === undefined) {
-              return;
-            }
-
-            console.log('A');
-            if (searchResults.type !== 'success') {
-              return;
-            }
-
-            console.log('B');
-
-
-            const newSearchResults = cloneDeep(searchResults);
-            const itemIndex = newSearchResults.items.findIndex(it => it.spec.metadata.id === selectedItemId);
-            newSearchResults.items[itemIndex].spec.metadata.name = v;
-            setSearchResults(newSearchResults);
-
-            setTimeout(() => {
-              modals.pop();
-              saveItem();
-            }, 200);
-          }}
-        />
-      ),
-      styleMode: 'no-content-padding'
-    });
-  }
-
   let isOverwriteExistingItem = false;
   if (props.mode.type === 'save' && (props.mode.item.metadata.id !== selectedItemId)) {
     isOverwriteExistingItem = true;
@@ -249,11 +222,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const modeType = props.mode.type;
 
-  const itemToSaveMetadata: ManagedItemMetadata | undefined = (props.mode.type === 'save' && (itemToSave && selectedItemId)) ?
+  const itemToSaveMetadata: ManagedItemMetadata | undefined = (props.mode.type === 'save' && itemToSave) ?
     {
       ...itemToSave.spec.metadata,
-      id: selectedItemId,
-      name: selectedItem?.spec.metadata.name || '',
+      id: selectedItemId || itemToSave.spec.metadata.id,
+      name: selectedItem?.spec.metadata.name || itemToSave.spec.metadata.name,
     } :
     undefined;
 
@@ -321,6 +294,39 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     }
 
     save();
+  }
+
+  const setNameAndSaveLibraryName = () => {
+    modals.push({
+      id: 'set-library-item-name',
+      title: `Set Library Item Name`,
+      content: (
+        <EditNameDialog
+          initialValue={itemToSave?.spec.metadata.name || ''}
+          onCancel={modals.pop}
+          onConfirm={(v) => {
+            if (itemToSave === undefined) {
+              return;
+            }
+
+            if (searchResults.type !== 'success') {
+              return;
+            }
+
+            if (selectedItem === undefined) {
+              return;
+            }
+
+            const newItemToSave = cloneDeep(itemToSave);
+            newItemToSave.spec.metadata.name = v;
+            setItemToSave(newItemToSave);
+
+            setSaveItemRequested(true);
+          }}
+        />
+      ),
+      styleMode: 'no-content-padding'
+    });
   }
 
   return (
@@ -422,7 +428,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         {props.mode.type === 'save' && (
           <Button
             disabled={!selectedItemId}
-            onClick={itemToSave?.spec.metadata.name ? saveItem : setNameAndSaveLibraryName}
+            onClick={itemToSave?.spec.metadata.name ? () => setSaveItemRequested(true) : setNameAndSaveLibraryName}
             type={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'primary' : 'danger'}
             text={(() => {
               if (props.mode.appearance === 'create') {
