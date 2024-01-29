@@ -25,6 +25,8 @@ if (process.env.NODE_ENV === 'production') {
   sourceMapSupport.install();
 }
 
+let isDarwin = process.platform === "darwin";
+
 const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
@@ -63,8 +65,13 @@ const createWindow = async () => {
     height: 728,
     minWidth: 972,
     maxWidth: 972,
-    icon: getAssetPath('icon.png'),
+    icon: isDarwin
+      ? getAssetPath('icon512.png')
+      : getAssetPath('icon256.png'),
+    autoHideMenuBar: true,
+    maximizable: false,
     webPreferences: {
+      devTools: isDebug,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -72,6 +79,10 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+
+  mainWindow.on('maximize', () => {
+    mainWindow.unmaximize()
+  });
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
