@@ -16,7 +16,6 @@ import TopicsSelectorInput from '../../ConsumerSession/topic-selector/TopicSelec
 import SessionTargetInput from '../../ConsumerSession/SessionConfiguration/SessionTargetInput/SessionTargetInput';
 import SessionConfiguration from '../../ConsumerSession/SessionConfiguration/SessionConfiguration';
 import { LibraryBrowserPanelProps } from '../LibraryBrowserPanel/LibraryBrowserPanel';
-import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 import MarkdownDocumentEditor from '../../MarkdownDocumentEditor/MarkdownDocumentEditor';
 import BasicMessageFilterTargetInput from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterEditor/BasicFilterEditor/BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
 import DeserializerInput from '../../ConsumerSession/SessionConfiguration/SessionTargetInput/DeserializerInput/DeserializerInput';
@@ -32,6 +31,7 @@ export type LibraryItemEditorProps = {
 };
 
 const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
+  console.log('LIE PROPS', props);
   const i18n = I18n.useContext();
   const value = props.value;
   const isReadOnly = props.mode === 'viewer';
@@ -327,6 +327,8 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
       break;
     }
   }
+
+  console.log('DESCRIPTOR EDITOR', descriptorEditor);
 
   return (
     <div className={s.LibraryItemEditor}>

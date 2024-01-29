@@ -6,7 +6,6 @@ import NothingToShow from '../../NothingToShow/NothingToShow';
 import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItemButton';
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import partition from 'lodash/partition';
 
 export type ExtraLabel = {
   text: string;
@@ -19,8 +18,7 @@ export type SearchResultsProps = {
   onSelect: (id: string) => void;
   onSelectAndConfirm: (id: string) => void;
   onDeleted: () => void;
-  extraLabels: Record<string, ExtraLabel>;
-  itemsToKeepAtTop: string[];
+  newLibraryItem?: LibraryItem;
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -29,33 +27,34 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
   const [filterInputValue, setFilterInputValue] = React.useState<string>("")
   const [sort, setSort] = React.useState<Sort<SortOption>>({ sortBy: 'Name', sortDirection: 'asc' });
 
+  console.log('SEARCH RESULTS', props.items.map(it => it.spec.metadata.name).join(' ,'));
+  console.log('SELECTED ID', props.selectedItemId);
+
   const filteredItems = React.useMemo(() => {
     let result = props.items.filter((item) => {
       const { name, descriptionMarkdown, id } = item.spec.metadata;
       return name.toLowerCase().includes(filterInputValue.toLowerCase()) ||
         descriptionMarkdown.toLowerCase().includes(filterInputValue.toLowerCase()) ||
-        id.includes(filterInputValue)
-    })
+        id.includes(filterInputValue);
+    });
 
-    const [topItems, bottomItems] = partition(result, (item) => props.itemsToKeepAtTop.includes(item.spec.metadata.id));
-    let sortedTopItems = topItems;
-    let sortedBottomItems = bottomItems;
-
+    let sortedItems: LibraryItem[] = result;
     if (sort.sortBy === 'Name') {
       const sortFn = (a: LibraryItem, b: LibraryItem) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true });
-      sortedTopItems = topItems.sort(sortFn);
-      sortedBottomItems = bottomItems.sort(sortFn);
+      sortedItems = props.items.sort(sortFn);
     } else if (sort.sortBy === 'Last Modified') {
       const sortFn = (a: LibraryItem, b: LibraryItem) => a.metadata.updatedAt.localeCompare(b.metadata.updatedAt, 'en', { numeric: true });
-      sortedTopItems = topItems.sort(sortFn);
-      sortedBottomItems = bottomItems.sort(sortFn);
+      sortedItems = props.items.sort(sortFn);
     }
 
-    sortedTopItems = sort.sortDirection === 'asc' ? sortedTopItems : sortedTopItems.reverse();
-    sortedBottomItems = sort.sortDirection === 'asc' ? sortedBottomItems : sortedBottomItems.reverse();
+    sortedItems = sort.sortDirection === 'asc' ? sortedItems : sortedItems.reverse();
 
-    return sortedTopItems.concat(sortedBottomItems);
-  }, [props.items, props.itemsToKeepAtTop, filterInputValue, sort]);
+    if (props.newLibraryItem !== undefined) {
+      sortedItems = [props.newLibraryItem].concat(sortedItems);
+    }
+
+    return sortedItems;
+  }, [props.items, filterInputValue, sort]);
 
   return (
     <div className={s.SearchResults}>
@@ -98,8 +97,8 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     onClick={() => props.onSelect(id)}
                     onDoubleClick={() => props.onSelectAndConfirm(id)}
                     selectedItemId={props.selectedItemId}
-                    extraLabel={props.extraLabels[id]}
                     onDeleted={props.onDeleted}
+                    isNewItem={item.spec.metadata.id === props.newLibraryItem?.spec.metadata.id}
                   />
                 )
               })}
@@ -120,7 +119,7 @@ export type ItemProps = {
   onDoubleClick: () => void;
   onDeleted: () => void;
   selectedItemId?: string;
-  extraLabel?: ExtraLabel;
+  isNewItem?: boolean
 };
 
 const Item: React.FC<ItemProps> = (props) => {
@@ -135,9 +134,9 @@ const Item: React.FC<ItemProps> = (props) => {
       <div className={s.ItemUpdatedAt}>
         Updated at:<br />{i18n.formatDateTime(new Date(props.updatedAt))}
       </div>
-      {props.extraLabel && (
-        <div className={s.ItemExtraLabel} style={{ color: props.extraLabel.color }}>
-          {props.extraLabel.text}
+      {props.isNewItem && (
+        <div className={s.ItemExtraLabel} style={{ color: 'var(--accent-color-blue)' }}>
+          New item
         </div>
       )}
       <div className={s.DeleteItemButton}>

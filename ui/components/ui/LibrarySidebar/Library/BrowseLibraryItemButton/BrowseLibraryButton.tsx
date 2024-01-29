@@ -58,7 +58,7 @@ export const BrowseLibraryButtonModal: React.FC<BrowseLibraryButtonProps> = (pro
         libraryBrowserProps: {
           mode: {
             type: 'save',
-            item: v.spec,
+            initialManagedItem: v.spec,
             onSave: () => {
               modals.pop();
             },
@@ -128,8 +128,8 @@ export const BrowseLibraryButtonModal: React.FC<BrowseLibraryButtonProps> = (pro
       }}
       onCancel={modals.pop}
       libraryContext={props.libraryContext}
-      initialResourceMatchersOverride={props.resourceMatchers}
-      onSelectedItemIdChange={setSelectedItemId}
+      resourceMatchersOverride={props.resourceMatchers}
+      onSelect={setSelectedItemId}
       extraButtons={extraButtons}
     />
   );

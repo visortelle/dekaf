@@ -46,8 +46,8 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
           const modal = mkLibraryBrowserModal({
             libraryBrowserProps: {
               mode: {
-                type: 'save',
-                item: props.itemToSave,
+                type: 'create-new-item',
+                initialManagedItem: props.itemToSave,
                 onSave: (itemId) => {
                   modals.pop();
                   props.onSave(itemId);
