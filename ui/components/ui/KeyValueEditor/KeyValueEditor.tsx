@@ -68,7 +68,7 @@ const KeyValueEditor = (props: Props) => {
       {jsonView &&
         <JsonView
           value={value}
-          onChange={onChange}
+          onChange={() => props.mode === 'edit' ? onChange : () => {}}
           changeValidity={changeValidity}
           height={props.height || 'unset'}
           width={props.width || '100%'}

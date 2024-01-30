@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import s from './LibraryBrowserPickButton.module.css'
+import s from './PickLibraryItemButton.module.css'
 import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';

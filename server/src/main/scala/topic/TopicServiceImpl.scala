@@ -250,7 +250,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
-            val oldProperties = adminClient.topics.getProperties(request.topic).asScala
+            val oldProperties = Option(adminClient.topics.getProperties(request.topic)).map(_.asScala).getOrElse(Map.empty)
             val newProperties = request.topicProperties
 
             val keysDiff = oldProperties.keys.toSet.diff(newProperties.keys.toSet)

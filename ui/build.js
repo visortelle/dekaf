@@ -28,8 +28,8 @@ require("esbuild")
     },
     minify: !isDevelopment,
     globalName: "pulsarUiEntrypoint",
-    // sourcemap: isDevelopment ? "both" : false,
-    sourcemap: false,
+    sourcemap: isDevelopment ? "both" : false,
+    // sourcemap: false,
     outdir,
     plugins: [
       cssModulesPlugin({

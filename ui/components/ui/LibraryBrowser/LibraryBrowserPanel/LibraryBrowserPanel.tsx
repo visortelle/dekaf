@@ -16,7 +16,7 @@ import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 import { cloneDeep } from 'lodash';
 import LibraryItemName from './LibraryItemName/LibraryItemName';
 import DeleteButton from '../../DeleteButton/DeleteButton';
-import LibraryBrowserPickButton from './LibraryBrowserButtons/LibraryBrowserPickButton/LibraryBrowserPickButton';
+import LibraryBrowserPickButton from './LibraryBrowserButtons/PickLibraryItemButton/PickLibraryItemButton';
 
 export type HidableElement = 'save-button';
 

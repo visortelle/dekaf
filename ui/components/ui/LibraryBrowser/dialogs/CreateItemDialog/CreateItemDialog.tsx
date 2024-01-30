@@ -10,12 +10,14 @@ import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/lib
 import { libraryItemToPb } from '../../model/library-conversions';
 import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ConfigurationTable/FormLabel/FormLabel';
 import { H3 } from '../../../H/H';
 import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import { ResourceMatcher } from '../../model/resource-matchers';
+import EditNameDialog from '../../../RenameButton/EditNameDialog/EditNameDialog';
 
 export type CreateItemDialogProps = {
   item: ManagedItem,
@@ -27,8 +29,50 @@ export type CreateItemDialogProps = {
 
 const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
+  const modals = Modals.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
   const [newLibraryItem, setNewLibraryItem] = useState<LibraryItem | undefined>(undefined);
+  const [saveItemRequested, setSaveItemRequested] = useState(false);
+
+  const saveItem = async () => {
+    if (newLibraryItem === undefined) {
+      return;
+    }
+
+    if (!newLibraryItem?.spec.metadata.name) {
+      setNameAndSaveLibraryName();
+      return;
+    }
+
+    const req = new pb.SaveLibraryItemRequest();
+    const itemPb = libraryItemToPb(newLibraryItem);
+    req.setItem(itemPb);
+
+    const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {
+      notifyError(`Unable to save library item. ${err}`);
+    });
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    notifySuccess(
+      <div>
+        Library item successfully created.
+
+        <ul>
+          <li><strong>Name:</strong> {newLibraryItem.spec.metadata.name}</li>
+          <li><strong>ID:</strong> {newLibraryItem.spec.metadata.id}</li>
+        </ul>
+      </div>
+    );
+    props.onCreated(newLibraryItem);
+  }
 
   useEffect(() => {
     const newNewLibraryItem: LibraryItem = {
@@ -42,13 +86,50 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
     setNewLibraryItem(newNewLibraryItem);
   }, [props.item, props.libraryContext]);
 
+  useEffect(() => {
+    async function doSave() {
+      await saveItem();
+      setSaveItemRequested(false);
+    }
+
+    if (saveItemRequested) {
+      doSave();
+    }
+  }, [saveItemRequested, newLibraryItem]);
+
+  const setNameAndSaveLibraryName = () => {
+    modals.push({
+      id: 'set-library-item-name',
+      title: `Set Library Item Name`,
+      content: (
+        <EditNameDialog
+          initialValue={newLibraryItem?.spec.metadata.name || ''}
+          onCancel={modals.pop}
+          onConfirm={(v) => {
+            if (newLibraryItem === undefined) {
+              return;
+            }
+
+            const newNewLibraryItem = cloneDeep(newLibraryItem);
+            newNewLibraryItem.spec.metadata.name = v;
+
+            setNewLibraryItem(newNewLibraryItem);
+            setSaveItemRequested(true);
+            modals.pop();
+          }}
+        />
+      ),
+      styleMode: 'no-content-padding'
+    });
+  }
+
   return (
     <div className={s.CreateItemDialog}>
-      <div>
+      <div className={s.Content}>
         <div className={s.AvailableForContexts}>
           <FormItem>
             <FormLabel
-              content={<H3>Available in contexts</H3>}
+              content={<H3>Available in Contexts</H3>}
               help={
                 <>
                   Pulsar resources this item is available for.
@@ -87,7 +168,7 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         </div>
       </div>
 
-      <div>
+      <div className={s.Footer}>
         <Button
           type='regular'
           text='Cancel'
@@ -95,47 +176,14 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         />
         <Button
           type='regular'
-          text='Edit'
+          text='Override existing item'
           onClick={() => { }}
         />
         <Button
           type='primary'
-          testId='Create'
+          text='Create'
           disabled={newLibraryItem === undefined}
-          onClick={async () => {
-            if (newLibraryItem === undefined) {
-              return;
-            }
-
-            const req = new pb.SaveLibraryItemRequest();
-            const itemPb = libraryItemToPb(newLibraryItem);
-            req.setItem(itemPb);
-
-            const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {
-              notifyError(`Unable to save library item. ${err}`);
-            });
-
-            if (res === undefined) {
-              return;
-            }
-
-            if (res.getStatus()?.getCode() !== Code.OK) {
-              notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`);
-              return;
-            }
-
-            notifySuccess(
-              <div>
-                Library item successfully created.
-
-                <ul>
-                  <li><strong>Name:</strong> {newLibraryItem.spec.metadata.name}</li>
-                  <li><strong>ID:</strong> {newLibraryItem.spec.metadata.id}</li>
-                </ul>
-              </div>
-            );
-            props.onCreated(newLibraryItem);
-          }}
+          onClick={saveItem}
         />
       </div>
     </div>

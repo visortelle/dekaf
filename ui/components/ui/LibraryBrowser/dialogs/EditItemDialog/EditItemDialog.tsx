@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import s from './CreateItemDialog.module.css'
+import s from './EditItemDialog.module.css'
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
 import { LibraryContext } from '../../model/library-context';

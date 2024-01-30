@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './LibraryBrowserButtons.module.css'
-import LibraryBrowserSaveButton from './LibraryBrowserSaveButton/LibraryBrowserSaveButton';
+import SaveLibraryItemButton from './SaveLibraryItemButton/SaveLibraryItemButton';
 import { ManagedItem, ManagedItemType } from '../../model/user-managed-items';
 import { LibraryContext } from '../../model/library-context';
 import addNameIcon from './add-name.svg';
@@ -26,10 +26,10 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
   return (
     <div className={s.LibraryBrowserButtons}>
       {!props.hiddenElements?.includes('save-button') && (
-        <LibraryBrowserSaveButton
-          itemToSave={props.value}
+        <SaveLibraryItemButton
+          item={props.value}
           libraryContext={props.libraryContext}
-          onSave={props.onSave}
+          onSaved={props.onSave}
         />
       )}
 
