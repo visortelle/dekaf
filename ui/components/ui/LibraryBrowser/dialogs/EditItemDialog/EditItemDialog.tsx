@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import s from './CreateItemDialog.module.css'
-import LibraryItemEditor from '../LibraryItemEditor/LibraryItemEditor';
-import { LibraryItem } from '../model/library';
-import { LibraryContext } from '../model/library-context';
+import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
+import { LibraryItem } from '../../model/library';
+import { LibraryContext } from '../../model/library-context';
 import { cloneDeep } from 'lodash';
-import Button from '../../Button/Button';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import { libraryItemFromPb, libraryItemToPb } from '../model/library-conversions';
-import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../../../app/contexts/Notifications';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import FormItem from '../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
-import { H3 } from '../../H/H';
-import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
+import Button from '../../../Button/Button';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
+import { libraryItemFromPb, libraryItemToPb } from '../../model/library-conversions';
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../../app/contexts/Notifications';
+import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../ConfigurationTable/FormLabel/FormLabel';
+import { H3 } from '../../../H/H';
+import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 
 export type EditItemDialogProps = {
   itemId: string,
@@ -60,7 +60,7 @@ const EditItemDialog: React.FC<EditItemDialogProps> = (props) => {
   }, [props.itemId]);
 
   return (
-    <div className={s.CreateItemDialog}>
+    <div className={s.EditItemDialog}>
       <div>
         <div className={s.AvailableForContexts}>
           <FormItem>

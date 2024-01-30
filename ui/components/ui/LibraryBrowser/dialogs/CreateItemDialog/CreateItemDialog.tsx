@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import s from './CreateItemDialog.module.css'
-import { ManagedItem } from '../model/user-managed-items';
-import LibraryItemEditor from '../LibraryItemEditor/LibraryItemEditor';
-import { LibraryItem } from '../model/library';
-import { LibraryContext, resourceMatcherFromContext } from '../model/library-context';
+import { ManagedItem } from '../../model/user-managed-items';
+import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
+import { LibraryItem } from '../../model/library';
+import { LibraryContext } from '../../model/library-context';
 import { cloneDeep } from 'lodash';
-import Button from '../../Button/Button';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import { libraryItemToPb } from '../model/library-conversions';
-import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../../../app/contexts/Notifications';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import FormItem from '../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
-import { H3 } from '../../H/H';
-import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
+import Button from '../../../Button/Button';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
+import { libraryItemToPb } from '../../model/library-conversions';
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../../app/contexts/Notifications';
+import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../ConfigurationTable/FormLabel/FormLabel';
+import { H3 } from '../../../H/H';
+import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
+import { ResourceMatcher } from '../../model/resource-matchers';
 
 export type CreateItemDialogProps = {
   item: ManagedItem,
+  availableForContexts: ResourceMatcher[],
   libraryContext: LibraryContext,
   onCanceled: () => void,
   onCreated: (libraryItem: LibraryItem) => void
@@ -31,7 +33,7 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
   useEffect(() => {
     const newNewLibraryItem: LibraryItem = {
       metadata: {
-        availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+        availableForContexts: props.availableForContexts,
         updatedAt: new Date().toISOString()
       },
       spec: cloneDeep(props.item)
