@@ -20,16 +20,11 @@ import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
 import { ResourceMatcher } from './model/resource-matchers';
 import EditNameDialog from '../RenameButton/EditNameDialog/EditNameDialog';
 import { cloneDeep } from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 export type LibraryBrowserMode = {
-  type: 'create-new-item';
+  type: 'save-item';
   initialManagedItem: ManagedItem;
-  onSave: (item: ManagedItem) => void;
-  appearance?: 'save' | 'create' | 'edit'
-} | {
-  type: 'override-existing-item';
-  initialManagedItem: ManagedItem;
-  overrideId: string,
   onSave: (item: ManagedItem) => void;
   appearance?: 'save' | 'create' | 'edit'
 } | {
@@ -60,7 +55,7 @@ type SearchResultsState = {
 export const newItemLabel = 'New item';
 
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
-  const itemType = (props.mode.type === 'create-new-item' || props.mode.type === 'override-existing-item') ?
+  const itemType = props.mode.type === 'save-item' ?
     props.mode.initialManagedItem.metadata.type :
     props.mode.itemType;
 
@@ -95,34 +90,38 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     if (saveItemRequested) {
       doSave();
     }
-  }, [saveItemRequested]);
+  }, [saveItemRequested, newLibraryItem]);
 
   useEffect(() => {
+    const isNewItemSelected = selectedId === newLibraryItem?.spec.metadata.id;
+    const newSelectedLibraryItem = isNewItemSelected ?
+      newLibraryItem :
+      (searchResults.type === 'success') && (searchResults.items.find((item) => item.spec.metadata.id === selectedId)) || undefined;
+
+    if (newSelectedLibraryItem !== undefined) {
+      setSelectedLibraryItem(newSelectedLibraryItem);
+    }
+
     if (props.onSelect !== undefined) {
       props.onSelect(selectedId);
     }
-  }, [selectedId]);
+  }, [selectedId, searchResults, newLibraryItem]);
 
   useEffect(() => {
-    if (props.mode.type !== 'create-new-item' && props.mode.type !== 'override-existing-item') {
-      return;
+    if (props.mode.type === 'save-item') {
+      const newNewLibraryItem: LibraryItem = {
+        metadata: {
+          availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+          updatedAt: new Date().toISOString()
+        },
+        spec: cloneDeep(props.mode.initialManagedItem)
+      };
+
+      newNewLibraryItem.spec.metadata.name = '';
+      newNewLibraryItem.spec.metadata.id = uuid();
+
+      setNewLibraryItem(newNewLibraryItem);
     }
-
-    const newNewLibraryItem: LibraryItem = {
-      metadata: {
-        availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
-        updatedAt: new Date().toISOString()
-      },
-      spec: props.mode.initialManagedItem
-    };
-
-    setNewLibraryItem(newNewLibraryItem);
-
-    const newSelectedId = props.mode.type === 'override-existing-item' ?
-      props.mode.overrideId :
-      newNewLibraryItem.spec.metadata.id;
-
-    setSelectedId(newSelectedId);
   }, [props.mode.type]);
 
   useEffect(() => {
@@ -173,7 +172,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
     const contextsList = searchValue.resourceMatchers.map(rm => resourceMatcherToPb(rm))
     req.setContextsList(contextsList);
-
     req.setTypesList([managedItemTypeToPb(searchValue.itemType)]);
 
     const res = await libraryServiceClient.listLibraryItems(req, null)
@@ -192,8 +190,18 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       return;
     }
 
-    const items = res.getItemsList().map(libraryItemFromPb);
-    setSearchResults({ type: 'success', items });
+    const foundItems = res.getItemsList().map(libraryItemFromPb);
+    setSearchResults({ type: 'success', items: foundItems });
+
+    if (selectedId === undefined && props.mode.type === 'save-item') {
+      const id = props.mode.initialManagedItem.metadata.id;
+      const isItemExists = Boolean(foundItems.find(it => it.spec.metadata.id === id));
+
+      const newSelectedId = isItemExists ? id : newLibraryItem?.spec.metadata.id;
+      if (newSelectedId !== undefined) {
+        setSelectedId(newSelectedId);
+      }
+    }
   }
 
   useEffect(() => {
@@ -218,7 +226,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       return;
     }
 
-    if (props.mode.type === 'create-new-item' || props.mode.type === 'override-existing-item') {
+    if (props.mode.type === 'save-item') {
       notifySuccess(
         <div>
           Library item successfully saved.
@@ -234,13 +242,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   };
 
   const isOverwriteExistingItem = (
-    (props.mode.type === 'create-new-item' || props.mode.type === 'override-existing-item') &&
-    (selectedId !== props.mode.initialManagedItem.metadata.id)
+    (props.mode.type === 'save-item') &&
+    (selectedId !== newLibraryItem?.spec.metadata.id)
   );
 
-  const modeType = props.mode.type;
-
-  const isHideSearchResults = ((props.mode.type === "create-new-item" || props.mode.type === 'override-existing-item') && (props.mode.appearance === "create" || props.mode.appearance === "edit"));
+  const isHideSearchResults = ((props.mode.type === "save-item") && (props.mode.appearance === "create" || props.mode.appearance === "edit"));
 
   const pickItem = () => {
     if (props.mode.type !== 'pick') return;
@@ -253,11 +259,25 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const saveItem = () => {
     const save = async () => {
-      if (props.mode.type !== 'create-new-item' && props.mode.type !== 'override-existing-item') return;
+      if (props.mode.type !== 'save-item') return;
       if (selectedId === undefined) return;
+      if (selectedLibraryItem === undefined) return;
       if (newLibraryItem === undefined) return;
 
-      await saveLibraryItem(newLibraryItem!);
+      console.log('newLibraryItemName', newLibraryItem?.spec.metadata.name);
+      console.log('selectedLibraryItemName', selectedLibraryItem?.spec.metadata.name);
+
+      console.log("FUCK", isOverwriteExistingItem);
+      const itemToSave = cloneDeep(newLibraryItem);
+      if (props.mode.type === 'save-item') {
+        if (isOverwriteExistingItem) {
+          itemToSave.metadata = cloneDeep(selectedLibraryItem.metadata);
+          itemToSave.spec.metadata = cloneDeep(props.mode.initialManagedItem.metadata);
+          itemToSave.spec.metadata.id = selectedLibraryItem.spec.metadata.id;
+        }
+      }
+
+      await saveLibraryItem(itemToSave!);
 
       modals.pop();
     }
@@ -272,7 +292,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               <div>
                 Are you sure you want to overwrite this library item?
                 <br />
-                It will affect all other items where the item you are going to override is used by reference.
+                It will affect all other items where this item is used by reference.
               </div>
             )}
             onCancel={modals.pop}
@@ -309,7 +329,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             newNewLibraryItem.spec.metadata.name = v;
 
             setNewLibraryItem(newNewLibraryItem);
-            setSaveItemRequested(true);
+            setTimeout(() => {
+              setSaveItemRequested(true);
+            }, 200); // XXX - otherwise saving existing item as a new item fails.
           }}
         />
       ),
@@ -325,7 +347,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       >
         <div className={s.SearchEditor}>
           <SearchEditor
-            mode={(props.mode.type === 'create-new-item' || props.mode.type === 'override-existing-item') ? {
+            mode={(props.mode.type === 'save-item') ? {
               type: 'edit',
               onChange: setSearchValue,
               value: searchValue
@@ -354,14 +376,13 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               <SearchResults
                 items={searchResults.type === 'success' ? searchResults.items : []}
                 selectedItemId={selectedId}
-                onSelect={setSelectedId}
-                onSelectAndConfirm={itemId => {
+                onItemClick={setSelectedId}
+                onItemDoubleClick={itemId => {
                   setSelectedId(itemId);
 
                   switch (props.mode.type) {
                     case 'pick': pickItem(); break;
-                    case 'create-new-item': saveItem(); break;
-                    case 'override-existing-item': saveItem(); break;
+                    case 'save-item': saveItem(); break;
                   }
                 }}
                 onDeleted={() => {
@@ -377,11 +398,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         <div className={s.LibraryItemEditor} ref={editorRef}>
           {selectedLibraryItem !== undefined && (
             <LibraryItemEditor
-              mode={modeType === 'pick' ? 'viewer' : 'editor'}
+              mode={'viewer'}
               value={selectedLibraryItem}
               onChange={setNewLibraryItem}
               libraryContext={props.libraryContext}
-              libraryBrowserPanel={((props.mode.type === "create-new-item" || props.mode.type === 'override-existing-item') && (props.mode.appearance === "create" || props.mode.appearance === "edit")) ? { hiddenElements: ["save-button"] } : undefined}
+              libraryBrowserPanel={(props.mode.type === "save-item" && (props.mode.appearance === "create" || props.mode.appearance === "edit")) ? { hiddenElements: ["save-button"] } : undefined}
             />
           )}
           {!selectedId && (
@@ -409,11 +430,15 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             text='Select'
           />
         )}
-        {(props.mode.type === 'create-new-item' || props.mode.type === 'override-existing-item') && (
+        {props.mode.type === 'save-item' && (
           <Button
             disabled={!selectedId}
-            onClick={newLibraryItem?.spec.metadata.name ? () => setSaveItemRequested(true) : setNameAndSaveLibraryName}
-            type={props.mode.initialManagedItem.metadata.id === selectedId ? 'primary' : 'danger'}
+            onClick={
+              (selectedId === newLibraryItem?.spec.metadata.id && !newLibraryItem?.spec.metadata.name) ?
+                setNameAndSaveLibraryName :
+                () => setSaveItemRequested(true)
+            }
+            type={((selectedId === props.mode.initialManagedItem.metadata.id) || (selectedId === newLibraryItem?.spec.metadata.id)) ? 'primary' : 'danger'}
             text={(() => {
               if (props.mode.appearance === 'create') {
                 return 'Create';
@@ -423,7 +448,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                 return 'Save';
               }
 
-              if (props.mode.type === 'create-new-item' && props.mode.initialManagedItem.metadata.id === selectedId) {
+              if (props.mode.type === 'save-item' && selectedId === newLibraryItem?.spec.metadata.id) {
                 return 'Create';
               }
 

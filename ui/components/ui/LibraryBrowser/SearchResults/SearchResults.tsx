@@ -14,10 +14,10 @@ export type ExtraLabel = {
 
 export type SearchResultsProps = {
   items: LibraryItem[];
-  selectedItemId?: string;
-  onSelect: (id: string) => void;
-  onSelectAndConfirm: (id: string) => void;
+  onItemClick: (id: string) => void;
+  onItemDoubleClick: (id: string) => void;
   onDeleted: () => void;
+  selectedItemId?: string;
   newLibraryItem?: LibraryItem;
 };
 
@@ -26,9 +26,6 @@ type SortOption = 'Name' | 'Last Modified';
 const SearchResults: React.FC<SearchResultsProps> = (props) => {
   const [filterInputValue, setFilterInputValue] = React.useState<string>("")
   const [sort, setSort] = React.useState<Sort<SortOption>>({ sortBy: 'Name', sortDirection: 'asc' });
-
-  console.log('SEARCH RESULTS', props.items.map(it => it.spec.metadata.name).join(' ,'));
-  console.log('SELECTED ID', props.selectedItemId);
 
   const filteredItems = React.useMemo(() => {
     let result = props.items.filter((item) => {
@@ -54,7 +51,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
     }
 
     return sortedItems;
-  }, [props.items, filterInputValue, sort]);
+  }, [props.items, filterInputValue, sort, props.newLibraryItem]);
 
   return (
     <div className={s.SearchResults}>
@@ -87,6 +84,8 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
             <div className={s.Items}>
               {filteredItems.map((item) => {
                 const { id, name, descriptionMarkdown } = item.spec.metadata;
+                const isNewItem = id === props.newLibraryItem?.spec.metadata.id;
+
                 return (
                   <Item
                     key={id}
@@ -94,11 +93,11 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     name={name}
                     descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
                     updatedAt={item.metadata.updatedAt}
-                    onClick={() => props.onSelect(id)}
-                    onDoubleClick={() => props.onSelectAndConfirm(id)}
+                    onClick={() => props.onItemClick(id)}
+                    onDoubleClick={() => props.onItemDoubleClick(id)}
                     selectedItemId={props.selectedItemId}
                     onDeleted={props.onDeleted}
-                    isNewItem={item.spec.metadata.id === props.newLibraryItem?.spec.metadata.id}
+                    isNewItem={isNewItem}
                   />
                 )
               })}
@@ -139,13 +138,15 @@ const Item: React.FC<ItemProps> = (props) => {
           New item
         </div>
       )}
-      <div className={s.DeleteItemButton}>
-        <DeleteLibraryItemButton
-          itemId={props.id}
-          onDeleted={props.onDeleted}
-          isDisabled={props.name.length === 0}
-        />
-      </div>
+      {!props.isNewItem && (
+        <div className={s.DeleteItemButton}>
+          <DeleteLibraryItemButton
+            itemId={props.id}
+            onDeleted={props.onDeleted}
+            isDisabled={props.name.length === 0}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,6 @@ import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../../../app/contexts/Notifications';
 import { mkLibraryBrowserModal } from '../../../modals';
-import pickIcon from './pick.svg';
 import { ManagedItem, ManagedItemType } from '../../../model/user-managed-items';
 import { LibraryContext, resourceMatcherFromContext } from '../../../model/library-context';
 import { LibraryBrowserProps } from '../../../LibraryBrowser';
@@ -13,7 +12,6 @@ import { managedItemTypeToPb } from '../../../model/user-managed-items-conversio
 import { resourceMatcherToPb } from '../../../model/resource-matchers-conversions-pb';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 import { tooltipId } from '../../../../Tooltip/Tooltip';
-import SvgIcon from '../../../../SvgIcon/SvgIcon';
 
 export type LibraryBrowserPickButtonProps = {
   itemType: ManagedItemType;

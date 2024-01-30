@@ -28,9 +28,9 @@ export type MkLibraryBrowserModalProps = {
 export const mkLibraryBrowserModal: (props: MkLibraryBrowserModalProps) => ModalStackEntry = (props) => {
   let title = 'Library Browser';
   switch (props.libraryBrowserProps.mode.type) {
-    case "save": {
+    case "save-item": {
       const titleAction = capitalize(props.libraryBrowserProps.mode.appearance || 'save');
-      title = titleAction + ' ' + getReadableItemType(props.libraryBrowserProps.mode.item.metadata.type);
+      title = titleAction + ' ' + getReadableItemType(props.libraryBrowserProps.mode.initialManagedItem.metadata.type);
       break;
     }
     case "pick": title = 'Load ' + getReadableItemType(props.libraryBrowserProps.mode.itemType); break;
@@ -40,7 +40,7 @@ export const mkLibraryBrowserModal: (props: MkLibraryBrowserModalProps) => Modal
     id: `library-browser-${uuid()}`,
     content: (
       <ModalContent
-        style={(props.libraryBrowserProps.mode.type === "save" && props.libraryBrowserProps.mode.item.metadata.type !== "consumer-session-config" && (props.libraryBrowserProps.mode.appearance === "create" || props.libraryBrowserProps.mode.appearance === "edit")) ? { width: 'unset', maxWidth: 'calc(100vw - 32rem)' } : undefined}
+        style={((props.libraryBrowserProps.mode.type === "save-item") && props.libraryBrowserProps.mode.initialManagedItem.metadata.type !== "consumer-session-config" && (props.libraryBrowserProps.mode.appearance === "create" || props.libraryBrowserProps.mode.appearance === "edit")) ? { width: 'unset', maxWidth: 'calc(100vw - 32rem)' } : undefined}
       >
         <LibraryBrowser {...props.libraryBrowserProps} />
       </ModalContent>

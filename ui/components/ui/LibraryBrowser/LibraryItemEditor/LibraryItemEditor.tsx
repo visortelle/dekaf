@@ -31,7 +31,6 @@ export type LibraryItemEditorProps = {
 };
 
 const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
-  console.log('LIE PROPS', props);
   const i18n = I18n.useContext();
   const value = props.value;
   const isReadOnly = props.mode === 'viewer';
@@ -327,8 +326,6 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
       break;
     }
   }
-
-  console.log('DESCRIPTOR EDITOR', descriptorEditor);
 
   return (
     <div className={s.LibraryItemEditor}>
