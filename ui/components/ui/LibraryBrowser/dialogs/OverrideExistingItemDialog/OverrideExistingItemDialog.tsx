@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import s from './OverrideExistingItemDialog.module.css';
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
-import { LibraryContext } from '../../model/library-context';
+import { LibraryContext, resourceMatcherFromContext } from '../../model/library-context';
 import Button from '../../../Button/Button';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { libraryItemFromPb, libraryItemToPb } from '../../model/library-conversions';
@@ -15,6 +15,7 @@ import { H3 } from '../../../H/H';
 import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import SearchResults from '../../SearchResults/SearchResults';
 import { ResourceMatcher } from '../../model/resource-matchers';
+import { cloneDeep } from 'lodash';
 
 export type OverrideExistingItemDialogProps = {
   libraryItem: LibraryItem,
@@ -31,7 +32,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(props.libraryItem.spec.metadata.id);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
-  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([]);
+  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>(props.libraryItem.metadata.availableForContexts);
 
   useEffect(() => {
     async function fetchLibraryItem() {
@@ -69,8 +70,42 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
     fetchLibraryItem();
   }, [selectedItemId]);
 
-  const overrideItem = async (itemId: string) => {
+  const overrideItem = async () => {
+    if (selectedItem === undefined) {
+      return;
+    }
 
+    const itemToSave = cloneDeep(props.libraryItem);
+    itemToSave.spec.metadata.id = selectedItem.spec.metadata.id;
+
+    const req = new pb.SaveLibraryItemRequest();
+    const itemPb = libraryItemToPb(itemToSave);
+    req.setItem(itemPb);
+
+    const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {
+      notifyError(`Unable to save library item. ${err}`);
+    });
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    notifySuccess(
+      <div>
+        Library item successfully updated.
+
+        <ul>
+          <li><strong>Name:</strong> {itemToSave.spec.metadata.name}</li>
+          <li><strong>ID:</strong> {itemToSave.spec.metadata.id}</li>
+        </ul>
+      </div>
+    );
+    props.onSaved(itemToSave);
   }
 
   return (
@@ -81,14 +116,11 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
             <FormLabel
               content={<H3>Search in contexts</H3>}
             />
-            {selectedItem !== undefined && (
-              <ResourceMatchersInput
-                value={searchInContexts}
-                onChange={setSearchInContexts}
-                libraryContext={props.libraryContext}
-                isReadOnly={true}
-              />
-            )}
+            <ResourceMatchersInput
+              value={searchInContexts}
+              onChange={setSearchInContexts}
+              libraryContext={props.libraryContext}
+            />
           </FormItem>
         </div>
 
@@ -142,40 +174,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
           type='primary'
           text='Override'
           disabled={selectedItem === undefined}
-          onClick={async () => {
-            if (selectedItem === undefined) {
-              return;
-            }
-
-            const req = new pb.SaveLibraryItemRequest();
-            const itemPb = libraryItemToPb(selectedItem);
-            req.setItem(itemPb);
-
-            const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {
-              notifyError(`Unable to save library item. ${err}`);
-            });
-
-            if (res === undefined) {
-              return;
-            }
-
-            if (res.getStatus()?.getCode() !== Code.OK) {
-              notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`);
-              return;
-            }
-
-            notifySuccess(
-              <div>
-                Library item successfully updated.
-
-                <ul>
-                  <li><strong>Name:</strong> {selectedItem.spec.metadata.name}</li>
-                  <li><strong>ID:</strong> {selectedItem.spec.metadata.id}</li>
-                </ul>
-              </div>
-            );
-            props.onSaved(selectedItem);
-          }}
+          onClick={overrideItem}
         />
       </div>
     </div>

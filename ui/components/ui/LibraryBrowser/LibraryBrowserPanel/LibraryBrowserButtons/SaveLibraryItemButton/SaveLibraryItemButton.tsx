@@ -14,6 +14,7 @@ import CreateItemDialog from '../../../dialogs/CreateItemDialog/CreateItemDialog
 import EditItemDialog from '../../../dialogs/EditItemDialog/EditItemDialog';
 import OverrideExistingItemDialog from '../../../dialogs/OverrideExistingItemDialog/OverrideExistingItemDialog';
 import { libraryItemFromPb } from '../../../model/library-conversions';
+import { LibraryItem } from '../../../model/library';
 
 export type CreateLibraryItemButtonProps = {
   item: ManagedItem,
@@ -73,8 +74,15 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
           return;
         }
 
-        const libraryItem = libraryItemFromPb(res.getItem()!);
+        const libraryItem: LibraryItem = {
+          metadata: libraryItemFromPb(res.getItem()!).metadata,
+          spec: props.item
+        };
 
+        /**~md
+         *
+         *
+         */
         modals.push({
           id: `edit-library-item`,
           title: 'Edit Library Item',
