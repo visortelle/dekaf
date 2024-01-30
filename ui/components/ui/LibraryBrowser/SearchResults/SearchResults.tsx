@@ -30,7 +30,7 @@ export type SearchResultsProps = {
   onItems: (items: LibraryItem[]) => void;
   onItemClick: (id: string) => void;
   onItemDoubleClick: (id: string) => void;
-  onDeleted: () => void;
+  onDeleted: (id: string) => void;
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -87,10 +87,10 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
     let sortedItems: LibraryItem[] = result;
     if (sort.sortBy === 'Name') {
       const sortFn = (a: LibraryItem, b: LibraryItem) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true });
-      sortedItems = props.items.sort(sortFn);
+      sortedItems = result.sort(sortFn);
     } else if (sort.sortBy === 'Last Modified') {
       const sortFn = (a: LibraryItem, b: LibraryItem) => a.metadata.updatedAt.localeCompare(b.metadata.updatedAt, 'en', { numeric: true });
-      sortedItems = props.items.sort(sortFn);
+      sortedItems = result.sort(sortFn);
     }
 
     sortedItems = sort.sortDirection === 'asc' ? sortedItems : sortedItems.reverse();
@@ -165,7 +165,7 @@ export type ItemProps = {
   updatedAt: string;
   onClick: () => void;
   onDoubleClick: () => void;
-  onDeleted: () => void;
+  onDeleted: (id: string) => void;
   selectedItemId?: string;
   isNewItem?: boolean
 };
@@ -191,7 +191,7 @@ const Item: React.FC<ItemProps> = (props) => {
         <div className={s.DeleteItemButton}>
           <DeleteLibraryItemButton
             itemId={props.id}
-            onDeleted={props.onDeleted}
+            onDeleted={() => props.onDeleted(props.id)}
             isDisabled={props.name.length === 0}
           />
         </div>

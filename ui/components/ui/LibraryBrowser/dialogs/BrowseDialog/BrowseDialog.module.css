@@ -14,6 +14,7 @@
 .SearchInContexts {
   border-right: 1px solid var(--border-color);
   padding: 12rem;
+  overflow: auto;
 }
 
 .SearchResults {

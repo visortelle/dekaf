@@ -30,6 +30,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
+  const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
   const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
   const [isCallSelectedOnFetch, setIsCallSelectedOnFetch] = useState(false);
 
@@ -63,7 +64,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
       }
 
       if (resCode === Code.OK) {
-        const fetchedItem =  libraryItemFromPb(res.getItem()!);
+        const fetchedItem = libraryItemFromPb(res.getItem()!);
         setSelectedItem(fetchedItem);
 
         if (isCallSelectedOnFetch && fetchedItem.spec.metadata.id === selectedItemId) {
@@ -91,7 +92,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
                 value={searchInContexts}
                 onChange={setSearchInContexts}
                 libraryContext={props.libraryContext}
-                isReadOnly={true}
+                isReadOnly={false}
               />
             )}
           </FormItem>
@@ -99,12 +100,20 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
 
         <div className={s.SearchResults}>
           <SearchResults
+            key={searchResultsRefreshKey}
             itemType={props.itemType}
             resourceMatchers={searchInContexts}
             items={searchResults}
             onItems={setSearchResults}
-            onDeleted={() => { }}
-            onItemClick={() => {}}
+            onDeleted={(deletedItemId) => {
+              if (selectedItemId === deletedItemId) {
+                setSelectedItemId(undefined);
+              }
+
+              // TODO
+              setSearchResultsRefreshKey(v => v + 1);
+            }}
+            onItemClick={() => { }}
             onItemDoubleClick={() => {
               setIsCallSelectedOnFetch(true);
             }}
@@ -136,6 +145,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
           type='regular'
           text='Edit'
           onClick={() => { }}
+          disabled={selectedItemId === undefined}
         />
         <Button
           type='primary'
