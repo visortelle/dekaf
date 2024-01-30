@@ -1,4 +1,36 @@
 .OverrideExistingItemDialog {
   display: grid;
-  grid-template-rows: max-content, min-content;
+  grid-template-rows: 1fr min-content;
+  overflow: hidden;
+}
+
+.Content {
+  display: grid;
+  grid-template-columns: 360rem 420rem 1fr;
+  grid-template-rows: 100%;
+  overflow: hidden;
+}
+
+.SearchInContexts {
+  border-right: 1px solid var(--border-color);
+  padding: 12rem;
+  overflow: auto;
+}
+
+.SearchResults {
+  border-right: 1px solid var(--border-color);
+  overflow: hidden;
+  display: grid;
+}
+
+.Editor {
+  overflow: auto;
+}
+
+.Footer {
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+  padding: 12rem;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import s from './CreateItemDialog.module.css'
+import s from './OverrideExistingItemDialog.module.css';
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
 import { LibraryContext } from '../../model/library-context';
@@ -20,15 +20,17 @@ export type OverrideExistingItemDialogProps = {
   libraryItem: LibraryItem,
   libraryContext: LibraryContext,
   onCanceled: () => void,
-  onSaved: (libraryItem: LibraryItem) => void
+  onSaved: (libraryItem: LibraryItem) => void,
+  itemIdToOverride?: string
 };
 
 const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
-  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(props.libraryItem.spec.metadata.id);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
+  const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
   const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([]);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
 
   return (
     <div className={s.OverrideExistingItemDialog}>
-      <div>
+      <div className={s.Content}>
         <div className={s.SearchInContexts}>
           <FormItem>
             <FormLabel
@@ -92,13 +94,23 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
 
         <div className={s.SearchResults}>
           <SearchResults
+            key={searchResultsRefreshKey}
             itemType={props.libraryItem.spec.metadata.type}
             resourceMatchers={searchInContexts}
             items={searchResults}
             onItems={setSearchResults}
-            onDeleted={() => { }}
-            onItemClick={setSelectedItemId}
+            onDeleted={(deletedItemId) => {
+              if (selectedItemId === deletedItemId) {
+                setSelectedItemId(undefined);
+              }
+
+              // TODO
+              setSearchResultsRefreshKey(v => v + 1);
+            }}
+            onItemClick={() => { }}
             onItemDoubleClick={overrideItem}
+            selectedItemId={selectedItemId}
+            onSelected={setSelectedItemId}
           />
         </div>
 
@@ -115,7 +127,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
         </div>
       </div>
 
-      <div>
+      <div className={s.Footer}>
         <Button
           type='regular'
           text='Cancel'
@@ -123,12 +135,12 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
         />
         <Button
           type='regular'
-          text='Save as new'
+          text='Save as new item'
           onClick={() => { }}
         />
         <Button
           type='primary'
-          testId='Override'
+          text='Override'
           disabled={selectedItem === undefined}
           onClick={async () => {
             if (selectedItem === undefined) {

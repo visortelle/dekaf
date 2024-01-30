@@ -12,6 +12,8 @@ import SmallButton from '../../../../SmallButton/SmallButton';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 import CreateItemDialog from '../../../dialogs/CreateItemDialog/CreateItemDialog';
 import EditItemDialog from '../../../dialogs/EditItemDialog/EditItemDialog';
+import OverrideExistingItemDialog from '../../../dialogs/OverrideExistingItemDialog/OverrideExistingItemDialog';
+import { libraryItemFromPb } from '../../../model/library-conversions';
 
 export type CreateLibraryItemButtonProps = {
   item: ManagedItem,
@@ -71,21 +73,27 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
           return;
         }
 
-        // modals.push({
-        //   id: `edit-library-item`,
-        //   title: 'Edit Library Item',
-        //   content: (
-        //     <div>
-        //       <EditItemDialog
-        //         item={props.item}
-        //         onCanceled={modals.pop}
-        //         onCreated={modals.pop}
-        //         availableForContexts={[resourceMatcherFromContext(props.libraryContext)]}
-        //         libraryContext={props.libraryContext}
-        //       />
-        //     </div>
-        //   )
-        // });
+        const libraryItem = libraryItemFromPb(res.getItem()!);
+
+        modals.push({
+          id: `edit-library-item`,
+          title: 'Edit Library Item',
+          content: (
+            <div className={s.Dialog}>
+              <OverrideExistingItemDialog
+                libraryItem={libraryItem}
+                onCanceled={modals.pop}
+                onSaved={(libraryItem) => {
+                  props.onSaved(libraryItem.spec);
+                  modals.pop();
+                }}
+                itemIdToOverride={libraryItem.spec.metadata.id}
+                libraryContext={props.libraryContext}
+              />
+            </div>
+          ),
+          styleMode: 'no-content-padding'
+        });
       }}
     />
   );
