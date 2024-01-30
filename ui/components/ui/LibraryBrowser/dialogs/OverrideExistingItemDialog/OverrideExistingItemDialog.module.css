@@ -1,0 +1,4 @@
+.OverrideExistingItemDialog {
+  display: grid;
+  grid-template-rows: max-content, min-content;
+}

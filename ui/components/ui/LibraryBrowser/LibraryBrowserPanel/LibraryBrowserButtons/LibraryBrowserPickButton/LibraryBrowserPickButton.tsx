@@ -4,7 +4,6 @@ import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../../../app/contexts/Notifications';
-import { mkLibraryBrowserModal } from '../../../modals';
 import { ManagedItem, ManagedItemType } from '../../../model/user-managed-items';
 import { LibraryContext, resourceMatcherFromContext } from '../../../model/library-context';
 import { LibraryBrowserProps } from '../../../LibraryBrowser';
@@ -12,6 +11,7 @@ import { managedItemTypeToPb } from '../../../model/user-managed-items-conversio
 import { resourceMatcherToPb } from '../../../model/resource-matchers-conversions-pb';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 import { tooltipId } from '../../../../Tooltip/Tooltip';
+import BrowseDialog from '../../../dialogs/BrowseDialog/BrowseDialog';
 
 export type LibraryBrowserPickButtonProps = {
   itemType: ManagedItemType;
@@ -58,31 +58,27 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
       <span
         className={s.ItemCount}
         onClick={() => {
-          const modal = mkLibraryBrowserModal({
-            libraryBrowserProps: {
-              mode: {
-                type: 'pick',
-                itemType: props.itemType,
-                onPick: (item) => {
-                  props.onPick(item);
-                },
-              },
-              onCancel: modals.pop,
-              libraryContext: props.libraryContext,
-              ...props.libraryBrowser
-            }
+          modals.push({
+            id: `browse-library-${Date.now()}`,
+            title: `Browse Library`,
+            content: (
+              <div className={s.Dialog}>
+                <BrowseDialog
+                  itemType={props.itemType}
+                  onSelected={(libraryItem) => {
+                    props.onPick(libraryItem.spec);
+                  }}
+                  onCanceled={modals.pop}
+                  libraryContext={props.libraryContext}
+                />
+              </div>
+            ),
+            styleMode: 'no-content-padding'
           });
-
-          modals.push(modal);
         }}
         data-tooltip-id={tooltipId}
         data-tooltip-html="Browse saved items"
       >
-        {/* <div className={s.Icon}>
-          <SvgIcon
-            svg={pickIcon}
-          />
-        </div> */}
         <strong>{itemCount}&nbsp;found</strong>
       </span>
     );

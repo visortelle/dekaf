@@ -25,12 +25,12 @@ export type SearchResultsProps = {
   itemType: ManagedItemType;
   resourceMatchers: ResourceMatcher[];
   items: LibraryItem[],
+  selectedItemId: string | undefined;
+  onSelected: (itemId: string) => void;
   onItems: (items: LibraryItem[]) => void;
   onItemClick: (id: string) => void;
   onItemDoubleClick: (id: string) => void;
   onDeleted: () => void;
-  selectedItemId?: string;
-  newLibraryItem?: LibraryItem;
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -63,11 +63,18 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
         return;
       }
 
-      props.onItems(res.getItemsList().map(libraryItemFromPb));
+      const newItems = res.getItemsList().map(libraryItemFromPb);
+      props.onItems(newItems);
     }
 
     fetchSearchResults();
   }, [props.itemType, props.resourceMatchers]);
+
+  useEffect(() => {
+    if (props.selectedItemId === undefined && props.items.length > 0) {
+      props.onSelected(props.items[0].spec.metadata.id);
+    }
+  }, [props.items, props.selectedItemId]);
 
   const filteredItems = React.useMemo(() => {
     let result = props.items.filter((item) => {
@@ -88,12 +95,8 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 
     sortedItems = sort.sortDirection === 'asc' ? sortedItems : sortedItems.reverse();
 
-    if (props.newLibraryItem !== undefined) {
-      sortedItems = [props.newLibraryItem].concat(sortedItems);
-    }
-
     return sortedItems;
-  }, [props.items, filterInputValue, sort, props.newLibraryItem]);
+  }, [props.items, filterInputValue, sort]);
 
   return (
     <div className={s.SearchResults}>
@@ -126,7 +129,6 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
             <div className={s.Items}>
               {filteredItems.map((item) => {
                 const { id, name, descriptionMarkdown } = item.spec.metadata;
-                const isNewItem = id === props.newLibraryItem?.spec.metadata.id;
 
                 return (
                   <Item
@@ -135,11 +137,16 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     name={name}
                     descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
                     updatedAt={item.metadata.updatedAt}
-                    onClick={() => props.onItemClick(id)}
-                    onDoubleClick={() => props.onItemDoubleClick(id)}
+                    onClick={() => {
+                      props.onSelected(id);
+                      props.onItemClick(id);
+                    }}
+                    onDoubleClick={() => {
+                      props.onSelected(id);
+                      props.onItemDoubleClick(id);
+                    }}
                     selectedItemId={props.selectedItemId}
                     onDeleted={props.onDeleted}
-                    isNewItem={isNewItem}
                   />
                 )
               })}

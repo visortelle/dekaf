@@ -74,7 +74,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
   return (
     <div className={s.OverrideExistingItemDialog}>
       <div>
-        <div className={s.AvailableForContexts}>
+        <div className={s.SearchInContexts}>
           <FormItem>
             <FormLabel
               content={<H3>Search in contexts</H3>}

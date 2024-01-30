@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import s from './CreateItemDialog.module.css'
+import s from './BrowseDialog.module.css'
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
-import { LibraryContext } from '../../model/library-context';
+import { LibraryContext, resourceMatcherFromContext } from '../../model/library-context';
 import Button from '../../../Button/Button';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { libraryItemFromPb } from '../../model/library-conversions';
@@ -15,9 +15,10 @@ import { H3 } from '../../../H/H';
 import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import SearchResults from '../../SearchResults/SearchResults';
 import { ResourceMatcher } from '../../model/resource-matchers';
+import { ManagedItemType } from '../../model/user-managed-items';
 
 export type BrowseDialogProps = {
-  libraryItem: LibraryItem,
+  itemType: ManagedItemType,
   libraryContext: LibraryContext,
   onCanceled: () => void,
   onSelected: (libraryItem: LibraryItem) => void
@@ -25,11 +26,11 @@ export type BrowseDialogProps = {
 
 const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
-  const { notifySuccess, notifyError } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
-  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([]);
+  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
   const [isCallSelectedOnFetch, setIsCallSelectedOnFetch] = useState(false);
 
   useEffect(() => {
@@ -78,9 +79,9 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   }, [selectedItemId]);
 
   return (
-    <div className={s.OverrideExistingItemDialog}>
-      <div>
-        <div className={s.AvailableForContexts}>
+    <div className={s.BrowseDialog}>
+      <div className={s.Content}>
+        <div className={s.SearchInContexts}>
           <FormItem>
             <FormLabel
               content={<H3>Search in contexts</H3>}
@@ -98,16 +99,17 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
 
         <div className={s.SearchResults}>
           <SearchResults
-            itemType={props.libraryItem.spec.metadata.type}
+            itemType={props.itemType}
             resourceMatchers={searchInContexts}
             items={searchResults}
             onItems={setSearchResults}
             onDeleted={() => { }}
-            onItemClick={setSelectedItemId}
-            onItemDoubleClick={(id) => {
-              setSelectedItemId(id);
+            onItemClick={() => {}}
+            onItemDoubleClick={() => {
               setIsCallSelectedOnFetch(true);
             }}
+            onSelected={setSelectedItemId}
+            selectedItemId={selectedItemId}
           />
         </div>
 
@@ -124,7 +126,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
         </div>
       </div>
 
-      <div>
+      <div className={s.Footer}>
         <Button
           type='regular'
           text='Cancel'
@@ -132,12 +134,12 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
         />
         <Button
           type='regular'
-          text='Save as new'
+          text='Edit'
           onClick={() => { }}
         />
         <Button
           type='primary'
-          testId='Select'
+          text='Select'
           disabled={selectedItem === undefined}
           onClick={() => {
             if (selectedItem !== undefined) {
