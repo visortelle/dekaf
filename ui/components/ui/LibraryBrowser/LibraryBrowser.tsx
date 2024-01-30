@@ -15,8 +15,6 @@ import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
 import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
-import { resourceMatcherToPb } from './model/resource-matchers-conversions-pb';
 import { ResourceMatcher } from './model/resource-matchers';
 import EditNameDialog from '../RenameButton/EditNameDialog/EditNameDialog';
 import { cloneDeep } from 'lodash';
@@ -167,44 +165,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     fetchSelectedLibraryItem();
   }, [props.mode, selectedId]);
 
-  async function fetchSearchResults() {
-    const req = new pb.ListLibraryItemsRequest();
-
-    const contextsList = searchValue.resourceMatchers.map(rm => resourceMatcherToPb(rm))
-    req.setContextsList(contextsList);
-    req.setTypesList([managedItemTypeToPb(searchValue.itemType)]);
-
-    const res = await libraryServiceClient.listLibraryItems(req, null)
-      .catch(err => {
-        setSearchResults({ type: 'error', error: err });
-        notifyError(`Unable to fetch library items. ${err}`);
-      });
-
-    if (res === undefined) {
-      return;
-    }
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
-      setSearchResults({ type: 'error', error: res.getStatus()?.getMessage() ?? 'Unknown error' });
-      return;
-    }
-
-    const foundItems = res.getItemsList().map(libraryItemFromPb);
-    setSearchResults({ type: 'success', items: foundItems });
-
-    if (selectedId === undefined && props.mode.type === 'save-item') {
-      const id = props.mode.initialManagedItem.metadata.id;
-      const isItemExists = Boolean(foundItems.find(it => it.spec.metadata.id === id));
-
-      const newSelectedId = isItemExists ? id : newLibraryItem?.spec.metadata.id;
-      if (newSelectedId !== undefined) {
-        setSelectedId(newSelectedId);
-      }
-    }
-  }
-
-  useEffect(() => {
+    useEffect(() => {
     fetchSearchResults();
   }, [searchValue, props.libraryContext]);
 

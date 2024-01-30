@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './SearchResults.module.css'
 import Input from '../../Input/Input';
 import { LibraryItem } from '../model/library';
@@ -6,6 +6,15 @@ import NothingToShow from '../../NothingToShow/NothingToShow';
 import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItemButton';
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
+import { managedItemTypeToPb } from '../model/user-managed-items-conversions-pb';
+import { resourceMatcherToPb } from '../model/resource-matchers-conversions-pb';
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import { ManagedItemType } from '../model/user-managed-items';
+import { ResourceMatcher } from '../model/resource-matchers';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { libraryItemFromPb } from '../model/library-conversions';
 
 export type ExtraLabel = {
   text: string;
@@ -13,7 +22,10 @@ export type ExtraLabel = {
 }
 
 export type SearchResultsProps = {
-  items: LibraryItem[];
+  itemType: ManagedItemType;
+  resourceMatchers: ResourceMatcher[];
+  items: LibraryItem[],
+  onItems: (items: LibraryItem[]) => void;
   onItemClick: (id: string) => void;
   onItemDoubleClick: (id: string) => void;
   onDeleted: () => void;
@@ -24,8 +36,38 @@ export type SearchResultsProps = {
 type SortOption = 'Name' | 'Last Modified';
 
 const SearchResults: React.FC<SearchResultsProps> = (props) => {
+  const { libraryServiceClient } = GrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
   const [filterInputValue, setFilterInputValue] = React.useState<string>("")
   const [sort, setSort] = React.useState<Sort<SortOption>>({ sortBy: 'Name', sortDirection: 'asc' });
+
+  useEffect(() => {
+    async function fetchSearchResults() {
+      const req = new pb.ListLibraryItemsRequest();
+
+      const contextsList = props.resourceMatchers.map(rm => resourceMatcherToPb(rm))
+      req.setContextsList(contextsList);
+      req.setTypesList([managedItemTypeToPb(props.itemType)]);
+
+      const res = await libraryServiceClient.listLibraryItems(req, null)
+        .catch(err => {
+          notifyError(`Unable to fetch library items. ${err}`);
+        });
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      props.onItems(res.getItemsList().map(libraryItemFromPb));
+    }
+
+    fetchSearchResults();
+  }, [props.itemType, props.resourceMatchers]);
 
   const filteredItems = React.useMemo(() => {
     let result = props.items.filter((item) => {

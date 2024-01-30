@@ -20,8 +20,6 @@ type SearchEditorMode = {
 }
 
 export type SearchEditorValue = {
-  itemType: ManagedItemType;
-  resourceMatchers: ResourceMatcher[];
 }
 
 export type SearchEditorProps = {
@@ -51,27 +49,6 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
         </FormItem>
 
         <br />
-
-        <FormItem>
-          <FormLabel
-            content={<H3>Pulsar Resources</H3>}
-            help={
-              <>
-                Pulsar resources this item is available for.
-                <br />
-                <br />
-                For example, a message filter may work well for topics <code>A</code> and <code>B</code>, but it may not make sense at all for topic <code>C</code> due to schema differences.
-              </>
-            }
-          />
-          <ResourceMatchersInput
-            value={props.mode.value.resourceMatchers}
-            onChange={(v) => {
-              props.mode.onChange({ ...props.mode.value, resourceMatchers: v })
-            }}
-            libraryContext={props.libraryContext}
-          />
-        </FormItem>
       </div>
     </div>
   );
