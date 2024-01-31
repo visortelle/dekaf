@@ -62,16 +62,14 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
             id: `browse-library-${Date.now()}`,
             title: `Browse Library`,
             content: (
-              <div className={s.Dialog}>
-                <BrowseDialog
-                  itemType={props.itemType}
-                  onSelected={(libraryItem) => {
-                    props.onPick(libraryItem.spec);
-                  }}
-                  onCanceled={modals.pop}
-                  libraryContext={props.libraryContext}
-                />
-              </div>
+              <BrowseDialog
+                itemType={props.itemType}
+                onSelected={(libraryItem) => {
+                  props.onPick(libraryItem.spec);
+                }}
+                onCanceled={modals.pop}
+                libraryContext={props.libraryContext}
+              />
             ),
             styleMode: 'no-content-padding'
           });

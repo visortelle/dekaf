@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import s from './CreateItemDialog.module.css'
-import { ManagedItem } from '../../model/user-managed-items';
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
 import { LibraryContext } from '../../model/library-context';
@@ -19,11 +18,11 @@ import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/Reso
 import { ResourceMatcher } from '../../model/resource-matchers';
 import EditNameDialog from '../../../RenameButton/EditNameDialog/EditNameDialog';
 import OverwriteExistingItemDialog from '../OverwriteExistingItemDialog/OverwriteExistingItemDialog';
+import { v4 as uuid } from 'uuid';
 
 export type CreateItemDialogProps = {
   libraryItem: LibraryItem,
   isExistingItem: boolean,
-  availableForContexts: ResourceMatcher[],
   libraryContext: LibraryContext,
   onCanceled: () => void,
   onCreated: (libraryItem: LibraryItem) => void
@@ -166,7 +165,7 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         />
         <Button
           type='regular'
-          text='Override existing item'
+          text='Overwrite Another'
           onClick={() => {
             if (libraryItem === undefined) {
               return;
@@ -196,9 +195,18 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         {props.isExistingItem && (
           <Button
             type='regular'
-            text='Save as new'
+            text='Save as New'
+            disabled={libraryItem === undefined}
             onClick={() => {
+              if (libraryItem === undefined) {
+                return;
+              }
 
+              const newLibraryItem = cloneDeep(libraryItem);
+              newLibraryItem.spec.metadata.id = uuid();
+
+              setLibraryItem(newLibraryItem);
+              setSaveItemRequested(true);
             }}
           />
         )}

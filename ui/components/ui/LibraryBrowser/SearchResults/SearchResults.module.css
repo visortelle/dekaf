@@ -73,14 +73,15 @@
   top: 2rem;
 }
 
-.DeleteItemButton {
+.ActionButtons {
   position: absolute;
   top: 0rem;
   right: 4rem;
   opacity: 0;
+  display: inline-flex;
 }
 
-.Item:hover .DeleteItemButton {
+.Item:hover .ActionButtons {
   opacity: 1;
   transition: var(--transition-short);
 }

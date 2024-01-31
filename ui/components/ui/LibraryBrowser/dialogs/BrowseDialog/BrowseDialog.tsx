@@ -119,6 +119,8 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
             }}
             onSelected={setSelectedItemId}
             selectedItemId={selectedItemId}
+            libraryContext={props.libraryContext}
+            onEdited={() => setSearchResultsRefreshKey(v => v + 1)}
           />
         </div>
 
@@ -140,12 +142,6 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
           type='regular'
           text='Cancel'
           onClick={props.onCanceled}
-        />
-        <Button
-          type='regular'
-          text='Edit'
-          onClick={() => { }}
-          disabled={selectedItemId === undefined}
         />
         <Button
           type='primary'

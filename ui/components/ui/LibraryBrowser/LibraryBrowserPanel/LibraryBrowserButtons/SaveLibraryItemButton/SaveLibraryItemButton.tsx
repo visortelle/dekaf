@@ -60,26 +60,23 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
             spec: cloneDeep(props.item)
           };
 
-          modals.push({
-            id: `create-library-item`,
-            title: 'Create Library Item',
-            content: (
-              <div className={s.Dialog}>
-                <CreateItemDialog
-                  libraryItem={libraryItem}
-                  isExistingItem={isExistingItem}
-                  onCanceled={modals.pop}
-                  onCreated={(libraryItem) => {
-                    props.onSaved(libraryItem.spec);
-                    modals.pop();
-                  }}
-                  availableForContexts={[resourceMatcherFromContext(props.libraryContext)]}
-                  libraryContext={props.libraryContext}
-                />
-              </div>
-            ),
-            styleMode: 'no-content-padding'
-          });
+        modals.push({
+          id: `create-library-item`,
+          title: 'Create Library Item',
+          content: (
+            <CreateItemDialog
+              libraryItem={libraryItem}
+              isExistingItem={isExistingItem}
+              onCanceled={modals.pop}
+              onCreated={(libraryItem) => {
+                props.onSaved(libraryItem.spec);
+                modals.pop();
+              }}
+              libraryContext={props.libraryContext}
+            />
+          ),
+          styleMode: 'no-content-padding'
+        });
       }}
     />
   );

@@ -11,10 +11,15 @@ import { resourceMatcherToPb } from '../model/resource-matchers-conversions-pb';
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
+import * as Modals from '../../../app/contexts/Modals/Modals';
 import { ManagedItemType } from '../model/user-managed-items';
 import { ResourceMatcher } from '../model/resource-matchers';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { libraryItemFromPb } from '../model/library-conversions';
+import ActionButton from '../../ActionButton/ActionButton';
+import EditItemDialog from '../dialogs/EditItemDialog/EditItemDialog';
+import { LibraryContext } from '../model/library-context';
+import CreateItemDialog from '../dialogs/CreateItemDialog/CreateItemDialog';
 
 export type ExtraLabel = {
   text: string;
@@ -26,11 +31,13 @@ export type SearchResultsProps = {
   resourceMatchers: ResourceMatcher[];
   items: LibraryItem[],
   selectedItemId: string | undefined;
+  libraryContext: LibraryContext;
   onSelected: (itemId: string) => void;
   onItems: (items: LibraryItem[]) => void;
   onItemClick: (id: string) => void;
   onItemDoubleClick: (id: string) => void;
   onDeleted: (id: string) => void;
+  onEdited: (id: string) => void;
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -128,15 +135,12 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
           {filteredItems.length !== 0 && (
             <div className={s.Items}>
               {filteredItems.map((item) => {
-                const { id, name, descriptionMarkdown } = item.spec.metadata;
+                const id = item.spec.metadata.id;
 
                 return (
                   <Item
-                    key={id}
-                    id={id}
-                    name={name}
-                    descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
-                    updatedAt={item.metadata.updatedAt}
+                    libraryItem={item}
+                    libraryContext={props.libraryContext}
                     onClick={() => {
                       props.onSelected(id);
                       props.onItemClick(id);
@@ -146,7 +150,8 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                       props.onItemDoubleClick(id);
                     }}
                     selectedItemId={props.selectedItemId}
-                    onDeleted={props.onDeleted}
+                    onDeleted={() => props.onDeleted(id)}
+                    onEdited={() => props.onEdited(id)}
                   />
                 )
               })}
@@ -159,40 +164,63 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 }
 
 export type ItemProps = {
-  id: string;
-  name: string;
-  descriptionMarkdown: string;
-  updatedAt: string;
+  libraryItem: LibraryItem;
+  libraryContext: LibraryContext;
   onClick: () => void;
   onDoubleClick: () => void;
-  onDeleted: (id: string) => void;
+  onDeleted: () => void;
+  onEdited: () => void;
   selectedItemId?: string;
   isNewItem?: boolean
 };
 
 const Item: React.FC<ItemProps> = (props) => {
-  const className = `${s.Item} ${props.selectedItemId === props.id ? s.ActiveItem : ''}`;
+  const modals = Modals.useContext();
+  const className = `${s.Item} ${props.selectedItemId === props.libraryItem.spec.metadata.id ? s.ActiveItem : ''}`;
   const i18n = I18n.useContext();
 
   return (
     <div className={className} onClick={props.onClick} onDoubleClick={props.onDoubleClick}>
       <div className={s.ItemName}>
-        {props.name || <div className={s.Unnamed}>Unnamed</div>}
+        {props.libraryItem.spec.metadata.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>
       <div className={s.ItemUpdatedAt}>
-        Updated at:<br />{i18n.formatDateTime(new Date(props.updatedAt))}
+        Updated at:<br />{i18n.formatDateTime(new Date(props.libraryItem.metadata.updatedAt))}
       </div>
       {props.isNewItem && (
         <div className={s.ItemExtraLabel} style={{ color: 'var(--accent-color-blue)' }}>
           New item
         </div>
       )}
+
       {!props.isNewItem && (
-        <div className={s.DeleteItemButton}>
+        <div className={s.ActionButtons}>
+          <ActionButton
+            action={{ type: 'predefined', action: 'edit' }}
+            buttonProps={{ appearance: 'borderless-semitransparent' }}
+            onClick={() => {
+              modals.push({
+                id: `edit-library-item-${props.libraryItem.spec.metadata.id}`,
+                title: `Edit Library Item`,
+                content: (
+                  <div>
+                    <CreateItemDialog
+                      libraryItem={props.libraryItem}
+                      libraryContext={props.libraryContext}
+                      onCreated={props.onEdited}
+                      onCanceled={modals.pop}
+                      isExistingItem={true}
+                    />
+                  </div>
+                ),
+                styleMode: 'no-content-padding'
+              });
+            }}
+          />
           <DeleteLibraryItemButton
-            itemId={props.id}
-            onDeleted={() => props.onDeleted(props.id)}
-            isDisabled={props.name.length === 0}
+            itemId={props.libraryItem.spec.metadata.id}
+            onDeleted={props.onDeleted}
+            isDisabled={props.libraryItem.spec.metadata.name.length === 0}
           />
         </div>
       )}

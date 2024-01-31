@@ -144,6 +144,8 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
             onItemDoubleClick={overwriteItem}
             selectedItemId={selectedItemId}
             onSelected={setSelectedItemId}
+            libraryContext={props.libraryContext}
+            onEdited={() => setSearchResultsRefreshKey(v => v + 1)}
           />
         </div>
 

@@ -6,7 +6,7 @@ import { LibraryContext } from '../../model/library-context';
 import { cloneDeep } from 'lodash';
 import Button from '../../../Button/Button';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import { libraryItemFromPb, libraryItemToPb } from '../../model/library-conversions';
+import { libraryItemToPb } from '../../model/library-conversions';
 import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
@@ -16,7 +16,7 @@ import { H3 } from '../../../H/H';
 import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 
 export type EditItemDialogProps = {
-  itemId: string,
+  libraryItem: LibraryItem,
   libraryContext: LibraryContext,
   onCanceled: () => void,
   onSaved: (libraryItem: LibraryItem) => void
@@ -25,39 +25,7 @@ export type EditItemDialogProps = {
 const EditItemDialog: React.FC<EditItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const [libraryItem, setLibraryItem] = useState<LibraryItem | undefined>(undefined);
-
-  useEffect(() => {
-    async function fetchLibraryItem() {
-      const req = new pb.GetLibraryItemRequest();
-      req.setId(props.itemId);
-
-      const res = await libraryServiceClient.getLibraryItem(req, null)
-        .catch(err => notifyError(`Unable to fetch library item metadata. ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      const resCode = res.getStatus()?.getCode();
-      if (!((resCode === Code.OK) || (resCode === Code.NOT_FOUND))) {
-        notifyError(`Unable to fetch library item metadata. ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      if (resCode === Code.NOT_FOUND) {
-        notifyError(`Unable to find the item with id: ${props.itemId}`);
-        return;
-      }
-
-      if (resCode === Code.OK) {
-        setLibraryItem(libraryItemFromPb(res.getItem()!));
-        return;
-      }
-    }
-
-    fetchLibraryItem();
-  }, [props.itemId]);
+  const [libraryItem, setLibraryItem] = useState<LibraryItem | undefined>(props.libraryItem);
 
   return (
     <div className={s.EditItemDialog}>
