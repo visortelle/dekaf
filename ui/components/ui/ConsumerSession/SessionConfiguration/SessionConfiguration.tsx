@@ -230,21 +230,23 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         })}
 
         <div className={s.LastColumn}>
-          <AddButton
-            text='Add Target'
-            onClick={() => {
-              const newTarget: ManagedConsumerSessionTargetValOrRef = {
-                type: "value",
-                val: getDefaultManagedItem("consumer-session-target", props.libraryContext) as ManagedConsumerSessionTarget
-              };
-              const newTargets = itemSpec.targets.concat([newTarget]);
-              onSpecChange({ ...itemSpec, targets: newTargets });
+          {!props.isReadOnly && (
+            <AddButton
+              text='Add Target'
+              onClick={() => {
+                const newTarget: ManagedConsumerSessionTargetValOrRef = {
+                  type: "value",
+                  val: getDefaultManagedItem("consumer-session-target", props.libraryContext) as ManagedConsumerSessionTarget
+                };
+                const newTargets = itemSpec.targets.concat([newTarget]);
+                onSpecChange({ ...itemSpec, targets: newTargets });
 
-              setTimeout(() => {
-                ref.current?.scrollTo({ left: ref.current.scrollWidth, behavior: 'smooth' });
-              }, 100);
-            }}
-          />
+                setTimeout(() => {
+                  ref.current?.scrollTo({ left: ref.current.scrollWidth, behavior: 'smooth' });
+                }, 100);
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

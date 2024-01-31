@@ -25,6 +25,7 @@
 
 .Editor {
   overflow: auto;
+  display: flex;
 }
 
 .Footer {

@@ -28,14 +28,15 @@ export type OverrideExistingItemDialogProps = {
 const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
+  const [libraryItem, setLibraryItem] = useState(props.libraryItem);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
-  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(props.libraryItem.spec.metadata.id);
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(libraryItem.spec.metadata.id);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
-  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>(props.libraryItem.metadata.availableForContexts);
+  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>(libraryItem.metadata.availableForContexts);
 
   useEffect(() => {
-    async function fetchLibraryItem() {
+    async function fetchSelectedLibraryItem() {
       if (selectedItemId === undefined) {
         return;
       }
@@ -67,7 +68,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
       }
     }
 
-    fetchLibraryItem();
+    fetchSelectedLibraryItem();
   }, [selectedItemId]);
 
   const overrideItem = async () => {
@@ -75,7 +76,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
       return;
     }
 
-    const itemToSave = cloneDeep(props.libraryItem);
+    const itemToSave = cloneDeep(libraryItem);
     itemToSave.spec.metadata.id = selectedItem.spec.metadata.id;
 
     const req = new pb.SaveLibraryItemRequest();
@@ -127,7 +128,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
         <div className={s.SearchResults}>
           <SearchResults
             key={searchResultsRefreshKey}
-            itemType={props.libraryItem.spec.metadata.type}
+            itemType={libraryItem.spec.metadata.type}
             resourceMatchers={searchInContexts}
             items={searchResults}
             onItems={setSearchResults}

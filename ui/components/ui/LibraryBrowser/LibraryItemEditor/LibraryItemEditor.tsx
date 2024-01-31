@@ -1,14 +1,11 @@
 import React, { ReactElement } from 'react';
 import s from './LibraryItemEditor.module.css'
-import FormItem from '../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterChainEditor';
 import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDeserializer, ManagedMarkdownDocument, ManagedMessageFilter, ManagedMessageFilterChain, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import StartFromInput from '../../ConsumerSession/SessionConfiguration/StartFromInput/StartFromInput';
 import ColoringRuleInput from '../../ConsumerSession/SessionConfiguration/ColoringRulesInput/ColoringRuleInput/ColoringRuleInput';
 import ColoringRuleChainInput from '../../ConsumerSession/SessionConfiguration/ColoringRulesInput/ColoringRuleChainInput';
@@ -21,6 +18,8 @@ import BasicMessageFilterTargetInput from '../../ConsumerSession/SessionConfigur
 import DeserializerInput from '../../ConsumerSession/SessionConfiguration/SessionTargetInput/DeserializerInput/DeserializerInput';
 import ValueProjectionInput from '../../ConsumerSession/value-projections/ValueProjectionListInput/ValueProjectionInput/ValueProjectionInput';
 import ValueProjectionListInput from '../../ConsumerSession/value-projections/ValueProjectionListInput/ValueProjectionListInput';
+import AvailableInContextsButton from './AvailableInContextsButton/AvailableInContextsButton';
+import { cloneDeep } from 'lodash';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
@@ -331,30 +330,30 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     <div className={s.LibraryItemEditor}>
       <div className={s.Info}>
         <div>
-          <strong>ID:</strong>&nbsp;{value.spec.metadata.id}
+          <div>
+            <strong>ID:</strong>&nbsp;{value.spec.metadata.id}
+          </div>
+          <div>
+            <strong>Updated at:</strong>&nbsp;{i18n.formatDateTime(new Date(value.metadata.updatedAt))}
+          </div>
         </div>
-        <div>
-          <strong>Updated at:</strong>&nbsp;{i18n.formatDateTime(new Date(value.metadata.updatedAt))}
+
+        <div style={{ marginLeft: 'auto' }}>
+          <AvailableInContextsButton
+            value={value.metadata.availableForContexts}
+            onChange={(v) => {
+              const newValue = cloneDeep(props.value);
+              newValue.metadata.availableForContexts = v;
+
+              props.onChange(newValue);
+            }}
+          />
         </div>
       </div>
 
       <div className={s.Editor}>
         {descriptorEditor}
       </div>
-
-      {props.mode === 'viewer' && (
-        <div style={{ marginTop: '24rem' }}>
-          <FormItem>
-            <FormLabel content="Pulsar Resources" />
-            <ResourceMatchersInput
-              libraryContext={props.libraryContext}
-              onChange={() => { }}
-              value={props.value.metadata.availableForContexts}
-              isReadOnly={true}
-            />
-          </FormItem>
-        </div>
-      )}
     </div>
   );
 }
