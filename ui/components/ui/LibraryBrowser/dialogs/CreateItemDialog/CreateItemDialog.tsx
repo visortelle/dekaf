@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import s from './CreateItemDialog.module.css'
 import { ManagedItem } from '../../model/user-managed-items';
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
@@ -18,9 +18,11 @@ import { H3 } from '../../../H/H';
 import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import { ResourceMatcher } from '../../model/resource-matchers';
 import EditNameDialog from '../../../RenameButton/EditNameDialog/EditNameDialog';
+import OverwriteExistingItemDialog from '../OverwriteExistingItemDialog/OverwriteExistingItemDialog';
 
 export type CreateItemDialogProps = {
-  item: ManagedItem,
+  libraryItem: LibraryItem,
+  isExistingItem: boolean,
   availableForContexts: ResourceMatcher[],
   libraryContext: LibraryContext,
   onCanceled: () => void,
@@ -31,21 +33,21 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const modals = Modals.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const [newLibraryItem, setNewLibraryItem] = useState<LibraryItem | undefined>(undefined);
+  const [libraryItem, setLibraryItem] = useState<LibraryItem | undefined>(props.libraryItem);
   const [saveItemRequested, setSaveItemRequested] = useState(false);
 
   const saveItem = async () => {
-    if (newLibraryItem === undefined) {
+    if (libraryItem === undefined) {
       return;
     }
 
-    if (!newLibraryItem?.spec.metadata.name) {
+    if (!libraryItem?.spec.metadata.name) {
       setNameAndSaveLibraryName();
       return;
     }
 
     const req = new pb.SaveLibraryItemRequest();
-    const itemPb = libraryItemToPb(newLibraryItem);
+    const itemPb = libraryItemToPb(libraryItem);
     req.setItem(itemPb);
 
     const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {
@@ -66,25 +68,13 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         Library item successfully created.
 
         <ul>
-          <li><strong>Name:</strong> {newLibraryItem.spec.metadata.name}</li>
-          <li><strong>ID:</strong> {newLibraryItem.spec.metadata.id}</li>
+          <li><strong>Name:</strong> {libraryItem.spec.metadata.name}</li>
+          <li><strong>ID:</strong> {libraryItem.spec.metadata.id}</li>
         </ul>
       </div>
     );
-    props.onCreated(newLibraryItem);
+    props.onCreated(libraryItem);
   }
-
-  useEffect(() => {
-    const newNewLibraryItem: LibraryItem = {
-      metadata: {
-        availableForContexts: props.availableForContexts,
-        updatedAt: new Date().toISOString()
-      },
-      spec: cloneDeep(props.item)
-    };
-
-    setNewLibraryItem(newNewLibraryItem);
-  }, [props.item, props.libraryContext]);
 
   useEffect(() => {
     async function doSave() {
@@ -95,7 +85,7 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
     if (saveItemRequested) {
       doSave();
     }
-  }, [saveItemRequested, newLibraryItem]);
+  }, [saveItemRequested, libraryItem]);
 
   const setNameAndSaveLibraryName = () => {
     modals.push({
@@ -103,17 +93,17 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
       title: `Set Library Item Name`,
       content: (
         <EditNameDialog
-          initialValue={newLibraryItem?.spec.metadata.name || ''}
+          initialValue={libraryItem?.spec.metadata.name || ''}
           onCancel={modals.pop}
           onConfirm={(v) => {
-            if (newLibraryItem === undefined) {
+            if (libraryItem === undefined) {
               return;
             }
 
-            const newNewLibraryItem = cloneDeep(newLibraryItem);
-            newNewLibraryItem.spec.metadata.name = v;
+            const newLibraryItem = cloneDeep(libraryItem);
+            newLibraryItem.spec.metadata.name = v;
 
-            setNewLibraryItem(newNewLibraryItem);
+            setLibraryItem(newLibraryItem);
             setSaveItemRequested(true);
             modals.pop();
           }}
@@ -136,18 +126,18 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
                 </>
               }
             />
-            {newLibraryItem !== undefined && (
+            {libraryItem !== undefined && (
               <ResourceMatchersInput
-                value={newLibraryItem?.metadata.availableForContexts}
+                value={libraryItem?.metadata.availableForContexts}
                 onChange={(v) => {
-                  if (newLibraryItem === undefined) {
+                  if (libraryItem === undefined) {
                     return;
                   }
 
-                  const newNewLibraryItem = cloneDeep(newLibraryItem);
-                  newNewLibraryItem.metadata.availableForContexts = v;
+                  const newLibraryItem = cloneDeep(libraryItem);
+                  newLibraryItem.metadata.availableForContexts = v;
 
-                  setNewLibraryItem(newNewLibraryItem);
+                  setLibraryItem(newLibraryItem);
                 }}
                 libraryContext={props.libraryContext}
               />
@@ -156,11 +146,11 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         </div>
 
         <div className={s.Editor}>
-          {newLibraryItem !== undefined && (
+          {libraryItem !== undefined && (
             <LibraryItemEditor
               mode={'editor'}
-              value={newLibraryItem}
-              onChange={setNewLibraryItem}
+              value={libraryItem}
+              onChange={setLibraryItem}
               libraryContext={props.libraryContext}
               libraryBrowserPanel={{ hiddenElements: ["save-button"] }}
             />
@@ -177,12 +167,45 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
         <Button
           type='regular'
           text='Override existing item'
-          onClick={() => { }}
+          onClick={() => {
+            if (libraryItem === undefined) {
+              return;
+            }
+
+            modals.push({
+              id: `edit-library-item`,
+              title: 'Edit Library Item',
+              content: (
+                <div className={s.Dialog}>
+                  <OverwriteExistingItemDialog
+                    libraryItem={libraryItem}
+                    onCanceled={modals.pop}
+                    onSaved={(libraryItem) => {
+                      props.onCreated(libraryItem);
+                      modals.pop();
+                    }}
+                    itemIdToOverwrite={libraryItem.spec.metadata.id}
+                    libraryContext={props.libraryContext}
+                  />
+                </div>
+              ),
+              styleMode: 'no-content-padding'
+            });
+          }}
         />
+        {props.isExistingItem && (
+          <Button
+            type='regular'
+            text='Save as new'
+            onClick={() => {
+
+            }}
+          />
+        )}
         <Button
           type='primary'
-          text='Create'
-          disabled={newLibraryItem === undefined}
+          text={props.isExistingItem ? 'Save' : 'Create'}
+          disabled={libraryItem === undefined}
           onClick={saveItem}
         />
       </div>

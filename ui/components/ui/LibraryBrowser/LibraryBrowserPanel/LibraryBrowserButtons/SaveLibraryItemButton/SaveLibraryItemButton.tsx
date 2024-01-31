@@ -12,9 +12,10 @@ import SmallButton from '../../../../SmallButton/SmallButton';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 import CreateItemDialog from '../../../dialogs/CreateItemDialog/CreateItemDialog';
 import EditItemDialog from '../../../dialogs/EditItemDialog/EditItemDialog';
-import OverrideExistingItemDialog from '../../../dialogs/OverrideExistingItemDialog/OverrideExistingItemDialog';
+import OverwriteExistingItemDialog from '../../../dialogs/OverwriteExistingItemDialog/OverwriteExistingItemDialog';
 import { libraryItemFromPb } from '../../../model/library-conversions';
 import { LibraryItem } from '../../../model/library';
+import { cloneDeep } from 'lodash';
 
 export type CreateLibraryItemButtonProps = {
   item: ManagedItem,
@@ -48,16 +49,25 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
           return;
         }
 
-        const isItemFound = res.getStatus()?.getCode() === Code.OK;
+        const isExistingItem = res.getStatus()?.getCode() === Code.OK;
+        const libraryItem: LibraryItem = isExistingItem ?
+          libraryItemFromPb(res.getItem()!) :
+          {
+            metadata: {
+              availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+              updatedAt: new Date().toISOString()
+            },
+            spec: cloneDeep(props.item)
+          };
 
-        if (!isItemFound) {
           modals.push({
             id: `create-library-item`,
             title: 'Create Library Item',
             content: (
               <div className={s.Dialog}>
                 <CreateItemDialog
-                  item={props.item}
+                  libraryItem={libraryItem}
+                  isExistingItem={isExistingItem}
                   onCanceled={modals.pop}
                   onCreated={(libraryItem) => {
                     props.onSaved(libraryItem.spec);
@@ -70,38 +80,6 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
             ),
             styleMode: 'no-content-padding'
           });
-
-          return;
-        }
-
-        const libraryItem: LibraryItem = {
-          metadata: libraryItemFromPb(res.getItem()!).metadata,
-          spec: props.item
-        };
-
-        /**~md
-         *
-         *
-         */
-        modals.push({
-          id: `edit-library-item`,
-          title: 'Edit Library Item',
-          content: (
-            <div className={s.Dialog}>
-              <OverrideExistingItemDialog
-                libraryItem={libraryItem}
-                onCanceled={modals.pop}
-                onSaved={(libraryItem) => {
-                  props.onSaved(libraryItem.spec);
-                  modals.pop();
-                }}
-                itemIdToOverride={libraryItem.spec.metadata.id}
-                libraryContext={props.libraryContext}
-              />
-            </div>
-          ),
-          styleMode: 'no-content-padding'
-        });
       }}
     />
   );

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import s from './OverrideExistingItemDialog.module.css';
+import s from './OverwriteExistingItemDialog.module.css';
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
-import { LibraryContext, resourceMatcherFromContext } from '../../model/library-context';
+import { LibraryContext } from '../../model/library-context';
 import Button from '../../../Button/Button';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { libraryItemFromPb, libraryItemToPb } from '../../model/library-conversions';
@@ -17,15 +17,15 @@ import SearchResults from '../../SearchResults/SearchResults';
 import { ResourceMatcher } from '../../model/resource-matchers';
 import { cloneDeep } from 'lodash';
 
-export type OverrideExistingItemDialogProps = {
+export type OverwriteExistingItemDialogProps = {
   libraryItem: LibraryItem,
   libraryContext: LibraryContext,
   onCanceled: () => void,
   onSaved: (libraryItem: LibraryItem) => void,
-  itemIdToOverride?: string
+  itemIdToOverwrite?: string
 };
 
-const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (props) => {
+const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
   const [libraryItem, setLibraryItem] = useState(props.libraryItem);
@@ -71,7 +71,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
     fetchSelectedLibraryItem();
   }, [selectedItemId]);
 
-  const overrideItem = async () => {
+  const overwriteItem = async () => {
     if (selectedItem === undefined) {
       return;
     }
@@ -110,7 +110,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
   }
 
   return (
-    <div className={s.OverrideExistingItemDialog}>
+    <div className={s.OverwriteExistingItemDialog}>
       <div className={s.Content}>
         <div className={s.SearchInContexts}>
           <FormItem>
@@ -141,7 +141,7 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
               setSearchResultsRefreshKey(v => v + 1);
             }}
             onItemClick={() => { }}
-            onItemDoubleClick={overrideItem}
+            onItemDoubleClick={overwriteItem}
             selectedItemId={selectedItemId}
             onSelected={setSelectedItemId}
           />
@@ -167,20 +167,15 @@ const OverrideExistingItemDialog: React.FC<OverrideExistingItemDialogProps> = (p
           onClick={props.onCanceled}
         />
         <Button
-          type='regular'
-          text='Save as new item'
-          onClick={() => { }}
-        />
-        <Button
           type='primary'
-          text='Override'
+          text='Overwrite'
           disabled={selectedItem === undefined}
-          onClick={overrideItem}
+          onClick={overwriteItem}
         />
       </div>
     </div>
   );
 }
 
-export default OverrideExistingItemDialog;
+export default OverwriteExistingItemDialog;
 

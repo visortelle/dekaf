@@ -347,6 +347,8 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
 
               props.onChange(newValue);
             }}
+            libraryContext={props.libraryContext}
+            isReadOnly={props.mode === 'viewer'}
           />
         </div>
       </div>
