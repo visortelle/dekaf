@@ -49,15 +49,25 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
         }
 
         const isExistingItem = res.getStatus()?.getCode() === Code.OK;
-        const libraryItem: LibraryItem = isExistingItem ?
-          libraryItemFromPb(res.getItem()!) :
-          {
-            metadata: {
-              availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
-              updatedAt: new Date().toISOString()
-            },
-            spec: cloneDeep(props.item)
-          };
+
+        let libraryItem: LibraryItem;
+        switch (isExistingItem) {
+          case true: {
+            libraryItem = libraryItemFromPb(res.getItem()!);
+            libraryItem.spec = props.item;
+            break;
+          }
+          case false: {
+            libraryItem = {
+              metadata: {
+                availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+                updatedAt: new Date().toISOString()
+              },
+              spec: cloneDeep(props.item)
+            };
+            break;
+          }
+        }
 
         modals.push({
           id: `save-library-item`,

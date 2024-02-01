@@ -33,7 +33,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState<number>(0);
   const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
-  const [isCallSelectedOnFetch, setIsCallSelectedOnFetch] = useState(false);
+  const [isSelectRequested, setIsSelectRequested] = useState(false);
 
   useEffect(() => {
     async function fetchLibraryItem() {
@@ -54,13 +54,13 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
       const resCode = res.getStatus()?.getCode();
       if (!((resCode === Code.OK) || (resCode === Code.NOT_FOUND))) {
         notifyError(`Unable to fetch library item ${selectedItemId}. ${res.getStatus()?.getMessage()}`);
-        setIsCallSelectedOnFetch(false);
+        setIsSelectRequested(false);
         return;
       }
 
       if (resCode === Code.NOT_FOUND) {
         notifyError(`Unable to find the item with id: ${selectedItemId}`);
-        setIsCallSelectedOnFetch(false);
+        setIsSelectRequested(false);
         return;
       }
 
@@ -68,17 +68,17 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
         const fetchedItem = libraryItemFromPb(res.getItem()!);
         setSelectedItem(fetchedItem);
 
-        if (isCallSelectedOnFetch && fetchedItem.spec.metadata.id === selectedItemId) {
+        if (isSelectRequested && fetchedItem.spec.metadata.id === selectedItemId) {
           props.onSelected(fetchedItem);
         }
 
-        setIsCallSelectedOnFetch(false);
+        setIsSelectRequested(false);
         return;
       }
     }
 
     fetchLibraryItem();
-  }, [selectedItemId, selectedItemRefreshKey]);
+  }, [selectedItemId, selectedItemRefreshKey, isSelectRequested]);
 
   return (
     <div className={s.BrowseDialog}>
@@ -115,8 +115,9 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
               setSearchResultsRefreshKey(v => v + 1);
             }}
             onItemClick={() => { }}
-            onItemDoubleClick={() => {
-              setIsCallSelectedOnFetch(true);
+            onItemDoubleClick={(id) => {
+              setSelectedItemId(id);
+              setIsSelectRequested(true);
             }}
             onSelected={setSelectedItemId}
             selectedItemId={selectedItemId}

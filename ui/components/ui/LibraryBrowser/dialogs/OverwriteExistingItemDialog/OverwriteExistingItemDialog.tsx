@@ -46,10 +46,6 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
         return;
       }
 
-      if (selectedItemId === props.libraryItem.spec.metadata.id) {
-        return;
-      }
-
       const req = new pb.GetLibraryItemRequest();
       req.setId(selectedItemId);
 

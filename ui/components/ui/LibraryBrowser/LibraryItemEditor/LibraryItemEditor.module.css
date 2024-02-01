@@ -7,11 +7,15 @@
 
 .Info {
   padding: 12rem;
-  margin-bottom: 12rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
 }
 
 .Editor {
   overflow: auto;
+  padding-left: 12rem;
+
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
 }

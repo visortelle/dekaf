@@ -8,6 +8,7 @@ import { H2 } from '../../../ui/H/H';
 import closeIcon from './close.svg';
 
 import s from './Modals.module.css'
+import { useLocation } from 'react-router-dom';
 
 export type ModalStackEntry = {
   id: string,
@@ -39,11 +40,18 @@ const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [value, setValue] = useState<Value>(defaultValue);
+  const location = useLocation();
 
   const pop = () => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - 1) }));
   const push = (entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: [...value.stack, entry] }));
   const update = (id: string, entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: value.stack.map((e) => e.id === id ? entry : e) }));
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
+
+  useEffect(() => {
+    if (value.stack.length > 0) {
+      clear();
+    }
+  }, [location]);
 
   const modalPortal = ReactDOM.createPortal(
     <>

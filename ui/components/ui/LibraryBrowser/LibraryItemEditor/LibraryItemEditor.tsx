@@ -199,23 +199,25 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     }
     case 'consumer-session-config': {
       descriptorEditor = (
-        <SessionConfiguration
-          value={{
-            type: 'value',
-            val: value.spec as ManagedConsumerSessionConfig
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+        <div style={{ marginLeft: '-12rem' }}>
+          <SessionConfiguration
+            value={{
+              type: 'value',
+              val: value.spec as ManagedConsumerSessionConfig
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          appearance='within-library-browser'
-          isReadOnly={isReadOnly}
-          libraryBrowserPanel={props.libraryBrowserPanel}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            appearance='within-library-browser'
+            isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
+          />
+        </div>
       );
       break;
     }
