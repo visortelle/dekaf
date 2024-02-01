@@ -67,7 +67,7 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
               libraryItem={libraryItem}
               isExistingItem={isExistingItem}
               onCanceled={modals.pop}
-              onCreated={(libraryItem) => {
+              onSaved={(libraryItem) => {
                 props.onSaved(libraryItem.spec);
                 modals.pop();
               }}

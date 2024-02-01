@@ -90,6 +90,7 @@ const DeserializerInput: React.FC<DeserializerInputProps> = (props) => {
 
           onSpecChange(newItemSpec);
         }}
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

@@ -17,7 +17,6 @@ import { ResourceMatcher } from '../model/resource-matchers';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { libraryItemFromPb } from '../model/library-conversions';
 import ActionButton from '../../ActionButton/ActionButton';
-import EditItemDialog from '../dialogs/EditItemDialog/EditItemDialog';
 import { LibraryContext } from '../model/library-context';
 import SaveItemDialog from '../dialogs/SaveItemDialog/SaveItemDialog';
 
@@ -38,6 +37,7 @@ export type SearchResultsProps = {
   onItemDoubleClick: (id: string) => void;
   onDeleted: (id: string) => void;
   onEdited: (id: string) => void;
+  isReadOnly?: boolean;
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -153,6 +153,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     selectedItemId={props.selectedItemId}
                     onDeleted={() => props.onDeleted(id)}
                     onEdited={() => props.onEdited(id)}
+                    isReadOnly={Boolean(props.isReadOnly)}
                   />
                 )
               })}
@@ -172,7 +173,8 @@ export type ItemProps = {
   onDeleted: () => void;
   onEdited: () => void;
   selectedItemId?: string;
-  isNewItem?: boolean
+  isNewItem?: boolean;
+  isReadOnly: boolean;
 };
 
 const Item: React.FC<ItemProps> = (props) => {
@@ -196,31 +198,32 @@ const Item: React.FC<ItemProps> = (props) => {
 
       {!props.isNewItem && (
         <div className={s.ActionButtons}>
-          <ActionButton
-            action={{ type: 'predefined', action: 'edit' }}
-            buttonProps={{ appearance: 'borderless-semitransparent' }}
-            onClick={() => {
-              modals.push({
-                id: `edit-library-item-${props.libraryItem.spec.metadata.id}`,
-                title: `Edit Library Item`,
-                content: (
-                  <div>
+          {!props.isReadOnly && (
+            <ActionButton
+              action={{ type: 'predefined', action: 'edit' }}
+              buttonProps={{ appearance: 'borderless-semitransparent' }}
+              onClick={() => {
+                modals.push({
+                  id: `edit-library-item-${props.libraryItem.spec.metadata.id}`,
+                  title: `Edit Library Item`,
+                  content: (
                     <SaveItemDialog
                       libraryItem={props.libraryItem}
                       libraryContext={props.libraryContext}
-                      onCreated={() => {
+                      onSaved={() => {
                         props.onEdited();
                         modals.pop();
                       }}
                       onCanceled={modals.pop}
                       isExistingItem={true}
                     />
-                  </div>
-                ),
-                styleMode: 'no-content-padding'
-              });
-            }}
-          />
+                  ),
+                  styleMode: 'no-content-padding'
+                });
+              }}
+            />
+          )}
+
           <DeleteLibraryItemButton
             itemId={props.libraryItem.spec.metadata.id}
             onDeleted={props.onDeleted}

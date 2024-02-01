@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import s from './OverwriteExistingItemDialog.module.css';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
 import { LibraryContext } from '../../model/library-context';
@@ -17,6 +18,7 @@ import SearchResults from '../../SearchResults/SearchResults';
 import { ResourceMatcher } from '../../model/resource-matchers';
 import { cloneDeep } from 'lodash';
 import NothingToShow from '../../../NothingToShow/NothingToShow';
+import EditNameDialog from '../../../RenameButton/EditNameDialog/EditNameDialog';
 
 export type OverwriteExistingItemDialogProps = {
   libraryItem: LibraryItem,
@@ -27,6 +29,7 @@ export type OverwriteExistingItemDialogProps = {
 };
 
 const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = (props) => {
+  const modals = Modals.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
   const [libraryItem, setLibraryItem] = useState(props.libraryItem);
@@ -35,6 +38,7 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
   const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>(libraryItem.metadata.availableForContexts);
+  const [saveItemRequested, setSaveItemRequested] = useState(false);
 
   useEffect(() => {
     async function fetchSelectedLibraryItem() {
@@ -76,8 +80,50 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
     fetchSelectedLibraryItem();
   }, [selectedItemId]);
 
-  const overwriteItem = async () => {
+  useEffect(() => {
+    async function doSave() {
+      await saveItem();
+      setSaveItemRequested(false);
+    }
+
+    if (saveItemRequested) {
+      doSave();
+    }
+  }, [saveItemRequested, libraryItem]);
+
+  const setNameAndSaveLibraryName = () => {
+    modals.push({
+      id: 'set-library-item-name',
+      title: `Set Library Item Name`,
+      content: (
+        <EditNameDialog
+          initialValue={libraryItem?.spec.metadata.name || ''}
+          onCancel={modals.pop}
+          onConfirm={(v) => {
+            if (libraryItem === undefined) {
+              return;
+            }
+
+            const newLibraryItem = cloneDeep(libraryItem);
+            newLibraryItem.spec.metadata.name = v;
+
+            setLibraryItem(newLibraryItem);
+            setSaveItemRequested(true);
+            modals.pop();
+          }}
+        />
+      ),
+      styleMode: 'no-content-padding'
+    });
+  }
+
+  const saveItem = async () => {
     if (selectedItem === undefined) {
+      return;
+    }
+
+    if (!libraryItem?.spec.metadata.name) {
+      setNameAndSaveLibraryName();
       return;
     }
 
@@ -146,11 +192,12 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
               setSearchResultsRefreshKey(v => v + 1);
             }}
             onItemClick={() => { }}
-            onItemDoubleClick={overwriteItem}
+            onItemDoubleClick={saveItem}
             selectedItemId={selectedItemId}
             onSelected={setSelectedItemId}
             libraryContext={props.libraryContext}
             onEdited={() => setSearchResultsRefreshKey(v => v + 1)}
+            isReadOnly={true}
           />
         </div>
 
@@ -182,7 +229,7 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
           type='primary'
           text='Overwrite'
           disabled={selectedItem === undefined}
-          onClick={overwriteItem}
+          onClick={saveItem}
         />
       </div>
     </div>
@@ -190,4 +237,3 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
 }
 
 export default OverwriteExistingItemDialog;
-

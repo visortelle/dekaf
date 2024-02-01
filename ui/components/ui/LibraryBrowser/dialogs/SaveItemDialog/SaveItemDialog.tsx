@@ -24,7 +24,7 @@ export type SaveItemDialogProps = {
   isExistingItem: boolean,
   libraryContext: LibraryContext,
   onCanceled: () => void,
-  onCreated: (libraryItem: LibraryItem) => void
+  onSaved: (libraryItem: LibraryItem) => void
 };
 
 const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
@@ -71,7 +71,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
         </ul>
       </div>
     );
-    props.onCreated(libraryItem);
+    props.onSaved(libraryItem);
   }
 
   useEffect(() => {
@@ -178,7 +178,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
                   libraryItem={libraryItem}
                   onCanceled={modals.pop}
                   onSaved={(libraryItem) => {
-                    props.onCreated(libraryItem);
+                    props.onSaved(libraryItem);
                     modals.pop();
                   }}
                   itemIdToOverwrite={libraryItem.spec.metadata.id}

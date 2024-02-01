@@ -29,8 +29,9 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
+  const [selectedItemRefreshKey, setSelectedItemRefreshKey] = useState<number>(0);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
-  const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
+  const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState<number>(0);
   const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
   const [isCallSelectedOnFetch, setIsCallSelectedOnFetch] = useState(false);
 
@@ -77,7 +78,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
     }
 
     fetchLibraryItem();
-  }, [selectedItemId]);
+  }, [selectedItemId, selectedItemRefreshKey]);
 
   return (
     <div className={s.BrowseDialog}>
@@ -120,7 +121,10 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
             onSelected={setSelectedItemId}
             selectedItemId={selectedItemId}
             libraryContext={props.libraryContext}
-            onEdited={() => setSearchResultsRefreshKey(v => v + 1)}
+            onEdited={() => {
+              setSearchResultsRefreshKey(v => v + 1);
+              setSelectedItemRefreshKey(v => v + 1);
+            }}
           />
         </div>
 
