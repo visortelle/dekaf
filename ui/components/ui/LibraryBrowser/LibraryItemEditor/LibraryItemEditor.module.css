@@ -1,7 +1,4 @@
 .LibraryItemEditor {
-  padding: 12rem;
-  padding-right: 0;
-  padding-bottom: 0;
   overflow: hidden;
   flex: 1;
   display: grid;
@@ -9,8 +6,7 @@
 }
 
 .Info {
-  padding-bottom: 12rem;
-  padding-right: 12rem;
+  padding: 12rem;
   margin-bottom: 12rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;

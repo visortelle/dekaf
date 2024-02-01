@@ -4,7 +4,7 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { LibraryContext, resourceMatcherFromContext } from '../../LibraryBrowser/model/library-context';
-import CreateLibraryItemButton from '../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/SaveLibraryItemButton/SaveLibraryItemButton';
+import SaveLibraryItemButton from '../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/SaveLibraryItemButton/SaveLibraryItemButton';
 import { ManagedItemType } from '../../LibraryBrowser/model/user-managed-items';
 import { getReadableItemType } from '../../LibraryBrowser/get-readable-item-type';
 import { managedItemTypeToPb } from '../../LibraryBrowser/model/user-managed-items-conversions-pb';
@@ -105,9 +105,8 @@ const Library: React.FC<LibraryProps> = (props) => {
                       <BrowseLibraryButton
                         itemType={itemType}
                         libraryContext={props.libraryContext}
-                        resourceMatchers={resourceMatchers}
                       />
-                      <CreateLibraryItemButton
+                      <SaveLibraryItemButton
                         itemType={itemType}
                         libraryContext={props.libraryContext}
                       />

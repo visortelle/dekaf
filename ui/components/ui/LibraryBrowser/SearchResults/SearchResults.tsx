@@ -19,7 +19,7 @@ import { libraryItemFromPb } from '../model/library-conversions';
 import ActionButton from '../../ActionButton/ActionButton';
 import EditItemDialog from '../dialogs/EditItemDialog/EditItemDialog';
 import { LibraryContext } from '../model/library-context';
-import CreateItemDialog from '../dialogs/CreateItemDialog/CreateItemDialog';
+import SaveItemDialog from '../dialogs/SaveItemDialog/SaveItemDialog';
 
 export type ExtraLabel = {
   text: string;
@@ -204,10 +204,13 @@ const Item: React.FC<ItemProps> = (props) => {
                 title: `Edit Library Item`,
                 content: (
                   <div>
-                    <CreateItemDialog
+                    <SaveItemDialog
                       libraryItem={props.libraryItem}
                       libraryContext={props.libraryContext}
-                      onCreated={props.onEdited}
+                      onCreated={() => {
+                        props.onEdited();
+                        modals.pop();
+                      }}
                       onCanceled={modals.pop}
                       isExistingItem={true}
                     />

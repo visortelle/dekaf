@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import s from './CreateItemDialog.module.css'
+import s from './SaveItemDialog.module.css'
 import LibraryItemEditor from '../../LibraryItemEditor/LibraryItemEditor';
 import { LibraryItem } from '../../model/library';
 import { LibraryContext } from '../../model/library-context';
@@ -15,12 +15,11 @@ import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ConfigurationTable/FormLabel/FormLabel';
 import { H3 } from '../../../H/H';
 import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
-import { ResourceMatcher } from '../../model/resource-matchers';
 import EditNameDialog from '../../../RenameButton/EditNameDialog/EditNameDialog';
 import OverwriteExistingItemDialog from '../OverwriteExistingItemDialog/OverwriteExistingItemDialog';
 import { v4 as uuid } from 'uuid';
 
-export type CreateItemDialogProps = {
+export type SaveItemDialogProps = {
   libraryItem: LibraryItem,
   isExistingItem: boolean,
   libraryContext: LibraryContext,
@@ -28,7 +27,7 @@ export type CreateItemDialogProps = {
   onCreated: (libraryItem: LibraryItem) => void
 };
 
-const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
+const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const modals = Modals.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
@@ -113,7 +112,7 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
   }
 
   return (
-    <div className={s.CreateItemDialog}>
+    <div className={s.SaveItemDialog}>
       <div className={s.Content}>
         <div className={s.AvailableForContexts}>
           <FormItem>
@@ -221,4 +220,4 @@ const CreateItemDialog: React.FC<CreateItemDialogProps> = (props) => {
   );
 }
 
-export default CreateItemDialog;
+export default SaveItemDialog;

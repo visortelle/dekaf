@@ -1,4 +1,4 @@
-.CreateItemDialog {
+.SaveItemDialog {
   display: grid;
   grid-template-rows: 1fr min-content;
   overflow: hidden;
@@ -22,6 +22,7 @@
 
 .Editor {
   overflow: auto;
+  display: flex;
 }
 
 .Footer {

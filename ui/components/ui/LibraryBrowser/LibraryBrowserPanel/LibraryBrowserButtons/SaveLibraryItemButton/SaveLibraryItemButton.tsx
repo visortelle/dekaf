@@ -1,29 +1,25 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import s from './SaveLibraryItemButton.module.css';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../../../app/contexts/Notifications';
 import { LibraryContext, resourceMatcherFromContext } from '../../../model/library-context';
-import { ManagedItem, ManagedItemType } from '../../../model/user-managed-items';
-import { getReadableItemType } from '../../../get-readable-item-type';
-import { getDefaultManagedItem } from '../../../default-library-items';
+import { ManagedItem } from '../../../model/user-managed-items';
 import SmallButton from '../../../../SmallButton/SmallButton';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
-import CreateItemDialog from '../../../dialogs/CreateItemDialog/CreateItemDialog';
-import EditItemDialog from '../../../dialogs/EditItemDialog/EditItemDialog';
-import OverwriteExistingItemDialog from '../../../dialogs/OverwriteExistingItemDialog/OverwriteExistingItemDialog';
+import SaveItemDialog from '../../../dialogs/SaveItemDialog/SaveItemDialog';
 import { libraryItemFromPb } from '../../../model/library-conversions';
 import { LibraryItem } from '../../../model/library';
 import { cloneDeep } from 'lodash';
 
-export type CreateLibraryItemButtonProps = {
+export type SaveLibraryItemButtonProps = {
   item: ManagedItem,
   libraryContext: LibraryContext,
   onSaved: (item: ManagedItem) => void
 };
 
-const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) => {
+const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
   const modals = Modals.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
@@ -64,7 +60,7 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
           id: `create-library-item`,
           title: 'Create Library Item',
           content: (
-            <CreateItemDialog
+            <SaveItemDialog
               libraryItem={libraryItem}
               isExistingItem={isExistingItem}
               onCanceled={modals.pop}
@@ -82,4 +78,4 @@ const CreateLibraryItemButton: React.FC<CreateLibraryItemButtonProps> = (props) 
   );
 }
 
-export default CreateLibraryItemButton;
+export default SaveLibraryItemButton;
