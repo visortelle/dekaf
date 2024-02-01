@@ -12,6 +12,7 @@ import SaveItemDialog from '../../../dialogs/SaveItemDialog/SaveItemDialog';
 import { libraryItemFromPb } from '../../../model/library-conversions';
 import { LibraryItem } from '../../../model/library';
 import { cloneDeep } from 'lodash';
+import saveIcon from './save.svg';
 
 export type SaveLibraryItemButtonProps = {
   item: ManagedItem,
@@ -27,7 +28,9 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
   return (
     <SmallButton
       type='regular'
-      text='Save'
+      svgIcon={saveIcon}
+      appearance='borderless-semitransparent'
+      title="Save library item"
       onClick={async () => {
         const req = new pb.GetLibraryItemRequest();
         req.setId(props.item.metadata.id);
@@ -57,8 +60,8 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
           };
 
         modals.push({
-          id: `create-library-item`,
-          title: 'Create Library Item',
+          id: `save-library-item`,
+          title: 'Save Library Item',
           content: (
             <SaveItemDialog
               libraryItem={libraryItem}

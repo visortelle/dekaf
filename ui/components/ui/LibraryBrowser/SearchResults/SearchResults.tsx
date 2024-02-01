@@ -111,7 +111,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
         <>
           <div className={s.Filters}>
             <Input
-              placeholder="Search by name, description, or id"
+              placeholder="Filter by name, description, or id"
               value={filterInputValue}
               onChange={setFilterInputValue}
               appearance='no-borders'
