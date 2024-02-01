@@ -13,8 +13,7 @@
 
 .Editor {
   overflow: auto;
-  padding-left: 12rem;
-
+  padding: 12rem;
 
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-x: contain;

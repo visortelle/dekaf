@@ -18,6 +18,7 @@ import BrowseLibraryButton from './BrowseLibraryItemButton/BrowseLibraryButton';
 import { ResourceMatcher } from '../../LibraryBrowser/model/resource-matchers';
 import ResourceMatchersInput from '../../LibraryBrowser/SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import { H3 } from '../../H/H';
+import { getDefaultLibraryItem } from '../../LibraryBrowser/default-library-items';
 
 export type LibraryProps = {
   libraryContext: LibraryContext,
@@ -44,6 +45,7 @@ const Library: React.FC<LibraryProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const [itemCountPerType, setItemCountPerType] = useState<Partial<Record<ManagedItemType, number>>>({});
   const [resourceMatchers, setResourceMatchers] = useState<ResourceMatcher[]>([]);
+  const [refreshItemCountKey, setRefreshItemCountKey] = useState(0);
 
   useEffect(() => {
     setResourceMatchers([resourceMatcherFromContext(props.libraryContext)]);
@@ -76,7 +78,7 @@ const Library: React.FC<LibraryProps> = (props) => {
     }
 
     fetchItemCount();
-  }, [resourceMatchers]);
+  }, [resourceMatchers, refreshItemCountKey]);
 
   return (
     <div className={s.Library}>
@@ -107,8 +109,9 @@ const Library: React.FC<LibraryProps> = (props) => {
                         libraryContext={props.libraryContext}
                       />
                       <SaveLibraryItemButton
-                        itemType={itemType}
+                        item={getDefaultLibraryItem(itemType, props.libraryContext).spec}
                         libraryContext={props.libraryContext}
+                        onSaved={() => setRefreshItemCountKey(v => v + 1)}
                       />
                     </div>
                   </div>

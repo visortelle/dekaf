@@ -176,7 +176,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     }
     case 'consumer-session-target': {
       descriptorEditor = (
-        <div style={{ width: '480rem' }}>
+        <div style={{ width: '480rem', margin: '-28rem -12rem -24rem' }}>
           <SessionTargetInput
             value={{
               type: 'value',
@@ -199,7 +199,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     }
     case 'consumer-session-config': {
       descriptorEditor = (
-        <div style={{ marginLeft: '-12rem' }}>
+        <div style={{ margin: '-12rem' }}>
           <SessionConfiguration
             value={{
               type: 'value',
