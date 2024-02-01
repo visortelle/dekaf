@@ -332,8 +332,8 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   }
 
   const env = {
+    ...instanceConfig.config.env,
     'JAVA_HOME': paths.javaHome,
-    ...instanceConfig.config.env
   };
 
   const processId = uuid();

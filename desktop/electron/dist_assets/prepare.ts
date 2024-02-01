@@ -43,8 +43,8 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
       dest,
       unpack: { strip: 1 },
       checksum: {
-        algorithm: 'sha512',
-        hash: 'e03f23115c1ee0975f7a8d61f911a5610d99f6a155b589f7672bb3ea60dda21535cd7bc37265f45175003c78dd80d9966569f10bfa5b13db0286efa9222f4175'
+        algorithm: 'sha256',
+        hash: 'ee6286773c659afeefdf2f989a133e7a631c60897f2263ac183794ee1d6438f4'
       },
       when: {
         platform: 'linux',
