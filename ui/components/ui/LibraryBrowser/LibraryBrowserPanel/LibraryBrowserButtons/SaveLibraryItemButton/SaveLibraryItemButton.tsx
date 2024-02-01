@@ -42,7 +42,6 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
           return;
         }
 
-
         if ((res.getStatus()?.getCode() !== Code.OK) && (res.getStatus()?.getCode() !== Code.NOT_FOUND)) {
           notifyError(`Unable to get library item. ${res.getStatus()?.getMessage()}`);
           return;

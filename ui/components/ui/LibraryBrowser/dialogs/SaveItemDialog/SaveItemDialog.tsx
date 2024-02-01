@@ -40,7 +40,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
     }
 
     if (!libraryItem?.spec.metadata.name) {
-      setNameAndSaveLibraryName();
+      setNameAndSaveLibraryItem();
       return;
     }
 
@@ -85,7 +85,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
     }
   }, [saveItemRequested, libraryItem]);
 
-  const setNameAndSaveLibraryName = () => {
+  const setNameAndSaveLibraryItem = () => {
     modals.push({
       id: 'set-library-item-name',
       title: `Set Library Item Name`,
@@ -201,9 +201,9 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
 
               const newLibraryItem = cloneDeep(libraryItem);
               newLibraryItem.spec.metadata.id = uuid();
-
               setLibraryItem(newLibraryItem);
-              setSaveItemRequested(true);
+
+              setNameAndSaveLibraryItem();
             }}
           />
         )}
