@@ -25,10 +25,9 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
               stream_idle_timeout: 0s
               access_log:
-                - name: envoy.access_loggers.file
+                - name: envoy.access_loggers.stdout
                   typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                    path: /dev/stdout
+                    "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
               codec_type: auto
               stat_prefix: ingress_http
               route_config:

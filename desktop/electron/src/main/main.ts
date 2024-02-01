@@ -65,9 +65,7 @@ const createWindow = async () => {
     height: 728,
     minWidth: 972,
     maxWidth: 972,
-    icon: isDarwin
-      ? getAssetPath('icon512.png')
-      : getAssetPath('icon256.png'),
+    icon: getAssetPath('icon.png'),
     autoHideMenuBar: true,
     maximizable: false,
     webPreferences: {
@@ -81,7 +79,7 @@ const createWindow = async () => {
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('maximize', () => {
-    mainWindow.unmaximize()
+    mainWindow ? mainWindow.unmaximize() : {}
   });
 
   mainWindow.on('ready-to-show', () => {

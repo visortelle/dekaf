@@ -44,7 +44,7 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
       unpack: { strip: 1 },
       checksum: {
         algorithm: 'sha512',
-        hash: 'f4026aa142801a66971bd56679f3ad52a1f3286f19f7f53b022a62e728fe68fb4f88320ae2d8ca79ac02fbdcc9c96bcbdcfb4d73c704ac28dbb7056531fcef48'
+        hash: 'e03f23115c1ee0975f7a8d61f911a5610d99f6a155b589f7672bb3ea60dda21535cd7bc37265f45175003c78dd80d9966569f10bfa5b13db0286efa9222f4175'
       },
       when: {
         platform: 'linux',
@@ -71,14 +71,17 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
       taskId: graalvmArchiveName + '-win32-x64',
       source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_windows-x64_bin.zip',
       dest,
-      unpack: { strip: 1 },
+      unpack: { 
+        format: 'zip',        
+        strip: 1 
+      },
       checksum: {
         algorithm: 'sha512',
-        hash: '9ac7c6df1a8ed0e8397a7a2db98e6806bba1fc803df657b35aa1d8008d4c97d951f12877ebe0652d12c1f36377fe7f0d2e7169758b089dcac774b0c3f8ab00e7'
+        hash: '4e2d34a25244a474907cddb3c6130c8bb4a207a3472d7a50a2b8e676d439278f309ee40948e3860d99dbd6fa6545eb3b6a48c48ab1f2d11ff07621bf73b9e062'
       },
       when: {
-        platform: 'linux',
-        arch: 'arm64'
+        platform: 'win32',
+        arch: 'x64'
       },
       cacheDir
     },
