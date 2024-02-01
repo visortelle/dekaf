@@ -2,6 +2,9 @@
   display: grid;
   grid-template-rows: 1fr min-content;
   overflow: hidden;
+  height: calc(100vh - 96rem);
+  width: calc(100vw - 48rem);
+  padding-left: 12rem;
 }
 
 .Content {

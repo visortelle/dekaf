@@ -16,6 +16,7 @@ import ResourceMatchersInput from '../../SearchEditor/ResourceMatchersInput/Reso
 import SearchResults from '../../SearchResults/SearchResults';
 import { ResourceMatcher } from '../../model/resource-matchers';
 import { cloneDeep } from 'lodash';
+import NothingToShow from '../../../NothingToShow/NothingToShow';
 
 export type OverwriteExistingItemDialogProps = {
   libraryItem: LibraryItem,
@@ -38,6 +39,10 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
   useEffect(() => {
     async function fetchSelectedLibraryItem() {
       if (selectedItemId === undefined) {
+        return;
+      }
+
+      if (selectedItemId === props.libraryItem.spec.metadata.id) {
         return;
       }
 
@@ -115,7 +120,7 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
         <div className={s.SearchInContexts}>
           <FormItem>
             <FormLabel
-              content={<H3>Search in contexts</H3>}
+              content={<H3>Search in Contexts</H3>}
             />
             <ResourceMatchersInput
               value={searchInContexts}
@@ -150,6 +155,11 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
         </div>
 
         <div className={s.Editor}>
+          {selectedItem === undefined && (
+            <div style={{ display: 'grid', padding: '12rem', flex: '1' }}>
+              <NothingToShow content="No library item selected" />
+            </div>
+          )}
           {selectedItem !== undefined && (
             <LibraryItemEditor
               mode={'viewer'}

@@ -85,7 +85,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
         <div className={s.SearchInContexts}>
           <FormItem>
             <FormLabel
-              content={<H3>Search in contexts</H3>}
+              content={<H3>Search in Contexts</H3>}
             />
             {selectedItem !== undefined && (
               <ResourceMatchersInput

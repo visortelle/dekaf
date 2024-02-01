@@ -172,20 +172,18 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
 
             modals.push({
               id: `edit-library-item`,
-              title: 'Edit Library Item',
+              title: 'Overwrite Library Item',
               content: (
-                <div className={s.Dialog}>
-                  <OverwriteExistingItemDialog
-                    libraryItem={libraryItem}
-                    onCanceled={modals.pop}
-                    onSaved={(libraryItem) => {
-                      props.onCreated(libraryItem);
-                      modals.pop();
-                    }}
-                    itemIdToOverwrite={libraryItem.spec.metadata.id}
-                    libraryContext={props.libraryContext}
-                  />
-                </div>
+                <OverwriteExistingItemDialog
+                  libraryItem={libraryItem}
+                  onCanceled={modals.pop}
+                  onSaved={(libraryItem) => {
+                    props.onCreated(libraryItem);
+                    modals.pop();
+                  }}
+                  itemIdToOverwrite={libraryItem.spec.metadata.id}
+                  libraryContext={props.libraryContext}
+                />
               ),
               styleMode: 'no-content-padding'
             });

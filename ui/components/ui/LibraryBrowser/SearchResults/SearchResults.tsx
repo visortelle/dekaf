@@ -139,6 +139,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 
                 return (
                   <Item
+                    key={id}
                     libraryItem={item}
                     libraryContext={props.libraryContext}
                     onClick={() => {
