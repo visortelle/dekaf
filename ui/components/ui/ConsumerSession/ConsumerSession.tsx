@@ -39,6 +39,7 @@ import { ProductCode } from '../../app/licensing/ProductCode';
 import PremiumTitle from './PremiumTitle';
 import MessageDetails from './Message/MessageDetails/MessageDetails';
 import ActionButton from '../ActionButton/ActionButton';
+import { handleKeyDown } from './keyboard';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
 const productPlanMessagesLimit = 100 as const;
@@ -79,7 +80,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const [messagesProcessedPerSecond, setMessagesProcessedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
-  const [selectedMessages, setSelectedMessages] = useState<number[]>([]); // stringified message ids
+  const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
   const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
@@ -407,6 +408,19 @@ const Session: React.FC<SessionProps> = (props) => {
             style={{ position: 'relative' }}
             ref={tableRef}
             onWheel={onWheel}
+            onKeyDown={(event) => {
+              if (virtuosoRef.current === null) {
+                return;
+              }
+
+              handleKeyDown({
+                event,
+                messages: sortedMessages,
+                selectedMessages,
+                setSelectedMessages,
+                virtuoso: virtuosoRef.current
+              })
+            }}
           >
             {sessionState === 'pausing' && (
               <div className={s.TableSpinner}>
