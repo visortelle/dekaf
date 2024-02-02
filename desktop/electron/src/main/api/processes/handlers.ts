@@ -224,8 +224,10 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
   if (win !== undefined && !win.isDestroyed()) {
     win.close();
   }
-
-  proc.childProcess.kill();
+   
+  proc.childProcess.pid && process.platform === 'win32' 
+    ? spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T']) 
+    : proc.childProcess.kill();
 
   updateProcessStatus(arg.processId, 'stopping');
 }
@@ -382,8 +384,10 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
     });
   });
 
-  process.on('exit', (code) => {
-    if (code === 0 || code === sigTermExitCode || code === null) {
+  process.on('exit', (code, signal) => {
+    console.log(code);
+    console.log(signal);
+    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
       return;
@@ -564,8 +568,8 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     });
   });
 
-  process.on('exit', (code) => {
-    if (code === 0 || code === sigTermExitCode || code === null) {
+  process.on('exit', (code, signal) => {
+    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
       return;
@@ -633,8 +637,10 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
     });
   });
 
-  process.on('exit', (code) => {
-    if (code === 0 || code === sigTermExitCode || code === null) {
+  process.on('exit', (code, signal) => {
+    console.log(code);
+    console.log(signal);
+    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
       return;
