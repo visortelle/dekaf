@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { FC, ReactElement } from 'react';
 import s from './LibraryItemEditor.module.css'
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../ConsumerSession/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
@@ -21,6 +21,16 @@ import ValueProjectionListInput from '../../ConsumerSession/value-projections/Va
 import AvailableInContextsButton from './AvailableInContextsButton/AvailableInContextsButton';
 import { cloneDeep } from 'lodash';
 
+const ItemEditorContainer: FC<{ children: ReactElement }> = (props) => {
+  return (
+    <div className={s.ItemEditorContainer}>
+      <div className={s.ItemEditorContainerChildren}>
+        {props.children}
+      </div>
+    </div>
+  );
+}
+
 export type LibraryItemEditorProps = {
   value: LibraryItem;
   onChange: (value: LibraryItem) => void;
@@ -34,11 +44,11 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
   const value = props.value;
   const isReadOnly = props.mode === 'viewer';
 
-  let descriptorEditor: ReactElement = <></>;
+  let itemEditor: ReactElement = <></>;
   switch (value.spec.metadata.type) {
     case 'message-filter': {
-      descriptorEditor = (
-        <div style={{ width: '420rem' }}>
+      itemEditor = (
+        <ItemEditorContainer>
           <FilterEditor
             value={{
               type: 'value',
@@ -55,13 +65,13 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'message-filter-chain': {
-      descriptorEditor = (
-        <div style={{ width: '420rem' }}>
+      itemEditor = (
+        <ItemEditorContainer>
           <FilterChainEditor
             value={{
               type: 'value',
@@ -78,13 +88,13 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'consumer-session-start-from': {
-      descriptorEditor = (
-        <div style={{ width: '420rem' }}>
+      itemEditor = (
+        <ItemEditorContainer>
           <StartFromInput
             value={{
               type: 'value',
@@ -101,13 +111,13 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'coloring-rule': {
-      descriptorEditor = (
-        <div style={{ width: '420rem' }}>
+      itemEditor = (
+        <ItemEditorContainer>
           <ColoringRuleInput
             value={{
               type: 'value',
@@ -124,13 +134,13 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'coloring-rule-chain': {
-      descriptorEditor = (
-        <div style={{ width: '420rem' }}>
+      itemEditor = (
+        <ItemEditorContainer>
           <ColoringRuleChainInput
             value={{
               type: 'value',
@@ -147,13 +157,13 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'topic-selector': {
-      descriptorEditor = (
-        <div style={{ width: '420rem' }}>
+      itemEditor = (
+        <ItemEditorContainer>
           <TopicsSelectorInput
             value={{
               type: 'value',
@@ -170,40 +180,64 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'consumer-session-target': {
-      descriptorEditor = (
-        <div style={{ width: '480rem', margin: '-28rem -12rem -24rem' }}>
-          <SessionTargetInput
-            value={{
-              type: 'value',
-              val: value.spec as ManagedConsumerSessionTarget
-            }}
-            onChange={v => {
-              if (v.type === 'reference') {
-                throw new Error('Item value shouldn\'t be a reference');
-              }
+      itemEditor = (
+        <ItemEditorContainer>
+          <div style={{ margin: '-28rem -12rem -24rem' }}>
+            <SessionTargetInput
+              value={{
+                type: 'value',
+                val: value.spec as ManagedConsumerSessionTarget
+              }}
+              onChange={v => {
+                if (v.type === 'reference') {
+                  throw new Error('Item value shouldn\'t be a reference');
+                }
 
-              props.onChange({ ...props.value, spec: v.val });
-            }}
-            libraryContext={props.libraryContext}
-            isReadOnly={isReadOnly}
-            libraryBrowserPanel={props.libraryBrowserPanel}
-          />
-        </div>
+                props.onChange({ ...props.value, spec: v.val });
+              }}
+              libraryContext={props.libraryContext}
+              isReadOnly={isReadOnly}
+              libraryBrowserPanel={props.libraryBrowserPanel}
+            />
+          </div>
+        </ItemEditorContainer>
       );
       break;
     }
     case 'consumer-session-config': {
-      descriptorEditor = (
-        <div style={{ margin: '-12rem' }}>
-          <SessionConfiguration
+      itemEditor = (
+        <SessionConfiguration
+          value={{
+            type: 'value',
+            val: value.spec as ManagedConsumerSessionConfig
+          }}
+          onChange={v => {
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.val });
+          }}
+          libraryContext={props.libraryContext}
+          appearance='within-library-browser'
+          isReadOnly={isReadOnly}
+          libraryBrowserPanel={props.libraryBrowserPanel}
+        />
+      );
+      break;
+    }
+    case 'markdown-document': {
+      itemEditor = (
+        <ItemEditorContainer>
+          <MarkdownDocumentEditor
             value={{
               type: 'value',
-              val: value.spec as ManagedConsumerSessionConfig
+              val: value.spec as ManagedMarkdownDocument
             }}
             onChange={v => {
               if (v.type === 'reference') {
@@ -213,116 +247,102 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
               props.onChange({ ...props.value, spec: v.val });
             }}
             libraryContext={props.libraryContext}
-            appearance='within-library-browser'
             isReadOnly={isReadOnly}
             libraryBrowserPanel={props.libraryBrowserPanel}
           />
-        </div>
-      );
-      break;
-    }
-    case 'markdown-document': {
-      descriptorEditor = (
-        <MarkdownDocumentEditor
-          value={{
-            type: 'value',
-            val: value.spec as ManagedMarkdownDocument
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
-
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-          libraryBrowserPanel={props.libraryBrowserPanel}
-        />
+        </ItemEditorContainer>
       );
       break;
     }
     case 'basic-message-filter-target': {
-      descriptorEditor = (
-        <BasicMessageFilterTargetInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedBasicMessageFilterTarget
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+      itemEditor = (
+        <ItemEditorContainer>
+          <BasicMessageFilterTargetInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedBasicMessageFilterTarget
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-          libraryBrowserPanel={props.libraryBrowserPanel}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
+          />
+        </ItemEditorContainer>
       );
       break;
     }
     case 'value-projection': {
-      descriptorEditor = (
-        <ValueProjectionInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedValueProjection
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+      itemEditor = (
+        <ItemEditorContainer>
+          <ValueProjectionInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedValueProjection
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-          libraryBrowserPanel={props.libraryBrowserPanel}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
+          />
+        </ItemEditorContainer>
       );
       break;
     }
     case 'value-projection-list': {
-      descriptorEditor = (
-        <ValueProjectionListInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedValueProjectionList
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+      itemEditor = (
+        <ItemEditorContainer>
+          <ValueProjectionListInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedValueProjectionList
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-          libraryBrowserPanel={props.libraryBrowserPanel}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
+          />
+        </ItemEditorContainer>
       );
       break;
     }
     case 'deserializer': {
-      descriptorEditor = (
-        <DeserializerInput
-          value={{
-            type: 'value',
-            val: value.spec as ManagedDeserializer
-          }}
-          onChange={v => {
-            if (v.type === 'reference') {
-              throw new Error('Item value shouldn\'t be a reference');
-            }
+      itemEditor = (
+        <ItemEditorContainer>
+          <DeserializerInput
+            value={{
+              type: 'value',
+              val: value.spec as ManagedDeserializer
+            }}
+            onChange={v => {
+              if (v.type === 'reference') {
+                throw new Error('Item value shouldn\'t be a reference');
+              }
 
-            props.onChange({ ...props.value, spec: v.val });
-          }}
-          libraryContext={props.libraryContext}
-          isReadOnly={isReadOnly}
-          libraryBrowserPanel={props.libraryBrowserPanel}
-        />
+              props.onChange({ ...props.value, spec: v.val });
+            }}
+            libraryContext={props.libraryContext}
+            isReadOnly={isReadOnly}
+            libraryBrowserPanel={props.libraryBrowserPanel}
+          />
+        </ItemEditorContainer>
       );
       break;
     }
@@ -356,7 +376,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
       </div>
 
       <div className={s.Editor}>
-        {descriptorEditor}
+        {itemEditor}
       </div>
     </div>
   );

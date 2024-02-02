@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import s from './Library.module.css'
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { LibraryContext, resourceMatcherFromContext } from '../../LibraryBrowser/model/library-context';
 import SaveLibraryItemButton from '../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/SaveLibraryItemButton/SaveLibraryItemButton';
 import { ManagedItemType } from '../../LibraryBrowser/model/user-managed-items';
 import { getReadableItemType } from '../../LibraryBrowser/get-readable-item-type';
-import { managedItemTypeToPb } from '../../LibraryBrowser/model/user-managed-items-conversions-pb';
-import { resourceMatcherToPb } from '../../LibraryBrowser/model/resource-matchers-conversions-pb';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import { itemCountPerTypeFromPb } from '../../LibraryBrowser/item-count-per-type';
 import NoData from '../../NoData/NoData';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from '../../LibraryBrowser/LibraryBrowserPanel/help';
@@ -37,7 +30,8 @@ const itemTypes: ManagedItemType[] = [
   "markdown-document",
   "basic-message-filter-target",
   "value-projection",
-  "value-projection-list"
+  "value-projection-list",
+  "deserializer"
 ];
 
 const Library: React.FC<LibraryProps> = (props) => {
@@ -65,9 +59,7 @@ const Library: React.FC<LibraryProps> = (props) => {
 
       <div>
         {
-          itemTypes.map(itemType => {
-            const itemCount = itemCountPerType[itemType];
-
+          itemTypes.sort((a, b) => getReadableItemType(a).localeCompare(getReadableItemType(b))).map(itemType => {
             return (
               <div key={itemType}>
                 <div className={s.ItemType}>
@@ -96,12 +88,14 @@ const Library: React.FC<LibraryProps> = (props) => {
                           [itemType]: itemCount
                         }));
                       }}
+                      isHideSelectButton={itemType !== 'consumer-session-config'}
                     />
 
                     <SaveLibraryItemButton
                       item={getDefaultLibraryItem(itemType, props.libraryContext).spec}
                       libraryContext={props.libraryContext}
                       onSaved={() => setRefreshItemCountKey(v => v + 1)}
+                      appearance='create'
                     />
                   </div>
                 </div>

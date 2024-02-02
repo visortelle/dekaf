@@ -12,9 +12,20 @@
 }
 
 .Editor {
+  display: grid;
   overflow: auto;
-  padding: 12rem;
 
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-x: contain;
+}
+
+.ItemEditorContainer {
+  background-color: var(--surface-color);
+  display: grid;
+}
+
+.ItemEditorContainerChildren {
+  width: 480rem;
+  padding: 12rem;
+  background-color: #fff;
 }

@@ -18,7 +18,8 @@ export type LibraryBrowserPickButtonProps = {
   onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
   availableForContexts: ResourceMatcher[];
-  onItemCount?: (count: number) => void
+  onItemCount?: (count: number) => void;
+  isHideSelectButton?: boolean
 };
 
 const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props) => {
@@ -27,7 +28,6 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
   const { libraryServiceClient } = GrpcClient.useContext();
   const [itemCount, setItemCount] = useState<number | undefined>(undefined);
 
-  console.log('afc', props.availableForContexts);
   useEffect(() => {
     async function fetchItemCount() {
       const req = new pb.GetLibraryItemsCountRequest();
@@ -75,6 +75,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
                 }}
                 onCanceled={modals.pop}
                 libraryContext={props.libraryContext}
+                isHideSelectButton={props.isHideSelectButton}
               />
             ),
             styleMode: 'no-content-padding'

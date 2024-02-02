@@ -10,7 +10,8 @@ export type BrowseLibraryButtonProps = {
   itemType: ManagedItemType,
   libraryContext: LibraryContext,
   availableForContexts: ResourceMatcher[],
-  onItemCount: (count: number) => void
+  onItemCount: (count: number) => void,
+  isHideSelectButton?: boolean
 };
 
 const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
@@ -22,6 +23,7 @@ const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
       libraryContext={props.libraryContext}
       availableForContexts={props.availableForContexts}
       onItemCount={props.onItemCount}
+      isHideSelectButton={props.isHideSelectButton}
       onPick={(v) => {
         if (props.libraryContext.pulsarResource.type === 'instance') {
           navigate(routes.instance.consumerSession._.get({

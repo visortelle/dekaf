@@ -21,7 +21,8 @@ export type BrowseDialogProps = {
   itemType: ManagedItemType,
   libraryContext: LibraryContext,
   onCanceled: () => void,
-  onSelected: (libraryItem: LibraryItem) => void
+  onSelected: (libraryItem: LibraryItem) => void,
+  isHideSelectButton?: boolean
 };
 
 const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
@@ -148,16 +149,18 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
           text='Cancel'
           onClick={props.onCanceled}
         />
-        <Button
-          type='primary'
-          text='Select'
-          disabled={selectedItem === undefined}
-          onClick={() => {
-            if (selectedItem !== undefined) {
-              props.onSelected(selectedItem);
-            }
-          }}
-        />
+        {!props.isHideSelectButton && (
+          <Button
+            type='primary'
+            text='Select'
+            disabled={selectedItem === undefined}
+            onClick={() => {
+              if (selectedItem !== undefined) {
+                props.onSelected(selectedItem);
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );
