@@ -10,6 +10,7 @@ import SmallButton from '../../SmallButton/SmallButton';
 import Input from '../../Input/Input';
 import PremiumTitle from '../PremiumTitle';
 import ExportMessagesButton from './ExportMessagesButton/ExportMessagesButton';
+import { tooltipId } from '../../Tooltip/Tooltip';
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -76,11 +77,15 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             onClick={props.onToggleConsoleClick}
             text={"Tools"}
             type="regular"
-          // appearance="borderless-semitransparent"
           />
         </div>
 
-        <div className={s.Control} style={{ position: 'relative' }}>
+        <div
+          className={s.Control}
+          style={{ position: 'relative' }}
+          data-tooltip-id={tooltipId}
+          data-tooltip-html={'Search in message keys and values.'}
+        >
           <Input
             value={props.searchInResults}
             onChange={props.onSearchInResultsChange}
@@ -125,10 +130,11 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
               <Input
                 type="number"
                 value={String(props.displayMessagesLimit)}
+                size='small'
                 onChange={v => props.onDisplayMessagesLimitChange(Number(v))}
               />
             </strong>
-            <span className={s.MessagesLoadedStatTitle}>&nbsp; max messages shown</span>
+            {/* <span className={s.MessagesLoadedStatTitle}>&nbsp; max messages shown</span> */}
           </div>
         </div>
 

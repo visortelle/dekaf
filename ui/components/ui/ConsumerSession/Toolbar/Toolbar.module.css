@@ -1,6 +1,6 @@
 .Toolbar {
   display: flex;
-  padding: 4rem 12rem;
+  padding: 8rem 12rem;
   border-bottom: 1px solid var(--border-color);
   line-height: 1.2;
 }
