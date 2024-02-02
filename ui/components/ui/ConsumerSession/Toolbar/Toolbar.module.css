@@ -40,6 +40,7 @@
   text-align: right;
   flex: 1 1;
 }
+
 .MessagesLoadedStatTitle {
   width: 11ch;
   text-align: right;
@@ -51,6 +52,17 @@
 
 .Control:last-child {
   margin-right: 0;
+}
+
+.NumFoundInResults {
+  position: absolute;
+  font-size: 12rem;
+  top: -7px;
+  right: -3px;
+  background: var(--accent-color-blue);
+  color: rgb(255, 255, 255);
+  border-radius: 4rem;
+  padding: 0 4rem;
 }
 
 .ConfigParam {

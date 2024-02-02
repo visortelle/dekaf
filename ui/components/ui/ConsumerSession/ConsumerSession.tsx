@@ -40,6 +40,7 @@ import PremiumTitle from './PremiumTitle';
 import MessageDetails from './Message/MessageDetails/MessageDetails';
 import ActionButton from '../ActionButton/ActionButton';
 import { handleKeyDown } from './keyboard';
+import { useDebounce } from 'use-debounce';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
 const productPlanMessagesLimit = 100 as const;
@@ -82,6 +83,8 @@ const Session: React.FC<SessionProps> = (props) => {
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
+  const [_searchInResults, setSearchInResults] = useState<string>('');
+  const [searchInResults] = useDebounce(_searchInResults, 1000);
   const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
   const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
@@ -368,10 +371,18 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState]);
 
   const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
-  const sortedMessages = useMemo(() => {
-    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRealTimeLimit) : messages;
+  const messagesToShow = useMemo(() => {
+    let msgs = searchInResults === '' ? messages : messages.filter(msg => {
+      return msg.key?.includes(searchInResults) || msg.value?.includes(searchInResults);
+    });
+    msgs = sessionState === 'running' ? msgs.slice(msgs.length - displayMessagesRealTimeLimit) : msgs;
+
     return sortMessages(msgs, sort);
-  }, [messages, sort, sessionState]);
+  }, [messages, sort, sessionState, searchInResults]);
+
+  const messageDetails = selectedMessages.length === 1 ?
+    messages.find(msg => msg.numMessageProcessed === selectedMessages[0]) :
+    undefined;
 
   return (
     <div
@@ -392,6 +403,9 @@ const Session: React.FC<SessionProps> = (props) => {
         displayMessagesLimit={displayMessagesLimit}
         onDisplayMessagesLimitChange={setDisplayMessagesLimit}
         isProductPlanLimitReached={isProductPlanLimitReached}
+        searchInResults={_searchInResults}
+        onSearchInResultsChange={setSearchInResults}
+        numFoundInResults={messagesToShow.length}
       />
 
       {currentView === 'messages' && messages.length === 0 && (
@@ -415,7 +429,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
               handleKeyDown({
                 event,
-                messages: sortedMessages,
+                messages: messagesToShow,
                 selectedMessages,
                 setSelectedMessages,
                 virtuoso: virtuosoRef.current
@@ -430,8 +444,8 @@ const Session: React.FC<SessionProps> = (props) => {
             <TableVirtuoso
               className={s.Virtuoso}
               ref={virtuosoRef}
-              data={sortedMessages}
-              totalCount={sortedMessages.length}
+              data={messagesToShow}
+              totalCount={messagesToShow.length}
               itemContent={itemContent}
               followOutput={sessionState === 'running'}
               fixedHeaderContent={() => (
@@ -589,7 +603,7 @@ const Session: React.FC<SessionProps> = (props) => {
             />
           </div>
 
-          {selectedMessages?.length === 1 && (
+          {messageDetails !== undefined && (
             <div className={s.MessageDetails}>
               <div className={s.CloseMessageDetails}>
                 <ActionButton
@@ -601,7 +615,7 @@ const Session: React.FC<SessionProps> = (props) => {
               </div>
 
               <MessageDetails
-                message={messages.find(msg => msg.numMessageProcessed === selectedMessages[0])!}
+                message={messageDetails}
               />
             </div>
           )}

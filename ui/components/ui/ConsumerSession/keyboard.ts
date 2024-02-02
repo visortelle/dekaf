@@ -32,6 +32,11 @@ export function handleKeyDown(props: HandleKeyDownProps) {
 
   const selectedMessageIndex = messages.findIndex(msg => msg.numMessageProcessed === selectedMessages[0]);
 
+  if (selectedMessageIndex < 0) {
+    setSelectedMessages([]);
+    return;
+  }
+
   if (arrowUpKeys.includes(event.key)) {
     const newSelectedMessageIndex = selectedMessageIndex === 0 ? messages.length - 1 : selectedMessageIndex - 1;
     const newSelectedMessages = [messages[newSelectedMessageIndex].numMessageProcessed!];

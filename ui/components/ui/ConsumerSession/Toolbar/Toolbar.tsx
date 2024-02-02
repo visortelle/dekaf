@@ -24,7 +24,10 @@ export type ToolbarProps = {
   onToggleConsoleClick: () => void;
   displayMessagesLimit: number;
   onDisplayMessagesLimitChange: (limit: number) => void;
-  isProductPlanLimitReached: boolean
+  isProductPlanLimitReached: boolean,
+  searchInResults: string,
+  onSearchInResultsChange: (v: string) => void,
+  numFoundInResults: number,
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -68,13 +71,28 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
-            title={"Session Inspector"}
+            title={"Toggle additional tools"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
             text={"Tools"}
             type="regular"
           // appearance="borderless-semitransparent"
           />
+        </div>
+
+        <div className={s.Control} style={{ position: 'relative' }}>
+          <Input
+            value={props.searchInResults}
+            onChange={props.onSearchInResultsChange}
+            placeholder='Search in results'
+            size='small'
+            clearable
+          />
+          {props.searchInResults !== '' && (
+            <div className={s.NumFoundInResults}>
+              <strong>{props.numFoundInResults}</strong> found
+            </div>
+          )}
         </div>
       </div>
 
