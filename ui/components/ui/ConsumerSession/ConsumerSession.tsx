@@ -73,10 +73,10 @@ const Session: React.FC<SessionProps> = (props) => {
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);
-  const [messagesLoaded, setMessagesLoaded] = useState<number>(0);
+  const messagesLoaded = useRef<number>(0);
+  const messagesProcessed = useRef<number>(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
   const [messagesProcessedPerSecond, setMessagesProcessedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
-  const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [selectedMessages, setSelectedMessages] = useState<number[]>([]); // stringified message ids
@@ -101,7 +101,7 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   useInterval(() => {
-    setMessagesLoadedPerSecond(() => ({ prev: messagesLoaded, now: messagesLoaded - messagesLoadedPerSecond.prev }));
+    setMessagesLoadedPerSecond(() => ({ prev: messagesLoaded.current, now: messagesLoaded.current - messagesLoadedPerSecond.prev }));
     setMessagesProcessedPerSecond(() => ({ prev: messagesProcessed.current, now: messagesProcessed.current - messagesProcessedPerSecond.prev }));
   }, 1000);
 
@@ -131,20 +131,23 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList();
-    setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
+
     for (let i = 0; i < newMessages.length; i++) {
-      messagesBuffer.current.push(newMessages[i]);
+      if (newMessages[i]?.hasValue()) {
+        messagesBuffer.current.push(newMessages[i]);
+      }
     }
 
     messagesProcessed.current = newMessages[newMessages.length - 1].getNumMessageProcessed()
+    messagesLoaded.current = newMessages[newMessages.length - 1].getNumMessageSent()
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`${res.getStatus()?.getMessage()}`);
     }
   }, []);
 
+  // PRODUCT PLAN LIMITATION START
   useEffect(() => {
-    // PRODUCT PLAN LIMITATION START
     if (appContext.config.productCode === ProductCode.DekafDesktopFree || appContext.config.productCode === ProductCode.DekafFree) {
       const isPulsarStandalone =
         (brokersConfig.internalConfig.zookeeperServers?.startsWith('rocksdb') ||
@@ -158,14 +161,14 @@ const Session: React.FC<SessionProps> = (props) => {
         return;
       }
 
-      if (messagesLoaded > productPlanMessagesLimit) {
+      if (messagesLoaded.current > productPlanMessagesLimit) {
         setSessionState('pausing');
         setIsProductPlanLimitReached(true);
         notifyInfo(<PremiumTitle />);
       }
     }
-    // PRODUCT PLAN LIMITATION END
   }, [messagesLoaded]);
+  // PRODUCT PLAN LIMITATION END
 
   useEffect(() => {
     streamRef.current = stream;
@@ -372,17 +375,17 @@ const Session: React.FC<SessionProps> = (props) => {
   return (
     <div
       className={s.ConsumerSession}
-      style={{ gridTemplateRows: props.isShowConsole ? 'min-content 1fr 400rem' : 'min-content 1fr 0'}}
+      style={{ gridTemplateRows: props.isShowConsole ? 'min-content 1fr 400rem' : 'min-content 1fr 0' }}
     >
       <Toolbar
         config={config}
         sessionState={sessionState}
         messages={messages}
         onSessionStateChange={setSessionState}
-        messagesLoaded={messagesLoaded}
+        messagesLoaded={messagesLoaded.current}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
-        messagesProcessedPerSecond={messagesProcessedPerSecond}
         messagesProcessed={messagesProcessed.current}
+        messagesProcessedPerSecond={messagesProcessedPerSecond}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
         displayMessagesLimit={displayMessagesLimit}

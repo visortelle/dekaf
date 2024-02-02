@@ -55,7 +55,11 @@ case class ConsumerSessionRunner(
 
             messageFromTarget match
                 case None =>
-                    createAndSendResponse(Seq.empty, errors)
+                    val emptyMsgPb = consumerPb.Message(
+                        numMessageProcessed = numMessageProcessed,
+                        numMessageSent = numMessageSent
+                    )
+                    createAndSendResponse(Seq(emptyMsgPb), errors)
 
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
