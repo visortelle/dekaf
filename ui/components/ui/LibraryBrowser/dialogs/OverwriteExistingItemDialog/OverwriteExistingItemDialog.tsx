@@ -34,7 +34,7 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
   const { notifySuccess, notifyError } = Notifications.useContext();
   const [libraryItem, setLibraryItem] = useState(props.libraryItem);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
-  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(libraryItem.spec.metadata.id);
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(props.itemIdToOverwrite === undefined ? undefined : libraryItem.spec.metadata.id);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState(0);
   const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>(libraryItem.metadata.availableForContexts);
@@ -93,7 +93,7 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
       title: `Set Library Item Name`,
       content: (
         <EditNameDialog
-          initialValue={libraryItem?.spec.metadata.name || ''}
+          initialValue={selectedItem?.spec.metadata.name || ''}
           onCancel={modals.pop}
           onConfirm={(v) => {
             if (libraryItem === undefined) {
@@ -184,7 +184,6 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
                 setSelectedItemId(undefined);
               }
 
-              // TODO
               setSearchResultsRefreshKey(v => v + 1);
             }}
             onItemClick={() => { }}

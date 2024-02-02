@@ -80,7 +80,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
         />
       </div>
 
-      <div style={{ display: 'flex', flexDirection }}>
+      <div style={{ display: 'grid' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
           <div className={s.TargetType}>
             <Select<TargetType>

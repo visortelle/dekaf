@@ -5,7 +5,7 @@ import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
-import { LibraryContext } from '../model/library-context';
+import { LibraryContext, resourceMatcherFromContext } from '../model/library-context';
 import SvgIcon from '../../SvgIcon/SvgIcon';
 import referenceIcon from './icons/reference.svg';
 import { tooltipId } from '../../Tooltip/Tooltip';
@@ -118,6 +118,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             modals.pop();
           }}
           libraryContext={props.libraryContext}
+          availableForContexts={[resourceMatcherFromContext(props.libraryContext)]}
         />
         {(!props.isReadOnly && (isHovered || props.isForceShowButtons)) && (
           <div className={s.Buttons}>

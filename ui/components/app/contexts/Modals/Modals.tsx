@@ -24,7 +24,7 @@ export type Value = {
   stack: ModalStack,
   push: (entry: ModalStackEntry) => void,
   update: (id: string, entry: ModalStackEntry) => void,
-  pop: () => void,
+  pop: (n?: number) => void,
   clear: () => void,
 };
 
@@ -32,7 +32,7 @@ const defaultValue: Value = {
   stack: [],
   push: () => undefined,
   update: () => undefined,
-  pop: () => undefined,
+  pop: (n?: number) => undefined,
   clear: () => undefined,
 };
 
@@ -42,7 +42,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [value, setValue] = useState<Value>(defaultValue);
   const location = useLocation();
 
-  const pop = () => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - 1) }));
+  const pop = (n?: number) => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - (n || 1)) }));
   const push = (entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: [...value.stack, entry] }));
   const update = (id: string, entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: value.stack.map((e) => e.id === id ? entry : e) }));
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
@@ -104,7 +104,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
         scale: isVisible ? 1 : 0.5
       }}
       exit={{ opacity: 0, scale: 0.5 }}
-      transition={{ duration: 0.25, ease: 'easeInOut' }}
+      transition={{ duration: 0.25, ease: 'easeInOut', delay: 0.1 }}
       tabIndex={0}
       onKeyDown={(e) => {
         if (!props.entry.isNotCloseable && e.key === 'Escape') {

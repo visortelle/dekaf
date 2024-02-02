@@ -102,7 +102,7 @@ export const help: Partial<Record<ManagedItemType, ReactElement>> = {
   "basic-message-filter-target": (
     <div>
       <p>
-        <strong>{getReadableItemType("basic-message-filter-target")}</strong> allows you to specify a field to use.
+        <strong>{getReadableItemType("basic-message-filter-target")}</strong> allows you to specify an object field to use.
       </p>
       <p>
         Optionally, you can post-process this field.

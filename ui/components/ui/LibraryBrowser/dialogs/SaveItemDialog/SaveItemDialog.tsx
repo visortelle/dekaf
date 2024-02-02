@@ -181,7 +181,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
                     props.onSaved(libraryItem);
                     modals.pop();
                   }}
-                  itemIdToOverwrite={libraryItem.spec.metadata.id}
+                  itemIdToOverwrite={props.isExistingItem ? libraryItem.spec.metadata.id : undefined}
                   libraryContext={props.libraryContext}
                 />
               ),
