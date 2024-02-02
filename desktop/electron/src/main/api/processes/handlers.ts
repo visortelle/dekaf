@@ -11,7 +11,7 @@ import path from 'node:path';
 import { ErrorHappened } from "../api/types";
 import axios from 'axios';
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow, nativeImage } from "electron";
 import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 import { sendMessage } from "../api/send-message";
@@ -86,12 +86,21 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
 
   sendMessage(apiChannel, req);
 
+  const RESOURCES_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../../../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
+
   if (proc.type.type === "dekaf" && status === 'ready') {
     const url = proc.type.runtimeConfig.publicBaseUrl;
     const win = new BrowserWindow({
       width: 1280,
       height: 800,
       show: false,
+      icon: nativeImage.createFromPath(getAssetPath("iconWithoutText.png")),
       backgroundColor: '#f5f5f5',
     });
 

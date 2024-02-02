@@ -256,10 +256,7 @@ async function resolveUrlRedirects(url: string, maxRedirects: number): Promise<s
 
 async function unzipFile(source: string, destination: string) {
   return new Promise<void>((resolve, reject) => {
-    try {
-      console.log(source);
-      console.log(destination);
-      
+    try {      
       mkdirp.sync(destination);
 
       yauzl.open(source, {lazyEntries: true}, (err, zipFile) => {
@@ -273,16 +270,22 @@ async function unzipFile(source: string, destination: string) {
 
         zipFile.on('entry', (entry) => {
           try {
-            const fullPath = path.join(destination, entry.fileName);
+            let pathSeparatorRegex = /[\\/]/
+            let strippedFileName = entry.fileName.split(pathSeparatorRegex);
+            strippedFileName.shift();
+
+            strippedFileName = path.join(...strippedFileName);
+
+            const fullPath = path.join(destination, strippedFileName);
   
             const dirPath = path.dirname(fullPath);
 
             mkdirp.sync(dirPath);
 
-            if (/\/$/.test(entry.fileName)) {
-              mkdirp.sync(path.join(destination, entry.fileName));
+            if (/\/$/.test(strippedFileName)) {
+              mkdirp.sync(path.join(destination, strippedFileName));
               zipFile.readEntry();
-            } else {
+            } else {             
               zipFile.openReadStream(entry, (readErr, readStream) => {
                 if (readErr) {
                   zipFile.close();
@@ -290,7 +293,7 @@ async function unzipFile(source: string, destination: string) {
                   return;
                 }
 
-                const file = fs.createWriteStream(path.join(destination, entry.fileName));
+                const file = fs.createWriteStream(path.join(destination, strippedFileName));
                 
                 readStream.pipe(file);
                 

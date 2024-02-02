@@ -65,7 +65,7 @@ const createWindow = async () => {
     height: 728,
     minWidth: 972,
     maxWidth: 972,
-    icon: getAssetPath('icon.png'),
+    icon: getAssetPath('iconWithoutText.png'),
     autoHideMenuBar: true,
     maximizable: false,
     webPreferences: {
