@@ -134,7 +134,7 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
   const sessionTds = props.sessionConfig.valueProjectionList.isEnabled ? props.sessionConfig.valueProjectionList.projections
     .filter(pr => pr.isEnabled)
     .map((_, i) => {
-      return props.message.sessionValueProjectionListResult[i]?.displayValue;
+      return (props.message.sessionValueProjectionListResult || [])[i]?.displayValue;
     }) : [];
 
   const targetIndex = props.message.sessionTargetIndex!;
@@ -143,7 +143,7 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
     target.valueProjectionList.projections
       .filter(pr => pr.isEnabled)
       .map((_, i) => {
-        return props.message.sessionTargetValueProjectionListResult[i]?.displayValue;
+        return (props.message.sessionTargetValueProjectionListResult || [])[i]?.displayValue;
       }) :
     [];
 

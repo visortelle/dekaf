@@ -13,7 +13,7 @@ export function getColoring(sessionConfig: ConsumerSessionConfig, message: Messa
 
   const targetChainColoringRules = targetChain?.coloringRules.filter(f => f.isEnabled) || [];
   if (targetChainColoringRules.length !== 0) {
-    const okRuleIndex = message.sessionTargetColorRuleChainTestResults.findIndex(cr => cr.isOk);
+    const okRuleIndex = (message.sessionTargetColorRuleChainTestResults || []).findIndex(cr => cr.isOk);
 
     if (okRuleIndex !== -1) {
       const rule = targetChainColoringRules[okRuleIndex];
@@ -26,7 +26,7 @@ export function getColoring(sessionConfig: ConsumerSessionConfig, message: Messa
 
   const sessionChain = sessionConfig.coloringRuleChain;
 
-  const okRuleIndex = message.sessionColorRuleChainTestResults.findIndex(cr => cr.isOk);
+  const okRuleIndex = (message.sessionColorRuleChainTestResults || []).findIndex(cr => cr.isOk);
 
   if (okRuleIndex !== -1) {
     const rule = sessionChain.coloringRules.filter(f => f.isEnabled)[okRuleIndex];

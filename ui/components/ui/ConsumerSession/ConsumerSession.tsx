@@ -347,6 +347,10 @@ const Session: React.FC<SessionProps> = (props) => {
             setSessionState('pausing');
           }
 
+          if (message.numMessageProcessed === null) {
+            return;
+          }
+
           setSelectedMessages([message.numMessageProcessed]);
         }}
       />

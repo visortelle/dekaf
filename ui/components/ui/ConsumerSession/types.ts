@@ -113,27 +113,27 @@ export type MessageDescriptor = {
   schemaVersion: Nullable<number>;
   isReplicated: Nullable<boolean>;
   replicatedFrom: Nullable<string>;
-  properties: Record<string, string>;
+  properties: Nullable<Record<string, string>>;
 
   // Fields below aren't a part of Pulsar message.
   rawValue: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
   sessionContextStateJson: Nullable<string>; // JSON string
-  displayIndex: number;
-  numMessageProcessed: number;
-  numMessageSent: number;
+  displayIndex: Nullable<number>;
+  numMessageProcessed: Nullable<number>;
+  numMessageSent: Nullable<number>;
   debugStdout: Nullable<string>;
 
   sessionTargetIndex: Nullable<number>,
 
-  sessionColorRuleChainTestResults: ChainTestResult[],
-  sessionTargetColorRuleChainTestResults: ChainTestResult[],
+  sessionColorRuleChainTestResults: Nullable<ChainTestResult[]>,
+  sessionTargetColorRuleChainTestResults: Nullable<ChainTestResult[]>,
 
-  sessionMessageFilterChainTestResult: ChainTestResult | undefined,
-  sessionTargetMessageFilterChainTestResult: ChainTestResult | undefined
+  sessionMessageFilterChainTestResult: Nullable<ChainTestResult>,
+  sessionTargetMessageFilterChainTestResult: Nullable<ChainTestResult>
 
-  sessionValueProjectionListResult: ValueProjectionResult[],
-  sessionTargetValueProjectionListResult: ValueProjectionResult[],
+  sessionValueProjectionListResult: Nullable<ValueProjectionResult[]>,
+  sessionTargetValueProjectionListResult: Nullable<ValueProjectionResult[]>,
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;

@@ -23,7 +23,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
     props.onClick(event);
   }
 
-  const isSelected = props.sessionState === 'running' ?
+  const isSelected = (props.sessionState === 'running' || props.message.numMessageProcessed === null) ?
     false :
     props.selectedMessages.includes(props.message.numMessageProcessed);
 

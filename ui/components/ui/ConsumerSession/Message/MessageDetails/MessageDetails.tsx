@@ -22,7 +22,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
 
   const keyField = <Field title={'Key'} value={<KeyField isShowTooltips={true} message={props.message} />} help={help.key} />
 
-  const propertiesCount = Object.keys(props.message.properties).length;
+  const propertiesCount = Object.keys(props.message.properties || {}).length;
   const propertiesFieldTitle = <span style={{ display: 'inline-flex', gap: '1ch' }}>Properties {propertiesCount === 0 ? <NoData /> : <strong>{propertiesCount}</strong>}</span>;
 
   return (
@@ -85,7 +85,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
                   />
                   <div>
                     <KeyValueEditor
-                      value={recordToIndexedKv(props.message.properties)}
+                      value={recordToIndexedKv(props.message.properties || {})}
                       onChange={() => { }}
                       mode='readonly'
                       height='480rem'

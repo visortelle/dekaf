@@ -79,10 +79,10 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     sessionTargetColorRuleChainTestResults: message.getSessionTargetColorRuleChainTestResultsList().map(chainTestResultFromPb),
 
     sessionMessageFilterChainTestResult: sessionMessageFilterChainTestResultPb === undefined ?
-      undefined :
+      null :
       chainTestResultFromPb(sessionMessageFilterChainTestResultPb),
     sessionTargetMessageFilterChainTestResult: sessionTargetMessageFilterChainTestResultPb === undefined ?
-      undefined :
+      null :
       chainTestResultFromPb(sessionTargetMessageFilterChainTestResultPb),
 
     sessionValueProjectionListResult: message.getSessionValueProjectionListResultList().map(valueProjectionResultFromPb),
