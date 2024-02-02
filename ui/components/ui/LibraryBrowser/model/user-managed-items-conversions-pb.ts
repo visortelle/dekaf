@@ -34,7 +34,7 @@ import {
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "../../ConsumerSession/conversions/basic-message-filter-conversions";
-import { Int32Value } from "google-protobuf/google/protobuf/wrappers_pb";
+import { Int32Value, Int64Value } from "google-protobuf/google/protobuf/wrappers_pb";
 import { deserializerFromPb, deserializerToPb } from "../../ConsumerSession/deserializer/deserializer";
 import { consumerSessionTargetConsumptionModeFromPb, consumerSessionTargetConsumptionModeToPb } from "../../ConsumerSession/consumption-mode/consumption-mode";
 
@@ -1164,7 +1164,8 @@ export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSess
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
     pauseTriggerChain: managedConsumerSessionPauseTriggerChainValOrRefFromPb(v.getPauseTriggerChain()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
-    valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!)
+    valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!),
+    numDisplayItems: v.getNumDisplayItems()?.getValue()
   };
 }
 
@@ -1176,6 +1177,10 @@ export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSession
   specPb.setPauseTriggerChain(managedConsumerSessionPauseTriggerChainValOrRefToPb(v.pauseTriggerChain));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
   specPb.setValueProjectionList(managedValueProjectionListValOrRefToPb(v.valueProjectionList));
+
+  if (v.numDisplayItems !== undefined) {
+    specPb.setNumDisplayItems(new Int64Value().setValue(v.numDisplayItems));
+  }
 
   return specPb;
 }

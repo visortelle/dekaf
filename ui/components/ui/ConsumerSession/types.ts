@@ -91,6 +91,7 @@ export type ConsumerSessionConfig = {
   pauseTriggerChain: ConsumerSessionPauseTriggerChain;
   coloringRuleChain: ColoringRuleChain;
   valueProjectionList: ValueProjectionList;
+  numDisplayItems: number
 };
 
 export type ValueProjectionResult = {

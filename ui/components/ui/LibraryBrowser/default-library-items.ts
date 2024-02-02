@@ -53,7 +53,8 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
           valueProjectionList: {
             type: "value",
             val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
-          }
+          },
+          numDisplayItems: undefined
         }
       }
 

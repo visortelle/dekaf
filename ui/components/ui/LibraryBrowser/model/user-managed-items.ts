@@ -257,7 +257,8 @@ export type ManagedConsumerSessionConfigSpec = {
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
-  valueProjectionList: ManagedValueProjectionListValOrRef
+  valueProjectionList: ManagedValueProjectionListValOrRef,
+  numDisplayItems: number | undefined
 };
 
 export type ManagedConsumerSessionConfig = {

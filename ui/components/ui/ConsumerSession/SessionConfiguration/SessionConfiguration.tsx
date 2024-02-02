@@ -19,6 +19,10 @@ import SmallButton from '../../SmallButton/SmallButton';
 import { arrayMove } from './array-move';
 import moveLeftIcon from './icons/move-left.svg';
 import moveRightIcon from './icons/move-right.svg';
+import Input from '../../Input/Input';
+import FormItem from '../../ConfigurationTable/FormItem/FormItem';
+
+export const defaultNumDisplayItems = 10_000;
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -133,6 +137,28 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             isReadOnly={props.isReadOnly}
           />}
           {isShowAdvanced && (<>
+            <FormItem>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
+                <Toggle
+                  value={itemSpec.numDisplayItems !== undefined}
+                  onChange={(v) => onSpecChange({
+                    ...itemSpec,
+                    numDisplayItems: v ? defaultNumDisplayItems : undefined
+                  })}
+                  label='Limit num. display messages'
+                  isReadOnly={props.isReadOnly}
+                />
+                <div style={{ visibility: itemSpec.numDisplayItems === undefined ? 'hidden' : 'visible' }}>
+                  <Input
+                    type="number"
+                    value={String(itemSpec.numDisplayItems)}
+                    size='small'
+                    onChange={v => onSpecChange({ ...itemSpec, numDisplayItems: Number(v) })}
+                  />
+                </div>
+              </div>
+            </FormItem>
+
             <FilterChainEditor
               value={itemSpec.messageFilterChain}
               onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}

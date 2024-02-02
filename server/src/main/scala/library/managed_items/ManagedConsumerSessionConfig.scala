@@ -10,6 +10,7 @@ case class ManagedConsumerSessionConfigSpec(
     pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
     coloringRuleChain: ManagedColoringRuleChainValOrRef,
     valueProjectionList: ManagedValueProjectionListValOrRef,
+    numDisplayItems: Option[Long]
 )
 
 object ManagedConsumerSessionConfigSpec:
@@ -20,7 +21,8 @@ object ManagedConsumerSessionConfigSpec:
             messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.getMessageFilterChain),
             pauseTriggerChain = ManagedConsumerSessionPauseTriggerChainValOrRef.fromPb(v.getPauseTriggerChain),
             coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.getColoringRuleChain),
-            valueProjectionList = ManagedValueProjectionListValOrRef.fromPb(v.getValueProjectionList)
+            valueProjectionList = ManagedValueProjectionListValOrRef.fromPb(v.getValueProjectionList),
+            numDisplayItems = v.numDisplayItems
         )
 
     def toPb(v: ManagedConsumerSessionConfigSpec): pb.ManagedConsumerSessionConfigSpec =
@@ -30,7 +32,8 @@ object ManagedConsumerSessionConfigSpec:
             messageFilterChain = Some(ManagedMessageFilterChainValOrRef.toPb(v.messageFilterChain)),
             pauseTriggerChain = Some(ManagedConsumerSessionPauseTriggerChainValOrRef.toPb(v.pauseTriggerChain)),
             coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain)),
-            valueProjectionList = Some(ManagedValueProjectionListValOrRef.toPb(v.valueProjectionList))
+            valueProjectionList = Some(ManagedValueProjectionListValOrRef.toPb(v.valueProjectionList)),
+            numDisplayItems = v.numDisplayItems
         )
 
 case class ManagedConsumerSessionConfig(

@@ -74,7 +74,6 @@ const Session: React.FC<SessionProps> = (props) => {
   const subscriptionName = useRef<string>('__dekaf_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
-  const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);
   const messagesLoaded = useRef<number>(0);
   const messagesProcessed = useRef<number>(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
@@ -121,7 +120,7 @@ const Session: React.FC<SessionProps> = (props) => {
     setMessages((messages) => {
       const newMessages = messages
         .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
-        .slice(-displayMessagesLimit);
+        .slice(-(config?.numDisplayItems || 0));
 
       newMessages.forEach((message, i) => {
         message.displayIndex = (i + 1);
@@ -400,8 +399,6 @@ const Session: React.FC<SessionProps> = (props) => {
         messagesProcessedPerSecond={messagesProcessedPerSecond}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
-        displayMessagesLimit={displayMessagesLimit}
-        onDisplayMessagesLimitChange={setDisplayMessagesLimit}
         isProductPlanLimitReached={isProductPlanLimitReached}
         searchInResults={_searchInResults}
         onSearchInResultsChange={setSearchInResults}

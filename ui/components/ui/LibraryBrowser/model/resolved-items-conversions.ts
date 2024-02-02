@@ -4,6 +4,7 @@ import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-select
 import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/value-projections/value-projections";
 import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
+import { defaultNumDisplayItems } from "../../ConsumerSession/SessionConfiguration/SessionConfiguration";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -221,7 +222,8 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
     targets: spec.targets.map(spec => consumerSessionTargetFromValOrRef(spec, currentTopicFqn)),
     coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
     pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain),
-    valueProjectionList: valueProjectionListFromValOrRef(spec.valueProjectionList)
+    valueProjectionList: valueProjectionListFromValOrRef(spec.valueProjectionList),
+    numDisplayItems: spec.numDisplayItems === undefined ? defaultNumDisplayItems : spec.numDisplayItems
   }
 }
 

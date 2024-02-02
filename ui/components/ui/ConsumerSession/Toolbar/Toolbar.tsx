@@ -23,8 +23,6 @@ export type ToolbarProps = {
   messagesLoadedPerSecond: { prev: number, now: number };
   messagesProcessedPerSecond: { prev: number, now: number };
   onToggleConsoleClick: () => void;
-  displayMessagesLimit: number;
-  onDisplayMessagesLimitChange: (limit: number) => void;
   isProductPlanLimitReached: boolean,
   searchInResults: string,
   onSearchInResultsChange: (v: string) => void,
@@ -121,20 +119,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           <div className={s.MessagesLoadedStat}>
             <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesLoadedPerSecond.now)}</strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
-          </div>
-        </div>
-
-        <div className={s.MessagesLoadedStats}>
-          <div className={s.MessagesLoadedStat}>
-            <strong className={s.MessagesLoadedStatValue}>
-              <Input
-                type="number"
-                value={String(props.displayMessagesLimit)}
-                size='small'
-                onChange={v => props.onDisplayMessagesLimitChange(Number(v))}
-              />
-            </strong>
-            {/* <span className={s.MessagesLoadedStatTitle}>&nbsp; max messages shown</span> */}
           </div>
         </div>
 
