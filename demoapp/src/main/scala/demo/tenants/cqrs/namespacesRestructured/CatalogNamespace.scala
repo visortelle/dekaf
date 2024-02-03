@@ -10,6 +10,7 @@ import generators.{ConsumerPlanGenerator, Message, NamespacePlanGenerator, Proce
 import org.apache.pulsar.client.api as pulsarClientApi
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema
 import zio.{Duration, Runtime, Schedule, Unsafe, ZIO}
+import shared.Shared.isAcceptingNewMessages
 
 import java.util.UUID
 import scala.jdk.FutureConverters.*
@@ -302,148 +303,151 @@ object CatalogNamespace:
   def mkMessageListener: ProcessorMessageListenerBuilder[pb.CatalogCommandsSchema, pb.CatalogEventsSchema] =
   (worker: ProcessorWorker[pb.CatalogCommandsSchema, pb.CatalogEventsSchema], producer: pulsarClientApi.Producer[pb.CatalogEventsSchema]) =>
     (consumer: pulsarClientApi.Consumer[pb.CatalogCommandsSchema], msg: pulsarClientApi.Message[pb.CatalogCommandsSchema]) =>
-      try
-        val messageKey = msg.getKey
+      if !isAcceptingNewMessages then
+        consumer.negativeAcknowledge(msg)
+      else
+        try
+          val messageKey = msg.getKey
 
-        val msgValue = pb.CatalogCommandsSchema.parseFrom(msg.getData)
+          val msgValue = pb.CatalogCommandsSchema.parseFrom(msg.getData)
 
-        val eventMessageValue: pb.CatalogEventsSchema = msgValue.getCommandCase match
-          case pb.CatalogCommandsSchema.CommandCase.ACTIVATE_CATALOG =>
-            val activateCatalogPb = msgValue.getActivateCatalog
+          val eventMessageValue: pb.CatalogEventsSchema = msgValue.getCommandCase match
+            case pb.CatalogCommandsSchema.CommandCase.ACTIVATE_CATALOG =>
+              val activateCatalogPb = msgValue.getActivateCatalog
 
-            val catalogActivated = model.Message.random[CatalogActivated]
+              val catalogActivated = model.Message.random[CatalogActivated]
 
-            val catalogActivatedPb = pb.CatalogActivated.newBuilder()
-              .setCatalogId(activateCatalogPb.getCatalogId)
-              .setVersion(catalogActivated.version)
+              val catalogActivatedPb = pb.CatalogActivated.newBuilder()
+                .setCatalogId(activateCatalogPb.getCatalogId)
+                .setVersion(catalogActivated.version)
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogActivated(catalogActivatedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.ADD_CATALOG_ITEM =>
-            val addCatalogItemPb = msgValue.getAddCatalogItem
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogActivated(catalogActivatedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.ADD_CATALOG_ITEM =>
+              val addCatalogItemPb = msgValue.getAddCatalogItem
 
-            val catalogItemAdded = model.Message.random[CatalogItemAdded]
+              val catalogItemAdded = model.Message.random[CatalogItemAdded]
 
-            val newItemId = UUID.randomUUID()
+              val newItemId = UUID.randomUUID()
 
-            try itemIdsMap.put(newItemId, ())
-            catch case e: Throwable => ()
+              try itemIdsMap.put(newItemId, ())
+              catch case e: Throwable => ()
 
-            val catalogItemAddedPb = pb.CatalogItemAdded.newBuilder()
-              .setCatalogId(addCatalogItemPb.getCatalogId)
-              .setItemId(newItemId.toString)
-              .setInventoryId(addCatalogItemPb.getInventoryId)
-              .setQuantity(addCatalogItemPb.getQuantity)
-              .setVersion(catalogItemAdded.version)
+              val catalogItemAddedPb = pb.CatalogItemAdded.newBuilder()
+                .setCatalogId(addCatalogItemPb.getCatalogId)
+                .setItemId(newItemId.toString)
+                .setInventoryId(addCatalogItemPb.getInventoryId)
+                .setQuantity(addCatalogItemPb.getQuantity)
+                .setVersion(catalogItemAdded.version)
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogItemAdded(catalogItemAddedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.CHANGE_CATALOG_DESCRIPTION =>
-            val changeCatalogDescriptionPb = msgValue.getChangeCatalogDescription
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogItemAdded(catalogItemAddedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.CHANGE_CATALOG_DESCRIPTION =>
+              val changeCatalogDescriptionPb = msgValue.getChangeCatalogDescription
 
-            val catalogDescriptionChanged = model.Message.random[CatalogDescriptionChanged]
+              val catalogDescriptionChanged = model.Message.random[CatalogDescriptionChanged]
 
-            val catalogDescriptionChangedPb = pb.CatalogDescriptionChanged.newBuilder()
-              .setCatalogId(changeCatalogDescriptionPb.getCatalogId)
-              .setDescription(changeCatalogDescriptionPb.getDescription)
-              .setVersion(catalogDescriptionChanged.version)
+              val catalogDescriptionChangedPb = pb.CatalogDescriptionChanged.newBuilder()
+                .setCatalogId(changeCatalogDescriptionPb.getCatalogId)
+                .setDescription(changeCatalogDescriptionPb.getDescription)
+                .setVersion(catalogDescriptionChanged.version)
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogDescriptionChanged(catalogDescriptionChangedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.CHANGE_CATALOG_TITLE =>
-            val changeCatalogTitlePb = msgValue.getChangeCatalogTitle
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogDescriptionChanged(catalogDescriptionChangedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.CHANGE_CATALOG_TITLE =>
+              val changeCatalogTitlePb = msgValue.getChangeCatalogTitle
 
-            val catalogTitleChanged = model.Message.random[CatalogTitleChanged]
+              val catalogTitleChanged = model.Message.random[CatalogTitleChanged]
 
-            val catalogTitleChangedPb = pb.CatalogTitleChanged.newBuilder()
-              .setCatalogId(changeCatalogTitlePb.getCatalogId)
-              .setTitle(changeCatalogTitlePb.getTitle)
-              .setVersion(catalogTitleChanged.version)
+              val catalogTitleChangedPb = pb.CatalogTitleChanged.newBuilder()
+                .setCatalogId(changeCatalogTitlePb.getCatalogId)
+                .setTitle(changeCatalogTitlePb.getTitle)
+                .setVersion(catalogTitleChanged.version)
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogTitleChanged(catalogTitleChangedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.CREATE_CATALOG =>
-            val createCatalogPb = msgValue.getCreateCatalog
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogTitleChanged(catalogTitleChangedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.CREATE_CATALOG =>
+              val createCatalogPb = msgValue.getCreateCatalog
 
-            val catalogCreated = model.Message.random[CatalogCreated]
+              val catalogCreated = model.Message.random[CatalogCreated]
 
-            val catalogCreatedPb = pb.CatalogCreated.newBuilder()
-              .setCatalogId(createCatalogPb.getCatalogId)
-              .setTitle(createCatalogPb.getTitle)
-              .setDescription(createCatalogPb.getDescription)
-              .setVersion(catalogCreated.version)
+              val catalogCreatedPb = pb.CatalogCreated.newBuilder()
+                .setCatalogId(createCatalogPb.getCatalogId)
+                .setTitle(createCatalogPb.getTitle)
+                .setDescription(createCatalogPb.getDescription)
+                .setVersion(catalogCreated.version)
 
-            try catalogIdsMap.put(UUID.fromString(createCatalogPb.getCatalogId), ())
-            catch case e: Throwable => ()
+              try catalogIdsMap.put(UUID.fromString(createCatalogPb.getCatalogId), ())
+              catch case e: Throwable => ()
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogCreated(catalogCreatedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.DEACTIVATE_CATALOG =>
-            val deactivateCatalogPb = msgValue.getDeactivateCatalog
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogCreated(catalogCreatedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.DEACTIVATE_CATALOG =>
+              val deactivateCatalogPb = msgValue.getDeactivateCatalog
 
-            val catalogDeactivated = model.Message.random[CatalogDeactivated]
+              val catalogDeactivated = model.Message.random[CatalogDeactivated]
 
-            val catalogDeactivatedPb = pb.CatalogDeactivated.newBuilder()
-              .setCatalogId(deactivateCatalogPb.getCatalogId)
-              .setVersion(catalogDeactivated.version)
+              val catalogDeactivatedPb = pb.CatalogDeactivated.newBuilder()
+                .setCatalogId(deactivateCatalogPb.getCatalogId)
+                .setVersion(catalogDeactivated.version)
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogDeactivated(catalogDeactivatedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.DELETE_CATALOG =>
-            val deleteCatalogPb = msgValue.getDeleteCatalog
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogDeactivated(catalogDeactivatedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.DELETE_CATALOG =>
+              val deleteCatalogPb = msgValue.getDeleteCatalog
 
-            val catalogDeleted = model.Message.random[CatalogDeleted]
+              val catalogDeleted = model.Message.random[CatalogDeleted]
 
-            val catalogDeletedPb = pb.CatalogDeleted.newBuilder()
-              .setCatalogId(deleteCatalogPb.getCatalogId)
-              .setVersion(catalogDeleted.version)
+              val catalogDeletedPb = pb.CatalogDeleted.newBuilder()
+                .setCatalogId(deleteCatalogPb.getCatalogId)
+                .setVersion(catalogDeleted.version)
 
-            try catalogIdsMap.remove(UUID.fromString(deleteCatalogPb.getCatalogId))
-            catch case e: Throwable => ()
+              try catalogIdsMap.remove(UUID.fromString(deleteCatalogPb.getCatalogId))
+              catch case e: Throwable => ()
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogDeleted(catalogDeletedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.REMOVE_CATALOG_ITEM =>
-            val removeCatalogItemPb = msgValue.getRemoveCatalogItem
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogDeleted(catalogDeletedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.REMOVE_CATALOG_ITEM =>
+              val removeCatalogItemPb = msgValue.getRemoveCatalogItem
 
-            val catalogItemRemoved = model.Message.random[CatalogItemRemoved]
+              val catalogItemRemoved = model.Message.random[CatalogItemRemoved]
 
-            val catalogItemRemovedPb = pb.CatalogItemRemoved.newBuilder()
-              .setCatalogId(removeCatalogItemPb.getCatalogId)
-              .setItemId(removeCatalogItemPb.getItemId)
-              .setVersion(catalogItemRemoved.version)
+              val catalogItemRemovedPb = pb.CatalogItemRemoved.newBuilder()
+                .setCatalogId(removeCatalogItemPb.getCatalogId)
+                .setItemId(removeCatalogItemPb.getItemId)
+                .setVersion(catalogItemRemoved.version)
 
-            try itemIdsMap.remove(UUID.fromString(removeCatalogItemPb.getItemId))
-            catch case e: Throwable => ()
+              try itemIdsMap.remove(UUID.fromString(removeCatalogItemPb.getItemId))
+              catch case e: Throwable => ()
 
-            pb.CatalogEventsSchema.newBuilder()
-              .setCatalogItemRemoved(catalogItemRemovedPb)
-              .build()
-          case pb.CatalogCommandsSchema.CommandCase.COMMAND_NOT_SET => throw RuntimeException("Command not set")
+              pb.CatalogEventsSchema.newBuilder()
+                .setCatalogItemRemoved(catalogItemRemovedPb)
+                .build()
+            case pb.CatalogCommandsSchema.CommandCase.COMMAND_NOT_SET => throw RuntimeException("Command not set")
 
-        val effect = for {
-          _ <- worker.producerPlan.messageIndex.update(_ + 1)
-          _ <- ZIO.fromFuture(e =>
-            (producer.asInstanceOf[pulsarClientApi.Producer[Array[Byte]]]).newMessage
-              .key(messageKey)
-              .value(eventMessageValue.toByteArray)
-              .sendAsync
-              .asScala
-          )
-        } yield ()
+          val effect = for {
+            _ <- worker.producerPlan.messageIndex.update(_ + 1)
+            _ <- ZIO.fromFuture(e =>
+              (producer.asInstanceOf[pulsarClientApi.Producer[Array[Byte]]]).newMessage
+                .key(messageKey)
+                .value(eventMessageValue.toByteArray)
+                .sendAsync
+                .asScala
+            )
+          } yield ()
 
-        Unsafe.unsafe { implicit u =>
-          Runtime.default.unsafe.run(effect)
-        }
+          Unsafe.unsafe { implicit u =>
+            Runtime.default.unsafe.run(effect)
+          }
 
-        consumer.acknowledge(msg)
-      catch
-        case e: Throwable =>
           consumer.acknowledge(msg)
+        catch
+          case e: Throwable =>
+            consumer.acknowledge(msg)

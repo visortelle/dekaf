@@ -6,7 +6,10 @@ import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import monocle.syntax.all.*
 import _root_.client.{adminClient, pulsarClient}
 import org.apache.pulsar.client.impl.schema.{AutoProduceBytesSchema, JSONSchema}
-import scala.jdk.CollectionConverters._
+import shared.Shared.allConsumers
+
+import scala.jdk.CollectionConverters.*
+import scala.::
 
 type TopicName = String
 type TopicIndex = Int
@@ -57,7 +60,7 @@ object TopicPlan:
         afterAllocation = _ => ()
       )
     )
-    
+
     def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): Task[TopicPlan] = for {
         producerGenerators <- ZIO.foreach(0 until generator.mkProducersCount(topicIndex)) { producerIndex =>
             generator.mkProducerGenerator(producerIndex)
@@ -186,13 +189,12 @@ object TopicPlanExecutor:
         ZIO.foreachParDiscard(consumers)(consumer =>
             for {
                 c <- ZIO.attempt(consumer.subscribe)
+                _ <- ZIO.succeed(allConsumers.appended(c))
                 _ <- ZIO.logInfo(s"Started consumer ${c.getConsumerName} for topic ${topic.name}")
             } yield ()
         )
 
     def start(topicPlan: TopicPlan): Task[Unit] = for {
         _ <- ZIO.logInfo(s"Starting topic ${topicPlan.name}")
-        produceFib <- ProducerPlanExecutor.startProduce(topicPlan).fork
-        _ <- TopicPlanExecutor.startConsume(topicPlan).fork
-        _ <- produceFib.join
+        _ <- ProducerPlanExecutor.startProduce(topicPlan) <&> TopicPlanExecutor.startConsume(topicPlan)
     } yield ()

@@ -4,6 +4,7 @@ import client.pulsarClient
 import org.apache.pulsar.client.api.Producer
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import zio.*
+import shared.Shared.allProducers
 
 import scala.jdk.CollectionConverters.*
 
@@ -80,6 +81,7 @@ object ProducerPlanExecutor:
           .topic(topicFqn)
           .create
       }
+      _ <- ZIO.succeed(allProducers.appended(producer))
       _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topicPlan.name}")
       _ <- producerPlan.messageIndex
         .update { messageIndex =>

@@ -1,6 +1,7 @@
 package demo.tenants.cqrs.namespacesRestructured
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
+import com.sun.org.slf4j.internal.Logger
 import com.tools.teal.pulsar.demoapp.account.v1 as pb
 import com.tools.teal.pulsar.demoapp.dto.v1 as pbDto
 import demo.tenants.cqrs.model.Account.*
@@ -10,6 +11,7 @@ import generators.*
 import org.apache.pulsar.client.api as pulsarClientApi
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema
 import zio.{Duration, Schedule, Task, *}
+import shared.Shared.isAcceptingNewMessages
 
 import java.util.UUID
 import scala.jdk.FutureConverters.*
@@ -428,158 +430,161 @@ object AccountNamespace:
   def mkMessageListener: ProcessorMessageListenerBuilder[pb.AccountCommandsSchema, pb.AccountEventsSchema] =
     (worker: ProcessorWorker[pb.AccountCommandsSchema, pb.AccountEventsSchema], producer: pulsarClientApi.Producer[pb.AccountEventsSchema]) =>
       (consumer: pulsarClientApi.Consumer[pb.AccountCommandsSchema], msg: pulsarClientApi.Message[pb.AccountCommandsSchema]) =>
-        try
-          val messageKey = msg.getKey
+        if !isAcceptingNewMessages then
+          consumer.negativeAcknowledge(msg)
+        else
+          try
+            val messageKey = msg.getKey
 
-          val msgValue = pb.AccountCommandsSchema.parseFrom(msg.getData)
+            val msgValue = pb.AccountCommandsSchema.parseFrom(msg.getData)
 
-          val eventMessageValue: pb.AccountEventsSchema = msgValue.getCommandCase match
-            case pb.AccountCommandsSchema.CommandCase.CREATE_ACCOUNT =>
-              val createAccountPb = msgValue.getCreateAccount
+            val eventMessageValue: pb.AccountEventsSchema = msgValue.getCommandCase match
+              case pb.AccountCommandsSchema.CommandCase.CREATE_ACCOUNT =>
+                val createAccountPb = msgValue.getCreateAccount
 
-              val accountCreated = model.Message.random[AccountCreated]
+                val accountCreated = model.Message.random[AccountCreated]
 
-              val accountCreatedPb = pb.AccountCreated.newBuilder()
-                .setAccountId(createAccountPb.getId)
-                .setFirstName(createAccountPb.getFirstName)
-                .setLastName(createAccountPb.getLastName)
-                .setEmail(createAccountPb.getEmail)
-                .setStatus(accountCreated.status)
-                .setVersion(accountCreated.version)
+                val accountCreatedPb = pb.AccountCreated.newBuilder()
+                  .setAccountId(createAccountPb.getId)
+                  .setFirstName(createAccountPb.getFirstName)
+                  .setLastName(createAccountPb.getLastName)
+                  .setEmail(createAccountPb.getEmail)
+                  .setStatus(accountCreated.status)
+                  .setVersion(accountCreated.version)
 
-              try accountIdsMap.put(UUID.fromString(createAccountPb.getId), ())
-              catch case _: Throwable => ()
+                try accountIdsMap.put(UUID.fromString(createAccountPb.getId), ())
+                catch case _: Throwable => ()
 
-              pb.AccountEventsSchema.newBuilder()
-                .setAccountCreated(accountCreatedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.ACTIVATE_ACCOUNT =>
-              val activateAccountPb = msgValue.getActivateAccount
+                pb.AccountEventsSchema.newBuilder()
+                  .setAccountCreated(accountCreatedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.ACTIVATE_ACCOUNT =>
+                val activateAccountPb = msgValue.getActivateAccount
 
-              val accountActivated = model.Message.random[AccountActivated]
+                val accountActivated = model.Message.random[AccountActivated]
 
-              val accountActivatedPb = pb.AccountActivated.newBuilder()
-                .setAccountId(activateAccountPb.getAccountId)
-                .setStatus(accountActivated.status)
-                .setVersion(accountActivated.version)
+                val accountActivatedPb = pb.AccountActivated.newBuilder()
+                  .setAccountId(activateAccountPb.getAccountId)
+                  .setStatus(accountActivated.status)
+                  .setVersion(accountActivated.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setAccountActivated(accountActivatedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.ADD_BILLING_ADDRESS =>
-              val addBillingAddressPb = msgValue.getAddBillingAddress
+                pb.AccountEventsSchema.newBuilder()
+                  .setAccountActivated(accountActivatedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.ADD_BILLING_ADDRESS =>
+                val addBillingAddressPb = msgValue.getAddBillingAddress
 
-              val billingAddressAdded = model.Message.random[BillingAddressAdded]
+                val billingAddressAdded = model.Message.random[BillingAddressAdded]
 
-              val billingAddressAddedPb = pb.BillingAddressAdded.newBuilder()
-                .setAccountId(addBillingAddressPb.getAccountId)
-                .setAddressId(billingAddressAdded.addressId.toString)
-                .setAddress(addBillingAddressPb.getAddress)
-                .setVersion(billingAddressAdded.version)
+                val billingAddressAddedPb = pb.BillingAddressAdded.newBuilder()
+                  .setAccountId(addBillingAddressPb.getAccountId)
+                  .setAddressId(billingAddressAdded.addressId.toString)
+                  .setAddress(addBillingAddressPb.getAddress)
+                  .setVersion(billingAddressAdded.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setBillingAddressAdded(billingAddressAddedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.ADD_SHIPPING_ADDRESS =>
-              val addShippingAddressPb = msgValue.getAddShippingAddress
+                pb.AccountEventsSchema.newBuilder()
+                  .setBillingAddressAdded(billingAddressAddedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.ADD_SHIPPING_ADDRESS =>
+                val addShippingAddressPb = msgValue.getAddShippingAddress
 
-              val shippingAddressAdded = model.Message.random[ShippingAddressAdded]
+                val shippingAddressAdded = model.Message.random[ShippingAddressAdded]
 
-              val shippingAddressAddedPb = pb.ShippingAddressAdded.newBuilder()
-                .setAccountId(addShippingAddressPb.getAccountId)
-                .setAddressId(shippingAddressAdded.addressId.toString)
-                .setAddress(addShippingAddressPb.getAddress)
-                .setVersion(shippingAddressAdded.version)
+                val shippingAddressAddedPb = pb.ShippingAddressAdded.newBuilder()
+                  .setAccountId(addShippingAddressPb.getAccountId)
+                  .setAddressId(shippingAddressAdded.addressId.toString)
+                  .setAddress(addShippingAddressPb.getAddress)
+                  .setVersion(shippingAddressAdded.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setShippingAddressAdded(shippingAddressAddedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.DELETE_ACCOUNT =>
-              val deleteAccountPb = msgValue.getDeleteAccount
+                pb.AccountEventsSchema.newBuilder()
+                  .setShippingAddressAdded(shippingAddressAddedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.DELETE_ACCOUNT =>
+                val deleteAccountPb = msgValue.getDeleteAccount
 
-              val accountDeleted = model.Message.random[AccountDeleted]
+                val accountDeleted = model.Message.random[AccountDeleted]
 
-              val accountDeletedPb = pb.AccountDeleted.newBuilder()
-                .setAccountId(deleteAccountPb.getAccountId)
-                .setStatus(accountDeleted.status)
-                .setVersion(accountDeleted.version)
+                val accountDeletedPb = pb.AccountDeleted.newBuilder()
+                  .setAccountId(deleteAccountPb.getAccountId)
+                  .setStatus(accountDeleted.status)
+                  .setVersion(accountDeleted.version)
 
-              try accountIdsMap.remove(UUID.fromString(deleteAccountPb.getAccountId))
-              catch case _: Throwable => ()
+                try accountIdsMap.remove(UUID.fromString(deleteAccountPb.getAccountId))
+                catch case _: Throwable => ()
 
-              pb.AccountEventsSchema.newBuilder()
-                .setAccountDeleted(accountDeletedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.DELETE_BILLING_ADDRESS =>
-              val deleteBillingAddressPb = msgValue.getDeleteBillingAddress
+                pb.AccountEventsSchema.newBuilder()
+                  .setAccountDeleted(accountDeletedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.DELETE_BILLING_ADDRESS =>
+                val deleteBillingAddressPb = msgValue.getDeleteBillingAddress
 
-              val billingAddressDeleted = model.Message.random[BillingAddressDeleted]
+                val billingAddressDeleted = model.Message.random[BillingAddressDeleted]
 
-              val billingAddressDeletedPb = pb.BillingAddressDeleted.newBuilder()
-                .setAccountId(deleteBillingAddressPb.getAccountId)
-                .setAddressId(deleteBillingAddressPb.getAddressId)
-                .setVersion(billingAddressDeleted.version)
+                val billingAddressDeletedPb = pb.BillingAddressDeleted.newBuilder()
+                  .setAccountId(deleteBillingAddressPb.getAccountId)
+                  .setAddressId(deleteBillingAddressPb.getAddressId)
+                  .setVersion(billingAddressDeleted.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setBillingAddressDeleted(billingAddressDeletedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.DELETE_SHIPPING_ADDRESS =>
-              val deleteShippingAddressPb = msgValue.getDeleteShippingAddress
+                pb.AccountEventsSchema.newBuilder()
+                  .setBillingAddressDeleted(billingAddressDeletedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.DELETE_SHIPPING_ADDRESS =>
+                val deleteShippingAddressPb = msgValue.getDeleteShippingAddress
 
-              val shippingAddressDeleted = model.Message.random[ShippingAddressDeleted]
+                val shippingAddressDeleted = model.Message.random[ShippingAddressDeleted]
 
-              val shippingAddressDeletedPb = pb.ShippingAddressDeleted.newBuilder()
-                .setAccountId(deleteShippingAddressPb.getAccountId)
-                .setAddressId(deleteShippingAddressPb.getAddressId)
-                .setVersion(shippingAddressDeleted.version)
+                val shippingAddressDeletedPb = pb.ShippingAddressDeleted.newBuilder()
+                  .setAccountId(deleteShippingAddressPb.getAccountId)
+                  .setAddressId(deleteShippingAddressPb.getAddressId)
+                  .setVersion(shippingAddressDeleted.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setShippingAddressDeleted(shippingAddressDeletedPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.PREFER_SHIPPING_ADDRESS =>
-              val preferShippingAddressPb = msgValue.getPreferShippingAddress
+                pb.AccountEventsSchema.newBuilder()
+                  .setShippingAddressDeleted(shippingAddressDeletedPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.PREFER_SHIPPING_ADDRESS =>
+                val preferShippingAddressPb = msgValue.getPreferShippingAddress
 
-              val shippingAddressPreferred = model.Message.random[ShippingAddressPreferred]
+                val shippingAddressPreferred = model.Message.random[ShippingAddressPreferred]
 
-              val shippingAddressPreferredPb = pb.ShippingAddressPreferred.newBuilder()
-                .setAccountId(preferShippingAddressPb.getAccountId)
-                .setAddressId(preferShippingAddressPb.getAddressId)
-                .setVersion(shippingAddressPreferred.version)
+                val shippingAddressPreferredPb = pb.ShippingAddressPreferred.newBuilder()
+                  .setAccountId(preferShippingAddressPb.getAccountId)
+                  .setAddressId(preferShippingAddressPb.getAddressId)
+                  .setVersion(shippingAddressPreferred.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setShippingAddressPreferred(shippingAddressPreferredPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.PREFER_BILLING_ADDRESS =>
-              val preferBillingAddressPb = msgValue.getPreferBillingAddress
+                pb.AccountEventsSchema.newBuilder()
+                  .setShippingAddressPreferred(shippingAddressPreferredPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.PREFER_BILLING_ADDRESS =>
+                val preferBillingAddressPb = msgValue.getPreferBillingAddress
 
-              val billingAddressPreferred = model.Message.random[BillingAddressPreferred]
+                val billingAddressPreferred = model.Message.random[BillingAddressPreferred]
 
-              val billingAddressPreferredPb = pb.BillingAddressPreferred.newBuilder()
-                .setAccountId(preferBillingAddressPb.getAccountId)
-                .setAddressId(preferBillingAddressPb.getAddressId)
-                .setVersion(billingAddressPreferred.version)
+                val billingAddressPreferredPb = pb.BillingAddressPreferred.newBuilder()
+                  .setAccountId(preferBillingAddressPb.getAccountId)
+                  .setAddressId(preferBillingAddressPb.getAddressId)
+                  .setVersion(billingAddressPreferred.version)
 
-              pb.AccountEventsSchema.newBuilder()
-                .setBillingAddressPreferred(billingAddressPreferredPb)
-                .build()
-            case pb.AccountCommandsSchema.CommandCase.COMMAND_NOT_SET => throw RuntimeException("Command not set")
+                pb.AccountEventsSchema.newBuilder()
+                  .setBillingAddressPreferred(billingAddressPreferredPb)
+                  .build()
+              case pb.AccountCommandsSchema.CommandCase.COMMAND_NOT_SET => throw RuntimeException("Command not set")
 
-          val effect = for {
-            _ <- worker.producerPlan.messageIndex.update(_ + 1)
-            _ <- ZIO.fromFuture(e =>
-              producer.asInstanceOf[pulsarClientApi.Producer[Array[Byte]]].newMessage
-                .key(messageKey)
-                .value(eventMessageValue.toByteArray)
-                .sendAsync
-                .asScala
-            )
-          } yield ()
+            val effect = for {
+              _ <- worker.producerPlan.messageIndex.update(_ + 1)
+              _ <- ZIO.fromFuture(e =>
+                producer.asInstanceOf[pulsarClientApi.Producer[Array[Byte]]].newMessage
+                  .key(messageKey)
+                  .value(eventMessageValue.toByteArray)
+                  .sendAsync
+                  .asScala
+              )
+            } yield ()
 
-          Unsafe.unsafe { implicit u =>
-            Runtime.default.unsafe.run(effect)
-          }
+            Unsafe.unsafe { implicit u =>
+              Runtime.default.unsafe.run(effect)
+            }
 
-          consumer.acknowledge(msg)
-        catch
-          case e: Throwable =>
             consumer.acknowledge(msg)
+          catch
+            case e: Throwable =>
+              consumer.acknowledge(msg)
