@@ -46,6 +46,10 @@ function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): bool
     return true;
   }
 
+  if (value.val?.spec.numDisplayItems !== undefined) {
+    return true;
+  }
+
   return false;
 }
 

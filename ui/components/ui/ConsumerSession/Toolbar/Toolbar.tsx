@@ -87,7 +87,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           <Input
             value={props.searchInResults}
             onChange={props.onSearchInResultsChange}
-            placeholder='Search in results'
+            placeholder='Search in found'
             size='small'
             clearable
           />
