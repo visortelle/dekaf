@@ -25,8 +25,6 @@ if (process.env.NODE_ENV === 'production') {
   sourceMapSupport.install();
 }
 
-let isDarwin = process.platform === "darwin";
-
 const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
@@ -51,12 +49,12 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  const RESOURCES_PATH = app.isPackaged
+  const resourcePath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
 
   const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
+    return path.join(resourcePath, ...paths);
   };
 
   mainWindow = new BrowserWindow({

@@ -69,7 +69,6 @@
     "fs-extra": "^11.2.0",
     "humanize-duration": "^3.31.0",
     "lodash": "^4.17.21",
-    "mkdirp": "^3.0.1",
     "numeral": "^2.0.6",
     "portfinder": "^1.0.32",
     "rc-upload": "^4.4.0",

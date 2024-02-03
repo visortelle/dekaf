@@ -86,12 +86,12 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
 
   sendMessage(apiChannel, req);
 
-  const RESOURCES_PATH = app.isPackaged
+  const resourcePath = app.isPackaged
   ? path.join(process.resourcesPath, 'assets')
   : path.join(__dirname, '../../../../assets');
 
   const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
+    return path.join(resourcePath, ...paths);
   };
 
   if (proc.type.type === "dekaf" && status === 'ready') {
@@ -225,9 +225,11 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     win.close();
   }
    
-  proc.childProcess.pid && process.platform === 'win32' 
-    ? spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T']) 
-    : proc.childProcess.kill();
+  if(proc.childProcess.pid !== undefined && process.platform === 'win32') {
+    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T']) 
+  } else {
+    proc.childProcess.kill();
+  }
 
   updateProcessStatus(arg.processId, 'stopping');
 }
@@ -385,8 +387,6 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   });
 
   process.on('exit', (code, signal) => {
-    console.log(code);
-    console.log(signal);
     if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
@@ -638,8 +638,6 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
   });
 
   process.on('exit', (code, signal) => {
-    console.log(code);
-    console.log(signal);
     if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);

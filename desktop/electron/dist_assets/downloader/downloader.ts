@@ -6,7 +6,6 @@ import fsAsync from 'node:fs/promises';
 import fsExtra from 'fs-extra';
 import tar from 'tar';
 import yauzl from 'yauzl';
-import { mkdirp } from 'mkdirp';
 import crypto from 'node:crypto';
 import streamAsync from 'stream/promises';
 
@@ -255,9 +254,9 @@ async function resolveUrlRedirects(url: string, maxRedirects: number): Promise<s
 }
 
 async function unzipFile(source: string, destination: string) {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>(async (resolve, reject) => {
     try {      
-      mkdirp.sync(destination);
+      await fsExtra.ensureDir(destination);
 
       yauzl.open(source, {lazyEntries: true}, (err, zipFile) => {
         if (err) {
@@ -268,7 +267,7 @@ async function unzipFile(source: string, destination: string) {
 
         zipFile.readEntry();
 
-        zipFile.on('entry', (entry) => {
+        zipFile.on('entry', async (entry) => {
           try {
             let pathSeparatorRegex = /[\\/]/
             let strippedFileName = entry.fileName.split(pathSeparatorRegex);
@@ -280,10 +279,10 @@ async function unzipFile(source: string, destination: string) {
   
             const dirPath = path.dirname(fullPath);
 
-            mkdirp.sync(dirPath);
+            await fsExtra.ensureDir(dirPath);
 
             if (/\/$/.test(strippedFileName)) {
-              mkdirp.sync(path.join(destination, strippedFileName));
+              await fsExtra.ensureDir(path.join(destination, strippedFileName));
               zipFile.readEntry();
             } else {             
               zipFile.openReadStream(entry, (readErr, readStream) => {
