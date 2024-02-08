@@ -1,6 +1,6 @@
 package demo.tenants.cqrs.namespaces
 
-import demo.tenants.cqrs.shared.DemoappTopicConfig
+import demo.tenants.cqrs.shared.DemoAppTopicConfig
 import demo.tenants.cqrs.model.Order.*
 import demo.tenants.cqrs.shared.mkConfigurableTopicPlanGenerator
 import generators.{NamespacePlanGenerator, TenantName}
@@ -16,21 +16,21 @@ object OrderNamespace:
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "PlaceOrder",
-          mkLoadType = _ => DemoappTopicConfig.Overloaded,
+          mkLoadType = _ => DemoAppTopicConfig.Overloaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[ConfirmOrder](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ConfirmOrder",
-          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[CancelOrder](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "CancelOrder",
-          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )
@@ -52,14 +52,14 @@ object OrderNamespace:
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "OrderPlaced",
-          mkLoadType = _ => DemoappTopicConfig.Overloaded,
+          mkLoadType = _ => DemoAppTopicConfig.Overloaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[OrderConfirmed](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "OrderConfirmed",
-          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )

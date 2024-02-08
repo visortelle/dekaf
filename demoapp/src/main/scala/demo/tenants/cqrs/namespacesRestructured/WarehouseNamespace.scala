@@ -11,7 +11,8 @@ import generators.{ConsumerPlanGenerator, Message, NamespacePlanGenerator, Proce
 import org.apache.pulsar.client.api as pulsarClientApi
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema
 import zio.{Duration, Runtime, Schedule, Unsafe, ZIO}
-import shared.Shared.isAcceptingNewMessages
+import app.DekafDemoApp.isAcceptingNewMessages
+import client.adminClient
 
 import java.util.UUID
 import scala.jdk.FutureConverters.*
@@ -46,7 +47,7 @@ object WarehouseNamespace:
         ,
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.heavilyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.heavilyLoadedTopic
           )
         )
       ),
@@ -76,7 +77,7 @@ object WarehouseNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.overloadedTopic
+            DemoAppTopicConfig.ScheduleTime.overloadedTopic
           )
         )
       ),
@@ -102,7 +103,7 @@ object WarehouseNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -128,7 +129,7 @@ object WarehouseNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -163,7 +164,7 @@ object WarehouseNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.moderatelyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.moderatelyLoadedTopic
           )
         )
       ),
@@ -301,11 +302,11 @@ object WarehouseNamespace:
       mkPartitioning = mkDefaultTopicPartitioning,
       mkPersistency = mkDefaultPersistency,
       mkSchemaInfos = _ => List(warehouseCommandsSchemaInfo),
-      mkSubscriptionsCount = i => DemoappTopicConfig.SubscriptionAmount.lightlyLoadedTopic,
+      mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.lightlyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
       mkSubscriptionGenerator = _ => SubscriptionPlanGenerator.make(
         mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
-        mkConsumersCount = i => DemoappTopicConfig.ConsumerAmount.lightlyLoadedTopic,
+        mkConsumersCount = i => DemoAppTopicConfig.ConsumerAmount.lightlyLoadedTopic,
         mkConsumerGenerator = _ => ConsumerPlanGenerator.make()
       )
     )
@@ -319,11 +320,11 @@ object WarehouseNamespace:
       mkPartitioning = mkDefaultTopicPartitioning,
       mkPersistency = mkDefaultPersistency,
       mkSchemaInfos = _ => List(warehouseEventsSchemaInfo),
-      mkSubscriptionsCount = i => DemoappTopicConfig.SubscriptionAmount.moderatelyLoadedTopic,
+      mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.moderatelyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
       mkSubscriptionGenerator = _ => SubscriptionPlanGenerator.make(
         mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
-        mkConsumersCount = i => DemoappTopicConfig.ConsumerAmount.heavilyLoadedTopic,
+        mkConsumersCount = i => DemoAppTopicConfig.ConsumerAmount.heavilyLoadedTopic,
         mkConsumerGenerator = _ => ConsumerPlanGenerator.make()
       )
     )
@@ -334,7 +335,7 @@ object WarehouseNamespace:
         mkConsumingTopicPlan = _ => mkTopicPlan(warehouseCommandsTopicPlanGenerator, 0),
         mkProducingTopicPlan = _ => mkTopicPlan(warehouseEventsTopicPlanGenerator, 0),
         mkSubscriptionPlan = _ => mkSubscriptionPlan("WarehouseProcessorSubscription"),
-        mkWorkerCount = _ => DemoappTopicConfig.workersAmount,
+        mkWorkerCount = _ => DemoAppTopicConfig.workersAmount,
         mkWorkerConsumerName = _ => i => s"WarehouseProcessor-$i",
         mkWorkerProducerName = _ => i => s"WarehouseProcessor-$i",
         mkMessageListenerBuilder = _ => mkMessageListener
@@ -349,7 +350,10 @@ object WarehouseNamespace:
       mkTopicGenerator = topicIndex => topicPlanGenerators(topicIndex),
       mkProcessorsCount = _ => 1,
       mkProcessorGenerator = processorIndex => processorPlanGenerator,
-      mkAfterAllocation = _ => ()
+      mkAfterAllocation = _ => {
+        val namespaceFqn = s"$tenantName/$namespaceName"
+        adminClient.namespaces.setSchemaValidationEnforced(namespaceFqn, true)
+      }
     )
 
   def mkMessageListener: ProcessorMessageListenerBuilder[pb.WarehouseCommandsSchema, pb.WarehouseEventsSchema] =

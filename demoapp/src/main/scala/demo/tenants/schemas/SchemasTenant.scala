@@ -1,14 +1,12 @@
 package demo.tenants.schemas
 
-import zio.*
 import generators.*
-import _root_.client.adminClient
-import demo.tenants.schemas.namespaces
+import zio.*
 
 object SchemasTenant:
   val tenantName = s"schema-types-${java.time.Instant.now().getEpochSecond}"
 
-  def mkTenantPlanGenerator =
+  def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
       val namespacePlanGenerators = List(
           namespaces.BooleanNamespace.mkPlanGenerator(tenantName),
           namespaces.Int8Namespace.mkPlanGenerator(tenantName),

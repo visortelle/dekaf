@@ -5,5 +5,8 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
         pulsarBrokerUrl = highPriority.pulsarBrokerUrl.orElse(lowPriority.pulsarBrokerUrl),
         pulsarWebUrl = highPriority.pulsarWebUrl.orElse(lowPriority.pulsarWebUrl),
         auth = highPriority.auth.orElse(lowPriority.auth),
-        loadConfig = highPriority.loadConfig.orElse(lowPriority.loadConfig), 
+        enableDemoAppTenant = highPriority.enableDemoAppTenant.orElse(lowPriority.enableDemoAppTenant),
+        demoAppConfig = highPriority.demoAppConfig.orElse(lowPriority.demoAppConfig),
+        enableSchemasTenant = highPriority.enableSchemasTenant.orElse(lowPriority.enableSchemasTenant),
+        schemasConfig = highPriority.schemasConfig.orElse(lowPriority.schemasConfig),
     )

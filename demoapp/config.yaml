@@ -1,7 +1,5 @@
-brokerServiceUrl: "pulsar://localhost:6650"
-webServiceUrl: "http://localhost:8080"
-
-loadConfig:
+enableDemoAppTenant: true
+demoAppConfig:
   enableNonPersistentTopics: false
   producerLoadMultiplier:
     overloaded: 1
@@ -9,8 +7,12 @@ loadConfig:
     moderatelyLoaded: 1
     lightlyLoaded: 1
   subscriptionAmount:
-    overloaded: 1
+    overloaded: 100
     heavilyLoaded: 1
     moderatelyLoaded: 1
     lightlyLoaded: 1
   workersAmount: 10
+
+enableSchemasTenant: true
+schemasConfig:
+  enableHighLoadTopics: false

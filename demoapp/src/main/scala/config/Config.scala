@@ -67,7 +67,7 @@ case class TopicProducersAmountConfig(
   lightlyLoaded: Option[Int],
 )
 
-case class LoadConfig(
+case class DemoAppConfig(
   @describe("Toggle option for enabling/disabling non-persistent topics")
   enableNonPersistentTopics: Option[Boolean],
   @describe("Toggle option for enabling/disabling partitioned topics")
@@ -93,6 +93,11 @@ case class LoadConfig(
   workersAmount: Option[Int],
 )
 
+case class SchemasConfig(
+  @describe("Enable high load topics (100 messages/s) for the schemas tenant. If not set, will be false")
+  enableHighLoadTopics: Option[Boolean],
+)
+
 case class Config(
   @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
   pulsarBrokerUrl: Option[String],
@@ -101,13 +106,20 @@ case class Config(
   @describe("Config to enable authentication to Pulsar instance for the demo app.")
   auth: Option[AuthConfig],
 
+  @describe("Enable demo app tenant for the demo app. If not set, will be true")
+  enableDemoAppTenant: Option[Boolean],
   @describe(
-    """Load config to manipulate load on the demo app.
+    """Config to manipulate the demo app.
       |Topics are divided into different load categories.
       |Each load category is assigned based on the context of the topic.
       |This config enables the configuration of each category's own amount of subscriptions, consumers, and producers.
       |""".stripMargin)
-  loadConfig: Option[LoadConfig],
+  demoAppConfig: Option[DemoAppConfig],
+
+  @describe("Enable schemas tenant for the demo app. If not set, will be true")
+  enableSchemasTenant: Option[Boolean],
+  @describe("Load config to manipulate load on the demo app.")
+  schemasConfig: Option[SchemasConfig],
 )
 
 val defaultConfig = Config(
@@ -115,8 +127,9 @@ val defaultConfig = Config(
   pulsarWebUrl = Some("http://localhost:8080"),
   auth = None,
 
-  loadConfig = Some(
-    LoadConfig(
+  enableDemoAppTenant = Some(true),
+  demoAppConfig = Some(
+    DemoAppConfig(
       enableNonPersistentTopics = Some(true),
       enablePartitionedTopics = Some(true),
       producerLoadMultiplier = Some(
@@ -154,7 +167,14 @@ val defaultConfig = Config(
         )
       ),*/
     )
-  )
+  ),
+
+  enableSchemasTenant = Some(true),
+  schemasConfig = Some(
+    SchemasConfig(
+      enableHighLoadTopics = Some(false),
+    )
+  ),
 )
 
 val yamlConfigDescriptor = descriptor[Config]

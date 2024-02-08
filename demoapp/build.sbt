@@ -11,7 +11,14 @@ val jacksonVersion = "2.15.2"
 Global / cancelable := true
 Global / fork := true
 
-run / javaOptions ++= Seq("-Xmx8G")
+run / javaOptions ++= Seq(
+  "-Xmx8G",
+
+  // Fix "Cannot get DNS TTL settings from sun.net.InetAddressCachePolicy"
+  // https://github.com/apache/pulsar/issues/15349
+  "--add-opens=java.management/sun.management=ALL-UNNAMED",
+  "--add-opens=java.base/sun.net=ALL-UNNAMED",
+)
 
 packageDoc / publishArtifact := false
 
@@ -61,6 +68,7 @@ lazy val root = project
             "org.scalameta" %% "munit" % "0.7.29" % Test,
             "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
             "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1",
+            "ch.qos.logback" % "logback-classic" % "1.4.12",
         )
     )
 

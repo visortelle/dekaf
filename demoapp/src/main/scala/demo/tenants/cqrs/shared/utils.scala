@@ -19,7 +19,7 @@ def mkConfigurableTopicPlanGenerator[T <: MessageDto](
   mkTenant: () => TenantName = () => "dekaf_default",
   mkNamespace: () => NamespaceName = () => "dekaf_default",
   mkName: TopicIndex => TopicName = i => s"topic-$i",
-  mkLoadType: TopicIndex => DemoappTopicConfig.LoadType,
+  mkLoadType: TopicIndex => DemoAppTopicConfig.LoadType,
   mkSubscriptionType: SubscriptionIndex => SubscriptionType,
 )(using rn: Randomizable[T], sch: Schemable[T]) =
   val schemaInfo = MessageDto.schema[T].getSchemaInfo
@@ -36,10 +36,10 @@ def mkConfigurableTopicPlanGenerator[T <: MessageDto](
         mkSchedule = i => Schedule.fixed(
           Duration.fromMillis(
             mkLoadType(i) match
-              case DemoappTopicConfig.Overloaded => DemoappTopicConfig.ScheduleTime.overloadedTopic
-              case DemoappTopicConfig.HeavilyLoaded => DemoappTopicConfig.ScheduleTime.heavilyLoadedTopic
-              case DemoappTopicConfig.ModeratelyLoaded => DemoappTopicConfig.ScheduleTime.moderatelyLoadedTopic
-              case DemoappTopicConfig.LightlyLoaded => DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+              case DemoAppTopicConfig.Overloaded => DemoAppTopicConfig.ScheduleTime.overloadedTopic
+              case DemoAppTopicConfig.HeavilyLoaded => DemoAppTopicConfig.ScheduleTime.heavilyLoadedTopic
+              case DemoAppTopicConfig.ModeratelyLoaded => DemoAppTopicConfig.ScheduleTime.moderatelyLoadedTopic
+              case DemoAppTopicConfig.LightlyLoaded => DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -47,19 +47,19 @@ def mkConfigurableTopicPlanGenerator[T <: MessageDto](
     mkPartitioning = mkDefaultTopicPartitioning,
     mkPersistency = mkDefaultPersistency,
     mkSubscriptionsCount = i => mkLoadType(i) match
-      case DemoappTopicConfig.Overloaded => DemoappTopicConfig.SubscriptionAmount.overloadedTopic
-      case DemoappTopicConfig.HeavilyLoaded => DemoappTopicConfig.SubscriptionAmount.heavilyLoadedTopic
-      case DemoappTopicConfig.ModeratelyLoaded => DemoappTopicConfig.SubscriptionAmount.moderatelyLoadedTopic
-      case DemoappTopicConfig.LightlyLoaded => DemoappTopicConfig.SubscriptionAmount.lightlyLoadedTopic
+      case DemoAppTopicConfig.Overloaded => DemoAppTopicConfig.SubscriptionAmount.overloadedTopic
+      case DemoAppTopicConfig.HeavilyLoaded => DemoAppTopicConfig.SubscriptionAmount.heavilyLoadedTopic
+      case DemoAppTopicConfig.ModeratelyLoaded => DemoAppTopicConfig.SubscriptionAmount.moderatelyLoadedTopic
+      case DemoAppTopicConfig.LightlyLoaded => DemoAppTopicConfig.SubscriptionAmount.lightlyLoadedTopic
     ,
     mkSubscriptionType = mkSubscriptionType,
     mkSubscriptionGenerator = _ => SubscriptionPlanGenerator.make(
       mkSubscriptionType = mkSubscriptionType,
       mkConsumersCount = i => mkLoadType(i) match
-        case DemoappTopicConfig.Overloaded => DemoappTopicConfig.ConsumerAmount.overloadedTopic
-        case DemoappTopicConfig.HeavilyLoaded => DemoappTopicConfig.ConsumerAmount.heavilyLoadedTopic
-        case DemoappTopicConfig.ModeratelyLoaded => DemoappTopicConfig.ConsumerAmount.moderatelyLoadedTopic
-        case DemoappTopicConfig.LightlyLoaded => DemoappTopicConfig.ConsumerAmount.lightlyLoadedTopic
+        case DemoAppTopicConfig.Overloaded => DemoAppTopicConfig.ConsumerAmount.overloadedTopic
+        case DemoAppTopicConfig.HeavilyLoaded => DemoAppTopicConfig.ConsumerAmount.heavilyLoadedTopic
+        case DemoAppTopicConfig.ModeratelyLoaded => DemoAppTopicConfig.ConsumerAmount.moderatelyLoadedTopic
+        case DemoAppTopicConfig.LightlyLoaded => DemoAppTopicConfig.ConsumerAmount.lightlyLoadedTopic
       ,
       mkConsumerGenerator = _ => ConsumerPlanGenerator.make(
         mkName = i => s"${mkName(i)}Consumer-$i",
@@ -110,15 +110,15 @@ def mkRandomKeyFromMap(aggregatesKeys: ConcurrentLinkedHashMap[UUID, _]): Option
       val randomIndex = Random.nextInt(keys.size)
 
       pickId(iterator, randomIndex)
-        
+
 def mkDefaultTopicPartitioning: TopicIndex => TopicPartitioning =
-  if (faker.number().randomDouble(2, 0, 1) > 0.8 && DemoappTopicConfig.enablePartitionedTopics) then
+  if (faker.number().randomDouble(2, 0, 1) > 0.8 && DemoAppTopicConfig.enablePartitionedTopics) then
     _ => Partitioned(faker.number().numberBetween(1, 10))
   else
     _ => NonPartitioned()
 
 def mkDefaultPersistency: TopicIndex => TopicPersistency =
-  if (faker.number().randomDouble(2, 0, 1) > 0.8 && DemoappTopicConfig.enableNonPersistentTopics) then
+  if (faker.number().randomDouble(2, 0, 1) > 0.8 && DemoAppTopicConfig.enableNonPersistentTopics) then
     _ => NonPersistent()
   else
     _ => Persistent()

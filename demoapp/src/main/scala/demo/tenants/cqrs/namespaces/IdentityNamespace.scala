@@ -1,6 +1,6 @@
 package demo.tenants.cqrs.namespaces
 
-import demo.tenants.cqrs.shared.DemoappTopicConfig
+import demo.tenants.cqrs.shared.DemoAppTopicConfig
 import demo.tenants.cqrs.model.Identity.*
 import demo.tenants.cqrs.shared.mkConfigurableTopicPlanGenerator
 import generators.{NamespacePlanGenerator, TenantName}
@@ -16,49 +16,49 @@ object IdentityNamespace:
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ChangeEmail",
-          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[ConfirmEmail](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ConfirmEmail",
-          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[ExpiryEmail](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ExpiryEmail",
-          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[RegisterUser](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "RegisterUser",
-          mkLoadType = _ => DemoappTopicConfig.Overloaded,
+          mkLoadType = _ => DemoAppTopicConfig.Overloaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[ChangePassword](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "ChangePassword",
-          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[DefinePrimaryEmail](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "DefinePrimaryEmail",
-          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[DeleteUser](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "DeleteUser",
-          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )
@@ -80,49 +80,49 @@ object IdentityNamespace:
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "UserDeleted",
-          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[UserRegistered](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "UserRegistered",
-          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[EmailChanged](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "EmailChanged",
-          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[UserPasswordChanged](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "UserPasswordChanged",
-          mkLoadType = _ => DemoappTopicConfig.ModeratelyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.ModeratelyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[EmailConfirmed](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "EmailConfirmed",
-          mkLoadType = _ => DemoappTopicConfig.HeavilyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.HeavilyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[EmailExpired](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "EmailExpired",
-          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
         mkConfigurableTopicPlanGenerator[PrimaryEmailDefined](
           mkTenant = () => tenantName,
           mkNamespace = () => namespaceName,
           mkName = _ => "PrimaryEmailDefined",
-          mkLoadType = _ => DemoappTopicConfig.LightlyLoaded,
+          mkLoadType = _ => DemoAppTopicConfig.LightlyLoaded,
           mkSubscriptionType = _ => SubscriptionType.Shared,
         ),
       )

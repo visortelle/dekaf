@@ -4,7 +4,7 @@ import generators.*
 import namespacesRestructured.*
 import zio.Task
 
-object DemoappTenant:
+object DemoAppTenant:
   val tenantName = s"DemoShop-${System.currentTimeMillis()}"
 
   def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
@@ -17,11 +17,11 @@ object DemoappTenant:
     TenantPlanGenerator.make(
       mkName = _ => tenantName,
       mkNamespacesCount = _ => namespacePlanGenerators.size,
-      mkNamespaceGenerator = i => namespacePlanGenerators(i),
+      mkNamespaceGenerator = namespaceIndex => namespacePlanGenerators(namespaceIndex),
     )
 
   def mkTenantPlan: Task[TenantPlan] =
     for {
       tenantGenerator <- mkTenantPlanGenerator
-      tenantPlan <- TenantPlan.make(tenantGenerator, 1)
+      tenantPlan <- TenantPlan.make(tenantGenerator, 0)
     } yield tenantPlan

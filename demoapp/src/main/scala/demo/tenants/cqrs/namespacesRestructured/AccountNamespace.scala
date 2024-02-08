@@ -5,13 +5,14 @@ import com.sun.org.slf4j.internal.Logger
 import com.tools.teal.pulsar.demoapp.account.v1 as pb
 import com.tools.teal.pulsar.demoapp.dto.v1 as pbDto
 import demo.tenants.cqrs.model.Account.*
-import demo.tenants.cqrs.shared.{DemoappTopicConfig, mkDefaultPersistency, mkDefaultTopicPartitioning, mkMessageWithRandomKeyFromMap, mkSubscriptionPlan, mkTopicPlan}
+import demo.tenants.cqrs.shared.{DemoAppTopicConfig, mkDefaultPersistency, mkDefaultTopicPartitioning, mkMessageWithRandomKeyFromMap, mkSubscriptionPlan, mkTopicPlan}
 import demo.tenants.cqrs.model
 import generators.*
 import org.apache.pulsar.client.api as pulsarClientApi
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema
 import zio.{Duration, Schedule, Task, *}
-import shared.Shared.isAcceptingNewMessages
+import app.DekafDemoApp.isAcceptingNewMessages
+import client.adminClient
 
 import java.util.UUID
 import scala.jdk.FutureConverters.*
@@ -50,7 +51,7 @@ object AccountNamespace:
         ,
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.overloadedTopic
+            DemoAppTopicConfig.ScheduleTime.overloadedTopic
           )
         )
       ),
@@ -80,7 +81,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.heavilyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.heavilyLoadedTopic
           )
         )
       ),
@@ -110,7 +111,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.heavilyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.heavilyLoadedTopic
           )
         )
       ),
@@ -131,7 +132,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.moderatelyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.moderatelyLoadedTopic
           )
         )
       ),
@@ -153,7 +154,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.moderatelyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.moderatelyLoadedTopic
           )
         )
       ),
@@ -175,7 +176,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -197,7 +198,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -219,7 +220,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -240,7 +241,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.overloadedTopic
+            DemoAppTopicConfig.ScheduleTime.overloadedTopic
           )
         )
       ),
@@ -267,7 +268,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -290,7 +291,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.moderatelyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.moderatelyLoadedTopic
           )
         )
       ),
@@ -313,7 +314,7 @@ object AccountNamespace:
           }),
           mkSchedule = _ => Schedule.fixed(
             Duration.fromNanos(
-              DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+              DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -336,7 +337,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -359,7 +360,7 @@ object AccountNamespace:
           }),
         mkSchedule = _ => Schedule.fixed(
           Duration.fromNanos(
-            DemoappTopicConfig.ScheduleTime.lightlyLoadedTopic
+            DemoAppTopicConfig.ScheduleTime.lightlyLoadedTopic
           )
         )
       ),
@@ -377,11 +378,11 @@ object AccountNamespace:
       mkPartitioning = mkDefaultTopicPartitioning,
       mkPersistency = mkDefaultPersistency,
       mkSchemaInfos = _ => List(accountCommandsSchemaInfo),
-      mkSubscriptionsCount = i => DemoappTopicConfig.SubscriptionAmount.moderatelyLoadedTopic,
+      mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.moderatelyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
       mkSubscriptionGenerator = _ => SubscriptionPlanGenerator.make(
         mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
-        mkConsumersCount = i => DemoappTopicConfig.ConsumerAmount.lightlyLoadedTopic,
+        mkConsumersCount = i => DemoAppTopicConfig.ConsumerAmount.lightlyLoadedTopic,
         mkConsumerGenerator = _ => ConsumerPlanGenerator.make()
       )
     )
@@ -394,11 +395,11 @@ object AccountNamespace:
       mkPartitioning = mkDefaultTopicPartitioning,
       mkPersistency = mkDefaultPersistency,
       mkSchemaInfos = _ => List(accountEventsSchemaInfo),
-      mkSubscriptionsCount = i => DemoappTopicConfig.SubscriptionAmount.heavilyLoadedTopic,
+      mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.heavilyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
       mkSubscriptionGenerator = _ => SubscriptionPlanGenerator.make(
         mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
-        mkConsumersCount = i => DemoappTopicConfig.ConsumerAmount.moderatelyLoadedTopic,
+        mkConsumersCount = i => DemoAppTopicConfig.ConsumerAmount.moderatelyLoadedTopic,
         mkConsumerGenerator = _ => ConsumerPlanGenerator.make()
       )
     )
@@ -409,7 +410,7 @@ object AccountNamespace:
         mkConsumingTopicPlan = _ => mkTopicPlan(accountCommandsTopicPlanGenerator, 0),
         mkProducingTopicPlan = _ => mkTopicPlan(accountEventsTopicPlanGenerator, 0),
         mkSubscriptionPlan = _ => mkSubscriptionPlan("AccountProcessorSubscription"),
-        mkWorkerCount = _ => DemoappTopicConfig.workersAmount,
+        mkWorkerCount = _ => DemoAppTopicConfig.workersAmount,
         mkWorkerConsumerName = _ => i => s"AccountProcessor-$i",
         mkWorkerProducerName = _ => i => s"AccountProcessor-$i",
         mkMessageListenerBuilder = _ => mkMessageListener
@@ -424,7 +425,10 @@ object AccountNamespace:
       mkTopicGenerator = topicIndex => topicPlanGenerators(topicIndex),
       mkProcessorsCount = _ => 1,
       mkProcessorGenerator = processorIndex => processorPlanGenerator,
-      mkAfterAllocation = _ => ()
+      mkAfterAllocation = _ => {
+        val namespaceFqn = s"$tenantName/$namespaceName"
+        adminClient.namespaces.setSchemaValidationEnforced(namespaceFqn, true)
+      }
     )
 
   def mkMessageListener: ProcessorMessageListenerBuilder[pb.AccountCommandsSchema, pb.AccountEventsSchema] =
