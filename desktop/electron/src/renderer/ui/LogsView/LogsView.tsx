@@ -5,6 +5,7 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import useInterval from '../../app/hooks/use-interval';
 import Select, { ListItem } from '../Select/Select';
 import Input from '../Input/Input';
+import SmallButton from '../SmallButton/SmallButton';
 
 const logsColorPalette: string[] = [
   colorsByName['slate-700'],
@@ -25,7 +26,8 @@ export type LogEntry = {
 };
 
 export type LogsViewProps = {
-  logs: LogEntry[]
+  logs: LogEntry[],
+  onClear: () => void
 };
 
 const allSources = 'e9cca391-7fd0-4ab7-a28c-c701047437f9';
@@ -83,7 +85,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
   });
 
   let filteredItems = sourceFilter === allSources ? props.logs : props.logs.filter(entry => entry.source === sourceFilter);
-  filteredItems = filteredItems.filter(item => item.content.toLowerCase().includes(filter));
+  filteredItems = filteredItems.filter(item => item.content.toLowerCase().includes(filter.toLowerCase()));
 
   const itemsToShow = isFollow ? filteredItems.slice(-displayEntriesWhenFollow) : filteredItems;
 
@@ -117,6 +119,9 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
           <Input value={filter} onChange={setFilter} placeholder='Search in logs' />
         </div>
         <div>Shown <strong>{filteredItems.length}</strong> of latest <strong>{props.logs.length}</strong> entries</div>
+        <div style={{ marginLeft: 'auto' }}>
+          <SmallButton type='regular' text='Clear' onClick={props.onClear} />
+        </div>
       </div>
       <div ref={logsRef} className={s.Logs} onWheel={onWheel}>
         <Virtuoso

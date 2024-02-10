@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
-import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, DekafRuntimeConfig, DekafToPulsarConnection, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
+import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, ActiveWindows, DekafRuntimeConfig, DekafToPulsarConnection, DekafWindowClosed, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
 import { v4 as uuid } from 'uuid';
 import { apiChannel, logsChannel } from "../../channels";
@@ -16,6 +16,7 @@ import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 import { sendMessage } from "../api/send-message";
 import { getConnectionConfig } from "../remote-pulsar-connections/handlers";
+import tcpPortUsed from 'tcp-port-used';
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -43,6 +44,7 @@ function appendLog(processId: ProcessId, entry: LogEntry, event: Electron.IpcMai
 
 const activeProcesses: ActiveProcesses = {};
 const activeChildProcesses: ActiveChildProcesses = {};
+const activeWindows: ActiveWindows = {};
 
 function getProcessStatus(processId: ProcessId): ProcessStatus | undefined {
   return activeProcesses[processId].status;
@@ -51,6 +53,7 @@ function getProcessStatus(processId: ProcessId): ProcessStatus | undefined {
 function deleteProcess(processId: ProcessId) {
   delete activeProcesses[processId];
   delete activeChildProcesses[processId];
+  delete activeWindows[processId];
   delete processLogs[processId];
 
   const req: GetActiveProcessesResult = {
@@ -91,17 +94,21 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
       show: false,
       backgroundColor: '#f5f5f5',
     });
+
+    activeWindows[processId] = win;
+
     win.loadURL(url);
-    win.once('ready-to-show', () => {
-      win.show();
-      win.maximize();
-    });
+
+    win.show();
+    win.maximize();
+
     win.on('close', () => {
-      const req: KillProcess = {
-        type: "KillProcess",
+      const req: DekafWindowClosed = {
+        type: "DekafWindowClosed",
         processId
       };
       sendMessage(apiChannel, req);
+      delete activeWindows[processId];
     })
   }
 }
@@ -204,6 +211,11 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     return;
   }
 
+  const win = activeWindows[arg.processId];
+  if (win !== undefined && !win.isDestroyed()) {
+    win.close();
+  }
+
   proc.childProcess.kill();
 
   updateProcessStatus(arg.processId, 'stopping');
@@ -237,16 +249,46 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   await fsExtra.ensureDir(path.dirname(instancePaths.functionsWorkerConfPath));
   await fsExtra.ensureDir(path.dirname(instancePaths.standaloneConfPath));
 
+  // // XXX - maybe not a good idea to always remove ledgers LOCK before start
+  // const ledgersLock = path.join(instancePaths.bookkeeperDir, 'current', 'ledgers', 'LOCK');
+  // if (fs.existsSync(ledgersLock)) {
+  //   console.info(`Removing ledgers LOCK file at ${ledgersLock}`);
+  //   await fsExtra.removeSync(ledgersLock);
+  // }
+
+  // // XXX - maybe not a good idea to always remove metadata LOCK before start
+  // const metadataLock = path.join(instancePaths.metadataDir, 'LOCK');
+  // if (fs.existsSync(metadataLock)) {
+  //   console.info(`Removing metadata LOCK file at ${metadataLock}`);
+  //   await fsExtra.removeSync(metadataLock);
+  // }
+
+  async function ensureFreePortOrThrow(port: number) {
+    const isUsed = await tcpPortUsed.check(port);
+    if (isUsed) {
+      throw new Error(`The local Pulsar instance is going to use port ${port}, that is already in use by another process or local Pulsar instance.`);
+    }
+  }
+
   const instanceConfig = await getInstanceConfig(instanceId);
 
   const pulsarVersion = instanceConfig.config.pulsarVersion;
   const pulsarBin = paths.getPulsarBin(pulsarVersion);
 
   let standaloneConfContent = instanceConfig.config.standaloneConfContent || '';
-  standaloneConfContent = standaloneConfContent + `\n\nbrokerServicePort=${instanceConfig.config.brokerServicePort}`;
+
+  if (instanceConfig.config.brokerServicePort !== undefined) {
+    const port = instanceConfig.config.brokerServicePort;
+    await ensureFreePortOrThrow(port);
+
+    standaloneConfContent = standaloneConfContent + `\n\nbrokerServicePort=${port}`;
+  }
 
   if (instanceConfig.config.webServicePort !== undefined) {
-    standaloneConfContent = standaloneConfContent + `\n\nwebServicePort=${instanceConfig.config.webServicePort}`;
+    const port = instanceConfig.config.webServicePort;
+    ensureFreePortOrThrow(port);
+
+    standaloneConfContent = standaloneConfContent + `\n\nwebServicePort=${port}`;
   }
 
   standaloneConfContent = standaloneConfContent + "\n"
@@ -268,10 +310,16 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   ];
 
   if (instanceConfig.config.bookkeeperPort !== undefined) {
-    processArgs = [...processArgs, "--bookkeeper-port", String(instanceConfig.config.bookkeeperPort)]
+    const port = instanceConfig.config.bookkeeperPort;
+    await ensureFreePortOrThrow(port);
+
+    processArgs = [...processArgs, "--bookkeeper-port", String(port)]
   }
 
   if (instanceConfig.config.streamStoragePort !== undefined) {
+    const port = instanceConfig.config.streamStoragePort;
+    await ensureFreePortOrThrow(port);
+
     processArgs = [...processArgs, "--stream-storage-port", String(instanceConfig.config.streamStoragePort)]
   }
 

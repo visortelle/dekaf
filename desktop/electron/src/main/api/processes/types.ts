@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
+import { BrowserWindow } from "electron";
 
 export type ProcessId = string;
 
@@ -61,6 +62,8 @@ export type ActiveChildProcess = {
 };
 export type ActiveChildProcesses = Record<ProcessId, ActiveChildProcess>;
 
+export type ActiveWindows = Record<ProcessId, BrowserWindow>;
+
 export type ProcessLogs = Record<ProcessId, LogEntry[]>;
 
 export type ProcessStatus = 'unknown' | 'starting' | 'alive' | 'ready' | 'stopping' | 'failed';
@@ -106,4 +109,9 @@ export type ResendProcessLogsResult = {
 export type ProcessLogEntryReceived = {
   type: "ProcessLogEntryReceived",
   entry: LogEntry
+};
+
+export type DekafWindowClosed = {
+  type: "DekafWindowClosed",
+  processId: string
 };

@@ -19,6 +19,7 @@ export type TabsProps<TK extends string> = {
   onActiveTabChange: (tab: TK) => void;
   closeTitle?: string,
   size?: 'regular' | 'small';
+  direction?: 'horizontal' | 'vertical';
   newTab?: {
     onNewTab: () => void,
     title: string
@@ -41,14 +42,14 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
     : Object.entries<Tab>(tabs);
 
   return (
-    <div className={`${s.Tabs} ${props.size === 'small' ? s.Small : ''}`}>
+    <div className={`${s.Tabs} ${props.size === 'small' ? s.Small : ''} ${props.direction === 'vertical' ? s.TabsVertical : ''}`}>
       <div style={{ display: 'flex' }}>
-        <div className={s.TabsList}>
+        <div className={`${s.TabsList} ${props.direction === 'vertical' ? s.TabsListVertical : ''}`}>
           {tabEntries.map(([tabKey, tab]) => {
             return (
               <div
                 key={tabKey}
-                className={`${s.Tab} ${tabKey === props.activeTab ? s.ActiveTab : ''}`}
+                className={`${s.Tab} ${tabKey === props.activeTab ? s.ActiveTab : ''} ${props.direction === 'vertical' ? s.TabVertical : ''}`}
                 onClick={() => props.onActiveTabChange(tabKey as TabKey)}
                 ref={props.scrollToTabId === tabKey ? scrollToTabRef : undefined}
               >

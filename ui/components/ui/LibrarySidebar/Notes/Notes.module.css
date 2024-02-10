@@ -22,3 +22,21 @@
   overflow: hidden;
   flex: 1;
 }
+
+.ExternalContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.ExternalContentControls {
+  padding-bottom: 8rem;
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ExternalContentIframe {
+  appearance: none;
+  border: none;
+  width: 100%;
+  flex: 1;
+}

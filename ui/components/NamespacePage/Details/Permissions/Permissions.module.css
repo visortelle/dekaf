@@ -1,0 +1,34 @@
+.Title {
+  margin-bottom: 12rem;
+}
+.TableContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.Buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8rem;
+}
+
+.CheckboxCell {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.Button:last-child {
+  margin-right: 0;
+}
+
+.NewRoleInputCell {
+  padding: 0;
+}
+
+.RoleField {
+  max-width: 50rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

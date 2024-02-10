@@ -33,9 +33,12 @@
 .ListFieldValues {
   border: 1px solid var(--border-color);
   border-radius: 4rem;
-  border-top: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.ListFIeldValues:not(:last-child):not(:first-child) {
+  border-top: none;
 }
 
 .ListFieldValue {

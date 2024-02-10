@@ -19,6 +19,7 @@ import * as I18n from '../../../I18n/I18n';
 import { ListPulsarDistributions } from '../../../../../main/api/local-pulsar-distributions/types';
 import PulsarDistributionPicker from './LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
 import { cloneDeep } from 'lodash';
+import { usePrevious } from '../../../hooks/use-previous';
 
 const getInstalledPulsarVersions = () => {
   const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
@@ -34,17 +35,72 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
   const modals = Modals.useContext();
   const [pulsarProcessId, setPulsarProcessId] = useState<string | undefined>(undefined);
   const [pulsarProcessStatus, setPulsarProcessStatus] = useState<ProcessStatus | undefined>(undefined);
+  const prevPulsarProcessStatus = usePrevious(pulsarProcessStatus);
   const [dekafProcessId, setDekafProcessId] = useState<string | undefined>(undefined);
   const [dekafProcessStatus, setDekafProcessStatus] = useState<ProcessStatus | undefined>(undefined);
+  const prevDekafProcessStatus = usePrevious(dekafProcessStatus);
   const [dekafDemoappProcessId, setDekafDemoappProcessId] = useState<string | undefined>(undefined);
   const [dekafDemoappProcessStatus, setDekafDemoappProcessStatus] = useState<ProcessStatus | undefined>(undefined);
+  const prevDekafDemoappProcessStatus = usePrevious(dekafDemoappProcessStatus);
   const [dekafLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
   const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
   const [isMissingPulsarDistribution, setIsMissingPulsarDistribution] = useState<boolean | undefined>(undefined);
 
+  const isWithDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
+
+  const startDemoapp = () => {
+    const dekafDemoappReq: SpawnProcess = {
+      type: "SpawnProcess",
+      process: {
+        type: "dekaf-demoapp",
+        connection: {
+          type: "local-pulsar-instance",
+          instanceId: props.pulsarInstance.metadata.id,
+          dekafLicenseId,
+          dekafLicenseToken
+        }
+      },
+      processId: uuid()
+    };
+
+    window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
+  }
+
+  const startDekaf = () => {
+    const dekafReq: SpawnProcess = {
+      type: "SpawnProcess",
+      process: {
+        type: "dekaf",
+        connection: {
+          type: "local-pulsar-instance",
+          instanceId: props.pulsarInstance.metadata.id,
+          dekafLicenseId,
+          dekafLicenseToken
+        }
+      },
+      processId: uuid()
+    };
+
+    window.electron.ipcRenderer.sendMessage(apiChannel, dekafReq);
+  }
+
+  const killPulsar = () => {
+    if (pulsarProcessId === undefined) {
+      return;
+    }
+
+    const req: KillProcess = { type: "KillProcess", processId: pulsarProcessId };
+    window.electron.ipcRenderer.sendMessage(apiChannel, req);
+  }
+
   const killAll = () => {
+    if (dekafProcessId === undefined && dekafDemoappProcessId === undefined) {
+      killPulsar();
+      return;
+    }
+
     let processesToKill = [dekafProcessId]
-    if (isHasDemoapp) {
+    if (isWithDemoapp && dekafDemoappProcessId !== undefined) {
       processesToKill = processesToKill.concat([dekafDemoappProcessId]);
     }
 
@@ -56,16 +112,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       const req: KillProcess = { type: "KillProcess", processId };
       window.electron.ipcRenderer.sendMessage(apiChannel, req);
     });
-
-    // XXX - well. Probably need to reimplement it without the timeout.
-    setTimeout(() => {
-      if (pulsarProcessId === undefined) {
-        return;
-      }
-
-      const req: KillProcess = { type: "KillProcess", processId: pulsarProcessId };
-      window.electron.ipcRenderer.sendMessage(apiChannel, req);
-    }, 3000);
   }
 
   useEffect(() => {
@@ -96,53 +142,52 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
   }, [props.pulsarInstance]);
 
-  const isHasDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
+  useEffect(() => {
+    if (pulsarProcessId === undefined) {
+      return;
+    }
+
+    window.electron.ipcRenderer.on(apiChannel, (arg) => {
+      if (arg.type === "DekafWindowClosed" && arg.processId === dekafProcessId) {
+        killAll();
+      }
+    });
+  }, [pulsarProcessId, dekafProcessId]);
 
   useEffect(() => {
+    console.log('pulsarProcessStatus', prevPulsarProcessStatus, pulsarProcessStatus);
+    console.log('demoappProcessStatus', prevDekafDemoappProcessStatus, dekafDemoappProcessStatus);
+    console.log('dekafProcessStatus', prevDekafProcessStatus, dekafProcessStatus);
+    console.log('============================================================================');
+    console.log();
+
     if (pulsarProcessStatus === 'failed' || dekafProcessStatus === 'failed' || dekafDemoappProcessStatus === 'failed') {
       killAll();
+      return;
     }
 
-    if (isHasDemoapp && (dekafDemoappProcessStatus === undefined || dekafDemoappProcessStatus === 'unknown') && pulsarProcessStatus === 'ready') {
-      const dekafDemoappReq: SpawnProcess = {
-        type: "SpawnProcess",
-        process: {
-          type: "dekaf-demoapp",
-          connection: {
-            type: "local-pulsar-instance",
-            instanceId: props.pulsarInstance.metadata.id,
-            dekafLicenseId,
-            dekafLicenseToken
-          }
-        },
-        processId: uuid()
-      };
-
-      window.electron.ipcRenderer.sendMessage(apiChannel, dekafDemoappReq);
+    if ((prevDekafProcessStatus === 'stopping' || prevDekafProcessStatus === 'failed') && (dekafProcessStatus === undefined || dekafProcessStatus === 'unknown')) {
+      killPulsar();
+      return;
     }
 
-    if (pulsarProcessStatus === 'ready' && (dekafProcessStatus === undefined || dekafProcessStatus === 'unknown')) {
-      if (isHasDemoapp && dekafDemoappProcessStatus !== 'ready') {
+    if (isWithDemoapp) {
+      if (prevPulsarProcessStatus !== 'ready' && pulsarProcessStatus === 'ready' && (dekafDemoappProcessStatus === undefined || dekafDemoappProcessStatus === 'unknown')) {
+        startDemoapp();
         return;
       }
 
-      const dekafReq: SpawnProcess = {
-        type: "SpawnProcess",
-        process: {
-          type: "dekaf",
-          connection: {
-            type: "local-pulsar-instance",
-            instanceId: props.pulsarInstance.metadata.id,
-            dekafLicenseId,
-            dekafLicenseToken
-          }
-        },
-        processId: uuid()
-      };
-
-      window.electron.ipcRenderer.sendMessage(apiChannel, dekafReq);
+      if (prevDekafDemoappProcessStatus !== 'ready' && dekafDemoappProcessStatus === 'ready' && (dekafProcessStatus === undefined || dekafProcessStatus === 'unknown')) {
+        startDekaf();
+        return;
+      }
     }
-  }, [pulsarProcessStatus, dekafProcessStatus, dekafDemoappProcessStatus]);
+
+    if (prevPulsarProcessStatus !== 'ready' && pulsarProcessStatus === 'ready' && (dekafProcessStatus === undefined || dekafProcessStatus === 'unknown')) {
+      startDekaf();
+      return;
+    }
+  }, [prevPulsarProcessStatus, pulsarProcessStatus, prevDekafProcessStatus, dekafProcessStatus, prevDekafDemoappProcessStatus, dekafDemoappProcessStatus]);
 
   let logSources: LogSource[] = [];
   if (pulsarProcessId !== undefined) {
@@ -162,11 +207,11 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     (dekafProcessStatus === "starting" ||
       dekafProcessStatus === "alive" ||
       dekafProcessStatus === "ready") || (
-      isHasDemoapp ? (
+      isWithDemoapp ? (
         dekafDemoappProcessStatus === "starting" ||
         dekafDemoappProcessStatus === "alive" ||
         dekafDemoappProcessStatus === "ready"
-      ) : true
+      ) : false
     )
   const isStopping = pulsarProcessStatus === 'stopping' || dekafProcessStatus === 'stopping' || dekafDemoappProcessStatus === 'stopping';
   const isReady = pulsarProcessStatus === 'ready' && dekafDemoappProcessStatus === 'ready' && dekafProcessStatus === 'ready';
@@ -177,7 +222,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       case undefined: return <NoData />;
       case "unknown": return <NoData />;
       case "starting": return "starting...";
-      case "alive": return "starting...";
+      case "alive": return "alive...";
       case "stopping": return "stopping...";
       default: return status;
     }
@@ -190,7 +235,15 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
   return (
     <div className={s.LocalPulsarInstanceElement}>
-      <H3>{props.pulsarInstance.metadata.name}</H3>
+      <div className={s.Name}>
+        <H3>{props.pulsarInstance.metadata.name}</H3>
+      </div>
+
+      <div style={{ position: 'absolute', top: '12rem', right: '8rem', fontWeight: 'var(--font-weight-bold)', color: 'var(--accent-color-blue)', opacity: '0.6', fontSize: '12rem', textAlign: 'right' }}>
+        Local Instance
+        {isWithDemoapp && <div>Demoapp</div>}
+        {props.pulsarInstance.config.wipeData && <div>Wipe on start</div>}
+      </div>
 
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.pulsarInstance.metadata.lastUsedAt))}</div>
 
@@ -238,21 +291,23 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
           <strong>Pulsar status:&nbsp;</strong>{renderStatus(pulsarProcessStatus)}
         </div>
 
+        {isWithDemoapp && (
+          <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
+            <ProcessStatusIndicator processId={dekafDemoappProcessId} onStatusChange={setDekafDemoappProcessStatus} />
+            <strong>Demoapp status:&nbsp;</strong>{renderStatus(dekafDemoappProcessStatus)}
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
           <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
           <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
-        </div>
-
-        <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
-          <ProcessStatusIndicator processId={dekafDemoappProcessId} onStatusChange={setDekafDemoappProcessStatus} />
-          <strong>Demoapp status:&nbsp;</strong>{renderStatus(dekafDemoappProcessStatus)}
         </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
         {(!isRunning && !isFailed && !isStopping) && <SmallButton
           type='primary'
-          text='Connect'
+          text='Start and Connect'
           disabled={(isRunning && !isReady) || isMissingPulsarDistribution}
           onClick={() => {
             const pulsarReq: SpawnProcess = {
@@ -283,7 +338,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
         {(isRunning || isStopping || isFailed) && <SmallButton
           type='danger'
-          text='Stop and disconnect'
+          text='Stop and Disconnect'
           disabled={isStopping}
           onClick={killAll}
         />}
@@ -294,7 +349,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         />
 
         <EditLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} disabled={isRunning} />
-        <DeleteLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} instanceName={props.pulsarInstance.metadata.name} disabled={isRunning} />
+        <DeleteLocalPulsarInstanceButton instanceId={props.pulsarInstance.metadata.id} instanceName={props.pulsarInstance.metadata.name} disabled={isRunning || isStopping} />
       </div>
     </div >
   );

@@ -1,0 +1,144 @@
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import useSWR, { useSWRConfig } from "swr";
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import Select from '../../../ui/Select/Select';
+import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
+import { swrKeys } from '../../../swrKeys';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import stringify from 'safe-stable-stringify';
+import React from "react";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import A from "../../../ui/A/A";
+import { help } from "../../../ui/help";
+
+const policy = 'deduplicationSnapshotInterval';
+
+type PolicyValue = { type: 'inherited-from-broker-config' } | {
+  type: 'specified-for-this-namespace',
+  intervalSeconds: number;
+};
+
+export type FieldInputProps = {
+  tenant: string;
+  namespace: string;
+}
+
+export const FieldInput: React.FC<FieldInputProps> = (props) => {
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+  const { mutate } = useSWRConfig()
+
+  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
+
+  const { data: initialValue, error: initialValueError } = useSWR(
+    swrKey,
+    async () => {
+      const req = new pb.GetDeduplicationSnapshotIntervalRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespacePoliciesServiceClient.getDeduplicationSnapshotInterval(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
+      }
+
+      let value: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getIntervalCase()) {
+        case pb.GetDeduplicationSnapshotIntervalResponse.IntervalCase.DISABLED: {
+          value = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetDeduplicationSnapshotIntervalResponse.IntervalCase.ENABLED: {
+          value = { type: 'specified-for-this-namespace', intervalSeconds: res.getEnabled()?.getInterval() || 0 };
+        }
+      }
+
+      return value;
+    }
+  );
+
+  if (initialValueError) {
+    notifyError(`Unable to get deduplication snapshot interval: ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
+  }
+
+
+  return (
+    <WithUpdateConfirmation<PolicyValue>
+      key={stringify(initialValue)}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveDeduplicationSnapshotIntervalRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          const res = await namespacePoliciesServiceClient.removeDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
+          if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        if (value.type === 'specified-for-this-namespace') {
+          const maxInt32 = 2_147_483_647;
+          if (value.intervalSeconds > maxInt32) {
+            notifyError(`Unable to set deduplication snapshot interval. It should be less than ${new Intl.NumberFormat('en-US').format(maxInt32)} seconds`);
+            return;
+          }
+
+          const req = new pb.SetDeduplicationSnapshotIntervalRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          req.setInterval(Math.floor(value.intervalSeconds));
+          const res = await namespacePoliciesServiceClient.setDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
+          if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        mutate(swrKey);
+      }}
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                value={value.type}
+                onChange={(type) => onChange(type === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', intervalSeconds: 0 })}
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                ]}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <DurationInput
+                initialValue={value.intervalSeconds}
+                onChange={(duration) => onChange({ ...value, intervalSeconds: duration })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation >
+  )
+}
+
+const field = (props: FieldInputProps): ConfigurationField => ({
+  id: policy,
+  title: 'Deduplication snapshot interval',
+  description: (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div>
+        The time period after which a deduplication informational snapshot is taken.
+      </div>
+    </div>
+  ),
+  input: <FieldInput {...props} />
+});
+
+export default field;

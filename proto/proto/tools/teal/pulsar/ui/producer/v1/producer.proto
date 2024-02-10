@@ -1,0 +1,266 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.producer.v1;
+
+import "google/protobuf/wrappers.proto";
+import "google/rpc/status.proto";
+
+message FixedJsonGenerator {
+  string json = 1;
+}
+
+message JsJsonGenerator {
+  string js_code = 1;
+}
+
+enum InterpretJsonAs {
+  INTERPRET_JSON_AS_UNSPECIFIED = 0;
+  INTERPRET_JSON_AS_JSON = 1;
+  INTERPRET_JSON_AS_BASE64_ENCODED_BYTES = 2;
+  INTERPRET_JSON_AS_HEX_ENCODED_BYTES = 3;
+}
+
+message JsonGenerator {
+  oneof generator {
+    FixedJsonGenerator generator_fixed = 11;
+    JsJsonGenerator generator_js = 12;
+  }
+  InterpretJsonAs interpret_json_as = 2;
+}
+
+message NowEventTimeGenerator {}
+message FixedEventTimeGenerator {
+  int64 event_time = 1;
+}
+
+message EventTimeGenerator {
+  oneof generator {
+    NowEventTimeGenerator generator_now = 11;
+    FixedEventTimeGenerator generator_fixed = 12;
+    JsonGenerator generator_json = 13;
+  }
+}
+
+message RandomUuidV4KeyGenerator {}
+message FixedStringKeyGenerator {
+  string key = 1;
+}
+
+message KeyGenerator {
+  oneof generator {
+    RandomUuidV4KeyGenerator generator_random_uuid_v4 = 11;
+    FixedStringKeyGenerator generator_fixed_string = 12;
+    JsonGenerator generator_json = 13;
+  }
+}
+
+message RandomBytesGenerator {
+  int32 min_bytes = 1;
+  int32 max_bytes = 2;
+}
+
+message ValueGenerator {
+  oneof generator {
+    RandomBytesGenerator generator_random_bytes = 11;
+    JsonGenerator generator_json = 12;
+  }
+}
+
+message EmptyPropertiesGenerator {}
+
+message PropertiesGenerator {
+  oneof generator {
+    EmptyPropertiesGenerator generator_empty = 10;
+    JsonGenerator generator_json = 11;
+  }
+}
+
+message DeliverAtGenerator {
+  oneof generator {
+    int64 generator_unix_epoch = 10;
+    JsonGenerator generator_json_generator = 11;
+  }
+}
+
+message DeliverAfterGenerator {
+  oneof generator {
+    int64 generator_after_nanos = 10;
+  }
+}
+
+message OrderingKeyGenerator {
+  oneof generator {
+    bytes generator_fixed_bytes = 10;
+  }
+}
+
+message SequenceIdGenerator {
+  oneof generator {
+    int64 generator_fixed_int64 = 10;
+  }
+}
+
+message MessageGenerator {
+  KeyGenerator generator_key = 1;
+  ValueGenerator generator_value = 2;
+  PropertiesGenerator generator_properties = 3;
+  EventTimeGenerator generator_event_time = 4;
+  DeliverAtGenerator generator_deliver_at = 5;
+  DeliverAfterGenerator generator_deliver_after = 6;
+  OrderingKeyGenerator generator_ordering_key = 7;
+  SequenceIdGenerator generator_sequence_id = 8;
+}
+
+enum CompressionType {
+  COMPRESSION_TYPE_UNSPECIFIED = 0;
+  COMPRESSION_TYPE_NONE = 1;
+  COMPRESSION_TYPE_LZ4 = 2;
+  COMPRESSION_TYPE_ZLIB = 3;
+  COMPRESSION_TYPE_ZSTD = 4;
+  COMPRESSION_TYPE_SNAPPY = 5;
+}
+
+enum HashingScheme {
+  HASHING_SCHEME_UNSPECIFIED = 0;
+  HASHING_SCHEME_JAVA_STRING_HASH = 1;
+  HASHING_SCHEME_MURMUR3_HASH_32 = 2;
+}
+
+message DefaultBatcherBuilder {}
+message KeyBasedBatcherBuilder {}
+
+message BatcherBuilder {
+  oneof builder {
+    DefaultBatcherBuilder builder_default = 1;
+    KeyBasedBatcherBuilder builder_key_based = 2;
+  }
+}
+
+enum AccessMode {
+  ACCESS_MODE_UNSPECIFIED = 0;
+  ACCESS_MODE_SHARED = 1;
+  ACCESS_MODE_EXCLUSIVE = 2;
+  ACCESS_MODE_EXCLUSIVE_WITH_FENCING = 3;
+  ACCESS_MODE_WAIT_FOR_EXCLUSIVE = 4;
+}
+
+enum MessageRoutingMode {
+  MESSAGE_ROUTING_MODE_UNSPECIFIED = 0;
+  MESSAGE_ROUTING_MODE_SINGLE_PARTITION = 1;
+  MESSAGE_ROUTING_MODE_ROUND_ROBIN_PARTITION = 2;
+  MESSAGE_ROUTING_MODE_CUSTOM_PARTITION = 3;
+}
+
+message PulsarProducerConfig {
+  BatcherBuilder batcher_builder = 1;
+  map<string, string> properties = 2;
+  google.protobuf.StringValue producer_name = 3;
+  AccessMode access_mode = 4;
+  google.protobuf.StringValue add_encryption_key = 5;
+  google.protobuf.BoolValue auto_update_partitions = 6;
+  google.protobuf.Int64Value auto_update_partitions_interval_nanos = 7;
+  google.protobuf.Int32Value batching_max_bytes = 8;
+  google.protobuf.Int32Value batching_max_messages = 9;
+  google.protobuf.Int32Value batching_max_publish_delay = 10;
+  google.protobuf.BoolValue block_if_queue_full = 11;
+  google.protobuf.Int32Value chunk_max_message_size = 12;
+  CompressionType compression_type = 13;
+  map<string, string> default_crypto_key_reader = 14;
+  google.protobuf.BoolValue enable_batching = 15;
+  google.protobuf.BoolValue enable_chunking = 16;
+  google.protobuf.BoolValue enable_lazy_start_partitioning_producers = 17;
+  HashingScheme hashing_scheme = 18;
+  google.protobuf.Int64Value initial_sequence_id = 19;
+  google.protobuf.Int32Value max_pending_messages = 20;
+  MessageRoutingMode message_routing_mode = 21;
+  google.protobuf.Int32Value round_robin_router_batching_partition_switch_frequency = 22;
+  google.protobuf.Int64Value send_timeout_nanos = 23;
+}
+
+message ProducerTask {
+  string target_topic_fqn = 1;
+  repeated MessageGenerator message_generator = 2;
+  PulsarProducerConfig producer_config = 3;
+  google.protobuf.Int64Value limit_num_records = 10;
+  google.protobuf.Int64Value limit_time_elapsed_nanos = 11;
+  google.protobuf.Int64Value interval_nanos = 12;
+}
+
+message ProducerSessionTarget {
+  repeated ProducerTask tasks = 1;
+}
+
+message ProducerSession {
+  string session_id = 1;
+  ProducerSessionTarget targets = 2;
+  google.protobuf.Int64Value limit_num_records = 10;
+  google.protobuf.Int64Value limit_time_elapsed_nanos = 11;
+}
+
+message ProducerStats {
+  int64 num_messages_sent = 1;
+  int64 num_bytes_sent = 2;
+  int64 num_send_failed = 3;
+  int64 num_acks_received = 4;
+  double send_messages_rate = 5;
+  double send_bytes_rate = 6;
+  int64 total_messages_sent = 7;
+  int64 total_bytes_sent = 8;
+  int64 total_send_failed = 9;
+  int64 total_acks_received = 10;
+  int32 pending_queue_size = 11;
+}
+
+message CreateProducerSessionRequest {
+  string session_id = 1;
+  ProducerSession session = 2;
+}
+
+message CreateProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteProducerSessionRequest {
+  string session_id = 1;
+}
+
+message DeleteProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
+message ProducerSessionStats {
+  map<string, ProducerStats> stats_per_producer = 1;
+}
+
+message GetProducerSessionStatsRequest {
+  string session_id = 1;
+}
+
+message GetProducerSessionStatsResponse {
+  google.rpc.Status status = 1;
+  ProducerSessionStats stats = 2;
+}
+
+message PauseProducerSessionRequest {
+  string session_id = 1;
+}
+
+message PauseProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
+message ResumeProducerSessionRequest {
+  string session_id = 1;
+}
+
+message ResumeProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
+service ProducerService {
+  rpc CreateProducerSession(CreateProducerSessionRequest) returns (CreateProducerSessionResponse);
+  rpc DeleteProducerSession(DeleteProducerSessionRequest) returns (DeleteProducerSessionResponse);
+  rpc GetProducerSessionStats(GetProducerSessionStatsRequest) returns (GetProducerSessionStatsResponse);
+  rpc PauseProducerSession(PauseProducerSessionRequest) returns (PauseProducerSessionResponse);
+  rpc ResumeProducerSession(ResumeProducerSessionRequest) returns (ResumeProducerSessionResponse);
+}
