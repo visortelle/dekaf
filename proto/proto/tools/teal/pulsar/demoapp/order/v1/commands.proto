@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.demoapp.order.v1;
+
+import "tools/teal/pulsar/demoapp/dto/v1/dto.proto";
+
+message PlaceOrder {
+  string cart_id = 1;
+  string customer_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money total = 3;
+  tools.teal.pulsar.demoapp.dto.v1.Address billing_address = 4;
+  tools.teal.pulsar.demoapp.dto.v1.Address shipping_address = 5;
+  repeated tools.teal.pulsar.demoapp.dto.v1.CartItem items = 6;
+  repeated tools.teal.pulsar.demoapp.dto.v1.PaymentMethod payment_methods = 7;
+}
+
+message ConfirmOrder {
+  string order_id = 1;
+}
+
+message CancelOrder {
+  string order_id = 1;
+}
+
+message OrderCommandsSchema {
+  oneof command {
+    PlaceOrder place_order = 1;
+    ConfirmOrder confirm_order = 2;
+    CancelOrder cancel_order = 3;
+  }
+}

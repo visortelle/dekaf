@@ -1,0 +1,128 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.demoapp.payment.v1;
+
+import "tools/teal/pulsar/demoapp/dto/v1/dto.proto";
+
+message PaymentRequested {
+  string payment_id = 1;
+  string order_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.Address billing_address = 4;
+  string status = 5;
+  int64 version = 6;
+}
+
+message PaymentCanceled {
+  string payment_id = 1;
+  string order_id = 2;
+  string status = 3;
+  int64 version = 4;
+}
+
+message PaymentCompleted {
+  string payment_id = 1;
+  string order_id = 2;
+  string status = 3;
+  int64 version = 4;
+}
+
+message PaymentNotCompleted {
+  string payment_id = 1;
+  string order_id = 2;
+  string status = 3;
+  int64 version = 4;
+}
+
+message PaymentMethodAuthorized {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message PaymentMethodDenied {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message PaymentMethodRefunded {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message PaymentMethodRefundDenied {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message PaymentMethodCancellationDenied {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message PaymentMethodCanceled {
+  string payment_id = 1;
+  string payment_method_id = 2;
+  string transaction_id = 3;
+  string status = 4;
+  int64 version = 5;
+}
+
+message CreditCardAdded {
+  string cart_id = 1;
+  string method_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.CreditCard credit_card = 4;
+  string status = 5;
+  int64 version = 6;
+}
+
+message DebitCardAdded {
+  string cart_id = 1;
+  string method_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.DebitCard debit_card = 4;
+  string status = 5;
+  int64 version = 6;
+}
+
+message PayPalAdded {
+  string cart_id = 1;
+  string method_id = 2;
+  tools.teal.pulsar.demoapp.dto.v1.Money amount = 3;
+  tools.teal.pulsar.demoapp.dto.v1.PayPal pay_pal = 4;
+  string status = 5;
+  int64 version = 6;
+}
+
+message PaymentEventsSchema {
+  oneof event {
+    PaymentRequested payment_requested = 1;
+    PaymentCanceled payment_canceled = 2;
+    PaymentCompleted payment_completed = 3;
+    PaymentNotCompleted payment_not_completed = 4;
+    PaymentMethodAuthorized payment_method_authorized = 5;
+    PaymentMethodDenied payment_method_denied = 6;
+    PaymentMethodRefunded payment_method_refunded = 7;
+    PaymentMethodRefundDenied payment_method_refund_denied = 8;
+    PaymentMethodCancellationDenied payment_method_cancellation_denied = 9;
+    PaymentMethodCanceled payment_method_canceled = 10;
+    CreditCardAdded credit_card_added = 11;
+    DebitCardAdded debit_card_added = 12;
+    PayPalAdded pay_pal_added = 13;
+  }
+}

@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.demoapp.warehouse.v1;
+
+import "tools/teal/pulsar/demoapp/dto/v1/dto.proto";
+import "google/protobuf/timestamp.proto";
+
+message InventoryCreated {
+    string inventory_id = 1;
+    string owner_id = 2;
+    int64 version = 3;
+}
+
+message InventoryItemReceived {
+    string inventory_id = 1;
+    string item_id = 2;
+    tools.teal.pulsar.demoapp.dto.v1.Product product = 3;
+    string cost = 4;
+    int32 quantity = 5;
+    string sku = 6;
+    int64 version = 7;
+}
+
+message InventoryAdjustmentIncreased {
+    string inventory_id = 1;
+    string item_id = 2;
+    string reason = 3;
+    int32 quantity = 4;
+    int64 version = 5;
+}
+
+message InventoryAdjustmentDecreased {
+    string inventory_id = 1;
+    string item_id = 2;
+    string reason = 3;
+    int32 quantity = 4;
+    int64 version = 5;
+}
+
+message InventoryAdjustmentNotDecreased {
+    string inventory_id = 1;
+    string item_id = 2;
+    string reason = 3;
+    int32 quantity_desired = 4;
+    int32 quantity_available = 5;
+    int64 version = 6;
+}
+
+message StockDepleted {
+    string inventory_id = 1;
+    string item_id = 2;
+    tools.teal.pulsar.demoapp.dto.v1.Product product = 3;
+    int64 version = 4;
+}
+
+message InventoryItemReserved {
+    string inventory_id = 1;
+    string item_id = 2;
+    string catalog_id = 3;
+    string cart_id = 4;
+    tools.teal.pulsar.demoapp.dto.v1.Product product = 5;
+    int32 quantity = 6;
+    google.protobuf.Timestamp expiration_date = 7;
+    int64 version = 8;
+}
+
+message InventoryItemNotReserved {
+    string inventory_id = 1;
+    string item_id = 2;
+    string cart_id = 3;
+    int32 quantity_desired = 4;
+    int32 quantity_available = 5;
+    int64 version = 6;
+}
+
+message InventoryItemIncreased {
+    string inventory_id = 1;
+    string item_id = 2;
+    int32 quantity = 3;
+    int64 version = 4;
+}
+
+message InventoryItemDecreased {
+    string inventory_id = 1;
+    string item_id = 2;
+    int32 quantity = 3;
+    int64 version = 4;
+}
+
+message WarehouseEventsSchema {
+    oneof event {
+        InventoryCreated inventory_created = 1;
+        InventoryItemReceived inventory_item_received = 2;
+        InventoryAdjustmentIncreased inventory_adjustment_increased = 3;
+        InventoryAdjustmentDecreased inventory_adjustment_decreased = 4;
+        InventoryAdjustmentNotDecreased inventory_adjustment_not_decreased = 5;
+        StockDepleted stock_depleted = 6;
+        InventoryItemReserved inventory_item_reserved = 7;
+        InventoryItemNotReserved inventory_item_not_reserved = 8;
+        InventoryItemIncreased inventory_item_increased = 9;
+        InventoryItemDecreased inventory_item_decreased = 10;
+    }
+}
