@@ -13,8 +13,7 @@ import React from "react";
 
 const policy = 'maxTopicsPerNamespace';
 
-type PolicyValue = { type: 'inherited-from-broker-config' } |
-{ type: 'unlimited' } | {
+type PolicyValue = { type: 'inherited-from-broker-config' } | {
   type: 'specified-for-this-namespace',
   maxTopicsPerNamespace: number,
 };
