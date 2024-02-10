@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.api.v1;
+
+import "google/protobuf/wrappers.proto";
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_NOT_RUN = 1;
+  STATUS_RUNNING = 2;
+  STATUS_SUCCESS = 3;
+  STATUS_ERROR = 4;
+}
+
+message LongRunningProcessStatus {
+  Status status = 1;
+  google.protobuf.StringValue last_error = 2;
+}

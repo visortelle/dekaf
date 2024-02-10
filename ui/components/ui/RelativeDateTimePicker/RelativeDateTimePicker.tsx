@@ -4,6 +4,7 @@ import { DateTimeUnit, RelativeDateTime } from '../ConsumerSession/types';
 import Select from '../Select/Select';
 import Checkbox from '../Checkbox/Checkbox';
 import Input from '../Input/Input';
+import Toggle from '../Toggle/Toggle';
 
 export type RelativeDateTimePickerProps = {
   value: RelativeDateTime;
@@ -49,12 +50,12 @@ const RelativeDateTimePicker: React.FC<RelativeDateTimePickerProps> = (props) =>
       </div>
 
       <div className={s.Checkbox}>
-        <Checkbox
-          checked={props.value.isRoundedToUnitStart}
+        <Toggle
+          value={props.value.isRoundedToUnitStart}
           onChange={(v) => props.onChange({ ...props.value, isRoundedToUnitStart: v })}
+          label={`Round to beginning of the ${props.value.unit}`}
           isReadOnly={props.isReadOnly}
         />
-        <strong>Round to beginning of the {props.value.unit}</strong>
       </div>
     </div>
   );

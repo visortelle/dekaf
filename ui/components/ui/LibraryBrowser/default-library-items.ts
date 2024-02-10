@@ -1,8 +1,7 @@
 import { themeBackgroundColorName, themeForegroundColorName } from "../ConsumerSession/SessionConfiguration/ColoringRulesInput/ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette";
-import { BasicMessageFilterTarget } from "../ConsumerSession/basic-message-filter-types";
 import { LibraryItem } from "./model/library";
 import { LibraryContext, resourceMatcherFromContext } from "./model/library-context";
-import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from "./model/user-managed-items";
+import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDeserializer, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from "./model/user-managed-items";
 import { v4 as uuid } from 'uuid';
 
 export function getDefaultManagedItemMetadata(itemType: ManagedItemType): ManagedItemMetadata {
@@ -54,7 +53,8 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
           valueProjectionList: {
             type: "value",
             val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
-          }
+          },
+          numDisplayItems: undefined
         }
       }
 
@@ -64,6 +64,17 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
       const v: ManagedConsumerSessionTarget = {
         metadata,
         spec: {
+          isEnabled: true,
+          consumptionMode: {
+            type: 'consumer-session-target-consumption-mode',
+            mode: {
+              type: 'regular-consumption-mode'
+            }
+          },
+          messageValueDeserializer: {
+            type: 'value',
+            val: getDefaultManagedItem("deserializer", libraryContext) as ManagedDeserializer
+          },
           topicSelector: {
             type: "value",
             val: getDefaultManagedItem("topic-selector", libraryContext) as ManagedTopicSelector
@@ -239,6 +250,21 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
         spec: {
           isEnabled: true,
           projections: []
+        }
+      }
+
+      return v;
+    }
+    case "deserializer": {
+      const v: ManagedDeserializer = {
+        metadata,
+        spec: {
+          deserializer: {
+            type: 'deserializer',
+            deserializer: {
+              type: 'use-latest-topic-schema'
+            }
+          }
         }
       }
 

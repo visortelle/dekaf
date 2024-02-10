@@ -15,7 +15,7 @@ import scala.concurrent.duration.{Duration, SECONDS}
 type JsonStateValue = JsonValue // Cumulative state to produce user-defined calculations, preserved between messages.
 val VarPrefix = "__dekaf_"
 val JsonStateVarName = s"globalThis.${VarPrefix}state"
-val JsLibsVarName = s"globalThis.${VarPrefix}libs"
+val JsLibsVarName = s"globalThis.libs"
 val CurrentMessageVarName = s"globalThis.${VarPrefix}currentMessage"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))

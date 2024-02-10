@@ -10,6 +10,7 @@ import _root_.library.managed_items.{
     ManagedConsumerSessionStartFrom,
     ManagedConsumerSessionTarget,
     ManagedDateTime,
+    ManagedDeserializer,
     ManagedMarkdownDocument,
     ManagedMessageFilter,
     ManagedMessageFilterChain,
@@ -38,7 +39,8 @@ type ManagedItem =
     ManagedMarkdownDocument |
     ManagedBasicMessageFilterTarget |
     ManagedValueProjection |
-    ManagedValueProjectionList
+    ManagedValueProjectionList |
+    ManagedDeserializer
 
 object ManagedItem:
     def fromPb(v: pb.ManagedItem): ManagedItem =
@@ -60,6 +62,7 @@ object ManagedItem:
             case it: pb.ManagedItem.Spec.SpecBasicMessageFilterTarget         => ManagedBasicMessageFilterTarget.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecValueProjection                  => ManagedValueProjection.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecValueProjectionList              => ManagedValueProjectionList.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecDeserializer                     => ManagedDeserializer.fromPb(it.value)
             case _                                                            => throw new IllegalArgumentException("Unknown ManagedItem type")
 
     def toPb(v: ManagedItem): pb.ManagedItem =
@@ -115,3 +118,7 @@ object ManagedItem:
             case it: ManagedValueProjectionList =>
                 val itPb = ManagedValueProjectionList.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecValueProjectionList(itPb))
+            case it: ManagedDeserializer =>
+                val itPb = ManagedDeserializer.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecDeserializer(itPb))
+

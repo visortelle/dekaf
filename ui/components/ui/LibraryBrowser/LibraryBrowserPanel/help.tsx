@@ -102,7 +102,7 @@ export const help: Partial<Record<ManagedItemType, ReactElement>> = {
   "basic-message-filter-target": (
     <div>
       <p>
-        <strong>{getReadableItemType("basic-message-filter-target")}</strong> allows you to specify a field to use.
+        <strong>{getReadableItemType("basic-message-filter-target")}</strong> allows you to specify an object field to use.
       </p>
       <p>
         Optionally, you can post-process this field.
@@ -126,4 +126,13 @@ export const help: Partial<Record<ManagedItemType, ReactElement>> = {
       </p>
     </div>
   ),
+  "deserializer": (
+    <div>
+      Deserializer converts raw message value bytes to JSON.
+      <br />
+      By default the latest topic schema is used.
+      <br />
+      Choose an another deserializer in case if the topic doesn't have schema or you use a custom serialization that isn't supported by Pulsar out of the box.
+    </div>
+  )
 } as const;

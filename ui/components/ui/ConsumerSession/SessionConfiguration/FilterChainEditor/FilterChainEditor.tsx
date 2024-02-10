@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import * as t from '../../types';
 import { ManagedBasicMessageFilterTargetValOrRef, ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../LibraryBrowser/model/user-managed-items';

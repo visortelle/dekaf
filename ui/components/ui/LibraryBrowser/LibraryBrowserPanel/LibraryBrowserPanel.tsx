@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
 import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
-import { LibraryContext } from '../model/library-context';
+import { LibraryContext, resourceMatcherFromContext } from '../model/library-context';
 import SvgIcon from '../../SvgIcon/SvgIcon';
 import referenceIcon from './icons/reference.svg';
 import { tooltipId } from '../../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as Modals from '../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../app/contexts/Notifications';
 import MarkdownInput from '../../MarkdownInput/MarkdownInput';
 import { cloneDeep } from 'lodash';
 import LibraryItemName from './LibraryItemName/LibraryItemName';
 import DeleteButton from '../../DeleteButton/DeleteButton';
+import LibraryBrowserPickButton from './LibraryBrowserButtons/PickLibraryItemButton/PickLibraryItemButton';
 
 export type HidableElement = 'save-button';
 
@@ -40,7 +42,9 @@ export type LibraryBrowserPanelProps = {
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
+  const modals = Modals.useContext();
   const { notifySuccess } = Notifications.useContext();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <div className={s.LibraryBrowserPanel} ref={hoverRef}>
@@ -62,6 +66,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
                 {props.itemType === 'basic-message-filter-target' && 'Target Field'}
                 {props.itemType === 'value-projection' && 'Projection'}
                 {props.itemType === 'value-projection-list' && 'Projection List'}
+                {props.itemType === 'deserializer' && 'Deserializer'}
               </strong>
             </div>
           )}
@@ -105,14 +110,28 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <SvgIcon svg={referenceIcon} />
           </div>
         )}
+        <LibraryBrowserPickButton
+          key={refreshKey}
+          itemType={props.itemType}
+          onPick={(v) => {
+            props.onPick(v);
+            modals.pop();
+          }}
+          libraryContext={props.libraryContext}
+          availableForContexts={[resourceMatcherFromContext(props.libraryContext)]}
+        />
         {(!props.isReadOnly && (isHovered || props.isForceShowButtons)) && (
           <div className={s.Buttons}>
             <LibraryBrowserButtons
+              key={refreshKey}
               itemType={props.itemType}
               value={props.value}
               onPick={props.onPick}
               onChange={props.onChange}
-              onSave={props.onSave}
+              onSave={(item) => {
+                setRefreshKey(v => v + 1);
+                props.onSave(item);
+              }}
               libraryContext={props.libraryContext}
               isReadOnly={props.isReadOnly}
               hiddenElements={props.hiddenElements}

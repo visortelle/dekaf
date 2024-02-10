@@ -3,7 +3,7 @@
 export type ColorIntensity = string;
 export type ColorHex = string;
 export type ColorSet = Record<ColorIntensity, ColorHex>;
-export type ColorSetName = string;
+export type ColorSetName = 'slate' | 'gray' | 'zinc' | 'neutral' | 'stone' | 'red' | 'orange' | 'amber' | 'yellow' | 'lime' | 'green' | 'emerald' | 'teal' | 'cyan' | 'sky' | 'blue' | 'indigo' | 'violet' | 'purple' | 'fuchsia' | 'pink' | 'rose';
 
 export const colorPalette: Record<ColorSetName, ColorSet> = {
   slate: {

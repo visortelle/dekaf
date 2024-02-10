@@ -34,6 +34,13 @@ const PageNotFound: React.FC<PageNotFoundProps> = (props) => {
           type="regular"
           appearance="borderless"
         />
+        <SmallButton
+          text="Go Home"
+          svgIcon={arrowBackIcon}
+          onClick={() => navigate("/")}
+          type="regular"
+          appearance="borderless"
+        />
       </div>
     </div>
   );

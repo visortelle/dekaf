@@ -14,10 +14,13 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
-import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
-import { mapToObject } from '../../../proto-utils/proto-utils';
 import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
+import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
+import { PartitioningWithActivePartitions } from '../TopicPage';
+import UpdatePartitionedTopicButton from './UpdatePartitionedTopicButton/UpdatePartitionedTopicButton';
+import CreateMissedPartitionsButton from './CreateMissedPartitionsButton/CreateMissedPartitionsButton';
+import ViewTopicPartitionsButton from './ViewTopicPartitionsButton/ViewTopicPartitionsButton';
 
 export type OverviewProps = {
   tenant: string;
@@ -25,6 +28,7 @@ export type OverviewProps = {
   topic: string;
   topicPersistency: PulsarTopicPersistency;
   libraryContext: LibraryContext;
+  partitioning: PartitioningWithActivePartitions | undefined;
 };
 
 type TabKey = 'stats' | 'stats-internal';
@@ -65,30 +69,9 @@ const Overview: React.FC<OverviewProps> = (props) => {
       }
 
       return res;
-    }
+    },
+    { refreshInterval: 15_000 }
   );
-
-  const { data: propertiesResponse, error: propertiesResponseError, isLoading: isPropertiesResponseLoading } = useSwr(
-    swrKeys.pulsar.customApi.metrics.topicsProperties._([topicFqn]),
-    async () => {
-      const req = new pb.GetTopicPropertiesRequest();
-      req.setTopicsList([topicFqn])
-
-      const res = await topicServiceClient.getTopicProperties(req, null)
-        .catch((err) => notifyError(`Unable to get topics properties: ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get topics properties: ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      return res;
-    }
-  )
 
   if (statsError !== undefined) {
     notifyError(`Unable to get topic stats. ${statsError}`);
@@ -110,19 +93,17 @@ const Overview: React.FC<OverviewProps> = (props) => {
   }
 
   const partitionedTopicMetadata = statsResponse.getPartitionedTopicStatsMap().get(topicFqn)?.getMetadata();
-  const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
-  let properties = propertiesResponse &&
-    propertiesResponse.getTopicPropertiesMap().get(topicFqn) &&
-    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap();
+  const partitionsCount = props.partitioning?.partitionsCount;
+  const activePartitionsCount = props.partitioning?.activePartitionsCount;
 
   return (
     <div className={s.Overview}>
       <div className={s.LeftPanel}>
         <div className={s.Section}>
-          <table className={st.Table}>
+          <table className={st.Table} style={{ width: '100%' }}>
             <tbody>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic Name</td>
+                <td className={st.HighlightedCell} style={{ width: '120rem' }}>Topic Name</td>
                 <Td>{props.topic}</Td>
               </tr>
               <tr className={st.Row}>
@@ -137,7 +118,23 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 <td className={st.HighlightedCell}>Partitioning</td>
                 <Td>
                   {partitioning}
-                  {partitionsCount === undefined ? undefined : <span> (<strong>{partitionsCount}</strong> partitions)</span>}
+                  {partitioning === 'partitioned' && partitionsCount !== undefined && activePartitionsCount !== undefined && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', marginTop: '4rem', padding: '4rem 0' }}>
+                      <div>
+                        {partitionsCount === activePartitionsCount && <span><strong>{partitionsCount}</strong> partition{partitionsCount === 1 ? <></> : <span>s</span>}</span>}
+                        {partitionsCount > activePartitionsCount && <span><strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions</span>}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8rem' }}>
+                        <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+                        <UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount} />
+
+                        {partitionsCount > activePartitionsCount && (
+                          <CreateMissedPartitionsButton topicFqn={topicFqn} />
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </Td>
               </tr>
               {partitioning === 'partitioned' && (
@@ -155,17 +152,16 @@ const Overview: React.FC<OverviewProps> = (props) => {
           </table>
         </div>
 
-        <div style={{ marginBottom: '24rem' }}>
-          <strong>Properties</strong>
-          <div className={s.JsonViewer}>
-            <KeyValueEditor
-              value={properties === undefined ? [] : recordToIndexedKv(mapToObject(properties))}
-              mode='readonly'
-              onChange={() => { }}
-              height='240rem'
+        {(props.topicPersistency !== 'non-persistent') && (partitioning === 'partitioned' || partitioning === 'non-partitioned') && (
+          <div style={{ marginBottom: '24rem' }}>
+            <TopicMetadataEditor
+              tenant={props.tenant}
+              namespace={props.namespace}
+              topic={props.topic}
+              persistency={props.topicPersistency}
             />
           </div>
-        </div>
+        )}
 
         <div className={s.Section}>
           <div className={s.Tabs}>

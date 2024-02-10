@@ -38,7 +38,7 @@ const KeyValueEditor = (props: Props) => {
   }
 
   if (props.mode === 'readonly' && props.value.length === 0) {
-    return <NothingToShow />
+    return <NothingToShow content="No entries" />
   }
 
   return (
@@ -68,7 +68,7 @@ const KeyValueEditor = (props: Props) => {
       {jsonView &&
         <JsonView
           value={value}
-          onChange={onChange}
+          onChange={() => props.mode === 'edit' ? onChange : () => {}}
           changeValidity={changeValidity}
           height={props.height || 'unset'}
           width={props.width || '100%'}

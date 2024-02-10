@@ -1,5 +1,4 @@
 import { isEqual, uniqWith } from 'lodash';
-import { DetectPartitionedTopicsResult } from '../../../NamespacePage/Topics/Topics';
 
 export type Tree = {
   subForest: Tree[];
@@ -13,25 +12,6 @@ export type TopicPartitioning = {
 } | {
   type: 'partition'
 };
-
-export function getTopicPartitioning(topicFqn: string, detectPartitionedTopicsResult: DetectPartitionedTopicsResult): TopicPartitioning {
-  const { partitionedTopics, nonPartitionedTopics } = detectPartitionedTopicsResult;
-
-  const maybePartitioned = partitionedTopics.find(t => t.topicFqn === topicFqn);
-  if (maybePartitioned !== undefined) {
-    return {
-      type: 'partitioned'
-    }
-  }
-
-  if (nonPartitionedTopics.find(t => t.topicFqn === topicFqn) !== undefined) {
-    return {
-      type: 'non-partitioned'
-    }
-  }
-
-  return { type: 'partition' }
-}
 
 export type TopicPersistency = 'persistent' | 'non-persistent';
 

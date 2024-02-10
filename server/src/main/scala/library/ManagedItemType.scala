@@ -19,7 +19,8 @@ enum ManagedItemType:
     ColoringRuleChain,
     BasicMessageFilterTarget,
     ValueProjection,
-    ValueProjectionList
+    ValueProjectionList,
+    Deserializer
 
 object ManagedItemType:
     def fromPb(v: pb.ManagedItemType): ManagedItemType =
@@ -38,6 +39,7 @@ object ManagedItemType:
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET => ManagedItemType.BasicMessageFilterTarget
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION => ManagedItemType.ValueProjection
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST => ManagedItemType.ValueProjectionList
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER => ManagedItemType.Deserializer
             case _ => throw new IllegalArgumentException("Unknown ManagedItemType")
 
     def toPb(v: ManagedItemType): pb.ManagedItemType =
@@ -56,3 +58,4 @@ object ManagedItemType:
             case ManagedItemType.BasicMessageFilterTarget => pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET
             case ManagedItemType.ValueProjection => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION
             case ManagedItemType.ValueProjectionList => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST
+            case ManagedItemType.Deserializer => pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER

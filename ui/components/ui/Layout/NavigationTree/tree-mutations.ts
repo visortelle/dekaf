@@ -5,7 +5,9 @@ export function updateTenants(props: { tree: Tree; tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = props.tenants.map((tenant) => ({
     rootLabel: { type: "tenant", tenant },
-    subForest: [],
+    subForest: _tree.subForest.find(t =>
+      t.rootLabel.type === 'tenant' && t.rootLabel.tenant === tenant
+    )?.subForest || [],
   }));
   return _tree;
 }
@@ -63,7 +65,7 @@ export function updateNamespaceTopics(props: {
           subForest: allTopics.filter(t => t.partitioning.type !== "partition").map(t => {
             const isPartitionedTopic = t.partitioning.type === "partitioned";
             const partitions: Tree[] = allTopics
-              .filter(t2 => t2.partitioning.type === "partition" && t2.topic === t.topic)
+              .filter(t2 => t2.partitioning.type === "partition" && t2.topic === t.topic && t2.persistency === t.persistency)
               .map(t3 => ({
                 rootLabel: t3,
                 subForest: [],

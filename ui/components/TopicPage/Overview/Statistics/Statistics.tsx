@@ -141,20 +141,20 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
             <Td>{i18n.withVoidDefault(topicStats?.getNonContiguousDeletedMessagesRangesSerializedSize()?.getValue(), i18n.formatBytes)}</Td>
           </tr>
           <tr className={st.Row}>
-            <td className={st.HighlightedCell}>Last Compaction Removed Event Count</td>
-            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), v => v)}</Td>
-          </tr>
-          <tr className={st.Row}>
             <td className={st.HighlightedCell}>Last Compaction Succeed Timestamp</td>
             <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v)))}</Td>
           </tr>
           <tr className={st.Row}>
-            <td className={st.HighlightedCell}>Last Compaction Failed Timestamp</td>
-            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v)))}</Td>
-          </tr>
-          <tr className={st.Row}>
             <td className={st.HighlightedCell}>Last Compaction Duration Time</td>
             <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionDurationTimeInMills()?.getValue() || undefined, i18n.formatDuration)}</Td>
+          </tr>
+          <tr className={st.Row}>
+            <td className={st.HighlightedCell}>Last Compaction Removed Event Count</td>
+            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), v => v)}</Td>
+          </tr>
+          <tr className={st.Row}>
+            <td className={st.HighlightedCell}>Last Compaction Failed Timestamp</td>
+            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v)))}</Td>
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Owner Broker</td>

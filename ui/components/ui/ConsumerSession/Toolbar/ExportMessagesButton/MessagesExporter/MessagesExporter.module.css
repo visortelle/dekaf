@@ -1,0 +1,13 @@
+.MessagesExporter {
+  display: grid;
+  grid-template-columns: 320rem 240rem;
+  overflow: auto;
+  padding: 24rem;
+  gap: 24rem;
+  position: relative;
+  height: 600rem;
+}
+
+.MessageFieldsConfig {
+  padding-bottom: 24rem;
+}

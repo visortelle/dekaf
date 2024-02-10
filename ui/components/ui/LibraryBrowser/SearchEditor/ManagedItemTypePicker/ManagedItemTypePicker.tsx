@@ -30,6 +30,7 @@ const ManagedItemTypePicker: React.FC<ManagedItemTypePickerProps> = (props) => {
           { type: 'item', title: getReadableItemType('basic-message-filter-target'), value: 'basic-message-filter-target' },
           { type: 'item', title: getReadableItemType('value-projection'), value: 'value-projection' },
           { type: 'item', title: getReadableItemType('value-projection-list'), value: 'value-projection-list' },
+          { type: 'item', title: getReadableItemType('deserializer'), value: 'deserializer' },
         ]}
         isReadOnly={props.readOnly}
       />

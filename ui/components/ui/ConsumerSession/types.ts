@@ -1,6 +1,8 @@
 import { ValueProjectionList } from "./value-projections/value-projections";
 import { BasicMessageFilter, BasicMessageFilterTarget } from "./basic-message-filter-types";
 import { TopicSelector } from "./topic-selector/topic-selector";
+import { ConsumerSessionTargetConsumptionMode } from "./consumption-mode/consumption-mode";
+import { Deserializer } from "./deserializer/deserializer";
 
 export type SessionState =
   | "paused"
@@ -61,6 +63,9 @@ export type ConsumerSessionPauseTriggerChain = {
 };
 
 export type ConsumerSessionTarget = {
+  isEnabled: boolean,
+  consumptionMode: ConsumerSessionTargetConsumptionMode,
+  messageValueDeserializer: Deserializer,
   topicSelector: TopicSelector;
   messageFilterChain: MessageFilterChain;
   coloringRuleChain: ColoringRuleChain;
@@ -86,6 +91,7 @@ export type ConsumerSessionConfig = {
   pauseTriggerChain: ConsumerSessionPauseTriggerChain;
   coloringRuleChain: ColoringRuleChain;
   valueProjectionList: ValueProjectionList;
+  numDisplayItems: number
 };
 
 export type ValueProjectionResult = {
@@ -108,25 +114,27 @@ export type MessageDescriptor = {
   schemaVersion: Nullable<number>;
   isReplicated: Nullable<boolean>;
   replicatedFrom: Nullable<string>;
-  properties: Record<string, string>;
+  properties: Nullable<Record<string, string>>;
 
   // Fields below aren't a part of Pulsar message.
   rawValue: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
   sessionContextStateJson: Nullable<string>; // JSON string
-  index: number;
+  displayIndex: Nullable<number>;
+  numMessageProcessed: Nullable<number>;
+  numMessageSent: Nullable<number>;
   debugStdout: Nullable<string>;
 
   sessionTargetIndex: Nullable<number>,
 
-  sessionColorRuleChainTestResults: ChainTestResult[],
-  sessionTargetColorRuleChainTestResults: ChainTestResult[],
+  sessionColorRuleChainTestResults: Nullable<ChainTestResult[]>,
+  sessionTargetColorRuleChainTestResults: Nullable<ChainTestResult[]>,
 
-  sessionMessageFilterChainTestResult: ChainTestResult | undefined,
-  sessionTargetMessageFilterChainTestResult: ChainTestResult | undefined
+  sessionMessageFilterChainTestResult: Nullable<ChainTestResult>,
+  sessionTargetMessageFilterChainTestResult: Nullable<ChainTestResult>
 
-  sessionValueProjectionListResult: ValueProjectionResult[],
-  sessionTargetValueProjectionListResult: ValueProjectionResult[],
+  sessionValueProjectionListResult: Nullable<ValueProjectionResult[]>,
+  sessionTargetValueProjectionListResult: Nullable<ValueProjectionResult[]>,
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;

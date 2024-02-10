@@ -48,14 +48,15 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
 
               <div className={s.RemoveFilter}>
                 <SmallButton
-                  title="Remove filter"
-                  type='danger'
+                  title="Remove this filter"
+                  type='regular'
                   svgIcon={removeFilterIcon}
                   onClick={() => {
                     const newFilters = { ...props.filters };
                     delete newFilters[columnKey as CK];
                     props.onChange(newFilters);
                   }}
+                  appearance='borderless'
                 />
               </div>
             </div>
