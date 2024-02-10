@@ -86,7 +86,8 @@
     "unzipper": "^0.10.14",
     "use-debounce": "^9.0.4",
     "use-local-storage-state": "^19.1.0",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "yauzl": "^2.10.0"
   },
   "devDependencies": {
     "@electron/notarize": "^2.1.0",
@@ -219,13 +220,6 @@
     },
     "extraResources": [
       "./assets/**",
-      {
-        "from": "app/dist_assets",
-        "to": "dist_assets",
-        "filter": [
-          "**/*"
-        ]
-      },
       {
         "from": "dist_assets/build",
         "to": "dist_assets",
