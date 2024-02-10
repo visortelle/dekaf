@@ -14,10 +14,10 @@ import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { NamespacePropertiesEditor } from './NamespacePropertiesEditor/NamespacePropertiesEditor';
 
 type TopicCountDataEntry = {
-  topicsCount: number,
-  topicsCountExcludingPartitions: number,
-  persistentTopicsCount: number,
-  nonPersistentTopicsCount: number,
+  topicCount: number,
+  topicCountExcludingPartitions: number,
+  persistentTopicCount: number,
+  nonPersistentTopicCount: number,
   properties: Record<string, string> | undefined,
 }
 
@@ -37,33 +37,32 @@ const Overview: React.FC<OverviewProps> = (props) => {
       namespace: props.namespace
     }),
     async () => {
-      const topicsCountReq = new pbn.GetTopicsCountRequest();
-      topicsCountReq.setNamespacesList([namespaceFqn]);
-      topicsCountReq.setIsIncludeSystemTopics(false);
-      topicsCountReq.setIsIncludePersistedAndNonPersistedTopics(true);
+      const topicCountReq = new pbn.GetTopicsCountRequest();
+      topicCountReq.setNamespacesList([namespaceFqn]);
+      topicCountReq.setIsIncludeSystemTopics(true);
 
-      const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicsCountReq, null)
+      const topicCountRes = await namespaceServiceClient.getTopicsCount(topicCountReq, null)
         .catch((err) => notifyError(`Unable to get topics count. ${err}`));
 
-      if (topicsCountRes?.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
+      if (topicCountRes?.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topics count. ${topicCountRes?.getStatus()?.getMessage()}`);
       }
 
-      const topicsCountMap = topicsCountRes === undefined ?
+      const topicCountMap = topicCountRes === undefined ?
         {} :
-        pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
+        pbUtils.mapToObject(topicCountRes.getTopicCountMap());
 
-      const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
+      const topicCountExcludingPartitionsMap = topicCountRes === undefined ?
         {} :
-        pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());
+        pbUtils.mapToObject(topicCountRes.getTopicCountExcludingPartitionsMap());
 
-      const persistentTopicsCountMap = topicsCountRes === undefined ?
+      const persistentTopicCountMap = topicCountRes === undefined ?
         {} :
-        pbUtils.mapToObject(topicsCountRes.getTopicsCountPersistedMap());
+        pbUtils.mapToObject(topicCountRes.getTopicCountPersistentMap());
 
-      const nonPersistentTopicsCountMap = topicsCountRes === undefined ?
+      const nonPersistentTopicCountMap = topicCountRes === undefined ?
         {} :
-        pbUtils.mapToObject(topicsCountRes.getTopicsCountNonPersistedMap());
+        pbUtils.mapToObject(topicCountRes.getTopicCountNonPersistentMap());
 
       const propertiesReq = new pbn.GetPropertiesRequest();
       propertiesReq.setNamespacesList([namespaceFqn]);
@@ -74,10 +73,10 @@ const Overview: React.FC<OverviewProps> = (props) => {
       const properties = propertiesPb === undefined ? undefined : pbUtils.mapToObject(propertiesPb);
 
       const dataEntry: TopicCountDataEntry = {
-        topicsCount: topicsCountMap[namespaceFqn],
-        topicsCountExcludingPartitions: topicsCountExcludingPartitionsMap[namespaceFqn],
-        persistentTopicsCount: persistentTopicsCountMap[namespaceFqn],
-        nonPersistentTopicsCount: nonPersistentTopicsCountMap[namespaceFqn],
+        topicCount: topicCountMap[namespaceFqn],
+        topicCountExcludingPartitions: topicCountExcludingPartitionsMap[namespaceFqn],
+        persistentTopicCount: persistentTopicCountMap[namespaceFqn],
+        nonPersistentTopicCount: nonPersistentTopicCountMap[namespaceFqn],
         properties
       };
 
@@ -89,12 +88,36 @@ const Overview: React.FC<OverviewProps> = (props) => {
     <div className={s.Overview}>
       <div className={s.LeftPanel}>
         <div className={`${s.Section} ${s.StatisticsSection}`}>
-          <table className={`${st.Table} ${s.Table}`}>
+          <table className={`${st.Table} ${s.Table}`} style={{ width: '100%' }}>
             <tbody>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Namespace FQN</td>
+                <td className={st.HighlightedCell} style={{ width: '240rem' }}>Namespace FQN</td>
                 <Td>
                   <div>{namespaceFqn}</div>
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Topics count</td>
+                <Td>
+                  {
+                    isTopicCountsLoading ? (
+                      <div className={s.LoadingPlaceholder} />
+                    ) : (
+                      <div>{topicCounts?.topicCountExcludingPartitions}</div>
+                    )
+                  }
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell}>Including active partitions</td>
+                <Td>
+                  {
+                    isTopicCountsLoading ? (
+                      <div className={s.LoadingPlaceholder} />
+                    ) : (
+                      <div>{topicCounts?.topicCount}</div>
+                    )
+                  }
                 </Td>
               </tr>
               <tr className={st.Row}>
@@ -104,7 +127,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                     isTopicCountsLoading ? (
                       <div className={s.LoadingPlaceholder} />
                     ) : (
-                      <div>{topicCounts?.persistentTopicsCount}</div>
+                      <div>{topicCounts?.persistentTopicCount}</div>
                     )
                   }
                 </Td>
@@ -116,31 +139,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                     isTopicCountsLoading ? (
                       <div className={s.LoadingPlaceholder} />
                     ) : (
-                      <div>{topicCounts?.nonPersistentTopicsCount}</div>
-                    )
-                  }
-                </Td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topics count</td>
-                <Td>
-                  {
-                    isTopicCountsLoading ? (
-                      <div className={s.LoadingPlaceholder} />
-                    ) : (
-                      <div>{topicCounts?.topicsCountExcludingPartitions}</div>
-                    )
-                  }
-                </Td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topics count including partitions</td>
-                <Td>
-                  {
-                    isTopicCountsLoading ? (
-                      <div className={s.LoadingPlaceholder} />
-                    ) : (
-                      <div>{topicCounts?.topicsCount}</div>
+                      <div>{topicCounts?.nonPersistentTopicCount}</div>
                     )
                   }
                 </Td>

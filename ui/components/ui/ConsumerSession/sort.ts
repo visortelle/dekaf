@@ -48,7 +48,7 @@ export const sortMessages = (
   }
 
   if (sort.key === "index") {
-    const sortFn: SortFn = (a, b) => a.index - b.index;
+    const sortFn: SortFn = (a, b) => (a.displayIndex || 0) - (b.displayIndex || 0);
     return s(messages, [], sortFn);
   }
 
@@ -162,12 +162,12 @@ export const sortMessages = (
 
     const [defs, undefs] = partition(
       messages,
-      (m) => m.sessionValueProjectionListResult[projectionIndex].displayValue !== undefined
+      (m) => (m.sessionValueProjectionListResult || [])[projectionIndex]?.displayValue !== undefined
     );
 
     const sortFn: SortFn = (a, b) =>
-      (a.sessionValueProjectionListResult[projectionIndex].displayValue || "")
-        .localeCompare(b.sessionValueProjectionListResult[projectionIndex].displayValue || "",
+      ((a.sessionValueProjectionListResult || [])[projectionIndex]?.displayValue || "")
+        .localeCompare((b.sessionValueProjectionListResult || [])[projectionIndex]?.displayValue || "",
           "en",
           { numeric: true }
         );
@@ -182,7 +182,7 @@ export const sortMessages = (
     const [defs, undefs] = partition(
       messages,
       (m) => m.sessionTargetIndex === targetIndex &&
-        m.sessionTargetValueProjectionListResult[projectionIndex].displayValue !== undefined
+        (m.sessionTargetValueProjectionListResult || [])[projectionIndex]?.displayValue !== undefined
     );
 
     const sortFn: SortFn = (a, b) => {
@@ -194,8 +194,8 @@ export const sortMessages = (
         return -1;
       }
 
-      return (a.sessionTargetValueProjectionListResult[projectionIndex].displayValue || "")
-        .localeCompare(b.sessionTargetValueProjectionListResult[projectionIndex].displayValue || "",
+      return ((a.sessionTargetValueProjectionListResult || [])[projectionIndex]?.displayValue || "")
+        .localeCompare((b.sessionTargetValueProjectionListResult || [])[projectionIndex]?.displayValue || "",
           "en",
           { numeric: true }
         );

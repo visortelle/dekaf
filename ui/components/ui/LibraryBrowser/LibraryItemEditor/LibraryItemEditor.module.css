@@ -1,9 +1,31 @@
 .LibraryItemEditor {
-  padding: 12rem;
+  overflow: hidden;
+  flex: 1;
+  display: grid;
+  grid-template-rows: min-content 1fr;
 }
 
 .Info {
-  padding-bottom: 12rem;
-  margin-bottom: 12rem;
+  padding: 12rem;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+}
+
+.Editor {
+  display: grid;
+  overflow: auto;
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+}
+
+.ItemEditorContainer {
+  background-color: var(--surface-color);
+  display: grid;
+}
+
+.ItemEditorContainerChildren {
+  width: 480rem;
+  padding: 12rem;
+  background-color: #fff;
 }

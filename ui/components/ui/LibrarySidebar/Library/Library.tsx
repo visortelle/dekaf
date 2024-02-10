@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import s from './Library.module.css'
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { LibraryContext, resourceMatcherFromContext } from '../../LibraryBrowser/model/library-context';
-import CreateLibraryItemButton from './CreateLibraryItemButton/CreateLibraryItemButton';
+import SaveLibraryItemButton from '../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/SaveLibraryItemButton/SaveLibraryItemButton';
 import { ManagedItemType } from '../../LibraryBrowser/model/user-managed-items';
 import { getReadableItemType } from '../../LibraryBrowser/get-readable-item-type';
-import { managedItemTypeToPb } from '../../LibraryBrowser/model/user-managed-items-conversions-pb';
-import { resourceMatcherToPb } from '../../LibraryBrowser/model/resource-matchers-conversions-pb';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import { itemCountPerTypeFromPb } from '../../LibraryBrowser/item-count-per-type';
 import NoData from '../../NoData/NoData';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from '../../LibraryBrowser/LibraryBrowserPanel/help';
@@ -18,6 +11,7 @@ import BrowseLibraryButton from './BrowseLibraryItemButton/BrowseLibraryButton';
 import { ResourceMatcher } from '../../LibraryBrowser/model/resource-matchers';
 import ResourceMatchersInput from '../../LibraryBrowser/SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 import { H3 } from '../../H/H';
+import { getDefaultLibraryItem } from '../../LibraryBrowser/default-library-items';
 
 export type LibraryProps = {
   libraryContext: LibraryContext,
@@ -36,47 +30,26 @@ const itemTypes: ManagedItemType[] = [
   "markdown-document",
   "basic-message-filter-target",
   "value-projection",
-  "value-projection-list"
+  "value-projection-list",
+  "deserializer"
 ];
 
 const Library: React.FC<LibraryProps> = (props) => {
-  const { notifyError } = Notifications.useContext();
-  const { libraryServiceClient } = GrpcClient.useContext();
   const [itemCountPerType, setItemCountPerType] = useState<Partial<Record<ManagedItemType, number>>>({});
   const [resourceMatchers, setResourceMatchers] = useState<ResourceMatcher[]>([]);
+  const [refreshItemCountKey, setRefreshItemCountKey] = useState(0);
 
   useEffect(() => {
     setResourceMatchers([resourceMatcherFromContext(props.libraryContext)]);
   }, [props.libraryContext]);
 
   useEffect(() => {
-    async function fetchItemCount() {
-      const req = new pb.GetLibraryItemsCountRequest();
-      req.setTypesList(itemTypes.map(managedItemTypeToPb));
+    const count = Object.values(itemCountPerType)
+      .filter(it => it !== undefined)
+      .reduce((total, n) => total + n, 0);
 
-      const resourceMatchersPb = resourceMatchers.map(resourceMatcherToPb);
-      req.setContextsList(resourceMatchersPb);
-
-      const res = await libraryServiceClient.getLibraryItemsCount(req, null)
-        .catch(err => notifyError(`Unable to fetch library items count. ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to fetch library items count. ${res.getStatus()?.getMessage()}`);
-      }
-
-      const newItemCountPerType = itemCountPerTypeFromPb(res.getItemCountPerTypeList());
-      setItemCountPerType(newItemCountPerType);
-
-      const totalCount = Object.entries(newItemCountPerType).reduce((total, t) => total + t[1], 0);
-      props.onCount(totalCount);
-    }
-
-    fetchItemCount();
-  }, [resourceMatchers]);
+    props.onCount(count);
+  }, [itemCountPerType]);
 
   return (
     <div className={s.Library}>
@@ -86,32 +59,44 @@ const Library: React.FC<LibraryProps> = (props) => {
 
       <div>
         {
-          itemTypes.map(itemType => {
-            const itemCount = itemCountPerType[itemType];
-
+          itemTypes.sort((a, b) => getReadableItemType(a).localeCompare(getReadableItemType(b))).map(itemType => {
             return (
               <div key={itemType}>
                 <div className={s.ItemType}>
                   <div className={s.ItemTypeHeader}>
-                    <div>
+                    <div style={{ marginRight: '24rem' }}>
                       <FormLabel
                         content={getReadableItemType(itemType)}
                         help={help[itemType]}
                       />
                     </div>
-                    {itemCount === undefined ? <NoData /> : <strong>{itemCount}</strong>}
 
-                    <div className={s.ItemHeaderButtons}>
-                      <BrowseLibraryButton
-                        itemType={itemType}
-                        libraryContext={props.libraryContext}
-                        resourceMatchers={resourceMatchers}
-                      />
-                      <CreateLibraryItemButton
-                        itemType={itemType}
-                        libraryContext={props.libraryContext}
-                      />
-                    </div>
+                    {itemCountPerType[itemType] === undefined && (
+                      <div style={{ display: 'flex', justifySelf: 'center', marginLeft: '-12rem' }}>
+                        <NoData />
+                      </div>
+                    )}
+
+                    <BrowseLibraryButton
+                      key={refreshItemCountKey}
+                      itemType={itemType}
+                      libraryContext={props.libraryContext}
+                      availableForContexts={resourceMatchers}
+                      onItemCount={(itemCount) => {
+                        setItemCountPerType(v => ({
+                          ...v,
+                          [itemType]: itemCount
+                        }));
+                      }}
+                      isHideSelectButton={itemType !== 'consumer-session-config'}
+                    />
+
+                    <SaveLibraryItemButton
+                      item={getDefaultLibraryItem(itemType, props.libraryContext).spec}
+                      libraryContext={props.libraryContext}
+                      onSaved={() => setRefreshItemCountKey(v => v + 1)}
+                      appearance='create'
+                    />
                   </div>
                 </div>
               </div>
@@ -121,7 +106,7 @@ const Library: React.FC<LibraryProps> = (props) => {
       </div>
 
       <div className={s.ResourceMatchers}>
-        <H3>Resource Matchers</H3>
+        <H3>Search in Contexts</H3>
 
         <ResourceMatchersInput
           value={resourceMatchers}

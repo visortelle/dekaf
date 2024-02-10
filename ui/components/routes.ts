@@ -240,16 +240,16 @@ export const routes = {
                     },
                   },
                 },
-                policies: {
+                details: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/policies",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/details",
                     get: (props: {
                       tenant: string;
                       namespace: string;
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/policies`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/details`,
                   },
                 },
               },

@@ -22,8 +22,8 @@ export type DataEntry = {
 }
 
 export type LazyDataEntry = {
-  topicsCount?: number;
-  topicsCountExcludingPartitions?: number;
+  topicCount?: number;
+  topicCountExcludingPartitions?: number;
   properties?: Record<string, string>;
 };
 
@@ -82,7 +82,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             topicsCount: {
               title: 'Topics',
               isLazy: true,
-              render: (_, ld) => i18n.withVoidDefault(ld?.topicsCountExcludingPartitions, v => (
+              render: (_, ld) => i18n.withVoidDefault(ld?.topicCountExcludingPartitions, v => (
                 <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: _.namespaceName })}`}>
                   {v}
                 </Link>
@@ -92,7 +92,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
               title: 'Topics Including Partitions',
               isLazy: true,
               render: (_, ld) =>
-                i18n.withVoidDefault(ld?.topicsCount, v => (
+                i18n.withVoidDefault(ld?.topicCount, v => (
                   <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: _.namespaceName })}`}>
                     {v}
                   </Link>
@@ -118,25 +118,24 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
         }}
         lazyDataLoader={{
           loader: async (des) => {
-            const topicsCountReq = new pb.GetTopicsCountRequest();
-            topicsCountReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
-            topicsCountReq.setIsIncludeSystemTopics(false);
-            topicsCountReq.setIsIncludePersistedAndNonPersistedTopics(false);
+            const topicCountReq = new pb.GetTopicsCountRequest();
+            topicCountReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
+            topicCountReq.setIsIncludeSystemTopics(true);
 
-            const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicsCountReq, null)
+            const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicCountReq, null)
               .catch((err) => notifyError(`Unable to get topics count. ${err}`));
 
             if (topicsCountRes?.getStatus()?.getCode() !== Code.OK) {
               notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
             }
 
-            const topicsCountMap = topicsCountRes === undefined ?
+            const topicCountMap = topicsCountRes === undefined ?
               {} :
-              pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
+              pbUtils.mapToObject(topicsCountRes.getTopicCountMap());
 
-            const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
+            const topicCountExcludingPartitionsMap = topicsCountRes === undefined ?
               {} :
-              pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());
+              pbUtils.mapToObject(topicsCountRes.getTopicCountExcludingPartitionsMap());
 
             const propertiesReq = new pb.GetPropertiesRequest();
             propertiesReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
@@ -149,8 +148,8 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
               const properties = propertiesPb === undefined ? undefined : pbUtils.mapToObject(propertiesPb);
 
               const ld: LazyDataEntry = {
-                topicsCount: topicsCountMap[namespaceFqn],
-                topicsCountExcludingPartitions: topicsCountExcludingPartitionsMap[namespaceFqn],
+                topicCount: topicCountMap[namespaceFqn],
+                topicCountExcludingPartitions: topicCountExcludingPartitionsMap[namespaceFqn],
                 properties
               };
               return { ...acc, [de.namespaceName]: ld };

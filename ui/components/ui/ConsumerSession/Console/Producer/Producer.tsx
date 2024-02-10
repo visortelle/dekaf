@@ -152,9 +152,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
       }}
     >
       <div className={s.Content}>
-        <div className={s.Presets}>
-        </div>
-
         <div className={s.Config}>
           <div className={s.ConfigLeft}>
             <div className={s.FormControl}>
@@ -166,11 +163,12 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   { type: 'item', title: 'JSON', value: 'json' },
                   { type: 'item', title: 'Bytes (hex)', value: 'bytes-hex' },
                 ]}
+                size='small'
               />
             </div>
             <div className={s.FormControl}>
               <strong>Key</strong>
-              <Input onChange={v => setKey(v)} value={key || ''} placeholder="" />
+              <Input onChange={v => setKey(v)} value={key || ''} placeholder="" size='small' />
             </div>
             <div className={s.FormControl}>
               <strong>Event time</strong>
@@ -185,13 +183,8 @@ const Producer: React.FC<ProducerProps> = (props) => {
               <KeyValueEditor
                 value={recordToIndexedKv(JSON.parse(propertiesJsonMap))}
                 onChange={v => changePropertiesJsonMap(JSON.stringify(recordFromIndexedKv(v)) || '')}
-                height="320rem"
+                height="240rem"
               />
-            </div>
-
-            <div style={{ height: '24rem' }}>
-              {/* There is some HTML/CSS mess I can't quickly figure out.
-              It's just a hack to make bottom padding work correctly. */}
             </div>
           </div>
 
@@ -203,7 +196,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   value={value}
                   onChange={v => setValue(v || '')}
                   language="json"
-                  height="480rem"
+                  height="260rem"
                 />
               )}
               {valueType === 'bytes-hex' && (

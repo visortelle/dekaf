@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './SearchResults.module.css'
 import Input from '../../Input/Input';
 import { LibraryItem } from '../model/library';
@@ -6,7 +6,19 @@ import NothingToShow from '../../NothingToShow/NothingToShow';
 import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItemButton';
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import partition from 'lodash/partition';
+import { managedItemTypeToPb } from '../model/user-managed-items-conversions-pb';
+import { resourceMatcherToPb } from '../model/resource-matchers-conversions-pb';
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as Modals from '../../../app/contexts/Modals/Modals';
+import { ManagedItemType } from '../model/user-managed-items';
+import { ResourceMatcher } from '../model/resource-matchers';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { libraryItemFromPb } from '../model/library-conversions';
+import ActionButton from '../../ActionButton/ActionButton';
+import { LibraryContext } from '../model/library-context';
+import SaveItemDialog from '../dialogs/SaveItemDialog/SaveItemDialog';
 
 export type ExtraLabel = {
   text: string;
@@ -14,47 +26,84 @@ export type ExtraLabel = {
 }
 
 export type SearchResultsProps = {
-  items: LibraryItem[];
-  selectedItemId?: string;
-  onSelect: (id: string) => void;
-  onDeleted: () => void;
-  extraLabels: Record<string, ExtraLabel>;
-  itemsToKeepAtTop: string[];
+  itemType: ManagedItemType;
+  resourceMatchers: ResourceMatcher[];
+  items: LibraryItem[],
+  selectedItemId: string | undefined;
+  libraryContext: LibraryContext;
+  onSelected: (itemId: string) => void;
+  onItems: (items: LibraryItem[]) => void;
+  onItemClick: (id: string) => void;
+  onItemDoubleClick: (id: string) => void;
+  onDeleted: (id: string) => void;
+  onEdited: (id: string) => void;
+  isReadOnly?: boolean;
 };
 
 type SortOption = 'Name' | 'Last Modified';
 
 const SearchResults: React.FC<SearchResultsProps> = (props) => {
+  const { libraryServiceClient } = GrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
   const [filterInputValue, setFilterInputValue] = React.useState<string>("")
   const [sort, setSort] = React.useState<Sort<SortOption>>({ sortBy: 'Name', sortDirection: 'asc' });
+
+  useEffect(() => {
+    async function fetchSearchResults() {
+      const req = new pb.ListLibraryItemsRequest();
+
+      const contextsList = props.resourceMatchers.map(rm => resourceMatcherToPb(rm))
+      req.setContextsList(contextsList);
+      req.setTypesList([managedItemTypeToPb(props.itemType)]);
+
+      const res = await libraryServiceClient.listLibraryItems(req, null)
+        .catch(err => {
+          notifyError(`Unable to fetch library items. ${err}`);
+        });
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      const newItems = res.getItemsList().map(libraryItemFromPb);
+      props.onItems(newItems);
+    }
+
+    fetchSearchResults();
+  }, [props.itemType, props.resourceMatchers]);
+
+  useEffect(() => {
+    if (props.selectedItemId === undefined && props.items.length > 0) {
+      props.onSelected(props.items[0].spec.metadata.id);
+    }
+  }, [props.items, props.selectedItemId]);
 
   const filteredItems = React.useMemo(() => {
     let result = props.items.filter((item) => {
       const { name, descriptionMarkdown, id } = item.spec.metadata;
       return name.toLowerCase().includes(filterInputValue.toLowerCase()) ||
         descriptionMarkdown.toLowerCase().includes(filterInputValue.toLowerCase()) ||
-        id.includes(filterInputValue)
-    })
+        id.includes(filterInputValue);
+    });
 
-    const [topItems, bottomItems] = partition(result, (item) => props.itemsToKeepAtTop.includes(item.spec.metadata.id));
-    let sortedTopItems = topItems;
-    let sortedBottomItems = bottomItems;
-
+    let sortedItems: LibraryItem[] = result;
     if (sort.sortBy === 'Name') {
       const sortFn = (a: LibraryItem, b: LibraryItem) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true });
-      sortedTopItems = topItems.sort(sortFn);
-      sortedBottomItems = bottomItems.sort(sortFn);
+      sortedItems = result.sort(sortFn);
     } else if (sort.sortBy === 'Last Modified') {
       const sortFn = (a: LibraryItem, b: LibraryItem) => a.metadata.updatedAt.localeCompare(b.metadata.updatedAt, 'en', { numeric: true });
-      sortedTopItems = topItems.sort(sortFn);
-      sortedBottomItems = bottomItems.sort(sortFn);
+      sortedItems = result.sort(sortFn);
     }
 
-    sortedTopItems = sort.sortDirection === 'asc' ? sortedTopItems : sortedTopItems.reverse();
-    sortedBottomItems = sort.sortDirection === 'asc' ? sortedBottomItems : sortedBottomItems.reverse();
+    sortedItems = sort.sortDirection === 'asc' ? sortedItems : sortedItems.reverse();
 
-    return sortedTopItems.concat(sortedBottomItems);
-  }, [props.items, props.itemsToKeepAtTop, filterInputValue, sort]);
+    return sortedItems;
+  }, [props.items, filterInputValue, sort]);
 
   return (
     <div className={s.SearchResults}>
@@ -62,7 +111,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
         <>
           <div className={s.Filters}>
             <Input
-              placeholder="Search by name, description, or id"
+              placeholder="Filter by name, description, or id"
               value={filterInputValue}
               onChange={setFilterInputValue}
               appearance='no-borders'
@@ -86,18 +135,25 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
           {filteredItems.length !== 0 && (
             <div className={s.Items}>
               {filteredItems.map((item) => {
-                const { id, name, descriptionMarkdown } = item.spec.metadata;
+                const id = item.spec.metadata.id;
+
                 return (
                   <Item
                     key={id}
-                    id={id}
-                    name={name}
-                    descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
-                    updatedAt={item.metadata.updatedAt}
-                    onClick={() => props.onSelect(id)}
+                    libraryItem={item}
+                    libraryContext={props.libraryContext}
+                    onClick={() => {
+                      props.onSelected(id);
+                      props.onItemClick(id);
+                    }}
+                    onDoubleClick={() => {
+                      props.onSelected(id);
+                      props.onItemDoubleClick(id);
+                    }}
                     selectedItemId={props.selectedItemId}
-                    extraLabel={props.extraLabels[id]}
-                    onDeleted={props.onDeleted}
+                    onDeleted={() => props.onDeleted(id)}
+                    onEdited={() => props.onEdited(id)}
+                    isReadOnly={Boolean(props.isReadOnly)}
                   />
                 )
               })}
@@ -110,40 +166,71 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 }
 
 export type ItemProps = {
-  id: string;
-  name: string;
-  descriptionMarkdown: string;
-  updatedAt: string;
+  libraryItem: LibraryItem;
+  libraryContext: LibraryContext;
   onClick: () => void;
+  onDoubleClick: () => void;
   onDeleted: () => void;
+  onEdited: () => void;
   selectedItemId?: string;
-  extraLabel?: ExtraLabel;
+  isNewItem?: boolean;
+  isReadOnly: boolean;
 };
 
 const Item: React.FC<ItemProps> = (props) => {
-  const className = `${s.Item} ${props.selectedItemId === props.id ? s.ActiveItem : ''}`;
+  const modals = Modals.useContext();
+  const className = `${s.Item} ${props.selectedItemId === props.libraryItem.spec.metadata.id ? s.ActiveItem : ''}`;
   const i18n = I18n.useContext();
 
   return (
-    <div className={className} onClick={props.onClick}>
+    <div className={className} onClick={props.onClick} onDoubleClick={props.onDoubleClick}>
       <div className={s.ItemName}>
-        {props.name || <div className={s.Unnamed}>Unnamed</div>}
+        {props.libraryItem.spec.metadata.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>
       <div className={s.ItemUpdatedAt}>
-        Updated at:<br />{i18n.formatDateTime(new Date(props.updatedAt))}
+        Updated at:<br />{i18n.formatDateTime(new Date(props.libraryItem.metadata.updatedAt))}
       </div>
-      {props.extraLabel && (
-        <div className={s.ItemExtraLabel} style={{ color: props.extraLabel.color }}>
-          {props.extraLabel.text}
+      {props.isNewItem && (
+        <div className={s.ItemExtraLabel} style={{ color: 'var(--accent-color-blue)' }}>
+          New item
         </div>
       )}
-      <div className={s.DeleteItemButton}>
-        <DeleteLibraryItemButton
-          itemId={props.id}
-          onDeleted={props.onDeleted}
-          isDisabled={props.name.length === 0}
-        />
-      </div>
+
+      {!props.isNewItem && (
+        <div className={s.ActionButtons}>
+          {!props.isReadOnly && (
+            <ActionButton
+              action={{ type: 'predefined', action: 'edit' }}
+              buttonProps={{ appearance: 'borderless-semitransparent' }}
+              onClick={() => {
+                modals.push({
+                  id: `edit-library-item-${props.libraryItem.spec.metadata.id}`,
+                  title: `Edit Library Item`,
+                  content: (
+                    <SaveItemDialog
+                      libraryItem={props.libraryItem}
+                      libraryContext={props.libraryContext}
+                      onSaved={() => {
+                        props.onEdited();
+                        modals.pop();
+                      }}
+                      onCanceled={modals.pop}
+                      isExistingItem={true}
+                    />
+                  ),
+                  styleMode: 'no-content-padding'
+                });
+              }}
+            />
+          )}
+
+          <DeleteLibraryItemButton
+            itemId={props.libraryItem.spec.metadata.id}
+            onDeleted={props.onDeleted}
+            isDisabled={props.libraryItem.spec.metadata.name.length === 0}
+          />
+        </div>
+      )}
     </div>
   );
 }

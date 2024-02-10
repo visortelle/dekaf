@@ -41,6 +41,8 @@ import {
 import { Int32Value, StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
 import { ValueProjection, ValueProjectionList } from "../value-projections/value-projections";
+import { consumerSessionTargetConsumptionModeFromPb, consumerSessionTargetConsumptionModeToPb } from "../consumption-mode/consumption-mode";
+import { deserializerFromPb, deserializerToPb } from "../deserializer/deserializer";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -48,7 +50,9 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
   const sessionTargetMessageFilterChainTestResultPb = message.getSessionTargetMessageFilterChainTestResult();
 
   return {
-    index: -1, // This value will be set in another place.
+    displayIndex: -1, // This value will be set in another place.
+    numMessageProcessed: message.getNumMessageProcessed(),
+    numMessageSent: message.getNumMessageSent(),
     messageId: message.getMessageId()?.getValue_asU8() ?? null,
     rawValue: message.getRawValue()?.getValue_asU8() ?? null,
     value: message.getValue()?.getValue() ?? null,
@@ -75,10 +79,10 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     sessionTargetColorRuleChainTestResults: message.getSessionTargetColorRuleChainTestResultsList().map(chainTestResultFromPb),
 
     sessionMessageFilterChainTestResult: sessionMessageFilterChainTestResultPb === undefined ?
-      undefined :
+      null :
       chainTestResultFromPb(sessionMessageFilterChainTestResultPb),
     sessionTargetMessageFilterChainTestResult: sessionTargetMessageFilterChainTestResultPb === undefined ?
-      undefined :
+      null :
       chainTestResultFromPb(sessionTargetMessageFilterChainTestResultPb),
 
     sessionValueProjectionListResult: message.getSessionValueProjectionListResultList().map(valueProjectionResultFromPb),
@@ -125,7 +129,7 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
   }
 
   return {
-    index: message.index,
+    index: message.displayIndex,
     messageId,
     rawValue,
     value,
@@ -727,21 +731,28 @@ export function consumerSessionPauseTriggerChainToPb(v: ConsumerSessionPauseTrig
 
 export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): ConsumerSessionTarget {
   return {
+    isEnabled: v.getIsEnabled(),
+    consumptionMode: consumerSessionTargetConsumptionModeFromPb(v.getConsumptionMode()!),
+    messageValueDeserializer: deserializerFromPb(v.getMessageValueDeserializer()!),
     topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
     messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
     coloringRuleChain: coloringRuleChainFromPb(v.getColoringRuleChain()!),
-    valueProjectionList: valueProjectionListFromPb(v.getValueProjectionList()!)
+    valueProjectionList: valueProjectionListFromPb(v.getValueProjectionList()!),
   };
 }
 
 export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget {
-  const consumerSessionTargetPb = new pb.ConsumerSessionTarget();
-  consumerSessionTargetPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
-  consumerSessionTargetPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
-  consumerSessionTargetPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
-  consumerSessionTargetPb.setValueProjectionList(valueProjectionListToPb(v.valueProjectionList));
+  const targetPb = new pb.ConsumerSessionTarget();
 
-  return consumerSessionTargetPb;
+  targetPb.setIsEnabled(v.isEnabled);
+  targetPb.setConsumptionMode(consumerSessionTargetConsumptionModeToPb(v.consumptionMode));
+  targetPb.setMessageValueDeserializer(deserializerToPb(v.messageValueDeserializer));
+  targetPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
+  targetPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
+  targetPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
+  targetPb.setValueProjectionList(valueProjectionListToPb(v.valueProjectionList));
+
+  return targetPb;
 }
 
 function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {

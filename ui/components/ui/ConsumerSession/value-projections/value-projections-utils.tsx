@@ -86,7 +86,8 @@ export type GetValueProjectionTdsProps = {
   coloring: Coloring,
   sessionConfig: ConsumerSessionConfig,
   message: MessageDescriptor,
-  valueProjectionThs: ValueProjectionTh[]
+  valueProjectionThs: ValueProjectionTh[],
+  isSelected: boolean
 };
 
 export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactElement[] {
@@ -133,7 +134,7 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
   const sessionTds = props.sessionConfig.valueProjectionList.isEnabled ? props.sessionConfig.valueProjectionList.projections
     .filter(pr => pr.isEnabled)
     .map((_, i) => {
-      return props.message.sessionValueProjectionListResult[i]?.displayValue;
+      return (props.message.sessionValueProjectionListResult || [])[i]?.displayValue;
     }) : [];
 
   const targetIndex = props.message.sessionTargetIndex!;
@@ -142,7 +143,7 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
     target.valueProjectionList.projections
       .filter(pr => pr.isEnabled)
       .map((_, i) => {
-        return props.message.sessionTargetValueProjectionListResult[i]?.displayValue;
+        return (props.message.sessionTargetValueProjectionListResult || [])[i]?.displayValue;
       }) :
     [];
 
@@ -162,6 +163,7 @@ export function getValueProjectionTds(props: GetValueProjectionTdsProps): ReactE
         key={`projection-${i}`}
         width={`${props.valueProjectionThs[i].widthPx}px`}
         coloring={props.coloring}
+        isSelected={props.isSelected}
       >
         {displayValue}
       </Td>

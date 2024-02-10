@@ -26,6 +26,7 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET = 15;
   MANAGED_ITEM_TYPE_VALUE_PROJECTION = 16;
   MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST = 17;
+  MANAGED_ITEM_TYPE_DESERIALIZER = 18;
 }
 
 message ManagedItemMetadata {
@@ -304,7 +305,27 @@ message ManagedValueProjectionListValOrRef {
   }
 }
 
+message ManagedDeserializerSpec {
+  tools.teal.pulsar.ui.api.v1.Deserializer deserializer = 1;
+}
+
+message ManagedDeserializer {
+  ManagedItemMetadata metadata = 1;
+  ManagedDeserializerSpec spec = 2;
+}
+
+message ManagedDeserializerValOrRef {
+  oneof val_or_ref {
+    ManagedDeserializer val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedConsumerSessionTargetSpec {
+  bool is_enabled = 10;
+  tools.teal.pulsar.ui.api.v1.ConsumerSessionTargetConsumptionMode consumption_mode = 11;
+  ManagedDeserializerValOrRef message_value_deserializer = 12;
+
   ManagedTopicSelectorValOrRef topic_selector = 1;
   ManagedMessageFilterChainValOrRef message_filter_chain = 2;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 4;
@@ -330,6 +351,7 @@ message ManagedConsumerSessionConfigSpec {
   ManagedConsumerSessionPauseTriggerChainValOrRef pause_trigger_chain = 4;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 5;
   ManagedValueProjectionListValOrRef value_projection_list = 6;
+  google.protobuf.Int64Value num_display_items = 7;
 }
 
 message ManagedConsumerSessionConfig {
@@ -381,6 +403,7 @@ message ManagedItem {
     ManagedBasicMessageFilterTarget spec_basic_message_filter_target = 17;
     ManagedValueProjection spec_value_projection = 18;
     ManagedValueProjectionList spec_value_projection_list = 19;
+    ManagedDeserializer spec_deserializer = 20;
   }
 }
 

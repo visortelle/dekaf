@@ -7,15 +7,16 @@ export type Coloring = {
 } | undefined;
 
 export function getColoring(sessionConfig: ConsumerSessionConfig, message: MessageDescriptor): Coloring {
-  const sessionTargetChain = message.sessionTargetIndex === null ?
+  const targetChain = message.sessionTargetIndex === null ?
     undefined :
     sessionConfig.targets[message.sessionTargetIndex].coloringRuleChain;
 
-  if (sessionTargetChain !== undefined && sessionTargetChain.coloringRules.length !== 0) {
-    const ruleIndex = message.sessionTargetColorRuleChainTestResults.findIndex(cr => cr.isOk);
+  const targetChainColoringRules = targetChain?.coloringRules.filter(f => f.isEnabled) || [];
+  if (targetChainColoringRules.length !== 0) {
+    const okRuleIndex = (message.sessionTargetColorRuleChainTestResults || []).findIndex(cr => cr.isOk);
 
-    if (ruleIndex !== -1) {
-      const rule = sessionTargetChain.coloringRules[ruleIndex];
+    if (okRuleIndex !== -1) {
+      const rule = targetChainColoringRules[okRuleIndex];
       return {
         foregroundColor: colorsByName[rule.foregroundColor],
         backgroundColor: colorsByName[rule.backgroundColor]
@@ -24,9 +25,11 @@ export function getColoring(sessionConfig: ConsumerSessionConfig, message: Messa
   }
 
   const sessionChain = sessionConfig.coloringRuleChain;
-  const ruleIndex = message.sessionColorRuleChainTestResults.findIndex(cr => cr.isOk);
-  if (ruleIndex !== -1) {
-    const rule = sessionChain.coloringRules[ruleIndex];
+
+  const okRuleIndex = (message.sessionColorRuleChainTestResults || []).findIndex(cr => cr.isOk);
+
+  if (okRuleIndex !== -1) {
+    const rule = sessionChain.coloringRules.filter(f => f.isEnabled)[okRuleIndex];
     return {
       foregroundColor: colorsByName[rule.foregroundColor],
       backgroundColor: colorsByName[rule.backgroundColor]

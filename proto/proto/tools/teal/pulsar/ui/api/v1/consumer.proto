@@ -30,6 +30,9 @@ message Message {
   // Not a part of Pulsar message.
   google.protobuf.StringValue session_context_state_json = 50;
 
+  int64 num_message_processed = 59;
+  int64 num_message_sent = 60;
+
   // Evaluated message filter code can produce logs or errors.
   // We need to store them in the message to be able to show them in the UI.
   // Both, stdout and stderr are stored in the same field.
@@ -233,7 +236,41 @@ message ValueProjectionList {
   repeated ValueProjection projections = 1;
 }
 
+message ConsumerSessionTargetConsumptionMode {
+  message Regular {};
+  message ReadCompacted {};
+
+  oneof mode {
+    Regular mode_regular = 1;
+    ReadCompacted mode_read_compacted = 2;
+  }
+}
+
+message Deserializer {
+  message UseLatestTopicSchema {};
+  message TreatBytesAsJson {};
+  // message TreatBytesAsXml {};
+  // message JsFunction {
+  //   string js_code = 2;
+  // };
+  // message JavaClass {
+  //   string class = 1;
+  // };
+
+  oneof deserializer {
+    UseLatestTopicSchema deserializer_use_latest_topic_schema = 1;
+    TreatBytesAsJson deserializer_treat_bytes_as_json = 2;
+    // TreatBytesAsXml deserializer_treat_bytes_as_xml = 3;
+    // JsFunction deserializer_js_function = 4;
+    // JavaClass deserializer_java_class = 5;
+  }
+}
+
 message ConsumerSessionTarget {
+  bool is_enabled = 10;
+  ConsumerSessionTargetConsumptionMode consumption_mode = 11;
+  Deserializer message_value_deserializer = 12;
+
   TopicSelector topic_selector = 1;
   MessageFilterChain message_filter_chain = 2;
   ColoringRuleChain coloring_rule_chain = 3;
@@ -247,6 +284,7 @@ message ConsumerSessionConfig {
   ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
   ColoringRuleChain coloring_rule_chain = 5;
   ValueProjectionList value_projection_list = 6;
+  google.protobuf.Int64Value num_display_items = 7;
 }
 
 message CreateConsumerRequest {
@@ -476,7 +514,6 @@ message ConsumerStats {}
 message ResumeResponse {
   google.rpc.Status status = 1;
   repeated Message messages = 2;
-  int64 processed_messages = 3;
   ConsumerStats consumer_stats = 4;
 }
 

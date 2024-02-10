@@ -13,7 +13,7 @@ describe("partialMessageDescriptorToSerializable", () => {
           brokerPublishTime: null,
           rawValue: null,
           eventTime: null,
-          index: 0,
+          displayIndex: 0,
           isReplicated: null,
           messageId: null,
           orderingKey: null,
@@ -55,7 +55,7 @@ describe("partialMessageDescriptorToSerializable", () => {
           brokerPublishTime: 123,
           rawValue: Uint8Array.from([1, 2, 3]),
           eventTime: 123,
-          index: 5,
+          displayIndex: 5,
           isReplicated: true,
           messageId: Uint8Array.from([1, 2, 3]),
           orderingKey: Uint8Array.from([1, 2, 3]),
@@ -94,7 +94,7 @@ describe("partialMessageDescriptorToSerializable", () => {
       },
       {
         message: {
-          index: 1,
+          displayIndex: 1,
         },
         expectedObj: { index: 1 },
       },

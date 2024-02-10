@@ -2,11 +2,13 @@ import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Crumb } from "../BreadCrumbs";
 
+import productFavicon from "./product.png";
 import instanceFavicon from "./instance.png";
 import tenantFavicon from "./tenant.png";
 import namespaceFavicon from "./namespace.png";
 import persistentTopicFavicon from "./persistent-topic.png";
 import nonPersistentTopicFavicon from "./non-persistent-topic.png";
+import subscriptionFavicon from "./subscription.png";
 
 export type FaviconsProps = {
   crumbs: Crumb[];
@@ -23,7 +25,7 @@ const Favicons: React.FC<FaviconsProps> = (props) => {
   let favicon;
   switch (crumb.type) {
     case "instance":
-      favicon = instanceFavicon;
+      favicon = productFavicon;
       break;
     case "tenant":
       favicon = tenantFavicon;
@@ -49,8 +51,11 @@ const Favicons: React.FC<FaviconsProps> = (props) => {
     case "non-persistent-topic-partitioned":
       favicon = nonPersistentTopicFavicon;
       break;
+    case "subscription":
+      favicon = subscriptionFavicon;
+      break;
     default:
-      favicon = undefined;
+      favicon = productFavicon;
   }
 
   const pageTitle = crumb.type === 'persistent-topic-partition' || crumb.type === 'non-persistent-topic-partition' ?
@@ -60,7 +65,7 @@ const Favicons: React.FC<FaviconsProps> = (props) => {
   return (
     <Helmet>
       {crumb && <title>{pageTitle}</title>}
-      {favicon && <link rel="icon" type="image/png" href={`data:image/png;base64,${favicon}`} />}
+      {favicon && <link rel="icon" type="image/png" href={favicon} />}
     </Helmet>
   );
 };

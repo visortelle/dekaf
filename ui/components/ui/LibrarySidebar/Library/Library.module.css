@@ -21,15 +21,10 @@
 .ItemTypeHeader {
   padding: 8rem 12rem;
   display: grid;
-  gap: 12rem;
+  gap: 24rem;
   grid-template-columns: 200rem 4ch 1fr;
   justify-items: flex-end;
   align-items: center;
-}
-
-.ItemHeaderButtons {
-  display: flex;
-  margin-left: 12rem;
 }
 
 .ResourceMatchers {

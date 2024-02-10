@@ -1,0 +1,146 @@
+import React, { useEffect, useRef, useState } from 'react';
+import s from './ContextRepl.module.css'
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../../app/contexts/Notifications';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import Button from '../../../Button/Button';
+import CodeEditor from '../../../CodeEditor/CodeEditor';
+import runIcon from './run.svg';
+import clearIcon from './clear.svg';
+import { getLogColor, parseLogLine } from '../logging/loggin';
+import { SessionState } from '../../types';
+import ActionButton from '../../../ActionButton/ActionButton';
+import SmallButton from '../../../SmallButton/SmallButton';
+
+export type ExpressionInspectorProps = {
+  consumerName: string,
+  sessionState: SessionState,
+  isVisible: boolean,
+};
+
+const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
+  const { consumerServiceClient } = GrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+  const [code, setCode] = useState<string>('');
+
+  // Temporary lock the send button to avoid multi-threaded access to GraalJS context when sending many request.
+  // It should be fixed on the server side, but as it's not the core app feature, this fix is also OK.
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+
+  const [logs, setLogs] = useState<string[]>([]);
+  const logEntriesRef = useRef<HTMLDivElement>(null);
+  const [isConsumerCreated, setIsConsumerCreated] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isConsumerCreated && props.sessionState === 'running') {
+      setIsConsumerCreated(true);
+    }
+  }, [props.sessionState, isConsumerCreated]);
+
+  const runCode = async () => {
+    setIsLocked(true);
+    setTimeout(() => setIsLocked(false), 500);
+
+    const req = new pb.RunCodeRequest();
+    req.setCode(code);
+    req.setConsumerName(props.consumerName);
+    const res = await consumerServiceClient.runCode(req, {}).catch((e) => notifyError(e));
+    if (res === undefined) {
+      return;
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(res.getStatus()?.getMessage());
+    }
+
+    const result = res.getResult()?.getValue();
+
+    if (result === undefined) {
+      return;
+    }
+
+    setLogs((logs) => logs.concat([result]));
+    setTimeout(() => logEntriesRef.current?.scrollTo(0, logEntriesRef.current.scrollHeight), 0);
+  }
+
+  if (!props.isVisible) {
+    return <></>;
+  }
+
+  return (
+    <div
+      className={s.ExpressionInspector}
+      onKeyDown={e => {
+        if (isConsumerCreated && e.ctrlKey && e.key === 'Enter' && !isLocked) {
+          runCode();
+        }
+      }}
+    >
+      <div style={{ padding: '12rem' }}>
+        <div>
+          Run any JavaScript expression in the context of the session. Try <code>libs</code> <code>2 + 2</code> or <code>lastMessage</code>.
+        </div>
+        {!isConsumerCreated && (
+          <div style={{ color: 'var(--accent-color-red)' }}>
+            You should first initiate the session before evaluate any expression.
+          </div>
+        )}
+      </div>
+
+      <div className={s.Inspector}>
+        <div className={s.CodeEditor}>
+          <CodeEditor
+            language='javascript'
+            height="100%"
+            width="100%"
+            value={code}
+            onChange={(v) => setCode(v || '')}
+          />
+        </div>
+
+        <div className={s.Logs}>
+          <div className={s.ClearLogsButton}>
+            <SmallButton
+              type="regular"
+              svgIcon={clearIcon}
+              appearance='borderless-semitransparent'
+              onClick={() => setLogs([])}
+              disabled={logs.length === 0}
+            />
+          </div>
+
+          <div className={s.LogEntries} ref={logEntriesRef}>
+            {logs.map((r, i) => {
+              const [level, message] = parseLogLine(r);
+              const color = getLogColor(level);
+
+              return (
+                <div key={i} className={s.LogEntry} style={{ color }}>
+                  {message.trim().split('\n').map((line, k) => (
+                    <pre key={`${k}`} className={s.LogEntryLine}>{line}</pre>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </div>
+
+      <div className={s.Toolbar}>
+        <div className={s.ToolbarControl}>
+          <Button
+            text='Run'
+            type='primary'
+            size='small'
+            svgIcon={runIcon}
+            onClick={runCode}
+            disabled={!isConsumerCreated || isLocked}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default ExpressionInspector;

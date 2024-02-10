@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import Topics from './Topics/Topics';
-import NamespaceDetails from './Details/NamespaceDetails';
+import NamespaceDetails from './NamespaceDetails/NamespaceDetails';
 import CreateTopic from './CreateTopic/CreateTopic';
 import DeleteDialog from './DeleteDialog/DeleteDialog'
 import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';

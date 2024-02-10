@@ -90,7 +90,7 @@ export const NamespacePropertiesEditor: FC<NamespacePropertiesEditorProps> = (pr
                 <div>
                   Custom metadata associated with a namespace.
                   <br />
-                  They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and potential automation tasks.
+                  They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and automation tasks.
                 </div>
               )}
             />

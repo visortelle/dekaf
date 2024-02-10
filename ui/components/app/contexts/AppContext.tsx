@@ -50,7 +50,7 @@ const defaultValue: Value = {
       builtAtMillis: 0
     },
     productName: '',
-    productCode: '',
+    productCode: ProductCode.DekafFree,
     licenseId: ''
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },

@@ -80,7 +80,15 @@ export const swrKeys = {
             "properties",
             stringify(topics)
           ],
-        }
+        },
+        isPartitionedTopic: {
+          _: (topic: string) => [
+            "customApi",
+            "metrics",
+            "isPartitionedTopic",
+            topic,
+          ],
+        },
       },
       checkResourceExists: {
         _: (props: {
@@ -91,15 +99,15 @@ export const swrKeys = {
           schemaVersion: string | undefined,
           subscription: string | undefined
         }) => [
-          "customApi",
-          "checkResourceExists",
-          props.tenant,
-          props.namespace,
-          props.topic,
-          props.topicPersistency,
-          props.schemaVersion,
-          props.subscription
-        ]
+            "customApi",
+            "checkResourceExists",
+            props.tenant,
+            props.namespace,
+            props.topic,
+            props.topicPersistency,
+            props.schemaVersion,
+            props.subscription
+          ]
       }
     },
     batch: {
@@ -203,6 +211,13 @@ export const swrKeys = {
                 props.namespace,
                 "subscriptionPermissions",
               ],
+            },
+            topic: {
+              topicCompactionStatus: (props: { topicFqn: string }) => [
+                "pulsar",
+                "topics",
+                props.topicFqn
+              ]
             },
             nonPartitionedTopics: {
               _: (props: { tenant: string; namespace: string }) => [

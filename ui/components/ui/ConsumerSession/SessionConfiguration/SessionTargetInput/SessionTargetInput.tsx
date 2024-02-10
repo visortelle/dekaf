@@ -9,6 +9,22 @@ import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, Managed
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 import ValueProjectionListInput from '../../value-projections/ValueProjectionListInput/ValueProjectionListInput';
+import OnOffToggle from '../../../IconToggle/OnOffToggle/OnOffToggle';
+import { cloneDeep } from 'lodash';
+import IconToggle from '../../../IconToggle/IconToggle';
+import FormItem from '../../../ConfigurationTable/FormItem/FormItem';
+import A from '../../../A/A';
+import DeserializerInput from './DeserializerInput/DeserializerInput';
+
+const readCompactedHelp = (
+  <div>
+    <p>Read compacted topic</p>
+    <p>
+      Pulsar's topic compaction feature enables you to create compacted topics in which older, "obscured" entries are pruned from the topic, allowing for faster reads through the topic's history (which messages are deemed obscured/outdated/irrelevant will depend on your use case).
+    </p>
+    <A href="https://pulsar.apache.org/docs/next/cookbooks-compaction/" isExternalLink>Learn more</A>
+  </div>
+)
 
 export type SessionTargetInputProps = {
   value: ManagedConsumerSessionTargetValOrRef,
@@ -41,8 +57,10 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
+
   return (
-    <div className={s.SessionTargetInput}>
+    <div className={s.SessionTargetInput} style={{ filter: cssFilter }}>
       {props.targetIndex !== undefined && <div className={s.TargetIndex}>Target {props.targetIndex + 1}</div>}
       <div ref={hoverRef}>
         <LibraryBrowserPanel
@@ -67,9 +85,39 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          extraElements={{
+            preItemType: (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4rem' }}>
+                <OnOffToggle
+                  value={itemSpec.isEnabled}
+                  onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+                  isReadOnly={props.isReadOnly}
+                />
+              </div>
+            )
+          }}
           isReadOnly={props.isReadOnly}
           {...props.libraryBrowserPanel}
         />
+      </div>
+
+      <div style={{ marginTop: '-28rem' }}>
+        <FormItem>
+          <IconToggle<boolean>
+            items={[
+              { type: 'item', value: true, help: readCompactedHelp, foregroundColor: '#fff', backgroundColor: 'var(--accent-color-blue)', label: 'Compacted' },
+              { type: 'item', value: false, help: readCompactedHelp, foregroundColor: 'var(--background-color)', backgroundColor: '#aaa', label: 'Compacted' }
+            ]}
+            value={itemSpec.consumptionMode.mode.type === 'read-compacted-consumption-mode'}
+            onChange={(v) => {
+              const newItemSpec = cloneDeep(itemSpec);
+              newItemSpec.consumptionMode.mode = v ? { type: 'read-compacted-consumption-mode' } : { type: 'regular-consumption-mode' };
+              onSpecChange(newItemSpec);
+            }}
+            isReadOnly={props.isReadOnly}
+            isWithShadow
+          />
+        </FormItem>
       </div>
 
       <TopicSelectorInput
@@ -96,6 +144,13 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       <ColoringRuleChainInput
         value={itemSpec.coloringRuleChain}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+        libraryContext={props.libraryContext}
+        isReadOnly={props.isReadOnly}
+      />
+
+      <DeserializerInput
+        value={itemSpec.messageValueDeserializer}
+        onChange={(v) => onSpecChange({ ...itemSpec, messageValueDeserializer: v })}
         libraryContext={props.libraryContext}
         isReadOnly={props.isReadOnly}
       />
