@@ -1,0 +1,18 @@
+enableDemoAppTenant: true
+demoAppConfig:
+  enableNonPersistentTopics: false
+  producerLoadMultiplier:
+    overloaded: 1
+    heavilyLoaded: 1
+    moderatelyLoaded: 1
+    lightlyLoaded: 1
+  subscriptionAmount:
+    overloaded: 100
+    heavilyLoaded: 1
+    moderatelyLoaded: 1
+    lightlyLoaded: 1
+  workersAmount: 10
+
+enableSchemasTenant: true
+schemasConfig:
+  enableHighLoadTopics: false

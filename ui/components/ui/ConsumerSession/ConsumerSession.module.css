@@ -1,7 +1,6 @@
 .ConsumerSession {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   overflow: hidden;
   border-bottom: 1px solid var(--border-color);
   position: relative;
@@ -39,6 +38,31 @@
   margin: 12rem;
 }
 
+.Content {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  flex: 1;
+  overflow: hidden;
+}
+
+.MessageDetails {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  border-left: 1px solid var(--border-color);
+  width: 600rem;
+
+  /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
+}
+
+.CloseMessageDetails {
+  position: absolute;
+  top: 5rem;
+  right: 12rem;
+  z-index: 10;
+}
+
 .TableSpinner {
   position: absolute;
   top: 0;
@@ -55,6 +79,6 @@
 }
 
 .Virtuoso {
-  overscroll-behavior-x: contain;
   /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-x: contain;
 }

@@ -1,15 +1,24 @@
+import scala.collection.Seq
+
 val scala3Version = "3.3.0"
 val pulsarVersion = "3.0.0"
 val zioVersion = "2.0.15"
 val zioConfigVersion = "3.0.7"
-val circeVersion = "0.14.5"
+val circeVersion = "0.14.6"
 val jacksonVersion = "2.15.2"
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
 Global / cancelable := true
 Global / fork := true
 
-run / javaOptions ++= Seq("-Xmx8G")
+run / javaOptions ++= Seq(
+  "-Xmx8G",
+
+  // Fix "Cannot get DNS TTL settings from sun.net.InetAddressCachePolicy"
+  // https://github.com/apache/pulsar/issues/15349
+  "--add-opens=java.management/sun.management=ALL-UNNAMED",
+  "--add-opens=java.base/sun.net=ALL-UNNAMED",
+)
 
 packageDoc / publishArtifact := false
 
@@ -17,7 +26,7 @@ scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/
 
 run / javaOptions ++= Seq("-Xmx8G")
 
-scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
+resolvers += Resolver.mavenCentral
 
 lazy val root = project
     .enablePlugins(ClasspathJarPlugin)
@@ -38,8 +47,9 @@ lazy val root = project
             "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-avro" % jacksonVersion,
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % jacksonVersion,
-            "com.google.protobuf" % "protobuf-java" % "3.23.3",
-            "com.lihaoyi" %% "os-lib" % "0.9.1",
+            "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion,
+            "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+            "com.lihaoyi" %% "os-lib" % "0.9.2",
             "com.lihaoyi" %% "pprint" % "0.8.1",
 
             // Pulsar
@@ -55,6 +65,18 @@ lazy val root = project
 
             "dev.optics" %% "monocle-core" % "3.2.0",
             "net.datafaker" % "datafaker" % "2.0.1",
-            "org.scalameta" %% "munit" % "0.7.29" % Test
+            "org.scalameta" %% "munit" % "0.7.29" % Test,
+            "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
+            "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1",
+            "ch.qos.logback" % "logback-classic" % "1.4.12",
         )
     )
+
+libraryDependencies ++= Seq(
+  "com.google.protobuf" % "protobuf-java" % "3.23.4",
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+  "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
+  "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
+  "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
+  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+)

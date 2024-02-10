@@ -14,7 +14,7 @@ export type Tab = {
 }
 
 export type TabsProps<TK extends string> = {
-  tabs: Record<TK, Tab>;
+  tabs: Partial<Record<TK, Tab>>;
   activeTab: TK;
   onActiveTabChange: (tab: TK) => void;
   closeTitle?: string,
@@ -39,7 +39,7 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
 
   const tabEntries = Array.isArray(tabs)
     ? tabs.map(tabKey => [tabKey, { title: tabKey, render: () => null }] as [TabKey, Tab])
-    : Object.entries<Tab>(tabs);
+    : Object.entries<Tab>(tabs as { [s: string]: Tab });
 
   return (
     <div className={`${s.Tabs} ${props.size === 'small' ? s.Small : ''} ${props.direction === 'vertical' ? s.TabsVertical : ''}`}>

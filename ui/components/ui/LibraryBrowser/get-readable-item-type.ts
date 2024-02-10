@@ -17,8 +17,9 @@ export function getReadableItemType(managedItemType: ManagedItemType): string {
     case "producer-session-config": return "Producer Session";
     case "relative-date-time": return "Relative Date Time";
     case "topic-selector": return "Topic Selector";
-    case "basic-message-filter-target": return "Field";
+    case "basic-message-filter-target": return "Target Field";
     case "value-projection": return "Projection";
     case "value-projection-list": return "Projection List";
+    case "deserializer": return "Deserializer"
   }
 }

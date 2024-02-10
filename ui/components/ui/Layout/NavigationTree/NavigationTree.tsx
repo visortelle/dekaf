@@ -29,8 +29,8 @@ type NavigationTreeProps = {
 const partitionRegexp = /^(.*)-(partition-\d+)$/g;
 const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([\w-]+)\/([\w-]+)\/([\w-]+)$/;
 const filterQuerySep = '/' as const;
-function filterQueryToTreePath(query: string): TreePath {
 
+function filterQueryToTreePath(query: string): TreePath {
   const queryParts: (string | undefined)[] = query.split(filterQuerySep).filter(p => p.length !== 0);
   const [tenant, namespace, topic, topicPartition] = queryParts;
 

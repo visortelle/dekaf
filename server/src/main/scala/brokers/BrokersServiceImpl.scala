@@ -10,7 +10,7 @@ import org.apache.pulsar.common.policies.data.ResourceGroup
 import _root_.pulsar_auth.RequestContext
 
 import scala.util.{Failure, Success, Try}
-import topic.getTopicPartitioningType
+import topic.getTopicPartitioning
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -155,7 +155,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             case Resource.NamespaceResource(_) =>
                 Try(adminClient.namespaces.getBundles(resourceFqn)).isSuccess
             case Resource.TopicResource(_) =>
-                Try(getTopicPartitioningType(adminClient, resourceFqn)) match
+                Try(getTopicPartitioning(adminClient, resourceFqn)) match
                     case Success(_) => true
                     case Failure(_) => false
             case Resource.SubscriptionResource(value) =>

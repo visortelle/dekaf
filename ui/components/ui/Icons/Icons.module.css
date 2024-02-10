@@ -69,3 +69,10 @@
   width: 22rem;
   height: 22rem;
 }
+
+.ImgIcon {
+  display: inline-block;
+  width: 22rem;
+  height: 22rem;
+  object-fit: cover;
+}

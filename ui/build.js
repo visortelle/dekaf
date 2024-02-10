@@ -24,11 +24,12 @@ require("esbuild")
     loader: {
       ".svg": "text",
       ".md": "text",
-      ".png": "base64",
+      ".png": "dataurl",
     },
     minify: !isDevelopment,
     globalName: "pulsarUiEntrypoint",
     sourcemap: isDevelopment ? "both" : false,
+    // sourcemap: false,
     outdir,
     plugins: [
       cssModulesPlugin({

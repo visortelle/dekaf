@@ -1,21 +1,10 @@
+import { FC } from 'react';
 import s from './Logo.module.css';
+import logoImage from './logo.png';
 
-const Logo = (props: { fontSize: string, isDark?: boolean, isCompact?: boolean }) => {
+const Logo: FC = () => {
   return (
-    <div>
-      <div
-        className={s.Logo}
-        style={{
-          fontSize: props.fontSize,
-          color: props.isDark ? '#fff' : 'var(--text-color)'
-        }}
-      >
-        <span style={{ color: 'var(--accent-color-blue)' }}>{props.isCompact ? 'g' : 'Dekaf'}</span><span>{props.isCompact ? 's' : ''}</span>
-      </div>
-      <div>
-        for Apache Pulsar
-      </div>
-    </div>
+    <div className={s.Logo} style={{ backgroundImage: `url(${logoImage})`}} />
   );
 };
 

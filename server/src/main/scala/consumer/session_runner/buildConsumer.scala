@@ -1,14 +1,22 @@
 package consumer.session_runner
 
+import consumer.session_target.ConsumerSessionTarget
+import consumer.session_target.consumption_mode.modes.ReadCompactedConsumptionMode
 import org.apache.pulsar.client.api.*
+
 import scala.jdk.CollectionConverters.*
 
 def buildConsumer(
     pulsarClient: PulsarClient,
     consumerName: String,
     topicsToConsume: Vector[String],
-    listener: MessageListener[Array[Byte]]
+    listener: MessageListener[Array[Byte]],
+    targetConfig: ConsumerSessionTarget
 ): Either[String, ConsumerBuilder[Array[Byte]]] =
+    val isReadCompacted = targetConfig.consumptionMode.mode match
+        case _: ReadCompactedConsumptionMode => true
+        case _ => false
+
     val consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
         .receiverQueueSize(2000)
@@ -25,6 +33,7 @@ def buildConsumer(
         .subscriptionMode(SubscriptionMode.NonDurable)
         .subscriptionType(SubscriptionType.Exclusive)
         .priorityLevel(1000)
+        .readCompacted(isReadCompacted)
         .topics(topicsToConsume.asJava)
 
     Right(consumer)

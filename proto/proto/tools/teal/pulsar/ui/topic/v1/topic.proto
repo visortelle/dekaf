@@ -4,6 +4,7 @@ package tools.teal.pulsar.ui.topic.v1;
 
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
+import "tools/teal/pulsar/ui/api/v1/long_running_process_status.proto";
 
 enum TopicDomain {
   TOPIC_DOMAIN_UNSPECIFIED = 0;
@@ -317,6 +318,54 @@ message GetIsPartitionedTopicRequest {
 message GetIsPartitionedTopicResponse {
   google.rpc.Status status = 1;
   bool is_partitioned = 2;
+  google.protobuf.Int32Value partitions_count = 3;
+  google.protobuf.Int32Value active_partitions_count = 4;
+}
+
+message UpdatePartitionedTopicRequest {
+  string topic_fqn = 1;
+  int32 num_partitions = 2;
+  bool update_local_topic_only = 3;
+  bool force = 4;
+}
+
+message UpdatePartitionedTopicResponse {
+  google.rpc.Status status = 1;
+}
+
+message CreateMissedPartitionsRequest {
+  string topic_fqn = 1;
+}
+
+message CreateMissedPartitionsResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetCompactionStatusRequest {
+  string topic_fqn = 1;
+}
+
+message GetCompactionStatusResponse {
+  google.rpc.Status status = 1;
+  tools.teal.pulsar.ui.api.v1.LongRunningProcessStatus process_status = 2;
+}
+
+message TriggerCompactionRequest {
+  string topic_fqn = 1;
+}
+
+message TriggerCompactionResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteSubscriptionRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  bool is_force = 3;
+}
+
+message DeleteSubscriptionResponse {
+  google.rpc.Status status = 1;
 }
 
 service TopicService {
@@ -330,4 +379,11 @@ service TopicService {
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
   rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
+  rpc UpdatePartitionedTopic(UpdatePartitionedTopicRequest) returns (UpdatePartitionedTopicResponse);
+  rpc CreateMissedPartitions(CreateMissedPartitionsRequest) returns (CreateMissedPartitionsResponse);
+
+  rpc GetCompactionStatus(GetCompactionStatusRequest) returns (GetCompactionStatusResponse);
+  rpc TriggerCompaction(TriggerCompactionRequest) returns (TriggerCompactionResponse);
+
+  rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse);
 }

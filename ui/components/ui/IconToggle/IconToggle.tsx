@@ -28,7 +28,8 @@ export type IconToggleProps<T> = {
   value: T,
   onChange: (v: T) => void,
   items: IconToggleItem<T>[],
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  isWithShadow?: boolean
 };
 
 function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
@@ -40,6 +41,7 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
         ${s.IconToggle}
         ${currentItem?.label ? s.IconToggleWithLabel : ''}
         ${props.isReadOnly ? s.ReadOnly : ''}
+        ${props.isWithShadow ? s.WithShadow : ''}
       `}
       onClick={() => {
         if (props.isReadOnly) {

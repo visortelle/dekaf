@@ -2,34 +2,12 @@
 version: v1
 deps:
   - remote: buf.build
-    owner: cncf
-    repository: xds
-    commit: f6f9b109ae2f445e9c1c00bb765b5373
-  - remote: buf.build
-    owner: envoyproxy
-    repository: envoy
-    commit: 14eefb0da6dc45b784fc05e55e66326d
-  - remote: buf.build
-    owner: envoyproxy
-    repository: protoc-gen-validate
-    commit: dc09a417d27241f7b069feae2cd74a0e
-  - remote: buf.build
     owner: googleapis
     repository: googleapis
-    commit: d1263fe26f8e430a967dc22a4d0cad18
+    commit: e874a0be2bf140a5a4c7d4122c635823
+    digest: shake256:4fe3036b4d706f6ee2b13c730bd04777f021dfd02ed27e6e40480acfe664a7548238312ee0727fd77648a38d227e296d43f4a38a34cdd46068156211016d9657
   - remote: buf.build
     owner: grpc
     repository: grpc
-    commit: 428bdb303f1c4bb9b33364ed61df516a
-  - remote: buf.build
-    owner: opencensus
-    repository: opencensus
-    commit: d1d7ccd1281e4f42ab7ce9a7d2b29e33
-  - remote: buf.build
-    owner: opentelemetry
-    repository: opentelemetry
-    commit: 509848662be44e4d8aaf9189f6e6ab01
-  - remote: buf.build
-    owner: prometheus
-    repository: client-model
-    commit: 1d56a02d481a412a83b3c4984eb90c2e
+    commit: 575a337f8c494410880308ca49987ecd
+    digest: shake256:e9a4d2dad62332ca2c81116896838f94d47c38a476b4bda6996c20f9e4bfaf32ca47ac236fe92700ab34a48b29ca1e0c30f10753d037c2b0f7319d9a910bd91e

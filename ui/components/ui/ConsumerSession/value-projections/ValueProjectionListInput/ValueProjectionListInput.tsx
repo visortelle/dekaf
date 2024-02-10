@@ -118,6 +118,7 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
         isContentDoesntOverlapRemoveButton
         isHideNothingToShow
         itemName='Projection'
+        isReadOnly={props.isReadOnly}
       />
     </div>
   );

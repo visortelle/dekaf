@@ -1,0 +1,80 @@
+.Toolbar {
+  display: flex;
+  padding: 8rem 12rem;
+  border-bottom: 1px solid var(--border-color);
+  line-height: 1.2;
+}
+
+.ToolbarLeft {
+  margin-right: auto;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+}
+
+.ToolbarRight {
+  margin-right: auto;
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.MessagesLoadedStats {
+  display: flex;
+  flex-direction: column;
+  margin-right: 12rem;
+}
+
+.MessagesLoadedStats:last-child {
+  margin-right: 0;
+}
+
+.MessagesLoadedStat {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: space-between;
+  font-size: 12rem;
+}
+
+.MessagesLoadedStatValue {
+  text-align: right;
+  flex: 1 1;
+}
+
+.MessagesLoadedStatTitle {
+  width: 11ch;
+  text-align: right;
+}
+
+.Control {
+  margin-right: 8rem;
+}
+
+.Control:last-child {
+  margin-right: 0;
+}
+
+.NumFoundInResults {
+  position: absolute;
+  font-size: 12rem;
+  top: -7px;
+  right: -3px;
+  background: var(--accent-color-blue);
+  color: rgb(255, 255, 255);
+  border-radius: 4rem;
+  padding: 0 4rem;
+}
+
+.ConfigParam {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.ConfigParamName {
+  font-weight: var(--font-weight-bold);
+}
+
+.NoData {
+  color: #aaa;
+}

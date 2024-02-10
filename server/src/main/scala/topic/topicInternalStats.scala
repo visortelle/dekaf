@@ -2,14 +2,15 @@ package topic
 
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb
-import org.apache.pulsar.client.admin.PulsarAdmin
+import org.apache.pulsar.client.admin.{Mode, PulsarAdmin}
+
 import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
 type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
 
 def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[String, TopicInternalStatsPb] =
-    Try(getTopicPartitioningType(pulsarAdmin, topic)) match
+    Try({ getTopicPartitioning(pulsarAdmin, topic).`type` }) match
         case Success(TopicPartitioningType.NonPartitioned) =>
             getNonPartitionedTopicInternalStats(pulsarAdmin, topic) match
                 case Right(stats) => Right(persistentTopicInternalStatsToPb(stats))
@@ -22,15 +23,51 @@ def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[Str
 
 enum TopicPartitioningType:
     case Partitioned, NonPartitioned
+case class TopicPartitioning(
+    `type`: TopicPartitioningType,
+    partitionsCount: Option[Int],
+    activePartitionsCount: Option[Int]
+)
 
-def getTopicPartitioningType(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioningType =
+def getTopicPartitioning(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioning =
+    var partitionsCount: Option[Int] = None
+    var activePartitionsCount: Option[Int] = None
+
     val isPartitioned =
-        try {
-            pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn).partitions > 0
-        } catch {
+        try
+            val topicMetadata = pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn)
+            partitionsCount = Some(topicMetadata.partitions)
+            val isPartitioned = topicMetadata.partitions > 0
+
+            if isPartitioned then
+                val getTopicsOptions = org.apache.pulsar.client.admin.ListNamespaceTopicsOptions
+                    .builder
+                    .includeSystemTopic(true)
+                    .mode(Mode.ALL)
+                    .build()
+
+                val topicFqnChunks = topicFqn.split("/")
+                val persistency = topicFqnChunks(0).dropRight(1)
+                val namespace = topicFqnChunks(2) + "/" + topicFqnChunks(3)
+                val topic = topicFqnChunks(4)
+
+                val namespaceTopics = pulsarAdmin.namespaces.getTopics(namespace, getTopicsOptions).asScala.toVector
+
+                val partitionRegexPattern = "^" + persistency + "://.*/" + topic + "-partition-\\d+$"
+                val activePartitions = namespaceTopics.filter(_.matches(partitionRegexPattern))
+                activePartitionsCount = Some(activePartitions.size)
+
+            isPartitioned
+        catch {
             case _: Throwable => false
         }
-    if isPartitioned then return TopicPartitioningType.Partitioned
+
+    if isPartitioned then
+        return TopicPartitioning(
+            `type` = TopicPartitioningType.Partitioned,
+            partitionsCount = partitionsCount,
+            activePartitionsCount = activePartitionsCount
+        )
 
     val isNonPartitioned =
         try
@@ -39,7 +76,12 @@ def getTopicPartitioningType(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicP
         catch {
             case _: Throwable => false
         }
-    if isNonPartitioned then return TopicPartitioningType.NonPartitioned
+    if isNonPartitioned then return TopicPartitioning(
+        `type` = TopicPartitioningType.NonPartitioned,
+        partitionsCount = None,
+        activePartitionsCount = activePartitionsCount
+
+    )
     throw new Exception(s"Topic \"$topicFqn\" not found")
 
 def getTopicPartitions(pulsarAdmin: PulsarAdmin, topicFqn: String): Vector[String] =

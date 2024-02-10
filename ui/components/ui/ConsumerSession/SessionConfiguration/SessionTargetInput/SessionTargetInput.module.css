@@ -2,14 +2,14 @@
   display: flex;
   flex-direction: column;
   gap: 32rem;
-  padding: 24rem 12rem;
+  padding: 28rem 12rem 24rem 12rem;
   position: relative;
   overflow: auto;
 }
 
 .TargetIndex {
   position: absolute;
-  top: 6rem;
+  top: 8rem;
   left: 12rem;
   font-weight: var(--font-weight-bold);
   opacity: 0.6;

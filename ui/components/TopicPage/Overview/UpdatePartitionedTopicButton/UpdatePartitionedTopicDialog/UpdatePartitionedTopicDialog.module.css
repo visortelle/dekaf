@@ -1,0 +1,12 @@
+.Content {
+  padding: 12rem;
+  min-width: 380rem;
+}
+
+.Footer {
+  border-top: 1px solid var(--border-color);
+  padding: 12rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+}

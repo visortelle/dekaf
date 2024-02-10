@@ -1,3 +1,4 @@
 .LibraryBrowserButtons {
   display: flex;
+  align-items: center;
 }

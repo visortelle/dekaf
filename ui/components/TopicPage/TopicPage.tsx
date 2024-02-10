@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
+import * as Notifications from "../app/contexts/Notifications";
 import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import ConsumerSession from "../ui/ConsumerSession/ConsumerSession";
 import Schema from "./Schema/Schema";
-import Policies from "./Policies/Policies";
+import TopicDetails from "./TopicDetails/TopicDetails";
 import Subscriptions from './Subscriptions/Subscriptions';
 import DeleteDialog from "./DeleteDialog/DeleteDialog";
 import { routes } from "../routes";
@@ -20,6 +21,9 @@ import * as pb from "../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
 import { LibraryContext } from "../ui/LibraryBrowser/model/library-context";
 import { getDefaultManagedItem } from "../ui/LibraryBrowser/default-library-items";
 import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-managed-items";
+import { Code } from "../../grpc-web/google/rpc/code_pb";
+import useSwr from 'swr';
+import { swrKeys } from "../swrKeys";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -28,7 +32,7 @@ export type TopicPageView =
   | { type: "schema-initial-screen" }
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
-  | { type: "policies" }
+  | { type: "details" }
   | { type: "subscriptions" }
   | { type: "producers" };
 export type TopicPageProps = {
@@ -41,32 +45,55 @@ export type TopicPageProps = {
 
 const partitionRegexp = /^(.*)-(partition-\d+)$/;
 
+export type PartitioningWithActivePartitions = { isPartitioned: boolean, partitionsCount: number | undefined, activePartitionsCount: number | undefined };
+
 const TopicPage: React.FC<TopicPageProps> = (props) => {
   const modals = Modals.useContext();
+  const { notifyError } = Notifications.useContext();
   const navigate = useNavigate();
   const { topicServiceClient } = GrpcClient.useContext();
-
   const { pathname } = useLocation();
 
-  const [isPartitioned, setIsPartitioned] = useState<boolean>();
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  useEffect(() => {
-    setIsPartitioned(false);
+  const { data: partitioning, error: partitioningError } = useSwr(
+    swrKeys.pulsar.customApi.metrics.isPartitionedTopic._(topicFqn),
+    async () => {
+      const req = new pb.GetIsPartitionedTopicRequest();
+      req.setTopicFqn(topicFqn);
 
-    const req = new pb.GetIsPartitionedTopicRequest();
-    const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`.replace(partitionRegexp, "$1");
-    req.setTopicFqn(topicFqn);
-    topicServiceClient.getIsPartitionedTopic(req, null)
-      .then(res => setIsPartitioned(res.getIsPartitioned()))
-      .catch(() => { });
-  }, [props]);
+      const res = await topicServiceClient.getIsPartitionedTopic(req, null)
+        .catch(err => notifyError(`Unable to get topic partitioning: ${err}`));
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topic partitioning: ${res.getStatus()?.getMessage()}`)
+        return;
+      }
+
+      const result: PartitioningWithActivePartitions = {
+        isPartitioned: res.getIsPartitioned(),
+        partitionsCount: res.getPartitionsCount()?.getValue(),
+        activePartitionsCount: res.getActivePartitionsCount()?.getValue()
+      };
+
+      return result;
+    },
+    { refreshInterval: 15_000 }
+  );
+
+  if (partitioningError !== undefined) {
+    notifyError(`Unable to get topic partitioning. ${partitioningError}`);
+  }
 
   const isPartition = partitionRegexp.test(props.topic);
   const topicName = isPartition ? props.topic.replace(partitionRegexp, "$1") : props.topic;
   const partitionName = isPartition ? props.topic.replace(partitionRegexp, "$2") : undefined;
 
   let topicCrumbType: CrumbType;
-  if (isPartitioned) {
+  if (partitioning !== undefined) {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic-partitioned" : "non-persistent-topic-partitioned"
   } else {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic"
@@ -88,8 +115,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'producers', value: 'Producers' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '*', pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'schema', value: 'Schema' }]);
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname)) {
-    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'policies', value: 'Policies' }]);
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.path, pathname)) {
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'details', value: 'Details' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname)) {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]);
   }
@@ -161,32 +188,20 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.11.0)
   if (props.topicPersistency === "persistent") {
-    const partitionRegexp = /(.*)-(partition-\d+)$/;
-    const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
-
-    let topic = props.topic;
-
-    const isPartition = partitionRegexp.test(topicFqn);
-    if (isPartition) {
-      const partitionedTopicFqn = topicFqn.replace(partitionRegexp, "$1");
-      const lastSlashIndex = partitionedTopicFqn.lastIndexOf('/');
-      topic = partitionedTopicFqn.substring(lastSlashIndex + 1);
-    }
-
     buttons = buttons.concat([
       {
-        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
+        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.get({
           tenant: props.tenant,
           namespace: props.namespace,
-          topic,
+          topic: props.topic,
           topicPersistency: props.topicPersistency,
         }),
-        text: "Policies",
+        text: "Details",
         onClick: () => { },
         position: 'right',
         type: "regular",
-        testId: "topic-policies-button",
-        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
+        testId: "topic-details-button",
+        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.path, pathname))
       },
     ]);
   }
@@ -312,10 +327,10 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         />
       )}
       {props.view.type === "overview" && (
-        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} />
+        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} libraryContext={libraryContext} partitioning={partitioning} />
       )}
-      {props.view.type === "policies" && (
-        <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+      {props.view.type === "details" && partitioning !== undefined && (
+        <TopicDetails key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} partitioning={partitioning} />
       )}
       {props.view.type === "producers" && (
         <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
