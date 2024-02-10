@@ -2,8 +2,12 @@ package library.managed_items
 
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
+import _root_.consumer.session_target.consumption_mode.ConsumerSessionTargetConsumptionMode
 
 case class ManagedConsumerSessionTargetSpec(
+    isEnabled: Boolean,
+    messageValueDeserializer: ManagedDeserializerValOrRef,
+    consumptionMode: ConsumerSessionTargetConsumptionMode,
     topicSelector: ManagedTopicSelectorValOrRef,
     messageFilterChain: ManagedMessageFilterChainValOrRef,
     coloringRuleChain: ManagedColoringRuleChainValOrRef,
@@ -13,6 +17,9 @@ case class ManagedConsumerSessionTargetSpec(
 object ManagedConsumerSessionTargetSpec:
     def fromPb(v: pb.ManagedConsumerSessionTargetSpec): ManagedConsumerSessionTargetSpec =
         ManagedConsumerSessionTargetSpec(
+            isEnabled = v.isEnabled,
+            messageValueDeserializer = ManagedDeserializerValOrRef.fromPb(v.getMessageValueDeserializer),
+            consumptionMode = ConsumerSessionTargetConsumptionMode.fromPb(v.getConsumptionMode),
             topicSelector = ManagedTopicSelectorValOrRef.fromPb(v.getTopicSelector),
             messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.getMessageFilterChain),
             coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.getColoringRuleChain),
@@ -21,6 +28,9 @@ object ManagedConsumerSessionTargetSpec:
 
     def toPb(v: ManagedConsumerSessionTargetSpec): pb.ManagedConsumerSessionTargetSpec =
         pb.ManagedConsumerSessionTargetSpec(
+            isEnabled = v.isEnabled,
+            messageValueDeserializer = Some(ManagedDeserializerValOrRef.toPb(v.messageValueDeserializer)),
+            consumptionMode = Some(ConsumerSessionTargetConsumptionMode.toPb(v.consumptionMode)),
             topicSelector = Some(ManagedTopicSelectorValOrRef.toPb(v.topicSelector)),
             messageFilterChain = Some(ManagedMessageFilterChainValOrRef.toPb(v.messageFilterChain)),
             coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain)),

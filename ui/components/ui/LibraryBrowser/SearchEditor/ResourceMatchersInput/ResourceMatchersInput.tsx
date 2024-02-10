@@ -38,7 +38,7 @@ const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
             </div>
           );
         }}
-        itemName='Pulsar Resource Selector'
+        itemName='Context'
         onChange={(v) => props.onChange(v)}
         onAdd={() => {
           const newMatcher = resourceMatcherFromContext(props.libraryContext);

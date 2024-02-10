@@ -10,9 +10,9 @@ import org.apache.pulsar.client.api.Consumer
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.value_projections.{ValueProjectionList, ValueProjectionResult}
 import org.apache.pulsar.client.api.Message
+
 import scala.util.boundary
 import boundary.break
-
 import scala.util.{Failure, Success, Try}
 
 type NonPartitionedTopicFqn = String
@@ -21,10 +21,8 @@ val logger: Logger = Logger(getClass.getName)
 
 case class ConsumerSessionTargetRunner(
     targetIndex: Int,
+    targetConfig: ConsumerSessionTarget,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
-    messageFilterChain: MessageFilterChain,
-    coloringRuleChain: ColoringRuleChain,
-    valueProjectionList: ValueProjectionList,
     schemasByTopic: SchemasByTopic,
     sessionContextPool: ConsumerSessionContextPool,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
@@ -38,26 +36,26 @@ case class ConsumerSessionTargetRunner(
             stats: ConsumerSessionTargetStats,
             errors: Vector[String]
         ) => Unit,
-        isDebug: Boolean
+        isDebug: Boolean,
+        incrementNumMessageProcessed: () => Unit
     ): Unit =
-        val thisTarget = this
-
-        val listener = thisTarget.consumerListener
+        val listener = consumerListener
         val targetMessageHandler = listener.targetMessageHandler
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             boundary:
-                thisTarget.stats.messagesProcessed += 1
+                stats.messageProcessed += 1
+                incrementNumMessageProcessed()
 
-                val sessionContext = thisTarget.sessionContextPool.getNextContext
-                val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+                val sessionContext = sessionContextPool.getNextContext
+                val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
                 val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
                 val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
 
                 sessionContext.setCurrentMessage(messageJson, messageValueToJsonResult)
 
                 val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
-                    thisTarget.messageFilterChain
+                    targetConfig.messageFilterChain
                 )
 
                 val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
@@ -71,15 +69,15 @@ case class ConsumerSessionTargetRunner(
                     )
                     boundary.break()
 
-                val coloringRuleChainResult: Vector[ChainTestResult] = if thisTarget.coloringRuleChain.isEnabled then
-                    thisTarget.coloringRuleChain.coloringRules
-                        .filter(cr => cr.isEnabled)
+                val coloringRuleChainResult: Vector[ChainTestResult] = if targetConfig.coloringRuleChain.isEnabled then
+                    targetConfig.coloringRuleChain.coloringRules
+                        .filter(_.isEnabled)
                         .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
                 else
                     Vector.empty
 
-                val valueProjectionListResult: Vector[ValueProjectionResult] = if thisTarget.valueProjectionList.isEnabled then
-                    thisTarget.valueProjectionList.projections
+                val valueProjectionListResult: Vector[ValueProjectionResult] = if targetConfig.valueProjectionList.isEnabled then
+                    targetConfig.valueProjectionList.projections
                         .filter(_.isEnabled)
                         .map(_.project(sessionContext.context))
                 else
@@ -126,9 +124,11 @@ case class ConsumerSessionTargetRunner(
 
     def stop(): Unit =
         consumers.foreach((_, consumer) =>
-            Try(consumer.unsubscribe()) match
+            Try {
+                consumer.unsubscribe()
+            } match
                 case Success(_)   => ()
-                case Failure(err) => println(s"Failed to unsubscribe consumer. ${err.getMessage}")
+                case Failure(err) => println(s"Failed to stop consumer session target. ${err.getMessage}")
         )
 }
 
@@ -136,8 +136,8 @@ object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
         targetIndex: Int,
-        sessionContextPool: ConsumerSessionContextPool,
         targetConfig: ConsumerSessionTarget,
+        sessionContextPool: ConsumerSessionContextPool,
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
         pulsarClient: PulsarClient
@@ -153,7 +153,8 @@ object ConsumerSessionTargetRunner:
                     pulsarClient = pulsarClient,
                     consumerName = consumerName,
                     topicsToConsume = Vector(topicFqn),
-                    listener = listener
+                    listener = listener,
+                    targetConfig = targetConfig
                 ) match
                     case Right(consumerBuilder) =>
                         val consumer = consumerBuilder.subscribe()
@@ -164,16 +165,14 @@ object ConsumerSessionTargetRunner:
 
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
+                targetConfig = targetConfig,
                 sessionContextPool = sessionContextPool,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
-                messageFilterChain = targetConfig.messageFilterChain,
-                coloringRuleChain = targetConfig.coloringRuleChain,
-                valueProjectionList = targetConfig.valueProjectionList,
                 consumerListener = listener,
                 schemasByTopic = schemasByTopic,
                 stats = ConsumerSessionTargetStats(
-                    messagesProcessed = 0
+                    messageProcessed = 0
                 )
             )
         } match {

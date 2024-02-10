@@ -1,0 +1,45 @@
+.ContextLogs {
+  display: grid;
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+
+.NoDataToShow {
+  padding: 24rem 12rem;
+  text-align: left;
+}
+
+.SearchQueryInput {
+  flex: 1;
+  max-width: 480rem;
+  margin-right: 12rem;
+}
+
+.Logs {
+  flex: 1;
+  overflow: auto;
+}
+
+.LogLine {
+  width: 100%;
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.LogLineMessageIndex {
+  width: 60rem;
+  padding: 2rem 8rem;
+  border-right: 1px solid var(--border-color);
+}
+
+.LogLineLevel {
+  width: 60rem;
+  padding: 2rem 8rem;
+  border-right: 1px solid var(--border-color);
+}
+
+.LogLineLogMessage {
+  margin: 0;
+  padding: 2rem 8rem;
+  flex: 1;
+}

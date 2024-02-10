@@ -1,5 +1,6 @@
 import { Link as _Link, useLocation } from "react-router-dom";
 import s from "./Link.module.css";
+import * as Modals from '../../app/contexts/Modals/Modals';
 
 const paramsToPreserve = ["q"];
 
@@ -7,6 +8,7 @@ export type LinkProps = Parameters<typeof _Link>[0] & { isNormalizeStyle?: boole
 
 // Link preserving global search query and other global query params.
 const Link: React.FC<LinkProps> = (props) => {
+  const modals = Modals.useContext();
   const { to, isNormalizeStyle, className, ...restProps } = props;
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -27,6 +29,7 @@ const Link: React.FC<LinkProps> = (props) => {
     <_Link
       className={`${isNormalizeStyle ? s.LinkWithNormalizedStyle : ""} ${className || ""}`}
       to={typeof props.to === "object" ? { ...props.to, pathname } : pathname}
+      onClick={modals.clear}
       {...restProps}
     />
   );

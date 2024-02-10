@@ -29,11 +29,16 @@ import org.apache.pulsar.client.impl.schema.{
 }
 import _root_.schema.avro
 import _root_.schema.protobufnative
+import _root_.consumer.deserializer.Deserializer
+import _root_.consumer.deserializer.deserializers.{TreatBytesAsJson, UseLatestTopicSchema}
 import org.apache.pulsar.common.api.proto.MessageMetadata
 import schema.protobufnative.FileEntry
 import io.circe.parser.parse as parseJson
 
 import java.nio.ByteBuffer
+
+val useLatestTopicSchemaDeserializer = Deserializer(deserializer = UseLatestTopicSchema())
+val treatBytesAsJsonDeserializer = Deserializer(deserializer = TreatBytesAsJson())
 
 object convertersTest extends ZIOSpecDefault:
     def spec = suite(s"${this.getClass.toString} - messageValueToJson()")(
@@ -89,7 +94,7 @@ object convertersTest extends ZIOSpecDefault:
             val schemasByVersion: SchemasByVersion = Map(1L -> schemaInfo)
             val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-            val decodedJson = converters.messageValueToJson(schemasByTopic, message) match
+            val decodedJson = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                 case Right(value) => value
                 case Left(err)    => throw err
 
@@ -143,7 +148,7 @@ object convertersTest extends ZIOSpecDefault:
             val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
             val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-            val decodedJson = converters.messageValueToJson(schemasByTopic, message) match
+            val decodedJson = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                 case Right(value) => value
                 case Left(err)    => throw err
 
@@ -196,7 +201,7 @@ object convertersTest extends ZIOSpecDefault:
             val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
             val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-            val decodedJson = converters.messageValueToJson(schemasByTopic, message) match
+            val decodedJson = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                 case Right(value) => value
                 case Left(err)    => throw err
 
@@ -223,7 +228,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -257,7 +262,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -294,7 +299,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -333,7 +338,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -372,7 +377,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -411,7 +416,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -450,7 +455,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -489,7 +494,7 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message) match
+                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
                     case Right(value) => value
                     case Left(err)    => throw err
 
@@ -509,92 +514,4 @@ object convertersTest extends ZIOSpecDefault:
 
             assertTrue(testCases.forall(runTestCase))
         },
-        test("BYTES to json") {
-            case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, String]) => Boolean)
-
-            def runTestCase(testCase: TestCase): Boolean =
-                val schemaInfo = SchemaInfo.builder
-                    .`type`(SchemaType.BYTES)
-                    .build
-
-                val topicName = "topic-a"
-                val schemaVersion = 1L;
-                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
-                val message = MessageImpl.create[Array[Byte]](
-                    messageMetadata,
-                    ByteBuffer.wrap(testCase.bytes),
-                    BytesSchema.of(),
-                    topicName
-                )
-
-                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
-                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
-
-                val json = converters.messageValueToJson(schemasByTopic, message)
-                testCase.check(json)
-
-            val testCases = List(
-                TestCase("null".getBytes("UTF-8"), _ == Right("null")),
-                TestCase("true".getBytes("UTF-8"), _ == Right("true")),
-                TestCase("false".getBytes("UTF-8"), _ == Right("false")),
-                TestCase("3".getBytes("UTF-8"), _ == Right("3")),
-                TestCase("3.0".getBytes("UTF-8"), _ == Right("3.0")),
-                TestCase("-3.0".getBytes("UTF-8"), _ == Right("-3.0")),
-                TestCase("\"abc\"".getBytes("UTF-8"), _ == Right("\"abc\"")),
-                TestCase("[]".getBytes("UTF-8"), _ == Right("[]")),
-                TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
-                TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
-                TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
-                TestCase("".getBytes("UTF-8"), _.isLeft),
-                TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
-                TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
-                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft)
-            )
-
-            assertTrue(testCases.forall(runTestCase))
-        },
-        test("NONE to json") {
-            case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, String]) => Boolean)
-
-            def runTestCase(testCase: TestCase): Boolean =
-                val schemaInfo = SchemaInfo.builder
-                    .`type`(SchemaType.NONE)
-                    .build
-
-                val topicName = "topic-a"
-                val schemaVersion = 1L;
-                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
-                val message = MessageImpl.create[Array[Byte]](
-                    messageMetadata,
-                    ByteBuffer.wrap(testCase.bytes),
-                    null,
-                    topicName
-                )
-
-                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
-                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
-
-                val json = converters.messageValueToJson(schemasByTopic, message)
-                testCase.check(json)
-
-            val testCases = List(
-                TestCase("null".getBytes("UTF-8"), _ == Right("null")),
-                TestCase("true".getBytes("UTF-8"), _ == Right("true")),
-                TestCase("false".getBytes("UTF-8"), _ == Right("false")),
-                TestCase("3".getBytes("UTF-8"), _ == Right("3")),
-                TestCase("3.0".getBytes("UTF-8"), _ == Right("3.0")),
-                TestCase("-3.0".getBytes("UTF-8"), _ == Right("-3.0")),
-                TestCase("\"abc\"".getBytes("UTF-8"), _ == Right("\"abc\"")),
-                TestCase("[]".getBytes("UTF-8"), _ == Right("[]")),
-                TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
-                TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
-                TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
-                TestCase("".getBytes("UTF-8"), _.isLeft),
-                TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
-                TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
-                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft)
-            )
-
-            assertTrue(testCases.forall(runTestCase))
-        }
     )

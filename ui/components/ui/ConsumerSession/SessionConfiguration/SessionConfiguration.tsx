@@ -15,6 +15,14 @@ import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput'
 import Toggle from '../../Toggle/Toggle';
 import { getDefaultManagedItem } from '../../LibraryBrowser/default-library-items';
 import ValueProjectionListInput from '../value-projections/ValueProjectionListInput/ValueProjectionListInput';
+import SmallButton from '../../SmallButton/SmallButton';
+import { arrayMove } from './array-move';
+import moveLeftIcon from './icons/move-left.svg';
+import moveRightIcon from './icons/move-right.svg';
+import Input from '../../Input/Input';
+import FormItem from '../../ConfigurationTable/FormItem/FormItem';
+
+export const defaultNumDisplayItems = 10_000;
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -35,6 +43,10 @@ function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): bool
   }
 
   if (value.val?.spec.valueProjectionList.val?.spec.projections.length) {
+    return true;
+  }
+
+  if (value.val?.spec.numDisplayItems !== undefined) {
     return true;
   }
 
@@ -129,6 +141,28 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             isReadOnly={props.isReadOnly}
           />}
           {isShowAdvanced && (<>
+            <FormItem>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
+                <Toggle
+                  value={itemSpec.numDisplayItems !== undefined}
+                  onChange={(v) => onSpecChange({
+                    ...itemSpec,
+                    numDisplayItems: v ? defaultNumDisplayItems : undefined
+                  })}
+                  label='Limit num. display messages'
+                  isReadOnly={props.isReadOnly}
+                />
+                <div style={{ visibility: itemSpec.numDisplayItems === undefined ? 'hidden' : 'visible' }}>
+                  <Input
+                    type="number"
+                    value={String(itemSpec.numDisplayItems)}
+                    size='small'
+                    onChange={v => onSpecChange({ ...itemSpec, numDisplayItems: Number(v) })}
+                  />
+                </div>
+              </div>
+            </FormItem>
+
             <FilterChainEditor
               value={itemSpec.messageFilterChain}
               onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
@@ -182,7 +216,33 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                 isReadOnly={props.isReadOnly}
               />
               {!props.isReadOnly && (
-                <div className={s.DeleteTargetButton}>
+                <div className={s.TopRightButtons}>
+                  {itemSpec.targets.length > 1 && (
+                    <>
+                      <SmallButton
+                        type='regular'
+                        appearance='borderless-semitransparent'
+                        svgIcon={moveLeftIcon}
+                        title="Move left"
+                        onClick={() => {
+                          const newTargets = arrayMove(itemSpec.targets, i, i - 1);
+                          onSpecChange({ ...itemSpec, targets: newTargets });
+                        }}
+                        disabled={i === 0}
+                      />
+                      <SmallButton
+                        type='regular'
+                        appearance='borderless-semitransparent'
+                        svgIcon={moveRightIcon}
+                        title="Move right"
+                        onClick={() => {
+                          const newTargets = arrayMove(itemSpec.targets, i, i + 1);
+                          onSpecChange({ ...itemSpec, targets: newTargets });
+                        }}
+                        disabled={i === (itemSpec.targets.length - 1)}
+                      />
+                    </>
+                  )}
                   <DeleteButton
                     title='Remove this Consumer Session Target'
                     onClick={() => {
@@ -200,21 +260,23 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         })}
 
         <div className={s.LastColumn}>
-          <AddButton
-            text='Add Target'
-            onClick={() => {
-              const newTarget: ManagedConsumerSessionTargetValOrRef = {
-                type: "value",
-                val: getDefaultManagedItem("consumer-session-target", props.libraryContext) as ManagedConsumerSessionTarget
-              };
-              const newTargets = itemSpec.targets.concat([newTarget]);
-              onSpecChange({ ...itemSpec, targets: newTargets });
+          {!props.isReadOnly && (
+            <AddButton
+              text='Add Target'
+              onClick={() => {
+                const newTarget: ManagedConsumerSessionTargetValOrRef = {
+                  type: "value",
+                  val: getDefaultManagedItem("consumer-session-target", props.libraryContext) as ManagedConsumerSessionTarget
+                };
+                const newTargets = itemSpec.targets.concat([newTarget]);
+                onSpecChange({ ...itemSpec, targets: newTargets });
 
-              setTimeout(() => {
-                ref.current?.scrollTo({ left: ref.current.scrollWidth, behavior: 'smooth' });
-              }, 100);
-            }}
-          />
+                setTimeout(() => {
+                  ref.current?.scrollTo({ left: ref.current.scrollWidth, behavior: 'smooth' });
+                }, 100);
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

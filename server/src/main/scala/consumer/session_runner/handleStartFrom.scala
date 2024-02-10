@@ -4,7 +4,7 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 
 import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.{Consumer, Message as PulsarMessage, MessageId as PulsarMessageId, PulsarClient}
-import _root_.topic.{getTopicPartitioningType, TopicPartitioningType}
+import _root_.topic.{getTopicPartitioning, TopicPartitioningType}
 import _root_.consumer.start_from.{
     ConsumerSessionStartFrom,
     DateTime,
@@ -45,7 +45,7 @@ def examinePartitionedTopicMessage(adminClient: PulsarAdmin, topicFqn: String, i
                 case "latest"   => Some(candidates.maxBy(msg => msg.getPublishTime))
 
 def findNthMessage(adminClient: PulsarAdmin, topicFqn: String, initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
-    getTopicPartitioningType(adminClient, topicFqn) match
+    getTopicPartitioning(adminClient, topicFqn).`type` match
         case TopicPartitioningType.Partitioned =>
             examinePartitionedTopicMessage(adminClient, topicFqn, initialPosition, n)
         case TopicPartitioningType.NonPartitioned =>
@@ -60,7 +60,7 @@ def findNthMessageMultiTopic(adminClient: PulsarAdmin, topics: Vector[String], i
                 case "latest"   => Some(messages.maxBy(msg => msg.getPublishTime))
 
 def getIsSingleNonPartitionedTopic(adminClient: PulsarAdmin, topics: Vector[String]): Boolean =
-    topics.size == 1 && getTopicPartitioningType(adminClient, topics.head) == TopicPartitioningType.NonPartitioned
+    topics.size == 1 && getTopicPartitioning(adminClient, topics.head) == TopicPartitioningType.NonPartitioned
 
 def getMessageById(pulsarClient: PulsarClient, topicFqn: String, messageId: Array[Byte]): Option[PulsarMessage[Array[Byte]]] =
     val subscriptionName = s"dekaf_${java.util.UUID.randomUUID.toString}"
@@ -97,7 +97,7 @@ def getMessageById(pulsarClient: PulsarClient, topicFqn: String, messageId: Arra
 
 def topicsToNonPartitionedTopic(pulsarAdmin: PulsarAdmin, topics: Vector[String]) =
     topics.flatMap { topicFqn =>
-        getTopicPartitioningType(pulsarAdmin, topicFqn) match
+        getTopicPartitioning(pulsarAdmin, topicFqn).`type` match
             case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
             case TopicPartitioningType.Partitioned    => getPartitions(pulsarAdmin, topicFqn)
     }

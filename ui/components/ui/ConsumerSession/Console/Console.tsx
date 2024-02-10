@@ -1,15 +1,12 @@
 import React from 'react';
 
 import Producer from './Producer/Producer';
-import Visualization from './Visualization/Visualization';
-import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, ConsumerSessionConfig, SessionState } from '../types';
-import EnteringFromBottomDiv from '../../animations/EnteringFromBottomDiv';
 import Tabs from '../../Tabs/Tabs';
 
 import s from './Console.module.css'
-import DebugLogs from './FilterLogs/FilterLogs';
-import ExpressionInspector from './FilterRepl/FilterRepl';
+import DebugLogs from './ContextLogs/ContextLogs';
+import ExpressionInspector from './ContextRepl/ContextRepl';
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -27,22 +24,17 @@ export type ConsoleProps = {
 type TabKey = 'producer' | 'visualize' | 'context-logs' | 'context-repl' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabKey>('export');
+  const [activeTab, setActiveTab] = React.useState<TabKey>('producer');
 
   if (props.sessionConfig === undefined) {
     return null;
   }
 
   return (
-    <EnteringFromBottomDiv
-      className={`${s.Console} ${props.isShow ? s.VisibleConsole : ''}`}
-      isVisible={props.isShow}
-      motionKey='consumer-console'
-    >
+    <div className={`${s.Console} ${props.isShow ? s.VisibleConsole : ''}`}>
       <Tabs<TabKey>
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}
-        onClose={props.onClose}
         tabs={{
           'producer': {
             title: 'Produce',
@@ -56,23 +48,23 @@ const Console: React.FC<ConsoleProps> = (props) => {
                 <Producer
                   preset={{
                     topic: props.currentTopic,
-                    key: props.sessionKey.toString()
+                    key: ''
                   }}
                 />
               )
             }
           },
-          'visualize': {
-            title: 'Visualize',
-            isRenderAlways: true,
-            render: () => (
-              <Visualization
-                messages={props.messages}
-                isVisible={activeTab === 'visualize'}
-                sessionState={props.sessionState}
-              />
-            )
-          },
+          // 'visualize': {
+          //   title: 'Visualize',
+          //   isRenderAlways: true,
+          //   render: () => (
+          //     <Visualization
+          //       messages={props.messages}
+          //       isVisible={activeTab === 'visualize'}
+          //       sessionState={props.sessionState}
+          //     />
+          //   )
+          // },
           'context-repl': {
             title: 'Context REPL',
             isRenderAlways: true,
@@ -94,21 +86,10 @@ const Console: React.FC<ConsoleProps> = (props) => {
                 isVisible={activeTab === 'context-logs'}
               />
             )
-          },
-          'export': {
-            title: 'Export',
-            isRenderAlways: true,
-            render: () => (
-              <MessagesExporter
-                messages={props.messages}
-                sessionState={props.sessionState}
-                isVisible={activeTab === 'export'}
-              />
-            )
           }
         }}
       />
-    </EnteringFromBottomDiv>
+    </div>
   );
 }
 

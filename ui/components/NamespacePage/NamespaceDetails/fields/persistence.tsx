@@ -1,0 +1,232 @@
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
+import useSWR, { useSWRConfig } from "swr";
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import Input from "../../../ui/ConfigurationTable/Input/Input";
+import React, { useState } from 'react';
+import Select from '../../../ui/Select/Select';
+import { swrKeys } from '../../../swrKeys';
+import WithUpdateConfirmation, { ValidationError } from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import * as generalHelp from '../../../ui/help';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+
+const policy = 'persistence';
+
+export type PolicyValue =
+  { type: 'inherited-from-broker-config' } | {
+    type: 'specified-for-this-namespace',
+    bookkeeperAckQuorum: number;
+    bookkeeperEnsemble: number;
+    bookkeeperWriteQuorum: number;
+    managedLedgerMarkDeleteMaxRate: number;
+  }
+
+export type FieldInputProps = {
+  tenant: string;
+  namespace: string;
+}
+
+export const FieldInput: React.FC<FieldInputProps> = (props) => {
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+  const { mutate } = useSWRConfig();
+  const [validationError, setValidationError] = useState<ValidationError>(undefined);
+
+  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
+
+  const { data: initialValue, error: initialValueError } = useSWR(
+    swrKey,
+    async () => {
+      const req = new pb.GetPersistenceRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespacePoliciesServiceClient.getPersistence(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get persistence policy: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getPersistenceCase()) {
+        case pb.GetPersistenceResponse.PersistenceCase.UNSPECIFIED: {
+          initialValue = { type: 'inherited-from-broker-config' }; break;
+        }
+        case pb.GetPersistenceResponse.PersistenceCase.SPECIFIED: {
+          const v = res.getSpecified();
+          if (v === undefined) {
+            return;
+          }
+
+          initialValue = {
+            type: 'specified-for-this-namespace',
+            bookkeeperAckQuorum: v.getBookkeeperAckQuorum(),
+            bookkeeperEnsemble: v.getBookkeeperEnsemble(),
+            bookkeeperWriteQuorum: v.getBookkeeperWriteQuorum(),
+            managedLedgerMarkDeleteMaxRate: v.getManagedLedgerMaxMarkDeleteRate(),
+          }
+        }
+      }
+      return initialValue;
+    }
+  );
+
+  if (initialValueError) {
+    notifyError(`Unable to get persistence policies. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
+  }
+
+  return (
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemovePersistenceRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          const res = await namespacePoliciesServiceClient.removePersistence(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        if (value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetPersistenceRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          req.setBookkeeperAckQuorum(value.bookkeeperAckQuorum);
+          req.setBookkeeperEnsemble(value.bookkeeperEnsemble);
+          req.setBookkeeperWriteQuorum(value.bookkeeperWriteQuorum);
+          req.setManagedLedgerMaxMarkDeleteRate(value.managedLedgerMarkDeleteMaxRate);
+
+          const res = await namespacePoliciesServiceClient.setPersistence(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        mutate(swrKey);
+      }}
+      validationError={validationError}
+    >
+      {({ value, onChange: _onChange }) => {
+        const validate = (v: PolicyValue): ValidationError => {
+          if (v.type !== 'specified-for-this-namespace') {
+            return undefined;
+          }
+
+          // Source: https://github.com/apache/pulsar/blob/6734a3bf77793419898dd1c8421da039dc117f6e/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/AdminResource.java#L812
+          const isValid = (
+            (v.bookkeeperEnsemble >= v.bookkeeperWriteQuorum) &&
+            (v.bookkeeperWriteQuorum >= v.bookkeeperAckQuorum)
+          );
+
+          const validationError = isValid ? undefined : (
+            <div className={sf.ValidationError} style={{ marginBottom: '12rem' }}>
+              <span><strong>Ensemble</strong> must be &gt;= <strong>Write quorum</strong>.</span>
+              <br />
+              <span><strong>Write quorum</strong> must be &gt;= <strong>Ack quorum</strong>.</span>
+            </div>
+          );
+
+          setValidationError(validationError);
+        }
+
+        const onChange = (value: PolicyValue) => {
+          _onChange(value);
+          validate(value);
+        }
+
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                ]}
+                value={value.type}
+                onChange={v => {
+                  onChange(v === 'inherited-from-broker-config' ?
+                    { type: 'inherited-from-broker-config' } :
+                    {
+                      type: 'specified-for-this-namespace',
+                      bookkeeperAckQuorum: 0,
+                      bookkeeperEnsemble: 0,
+                      bookkeeperWriteQuorum: 0,
+                      managedLedgerMarkDeleteMaxRate: 0
+                    });
+                }}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <div>
+                <div className={sf.FormItem}>
+                  <strong className={sf.FormLabel}>Ensemble</strong>
+                  <Input
+                    type='number'
+                    onChange={(v) => onChange({ ...value, bookkeeperEnsemble: Number(v) })}
+                    value={String(value.bookkeeperEnsemble)}
+                  />
+                </div>
+
+                <div className={sf.FormItem}>
+                  <strong className={sf.FormLabel}>Write quorum</strong>
+                  <Input
+                    type='number'
+                    onChange={(v) => onChange({ ...value, bookkeeperWriteQuorum: Number(v) })}
+                    value={String(value.bookkeeperWriteQuorum)}
+                  />
+                </div>
+
+                <div className={sf.FormItem}>
+                  <strong className={sf.FormLabel}>Ack quorum</strong>
+                  <Input
+                    type='number'
+                    onChange={(v) => onChange({ ...value, bookkeeperAckQuorum: Number(v) })}
+                    value={String(value.bookkeeperAckQuorum)}
+                  />
+                </div>
+
+                <div className={sf.FormItem}>
+                  <strong className={sf.FormLabel}>Mark delete max rate</strong>
+                  <Input
+                    type='number'
+                    onChange={(v) => onChange({ ...value, managedLedgerMarkDeleteMaxRate: Number(v) })}
+                    value={String(value.managedLedgerMarkDeleteMaxRate)}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
+  )
+}
+
+const field = (props: FieldInputProps): ConfigurationField => ({
+  id: policy,
+  title: 'Persistence',
+  description: <div>Determines how BookKeeper handles <TooltipElement tooltipHelp={generalHelp.help["persistentStorage"]} link="https://pulsar.apache.org/docs/next/concepts-architecture-overview/#persistent-storage">persistent storage</TooltipElement> of messages. Policies determine four things:
+    <ul>
+      <li>
+        The ensemble size (E): number of  <TooltipElement tooltipHelp={generalHelp.help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipElement> the <TooltipElement tooltipHelp={generalHelp.help["ledger"]} link="https://pulsar.apache.org/docs/next/concepts-architecture-overview/#ledgers">ledger</TooltipElement> will be stored on.
+      </li>
+      <li>
+        The quorum write size (Q<sub>w</sub>): number of bookies each <TooltipElement tooltipHelp={generalHelp.help["message"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#messages">entry (message)</TooltipElement> will be written to.
+      </li>
+      <li>
+        <TooltipElement tooltipHelp={generalHelp.help["acknowledgement"]} link="https://pulsar.apache.org/docs/next/reference-terminology/#acknowledgment-ack">Acknowledgment(ack)</TooltipElement> quorum (Q<sub>a</sub>) size: number of nodes an entry must be acknowledged by (number of guaranteed copies).
+      </li>
+      <li>
+        The <TooltipElement tooltipHelp={generalHelp.help["throttlingRateMarkDelete"]} link="https://streamnative.io/blog/deep-dive-into-topic-data-lifecycle-apache-pulsar">throttling rate for mark-delete operations</TooltipElement>.
+      </li>
+    </ul>
+  </div>,
+  input: <FieldInput {...props} />
+});
+export default field;

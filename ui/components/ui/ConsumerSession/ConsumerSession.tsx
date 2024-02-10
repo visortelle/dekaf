@@ -21,7 +21,7 @@ import { createDeadline } from '../../../proto-utils/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
-import Toolbar from './Toolbar';
+import Toolbar from './Toolbar/Toolbar';
 import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
@@ -37,6 +37,10 @@ import { getValueProjectionThs } from './value-projections/value-projections-uti
 import { Th } from './Th';
 import { ProductCode } from '../../app/licensing/ProductCode';
 import PremiumTitle from './PremiumTitle';
+import MessageDetails from './Message/MessageDetails/MessageDetails';
+import ActionButton from '../ActionButton/ActionButton';
+import { handleKeyDown } from './keyboard';
+import { useDebounce } from 'use-debounce';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
 const productPlanMessagesLimit = 100 as const;
@@ -70,14 +74,16 @@ const Session: React.FC<SessionProps> = (props) => {
   const subscriptionName = useRef<string>('__dekaf_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
-  const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);
-  const [messagesLoaded, setMessagesLoaded] = useState<number>(0);
+  const messagesLoaded = useRef<number>(0);
+  const messagesProcessed = useRef<number>(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
   const [messagesProcessedPerSecond, setMessagesProcessedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
-  const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
+  const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
+  const [_searchInResults, setSearchInResults] = useState<string>('');
+  const [searchInResults] = useDebounce(_searchInResults, 1000);
   const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
   const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
@@ -98,7 +104,7 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   useInterval(() => {
-    setMessagesLoadedPerSecond(() => ({ prev: messagesLoaded, now: messagesLoaded - messagesLoadedPerSecond.prev }));
+    setMessagesLoadedPerSecond(() => ({ prev: messagesLoaded.current, now: messagesLoaded.current - messagesLoadedPerSecond.prev }));
     setMessagesProcessedPerSecond(() => ({ prev: messagesProcessed.current, now: messagesProcessed.current - messagesProcessedPerSecond.prev }));
   }, 1000);
 
@@ -114,10 +120,10 @@ const Session: React.FC<SessionProps> = (props) => {
     setMessages((messages) => {
       const newMessages = messages
         .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
-        .slice(-displayMessagesLimit);
+        .slice(-(config?.numDisplayItems || 0));
 
       newMessages.forEach((message, i) => {
-        message.index = (i + 1);
+        message.displayIndex = (i + 1);
       });
 
       messagesBuffer.current = [];
@@ -128,20 +134,23 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList();
-    setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
+
     for (let i = 0; i < newMessages.length; i++) {
-      messagesBuffer.current.push(newMessages[i]);
+      if (newMessages[i]?.hasValue()) {
+        messagesBuffer.current.push(newMessages[i]);
+      }
     }
 
-    messagesProcessed.current = res.getProcessedMessages();
+    messagesProcessed.current = newMessages[newMessages.length - 1].getNumMessageProcessed()
+    messagesLoaded.current = newMessages[newMessages.length - 1].getNumMessageSent()
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`${res.getStatus()?.getMessage()}`);
     }
   }, []);
 
+  // PRODUCT PLAN LIMITATION START
   useEffect(() => {
-    // PRODUCT PLAN LIMITATION START
     if (appContext.config.productCode === ProductCode.DekafDesktopFree || appContext.config.productCode === ProductCode.DekafFree) {
       const isPulsarStandalone =
         (brokersConfig.internalConfig.zookeeperServers?.startsWith('rocksdb') ||
@@ -155,14 +164,14 @@ const Session: React.FC<SessionProps> = (props) => {
         return;
       }
 
-      if (messagesLoaded > productPlanMessagesLimit) {
+      if (messagesLoaded.current > productPlanMessagesLimit) {
         setSessionState('pausing');
         setIsProductPlanLimitReached(true);
         notifyInfo(<PremiumTitle />);
       }
     }
-    // PRODUCT PLAN LIMITATION END
   }, [messagesLoaded]);
+  // PRODUCT PLAN LIMITATION END
 
   useEffect(() => {
     streamRef.current = stream;
@@ -322,7 +331,6 @@ const Session: React.FC<SessionProps> = (props) => {
       setSort
     }) : [];
   }, [config, sort, setSort]);
-  console.log('sw', sort);
 
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
     if (config === undefined) {
@@ -330,18 +338,30 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     const coloring = getColoring(config, message);
-
     return (
       <MessageComponent
         key={i}
         message={message}
         sessionConfig={config}
         isShowTooltips={isShowTooltips}
+        sessionState={sessionState}
+        selectedMessages={selectedMessages}
         coloring={coloring}
         valueProjectionThs={valueProjectionThs}
+        onClick={() => {
+          if (sessionState !== 'paused') {
+            setSessionState('pausing');
+          }
+
+          if (message.numMessageProcessed === null) {
+            return;
+          }
+
+          setSelectedMessages([message.numMessageProcessed]);
+        }}
       />
     );
-  }, [sessionState, config]);
+  }, [sessionState, config, selectedMessages]);
 
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
@@ -350,26 +370,39 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState]);
 
   const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
-  const sortedMessages = useMemo(() => {
-    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRealTimeLimit) : messages;
+  const messagesToShow = useMemo(() => {
+    let msgs = searchInResults === '' ? messages : messages.filter(msg => {
+      return msg.key?.includes(searchInResults) || msg.value?.includes(searchInResults);
+    });
+    msgs = sessionState === 'running' ? msgs.slice(msgs.length - displayMessagesRealTimeLimit) : msgs;
+
     return sortMessages(msgs, sort);
-  }, [messages, sort, sessionState]);
+  }, [messages, sort, sessionState, searchInResults]);
+
+  const messageDetails = selectedMessages.length === 1 ?
+    messages.find(msg => msg.numMessageProcessed === selectedMessages[0]) :
+    undefined;
 
   return (
-    <div className={s.ConsumerSession}>
+    <div
+      className={s.ConsumerSession}
+      style={{ gridTemplateRows: props.isShowConsole ? 'min-content 1fr 400rem' : 'min-content 1fr 0' }}
+    >
       <Toolbar
         config={config}
         sessionState={sessionState}
+        messages={messages}
         onSessionStateChange={setSessionState}
-        messagesLoaded={messagesLoaded}
+        messagesLoaded={messagesLoaded.current}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
-        messagesProcessedPerSecond={messagesProcessedPerSecond}
         messagesProcessed={messagesProcessed.current}
+        messagesProcessedPerSecond={messagesProcessedPerSecond}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
-        displayMessagesLimit={displayMessagesLimit}
-        onDisplayMessagesLimitChange={setDisplayMessagesLimit}
         isProductPlanLimitReached={isProductPlanLimitReached}
+        searchInResults={_searchInResults}
+        onSearchInResultsChange={setSearchInResults}
+        numFoundInResults={messagesToShow.length}
       />
 
       {currentView === 'messages' && messages.length === 0 && (
@@ -380,177 +413,209 @@ const Session: React.FC<SessionProps> = (props) => {
         </div>
       )}
       {currentView === 'messages' && messages.length > 0 && (
-        <div
-          className={cts.Table}
-          style={{ position: 'relative' }}
-          ref={tableRef}
-          onWheel={onWheel}
-        >
-          {sessionState === 'pausing' && (
-            <div className={s.TableSpinner}>
-              <div className={s.TableSpinnerContent}>Pausing session...</div>
+        <div className={s.Content}>
+          <div
+            className={`${cts.Table} ${s.Table}`}
+            style={{ position: 'relative' }}
+            ref={tableRef}
+            onWheel={onWheel}
+            onKeyDown={(event) => {
+              if (virtuosoRef.current === null) {
+                return;
+              }
+
+              handleKeyDown({
+                event,
+                messages: messagesToShow,
+                selectedMessages,
+                setSelectedMessages,
+                virtuoso: virtuosoRef.current
+              })
+            }}
+          >
+            {sessionState === 'pausing' && (
+              <div className={s.TableSpinner}>
+                <div className={s.TableSpinnerContent}>Pausing session...</div>
+              </div>
+            )}
+            <TableVirtuoso
+              className={s.Virtuoso}
+              ref={virtuosoRef}
+              data={messagesToShow}
+              totalCount={messagesToShow.length}
+              itemContent={itemContent}
+              followOutput={sessionState === 'running'}
+              fixedHeaderContent={() => (
+                <tr>
+                  <Th
+                    key="index"
+                    title="#"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="index"
+                    style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                    help={(
+                      <>
+                        <p>
+                          When consuming from multiple topics or a single partitioned topic, the order of messages cannot be assured.
+                        </p>
+                        <p>
+                          The order of numbers in in this column represents the order in which messages were received by the consumer.
+                        </p>
+                      </>
+                    )}
+                  />
+                  <Th
+                    key="publishTime"
+                    title="Publish time"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="publishTime"
+                    style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }}
+                    help={help.publishTime}
+                  />
+                  <Th
+                    key="key"
+                    title="Key"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="key"
+                    help={help.key}
+                  />
+
+                  {valueProjectionThs.map(vp => vp.th)}
+
+                  <Th
+                    key="value"
+                    title="Value"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="value"
+                    help={help.value}
+                  />
+                  <Th
+                    key="target"
+                    title="Target"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="sessionTargetIndex"
+                    help={help.sessionTargetIndex}
+                  />
+                  <Th
+                    key="topic"
+                    title="Topic"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="topic"
+                    help={help.topic}
+                  />
+                  <Th
+                    key="producer"
+                    title="Producer"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="producerName"
+                    help={help.producerName}
+                  />
+                  <Th
+                    key="schemaVersion"
+                    title="Schema version"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="schemaVersion"
+                    help={help.schemaVersion}
+                  />
+                  <Th
+                    key="size"
+                    title="Size"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="size"
+                    help={help.size}
+                  />
+                  <Th
+                    key="properties"
+                    title="Properties"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="properties"
+                    help={help.propertiesMap}
+                  />
+                  <Th
+                    key="eventTime"
+                    title="Event time"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="eventTime"
+                    help={help.eventTime}
+                  />
+                  <Th
+                    key="brokerPublishTime"
+                    title="Broker pub. time"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="brokerPublishTime"
+                    help={help.brokerPublishTime}
+                  />
+                  <Th
+                    key="messageId"
+                    title="Message Id"
+                    sort={sort}
+                    setSort={setSort}
+                    help={help.messageId}
+                  />
+                  <Th
+                    key="sequenceId"
+                    title="Sequence Id"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="sequenceId"
+                    help={help.sequenceId}
+                  />
+                  <Th
+                    key="orderingKey"
+                    title="Ordering key"
+                    sort={sort}
+                    setSort={setSort}
+                    help={help.orderingKey}
+                  />
+                  <Th
+                    key="redeliveryCount"
+                    title="Redelivery count"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="redeliveryCount"
+                    help={help.redeliveryCount}
+                  />
+                  <Th
+                    key="sessionContextState"
+                    title="Session Context State"
+                    sort={sort}
+                    setSort={setSort}
+                    sortKey="sessionContextStateJson"
+                    help={help.sessionContextStateJson}
+                  />
+                </tr>
+              )}
+            />
+          </div>
+
+          {messageDetails !== undefined && (
+            <div className={s.MessageDetails}>
+              <div className={s.CloseMessageDetails}>
+                <ActionButton
+                  onClick={() => setSelectedMessages([])}
+                  title="Close Message Details"
+                  action={{ type: 'predefined', action: 'close' }}
+                  buttonProps={{ appearance: 'borderless-semitransparent' }}
+                />
+              </div>
+
+              <MessageDetails
+                message={messageDetails}
+              />
             </div>
           )}
-          <TableVirtuoso
-            className={s.Virtuoso}
-            ref={virtuosoRef}
-            data={sortedMessages}
-            totalCount={sortedMessages.length}
-            itemContent={itemContent}
-            followOutput={sessionState === 'running'}
-            fixedHeaderContent={() => (
-              <tr>
-                <Th
-                  key="index"
-                  title="#"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="index"
-                  style={{ position: 'sticky', left: 0, zIndex: 10 }}
-                  help={(
-                    <>
-                      <p>
-                        When consuming from multiple topics or a single partitioned topic, the order of messages cannot be assured.
-                      </p>
-                      <p>
-                        The order of numbers in in this column represents the order in which messages were received by the consumer.
-                      </p>
-                    </>
-                  )}
-                />
-                <Th
-                  key="publishTime"
-                  title="Publish time"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="publishTime"
-                  style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }}
-                  help={help.publishTime}
-                />
-                <Th
-                  key="key"
-                  title="Key"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="key"
-                  help={help.key}
-                />
-
-                {valueProjectionThs.map(vp => vp.th)}
-
-                <Th
-                  key="value"
-                  title="Value"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="value"
-                  help={help.value}
-                />
-                <Th
-                  key="target"
-                  title="Target"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="sessionTargetIndex"
-                  help={help.sessionTargetIndex}
-                />
-                <Th
-                  key="topic"
-                  title="Topic"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="topic"
-                  help={help.topic}
-                />
-                <Th
-                  key="producer"
-                  title="Producer"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="producerName"
-                  help={help.producerName}
-                />
-                <Th
-                  key="schemaVersion"
-                  title="Schema version"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="schemaVersion"
-                  help={help.schemaVersion}
-                />
-                <Th
-                  key="size"
-                  title="Size"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="size"
-                  help={help.size}
-                />
-                <Th
-                  key="properties"
-                  title="Properties"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="properties"
-                  help={help.propertiesMap}
-                />
-                <Th
-                  key="eventTime"
-                  title="Event time"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="eventTime"
-                  help={help.eventTime}
-                />
-                <Th
-                  key="brokerPublishTime"
-                  title="Broker pub. time"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="brokerPublishTime"
-                  help={help.brokerPublishTime}
-                />
-                <Th
-                  key="messageId"
-                  title="Message Id"
-                  sort={sort}
-                  setSort={setSort}
-                  help={help.messageId}
-                />
-                <Th
-                  key="sequenceId"
-                  title="Sequence Id"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="sequenceId"
-                  help={help.sequenceId}
-                />
-                <Th
-                  key="orderingKey"
-                  title="Ordering key"
-                  sort={sort}
-                  setSort={setSort}
-                  help={help.orderingKey}
-                />
-                <Th
-                  key="redeliveryCount"
-                  title="Redelivery count"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="redeliveryCount"
-                  help={help.redeliveryCount}
-                />
-                <Th
-                  key="sessionContextState"
-                  title="Session Context State"
-                  sort={sort}
-                  setSort={setSort}
-                  sortKey="sessionContextStateJson"
-                  help={help.sessionContextStateJson}
-                />
-              </tr>
-            )}
-          />
         </div>
       )}
 

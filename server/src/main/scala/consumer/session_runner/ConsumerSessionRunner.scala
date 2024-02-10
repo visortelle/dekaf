@@ -21,15 +21,24 @@ case class ConsumerSessionRunner(
     sessionContextPool: ConsumerSessionContextPool,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
-    var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner]
+    var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
+    var numMessageProcessed: Long = 0,
+    var numMessageSent: Long = 0
 ) {
+    def incrementNumMessageProcessed(): Unit = numMessageProcessed = numMessageProcessed + 1
+
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
         isDebug: Boolean
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
-        def onNext(messageFromTarget: Option[ConsumerSessionMessage], sessionContext: ConsumerSessionContext, stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
+        def onNext(
+            messageFromTarget: Option[ConsumerSessionMessage],
+            sessionContext: ConsumerSessionContext,
+            stats: ConsumerSessionTargetStats,
+            errors: Vector[String]
+        ): Unit = boundary:
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
                 val allErrors = errors ++ additionalErrors
 
@@ -39,7 +48,6 @@ case class ConsumerSessionRunner(
 
                 val response = consumerPb.ResumeResponse(
                     messages = messages,
-                    processedMessages = 0,
                     status = Some(status)
                 )
                 grpcResponseObserver.onNext(response)
@@ -47,11 +55,15 @@ case class ConsumerSessionRunner(
 
             messageFromTarget match
                 case None =>
-                    createAndSendResponse(Seq.empty, errors)
+                    val emptyMsgPb = consumerPb.Message(
+                        numMessageProcessed = numMessageProcessed,
+                        numMessageSent = numMessageSent
+                    )
+                    createAndSendResponse(Seq(emptyMsgPb), errors)
 
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
-                        sessionConfig.messageFilterChain,
+                        sessionConfig.messageFilterChain
                     )
 
                     if !messageFilterChainResult.isOk then
@@ -60,9 +72,7 @@ case class ConsumerSessionRunner(
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules
                             .filter(_.isEnabled)
-                            .map(cr => sessionContext.testMessageFilterChain(
-                                cr.messageFilterChain,
-                            ))
+                            .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
                     else
                         Vector.empty
 
@@ -72,12 +82,14 @@ case class ConsumerSessionRunner(
                             .map(_.project(sessionContext.context))
                     else
                         Vector.empty
-                        
+
                     val errors: Vector[String] = if isDebug then
                         val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
                         val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
                         messageFilterChainErrors ++ coloringRuleChainErrors
                     else Vector.empty
+
+                    numMessageSent = numMessageSent + 1
 
                     val messageToSendPb = msg.messagePb
                         .withSessionContextStateJson(sessionContext.getState)
@@ -85,10 +97,16 @@ case class ConsumerSessionRunner(
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
                         .withSessionValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
+                        .withNumMessageSent(numMessageSent)
+                        .withNumMessageProcessed(numMessageProcessed)
 
                     createAndSendResponse(Seq(messageToSendPb), errors)
 
-        targets.values.foreach(_.resume(onNext = onNext, isDebug = isDebug))
+        targets.values.foreach(_.resume(
+            onNext = onNext,
+            isDebug = isDebug,
+            incrementNumMessageProcessed = incrementNumMessageProcessed
+        ))
     def pause(): Unit =
         targets.values.foreach(_.pause())
     def stop(): Unit =
@@ -105,17 +123,19 @@ object ConsumerSessionRunner:
     ): ConsumerSessionRunner =
         val sessionContextPool = ConsumerSessionContextPool()
 
-        var targets = sessionConfig.targets.zipWithIndex.map { case (targetConfig, i) =>
-            i -> ConsumerSessionTargetRunner.make(
-                sessionName = sessionName,
-                targetIndex = i,
-                pulsarClient = pulsarClient,
-                adminClient = adminClient,
-                schemasByTopic = Map.empty,
-                sessionContextPool = sessionContextPool,
-                targetConfig = targetConfig
-            )
-        }.toMap
+        var targets = sessionConfig.targets
+            .filter(_.isEnabled)
+            .zipWithIndex.map { case (targetConfig, i) =>
+                i -> ConsumerSessionTargetRunner.make(
+                    sessionName = sessionName,
+                    targetIndex = i,
+                    pulsarClient = pulsarClient,
+                    adminClient = adminClient,
+                    schemasByTopic = Map.empty,
+                    sessionContextPool = sessionContextPool,
+                    targetConfig = targetConfig
+                )
+            }.toMap
 
         val nonPartitionedTopicFqns = targets.values.flatMap(_.nonPartitionedTopicFqns).toVector
         val schemasByTopic = getSchemasByTopic(adminClient, nonPartitionedTopicFqns)

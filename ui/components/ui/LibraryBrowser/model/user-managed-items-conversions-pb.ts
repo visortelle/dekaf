@@ -34,7 +34,9 @@ import {
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "../../ConsumerSession/conversions/basic-message-filter-conversions";
-import { Int32Value } from "google-protobuf/google/protobuf/wrappers_pb";
+import { Int32Value, Int64Value } from "google-protobuf/google/protobuf/wrappers_pb";
+import { deserializerFromPb, deserializerToPb } from "../../ConsumerSession/deserializer/deserializer";
+import { consumerSessionTargetConsumptionModeFromPb, consumerSessionTargetConsumptionModeToPb } from "../../ConsumerSession/consumption-mode/consumption-mode";
 
 export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType {
   switch (v) {
@@ -52,6 +54,7 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET: return "basic-message-filter-target";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION: return "value-projection";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST: return "value-projection-list";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER: return "deserializer";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -72,6 +75,7 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "basic-message-filter-target": return pb.ManagedItemType.MANAGED_ITEM_TYPE_BASIC_MESSAGE_FILTER_TARGET;
     case "value-projection": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION;
     case "value-projection-list": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST;
+    case "deserializer": return pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -1085,6 +1089,9 @@ export function managedColoringRuleChainValOrRefToPb(v: t.ManagedColoringRuleCha
 
 export function managedConsumerSessionTargetSpecFromPb(v: pb.ManagedConsumerSessionTargetSpec): t.ManagedConsumerSessionTargetSpec {
   return {
+    isEnabled: v.getIsEnabled(),
+    consumptionMode: consumerSessionTargetConsumptionModeFromPb(v.getConsumptionMode()!),
+    messageValueDeserializer: managedDeserializerValOrRefFromPb(v.getMessageValueDeserializer()!),
     topicSelector: managedTopicSelectorValOrRefFromPb(v.getTopicSelector()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
@@ -1094,6 +1101,9 @@ export function managedConsumerSessionTargetSpecFromPb(v: pb.ManagedConsumerSess
 
 export function managedConsumerSessionTargetSpecToPb(v: t.ManagedConsumerSessionTargetSpec): pb.ManagedConsumerSessionTargetSpec {
   const specPb = new pb.ManagedConsumerSessionTargetSpec();
+  specPb.setIsEnabled(v.isEnabled);
+  specPb.setConsumptionMode(consumerSessionTargetConsumptionModeToPb(v.consumptionMode));
+  specPb.setMessageValueDeserializer(managedDeserializerValOrRefToPb(v.messageValueDeserializer));
   specPb.setTopicSelector(managedTopicSelectorValOrRefToPb(v.topicSelector));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
   specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
@@ -1154,7 +1164,8 @@ export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSess
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
     pauseTriggerChain: managedConsumerSessionPauseTriggerChainValOrRefFromPb(v.getPauseTriggerChain()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
-    valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!)
+    valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!),
+    numDisplayItems: v.getNumDisplayItems()?.getValue()
   };
 }
 
@@ -1166,6 +1177,10 @@ export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSession
   specPb.setPauseTriggerChain(managedConsumerSessionPauseTriggerChainValOrRefToPb(v.pauseTriggerChain));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
   specPb.setValueProjectionList(managedValueProjectionListValOrRefToPb(v.valueProjectionList));
+
+  if (v.numDisplayItems !== undefined) {
+    specPb.setNumDisplayItems(new Int64Value().setValue(v.numDisplayItems));
+  }
 
   return specPb;
 }
@@ -1275,6 +1290,65 @@ export function managedMarkdownDocumentValOrRefToPb(v: t.ManagedMarkdownDocument
   return idPb;
 }
 
+export function managedDeserializerSpecFromPb(v: pb.ManagedDeserializerSpec): t.ManagedDeserializerSpec {
+  return {
+    deserializer: deserializerFromPb(v.getDeserializer()!)
+  };
+}
+
+export function managedDeserializerSpecToPb(v: t.ManagedDeserializerSpec): pb.ManagedDeserializerSpec {
+  const specPb = new pb.ManagedDeserializerSpec();
+  specPb.setDeserializer(deserializerToPb(v.deserializer));
+
+  return specPb;
+}
+
+export function managedDeserializerFromPb(v: pb.ManagedDeserializer): t.ManagedDeserializer {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedDeserializerSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedDeserializerToPb(v: t.ManagedDeserializer): pb.ManagedDeserializer {
+  const configPb = new pb.ManagedDeserializer();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedDeserializerSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedDeserializerValOrRefFromPb(v: pb.ManagedDeserializerValOrRef): t.ManagedDeserializerValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMarkdownDocumentValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedDeserializerFromPb(v.getVal()!)
+      };
+    case pb.ManagedDeserializerValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedDeserializerValOrRef: ${v}`);
+  }
+}
+
+export function managedDeserializerValOrRefToPb(v: t.ManagedDeserializerValOrRef): pb.ManagedDeserializerValOrRef {
+  const idPb = new pb.ManagedDeserializerValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedDeserializerToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedDeserializerValOrRef: ${v}`);
+  }
+  return idPb;
+}
+
 export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
   switch (v.getSpecCase()) {
     case pb.ManagedItem.SpecCase.SPEC_MESSAGE_ID:
@@ -1311,6 +1385,8 @@ export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
       return managedValueProjectionFromPb(v.getSpecValueProjection()!);
     case pb.ManagedItem.SpecCase.SPEC_VALUE_PROJECTION_LIST:
       return managedValueProjectionListFromPb(v.getSpecValueProjectionList()!);
+    case pb.ManagedItem.SpecCase.SPEC_DESERIALIZER:
+      return managedDeserializerFromPb(v.getSpecDeserializer()!);
     default:
       throw new Error(`Unknown ManagedItem: ${v}`);
   }
@@ -1385,6 +1461,10 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
     }
     case "value-projection-list": {
       itemPb.setSpecValueProjectionList(managedValueProjectionListToPb(v as t.ManagedValueProjectionList));
+      break;
+    }
+    case "deserializer": {
+      itemPb.setSpecDeserializer(managedDeserializerToPb(v as t.ManagedDeserializer));
       break;
     }
   }

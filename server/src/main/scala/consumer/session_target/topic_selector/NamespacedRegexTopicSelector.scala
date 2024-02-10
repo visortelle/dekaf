@@ -3,7 +3,7 @@ package consumer.session_target.topic_selector
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import org.apache.pulsar.client.admin.PulsarAdmin
 import scala.jdk.CollectionConverters.*
-import _root_.topic.{getTopicPartitioningType, getTopicPartitions, TopicPartitioningType}
+import _root_.topic.{getTopicPartitioning, getTopicPartitions, TopicPartitioningType}
 import org.apache.pulsar.common.naming.TopicDomain
 
 case class NamespacedRegexTopicSelector(namespaceFqn: String, pattern: String, regexSubscriptionMode: RegexSubscriptionMode):
@@ -25,7 +25,7 @@ case class NamespacedRegexTopicSelector(namespaceFqn: String, pattern: String, r
         )
 
         matchedTopicFqns.flatMap { topicFqn =>
-            getTopicPartitioningType(adminClient, topicFqn) match
+            getTopicPartitioning(adminClient, topicFqn).`type` match
                 case TopicPartitioningType.Partitioned    => getTopicPartitions(adminClient, topicFqn)
                 case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
         }.distinct

@@ -38,7 +38,7 @@ const Chart: React.FC<ChartProps> = (props) => {
   const config = useMemo(() => {
     return {
       dimensions,
-      getLabel: (message: MessageDescriptor) => message.index.toString(),
+      getLabel: (message: MessageDescriptor) => message.displayIndex.toString(),
       name: 'My bar chart',
     }
   }, [dimensions]);
