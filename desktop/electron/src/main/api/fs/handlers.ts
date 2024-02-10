@@ -81,11 +81,16 @@ export function getPaths(): Paths {
 
   const dekafDemoappDir = path.resolve(path.join(assetsDir, 'dekaf-demoapp'));
 
+  const isWindows = os.platform() === "win32";
+  const isMac = os.platform() === "darwin";
+
   return {
     appPath,
     assetsDir,
     userDataDir,
-    javaHome: path.resolve(path.join(assetsDir, 'graalvm', 'Contents', 'Home')),
+    javaHome: isMac
+      ? path.resolve(path.join(assetsDir, 'graalvm', 'Contents', 'Home'))
+      : path.resolve(path.join(assetsDir, 'graalvm')),
     pulsarDistributionsDir,
     getPulsarDistributionDir,
     getPulsarBin,
@@ -95,7 +100,9 @@ export function getPaths(): Paths {
     getPulsarLocalInstanceDekafDataDir,
     getPulsarStandalonePaths,
     dekafDir,
-    dekafBin: path.resolve(path.join(dekafDir, 'bin', 'dekaf')),
+    dekafBin: isWindows 
+      ? path.resolve(path.join(dekafDir, 'bin', 'dekaf.bat'))
+      : path.resolve(path.join(dekafDir, 'bin', 'dekaf')),
     remotePulsarConnectionsDir,
     getRemotePulsarConnectionDir,
     getRemotePulsarConnectionConfigPath,
@@ -103,4 +110,4 @@ export function getPaths(): Paths {
     dekafDemoappDir,
     dekafDemoappBin: path.resolve(path.join(dekafDemoappDir, 'bin', 'dekaf-demoapp')),
   };
-};
+}
