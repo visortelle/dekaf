@@ -31,6 +31,9 @@ object ManagedItemType:
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN => ManagedItemType.ConsumerSessionPauseTriggerChain
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG => ManagedItemType.ProducerSessionConfig
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT => ManagedItemType.MarkdownDocument
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_ID => ManagedItemType.MessageId
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_DATE_TIME => ManagedItemType.DateTime
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME => ManagedItemType.RelativeDateTime
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER => ManagedItemType.MessageFilter
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN => ManagedItemType.MessageFilterChain
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR => ManagedItemType.TopicSelector
@@ -50,6 +53,9 @@ object ManagedItemType:
             case ManagedItemType.ConsumerSessionPauseTriggerChain => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN
             case ManagedItemType.ProducerSessionConfig => pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
             case ManagedItemType.MarkdownDocument => pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
+            case ManagedItemType.MessageId => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_ID
+            case ManagedItemType.DateTime => pb.ManagedItemType.MANAGED_ITEM_TYPE_DATE_TIME
+            case ManagedItemType.RelativeDateTime => pb.ManagedItemType.MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME
             case ManagedItemType.MessageFilter => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER
             case ManagedItemType.MessageFilterChain => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
             case ManagedItemType.TopicSelector => pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR
