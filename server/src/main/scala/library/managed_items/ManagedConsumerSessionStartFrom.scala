@@ -3,11 +3,11 @@ package library.managed_items
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
-import _root_.consumer.start_from.{EarliestMessage, LatestMessage}
+import _root_.consumer.start_from.{EarliestMessage, LatestMessage, NthMessageAfterEarliest, NthMessageBeforeLatest}
 
 case class ManagedConsumerSessionStartFromSpec(
     startFrom: EarliestMessage | LatestMessage | ManagedConsumerSessionStartFromValOrRef | ManagedMessageIdValOrRef | ManagedDateTimeValOrRef |
-        ManagedRelativeDateTimeValOrRef
+        ManagedRelativeDateTimeValOrRef | NthMessageBeforeLatest | NthMessageAfterEarliest
 )
 
 object ManagedConsumerSessionStartFromSpec:
@@ -22,6 +22,10 @@ object ManagedConsumerSessionStartFromSpec:
                 ManagedConsumerSessionStartFromSpec(startFrom = ManagedDateTimeValOrRef.fromPb(sf.value))
             case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromRelativeDateTime =>
                 ManagedConsumerSessionStartFromSpec(startFrom = ManagedRelativeDateTimeValOrRef.fromPb(sf.value))
+            case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageAfterEarliest =>
+                ManagedConsumerSessionStartFromSpec(startFrom = NthMessageAfterEarliest.fromPb(sf.value))
+            case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageBeforeLatest =>
+                ManagedConsumerSessionStartFromSpec(startFrom = NthMessageBeforeLatest.fromPb(sf.value))
 
     def toPb(v: ManagedConsumerSessionStartFromSpec): pb.ManagedConsumerSessionStartFromSpec =
         v.startFrom match
@@ -44,6 +48,14 @@ object ManagedConsumerSessionStartFromSpec:
             case v: ManagedRelativeDateTimeValOrRef =>
                 pb.ManagedConsumerSessionStartFromSpec(
                     startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromRelativeDateTime(ManagedRelativeDateTimeValOrRef.toPb(v))
+                )
+            case v: NthMessageAfterEarliest =>
+                pb.ManagedConsumerSessionStartFromSpec(
+                    startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageAfterEarliest(NthMessageAfterEarliest.toPb(v))
+                )
+            case v: NthMessageBeforeLatest =>
+                pb.ManagedConsumerSessionStartFromSpec(
+                    startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageBeforeLatest(NthMessageBeforeLatest.toPb(v))
                 )
 
 case class ManagedConsumerSessionStartFrom(
