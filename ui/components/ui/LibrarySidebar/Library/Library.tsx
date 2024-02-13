@@ -40,7 +40,7 @@ const Library: React.FC<LibraryProps> = (props) => {
   const [refreshItemCountKey, setRefreshItemCountKey] = useState(0);
 
   useEffect(() => {
-    setResourceMatchers([resourceMatcherFromContext(props.libraryContext)]);
+    setResourceMatchers([resourceMatcherFromContext(props.libraryContext, 'derive-from-context')]);
   }, [props.libraryContext]);
 
   useEffect(() => {

@@ -44,7 +44,7 @@ const Notes: React.FC<NotesProps> = (props) => {
     const req = new pb.ListLibraryItemsRequest();
     req.setTypesList([mipb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT]);
 
-    const resourceMatcher = resourceMatcherFromContext(props.libraryContext);
+    const resourceMatcher = resourceMatcherFromContext(props.libraryContext, 'derive-from-context');
     const resourceMatcherPb = resourceMatcherToPb(resourceMatcher);
 
     req.setContextsList([resourceMatcherPb]);
@@ -89,7 +89,7 @@ const Notes: React.FC<NotesProps> = (props) => {
 
     const newNote: LibraryItem = {
       metadata: {
-        availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+        availableForContexts: [resourceMatcherFromContext(props.libraryContext, 'derive-from-context')],
         updatedAt: new Date().toISOString()
       },
       spec: markdownDocument

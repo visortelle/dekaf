@@ -46,7 +46,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
   const { notifySuccess } = Notifications.useContext();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const availableForContexts = useMemo(() => [resourceMatcherFromContext(props.libraryContext)], [props.libraryContext]);
+  const availableForContexts = useMemo(() => [resourceMatcherFromContext(props.libraryContext, 'derive-from-context')], [props.libraryContext]);
 
   return (
     <div className={s.LibraryBrowserPanel} ref={hoverRef}>
