@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import s from './PickLibraryItemButton.module.css'
 import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
@@ -12,6 +12,8 @@ import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 import { tooltipId } from '../../../../Tooltip/Tooltip';
 import BrowseDialog from '../../../dialogs/BrowseDialog/BrowseDialog';
 import { ResourceMatcher } from '../../../model/resource-matchers';
+import useSWR from 'swr';
+import { swrKeys } from '../../../../../swrKeys';
 
 export type LibraryBrowserPickButtonProps = {
   itemType: ManagedItemType;
@@ -26,10 +28,10 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
   const modals = Modals.useContext();
   const { notifyError } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
-  const [itemCount, setItemCount] = useState<number | undefined>(undefined);
 
-  useEffect(() => {
-    async function fetchItemCount() {
+  const { data: itemCount, error: itemCountError } = useSWR(
+    swrKeys.dekaf.library.itemCount._({ itemType: props.itemType, availableForContexts: props.availableForContexts }),
+    async () => {
       const req = new pb.GetLibraryItemsCountRequest();
       req.setTypesList([managedItemTypeToPb(props.itemType)]);
 
@@ -48,16 +50,13 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
         return;
       }
 
-      const newItemCount = res.getItemCountPerTypeList()[0]?.getItemCount();
-      setItemCount(newItemCount);
-
-      if (props.onItemCount !== undefined) {
-        props.onItemCount(newItemCount);
-      }
+      return res.getItemCountPerTypeList()[0]?.getItemCount();
     }
+  );
 
-    fetchItemCount();
-  }, [props.itemType, props.availableForContexts]);
+  if (itemCountError) {
+    notifyError(`Unable to get library item count. ${props.itemType}`);
+  }
 
   return itemCount === undefined ?
     null : (
@@ -89,4 +88,4 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
     );
 }
 
-export default LibraryBrowserPickButton;
+export default React.memo(LibraryBrowserPickButton);
