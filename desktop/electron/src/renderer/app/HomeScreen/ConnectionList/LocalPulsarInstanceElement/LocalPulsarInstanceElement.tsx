@@ -20,6 +20,7 @@ import { ListPulsarDistributions } from '../../../../../main/api/local-pulsar-di
 import PulsarDistributionPicker from './LocalPulsarInstanceEditor/PulsarDistributionPickerButton/PulsarDistributionPicker/PulsarDistributionPicker';
 import { cloneDeep } from 'lodash';
 import { usePrevious } from '../../../hooks/use-previous';
+import { colorsByName } from '../../../../ui/ColorPickerButton/ColorPicker/color-palette';
 
 const getInstalledPulsarVersions = () => {
   const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
@@ -233,10 +234,22 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
     (pulsarProcessStatus !== undefined && pulsarProcessStatus !== 'unknown') ||
     (dekafDemoappProcessStatus !== undefined && dekafDemoappProcessStatus !== 'unknown');
 
+  const colorElement = props.pulsarInstance.metadata.color === undefined ? null : (
+    <div
+      style={{
+        width: '24rem',
+        height: '24rem',
+        background: colorsByName[props.pulsarInstance.metadata.color],
+        marginRight: '12rem',
+        borderRadius: '4rem'
+      }}
+    />
+  );
+
   return (
     <div className={s.LocalPulsarInstanceElement}>
       <div className={s.Name}>
-        <H3>{props.pulsarInstance.metadata.name}</H3>
+        <H3>{colorElement}{props.pulsarInstance.metadata.name}</H3>
       </div>
 
       <div style={{ position: 'absolute', top: '12rem', right: '8rem', fontWeight: 'var(--font-weight-bold)', color: 'var(--accent-color-blue)', opacity: '0.6', fontSize: '12rem', textAlign: 'right' }}>
