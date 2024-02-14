@@ -1,6 +1,6 @@
 val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
-val pulsarVersion = "3.1.1"
+val pulsarVersion = "3.2.0"
 val circeVersion = "0.14.5"
 val zioVersion = "2.0.18"
 val zioConfigVersion = "3.0.7"
@@ -37,6 +37,7 @@ Compile / sourceGenerators += Def.task {
         s"""package buildinfo
        |object ExtraBuildInfo {
        |  val isBinaryBuild = ${System.getProperty("isBinaryBuild") == "true"}
+       |  val isDesktopBuild = ${System.getProperty("isDesktopBuild") == "true"}
        |}
        |""".stripMargin
     )
@@ -64,7 +65,7 @@ lazy val root = project
         Compile / packageDoc / mappings := Seq(), // https://github.com/sbt/sbt-native-packager/issues/651
         libraryDependencies ++= Seq(
             // Logging
-            "ch.qos.logback" % "logback-classic" % "1.4.7",
+            "ch.qos.logback" % "logback-classic" % "1.4.14",
             "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
             // Pulsar
             "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
@@ -107,7 +108,7 @@ lazy val root = project
             "com.google.guava" % "guava" % "31.1-jre",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
             "com.lihaoyi" %% "pprint" % "0.8.1", // Useful during development
-            "io.netty" % "netty-all" % "4.1.93.Final",
+            "io.netty" % "netty-all" % "4.1.105.Final",
             "com.fasterxml.uuid" % "java-uuid-generator" % "4.2.0"
         )
     )

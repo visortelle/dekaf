@@ -184,12 +184,16 @@ def readConfig =
     for
         yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
         envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
-        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).orElseSucceed(defaultConfig)
+        maybeYamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).either
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(defaultConfig)
 
         config <- ZIO.succeed {
-            mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig))
+          val appConfig = maybeYamlConfig match
+            case Right(yamlConfig) => mergeConfigs(envConfig, yamlConfig)
+            case Left(_) => envConfig
+
+          mergeConfigs(defaultConfig, appConfig)
         }
     yield config
 
