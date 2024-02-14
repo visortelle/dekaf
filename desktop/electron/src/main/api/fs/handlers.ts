@@ -28,7 +28,7 @@ export function handleGetPaths(event: Electron.IpcMainEvent): void {
 }
 
 export const getUserDataDir = () => {
-  // The default userDataDir is ~/Library/Application Support.
+  // The default Electron userDataDir is ~/Library/Application Support.
   // It contains the space in the path, and Pulsar <=3.1.2 is unable to run with spaces in path
   const isMac = os.platform() === "darwin";
   if (isMac) {
