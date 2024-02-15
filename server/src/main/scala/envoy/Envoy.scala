@@ -2,6 +2,7 @@ package envoy
 
 import zio.*
 import zio.process.{Command, ProcessOutput}
+import org.apache.commons.lang3.SystemUtils
 import _root_.config.readConfig
 
 import java.io.File
@@ -17,7 +18,7 @@ object Envoy:
             )
         )
 
-        envoyBinPath <- getEnvoyBinPath
+        envoyBinPath <- ZIO.succeed(if SystemUtils.IS_OS_WINDOWS then "envoy.exe" else "envoy.bin")
         configPath <- getEnvoyConfigPath(envoyConfigProps).map(_.toString)
 
         _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $configPath")
