@@ -250,18 +250,18 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   await fsExtra.ensureDir(path.dirname(instancePaths.standaloneConfPath));
 
   // // XXX - maybe not a good idea to always remove ledgers LOCK before start
-  // const ledgersLock = path.join(instancePaths.bookkeeperDir, 'current', 'ledgers', 'LOCK');
-  // if (fs.existsSync(ledgersLock)) {
-  //   console.info(`Removing ledgers LOCK file at ${ledgersLock}`);
-  //   await fsExtra.removeSync(ledgersLock);
-  // }
+  const ledgersLock = path.join(instancePaths.bookkeeperDir, 'current', 'ledgers', 'LOCK');
+  if (fs.existsSync(ledgersLock)) {
+    console.info(`Removing ledgers LOCK file at ${ledgersLock}`);
+    await fsExtra.removeSync(ledgersLock);
+  }
 
-  // // XXX - maybe not a good idea to always remove metadata LOCK before start
-  // const metadataLock = path.join(instancePaths.metadataDir, 'LOCK');
-  // if (fs.existsSync(metadataLock)) {
-  //   console.info(`Removing metadata LOCK file at ${metadataLock}`);
-  //   await fsExtra.removeSync(metadataLock);
-  // }
+  // XXX - maybe not a good idea to always remove metadata LOCK before start
+  const metadataLock = path.join(instancePaths.metadataDir, 'LOCK');
+  if (fs.existsSync(metadataLock)) {
+    console.info(`Removing metadata LOCK file at ${metadataLock}`);
+    await fsExtra.removeSync(metadataLock);
+  }
 
   async function ensureFreePortOrThrow(port: number) {
     const isUsed = await tcpPortUsed.check(port);
