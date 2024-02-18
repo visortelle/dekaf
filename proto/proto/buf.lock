@@ -9,5 +9,5 @@ deps:
   - remote: buf.build
     owner: grpc
     repository: grpc
-    commit: 575a337f8c494410880308ca49987ecd
-    digest: shake256:e9a4d2dad62332ca2c81116896838f94d47c38a476b4bda6996c20f9e4bfaf32ca47ac236fe92700ab34a48b29ca1e0c30f10753d037c2b0f7319d9a910bd91e
+    commit: 2839ffc44e6d44ddbdc1e9f91c93c59f
+    digest: shake256:f7f72fd47d851ef6e41c47bd22febfddbd2b17282bd73e7387d96fb7ae3c961f46b6edb7c6da6aa54653dee67e67c6753ae2abb40966635325a0dd2ef06037c1

@@ -17,6 +17,7 @@ import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker
 import { sendMessage } from "../api/send-message";
 import { getConnectionConfig } from "../remote-pulsar-connections/handlers";
 import tcpPortUsed from 'tcp-port-used';
+import nodeProcess from 'node:process';
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -407,6 +408,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     "DEKAF_DATA_DIR": dekafDataDir,
     "DEKAF_PORT": String(port),
     "DEKAF_PUBLIC_BASE_URL": publicBaseUrl,
+    "PATH": `${nodeProcess.env['PATH']}:${paths.envoyDir}`
   };
 
   if (connection.dekafLicenseId.length) {

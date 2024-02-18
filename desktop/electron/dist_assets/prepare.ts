@@ -1,6 +1,9 @@
 import path from 'node:path';
 import os from 'node:os';
+import fs from 'node:fs';
+import fsExtra from 'fs-extra';
 import { DownloaderTarget, download } from './downloader/downloader';
+import { execSync } from 'node:child_process';
 
 const graalvmArchiveName = `graalvm-bin-archive`;
 const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarget[] => {
@@ -85,6 +88,20 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
   ]
 };
 
+function getEnvoy(destDir: string) {
+  fsExtra.ensureDirSync(destDir);
+
+  const projectRoot = path.join(process.cwd(), '..', '..');
+  const envoyBinRelToProjectRoot = execSync(path.join(projectRoot, 'envoy', 'getEnvoyDir.scala'), { encoding: 'utf-8' }).trim();
+  const envoyBinSrc = path.resolve(projectRoot, envoyBinRelToProjectRoot).trim();
+
+  const envoyBinDest = path.join(destDir, path.basename(envoyBinSrc));
+
+  console.info(`Copying envoy from`, envoyBinSrc, 'to', envoyBinDest);
+
+  fs.copyFileSync(envoyBinSrc, envoyBinDest);
+}
+
 async function prepare() {
   const platform = os.platform();
   const arch = os.arch();
@@ -121,6 +138,8 @@ async function prepare() {
     unpack: { strip: 1 }
   }
   await download(dekafDemoappDist, { onError });
+
+  getEnvoy(path.resolve(path.join(distAssetsOutDir, 'envoy')));
 }
 
 prepare();

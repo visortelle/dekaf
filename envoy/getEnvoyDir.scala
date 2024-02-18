@@ -45,6 +45,5 @@ def getEnvoyBin: String =
         case (Windows(), Amd64()) => "envoy/windows/amd64/envoy.exe"
         case _                   => throw new Exception(s"Unsupported OS/architecture combination: $currentOs/$currentArch")
 
-object Main extends App {
+object Main extends App:
   println(getEnvoyBin)
-}
