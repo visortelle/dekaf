@@ -89,7 +89,7 @@ object NamespacePlanExecutor:
     _ <- ZIO.attempt {
       adminClient.namespaces.createNamespace(namespaceFqn)
     }
-    _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.allocateResources).withParallelism(10)
+    _ <- ZIO.foreachDiscard(namespacePlan.topics.values)(TopicPlanExecutor.allocateResources)
     _ <- ZIO.attempt(namespacePlan.afterAllocation())
   } yield namespacePlan
 

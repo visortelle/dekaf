@@ -59,8 +59,7 @@ object TenantPlanExecutor:
       adminClient.tenants.createTenant(tenantPlan.name, tenantInfo)
     }
     _ <- ZIO
-      .foreachParDiscard(tenantPlan.namespaces.values)(NamespacePlanExecutor.allocateResources)
-      .withParallelism(10)
+      .foreachDiscard(tenantPlan.namespaces.values)(NamespacePlanExecutor.allocateResources)
   } yield tenantPlan
 
   def start(tenantPlan: TenantPlan): Task[Unit] = for {

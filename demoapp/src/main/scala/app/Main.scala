@@ -31,7 +31,7 @@ object DekafDemoApp extends ZIOAppDefault:
 
     _ <- ZIO.logInfo("Starting app...")
     _ <- DemoAppTopicConfig.logDemoAppConfig
-    _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.allocateResources(tenantPlan))
+    _ <- ZIO.foreachDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.allocateResources(tenantPlan))
     _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.start(tenantPlan))
   } yield ()
 
