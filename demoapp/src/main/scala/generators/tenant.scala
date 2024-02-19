@@ -3,6 +3,7 @@ package generators
 import zio.*
 import _root_.client.{adminClient, pulsarClient}
 import org.apache.pulsar.common.policies.data.TenantInfo
+import scala.util.{Try, Success, Failure}
 
 import scala.jdk.CollectionConverters.*
 
@@ -55,8 +56,13 @@ object TenantPlanExecutor:
         _ <- ZIO.logInfo(s"Allocating resources for tenant ${tenantPlan.name}")
         clusters <- ZIO.attempt(adminClient.clusters.getClusters.asScala.toList)
         _ <- ZIO.attempt {
-            val tenantInfo = TenantInfo.builder.allowedClusters(clusters.toSet.asJava).build
-            adminClient.tenants.createTenant(tenantPlan.name, tenantInfo)
+            val isTenantExists = Try(adminClient.tenants.getTenantInfo(tenantPlan.name)) match
+              case Success(_) => true
+              case Failure(_) => false
+
+            if !isTenantExists then
+              val tenantInfo = TenantInfo.builder.allowedClusters(clusters.toSet.asJava).build
+              adminClient.tenants.createTenant(tenantPlan.name, tenantInfo)
         }
         _ <- ZIO
             .foreachDiscard(tenantPlan.namespaces.values)(NamespacePlanExecutor.allocateResources)

@@ -3,9 +3,11 @@ package generators
 import _root_.client.{adminClient, pulsarClient}
 import app.DekafDemoApp.allConsumers
 import monocle.syntax.all.*
+import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.schema.SchemaInfo
 import zio.*
+import scala.util.{boundary, Failure, Success, Try}
 
 type TopicName = String
 type TopicIndex = Int
@@ -160,10 +162,15 @@ object TopicPlanExecutor:
             _ <- ZIO.logInfo(s"Allocating resources for topic ${topicPlan.name}")
             topicFqn <- ZIO.attempt(topicPlan.topicFqn)
             _ <- ZIO.attempt {
-                topicPlan.partitioning match
-                    case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
-                    case NonPartitioned() =>
-                        adminClient.topics.createNonPartitionedTopic(topicFqn)
+                val isTopicExists = Try(getIsTopicExists(adminClient, topicFqn)) match
+                    case Success(_) => true
+                    case Failure(_) => false
+
+                if !isTopicExists then
+                  topicPlan.partitioning match
+                      case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
+                      case NonPartitioned() =>
+                          adminClient.topics.createNonPartitionedTopic(topicFqn)
             }
             _ <- ZIO.foreachDiscard(topicPlan.schemaInfos) { schemaInfo =>
                 ZIO.attempt(adminClient.schemas.createSchema(topicFqn, schemaInfo))
@@ -199,3 +206,19 @@ object TopicPlanExecutor:
         _ <- ZIO.logInfo(s"Starting topic ${topicPlan.name}")
         _ <- ProducerPlanExecutor.startProduce(topicPlan) <&> TopicPlanExecutor.startConsume(topicPlan)
     } yield ()
+
+def getIsTopicExists(pulsarAdmin: PulsarAdmin, topicFqn: String): Boolean = boundary:
+  try
+    pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn)
+    boundary.break(true)
+  catch {
+    case _: Throwable =>
+      try {
+        pulsarAdmin.topics().getStats(topicFqn)
+        boundary.break(true)
+      } catch {
+        case _: Throwable => boundary.break(false)
+      }
+
+      boundary.break(false)
+  }

@@ -5,6 +5,7 @@ import _root_.demo.tenants.cqrs.shared.faker
 import com.google.protobuf.GeneratedMessageV3
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 import demo.tenants.cqrs.model.{Message as MessageDto, Randomizable, Schemable}
+import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.schema.SchemaInfo
 import org.apache.pulsar.client.api as pulsarClientApi
