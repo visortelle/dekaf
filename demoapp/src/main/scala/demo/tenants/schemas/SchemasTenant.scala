@@ -4,7 +4,7 @@ import generators.*
 import zio.*
 
 object SchemasTenant:
-  val tenantName = s"schema-types-${java.time.Instant.now().getEpochSecond}"
+  val tenantName = s"demo-schema-types"
 
   def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
       val namespacePlanGenerators = List(

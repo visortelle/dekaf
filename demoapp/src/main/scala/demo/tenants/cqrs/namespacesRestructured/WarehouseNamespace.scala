@@ -7,7 +7,7 @@ import com.tools.teal.pulsar.demoapp.warehouse.v1 as pb
 import com.tools.teal.pulsar.demoapp.dto.v1 as pbDto
 import demo.tenants.cqrs.model
 import demo.tenants.cqrs.shared.*
-import generators.{ConsumerPlanGenerator, Message, NamespacePlanGenerator, ProcessorMessageListenerBuilder, ProcessorPlanGenerator, ProcessorWorker, ProducerPlanGenerator, Serde, SubscriptionPlanGenerator, TenantName, TopicPlanGenerator}
+import generators.{ConsumerPlanGenerator, Message, NamespacePlanGenerator, NonPartitioned, Partitioned, Persistent, ProcessorMessageListenerBuilder, ProcessorPlanGenerator, ProcessorWorker, ProducerPlanGenerator, Serde, SubscriptionPlanGenerator, TenantName, TopicPlanGenerator}
 import org.apache.pulsar.client.api as pulsarClientApi
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema
 import zio.{Duration, Runtime, Schedule, Unsafe, ZIO}
@@ -24,7 +24,7 @@ object WarehouseNamespace:
     .build()
 
   def mkPlanGenerator(tenantName: TenantName) =
-    val namespaceName = "Warehouse"
+    val namespaceName = "warehouse"
 
     val producerCommandsPlanGenerators = List(
       ProducerPlanGenerator.make(
@@ -295,12 +295,12 @@ object WarehouseNamespace:
 
     val warehouseCommandsTopicPlanGenerator = TopicPlanGenerator.make(
       mkTenant = () => tenantName,
-      mkName = _ => "Commands",
+      mkName = _ => "commands",
       mkNamespace = () => namespaceName,
       mkProducersCount = i => producerCommandsPlanGenerators.size,
       mkProducerGenerator = producerIndex => producerCommandsPlanGenerators(producerIndex),
-      mkPartitioning = mkDefaultTopicPartitioning,
-      mkPersistency = mkDefaultPersistency,
+      mkPartitioning = _ => NonPartitioned(),
+      mkPersistency = _ => Persistent(),
       mkSchemaInfos = _ => List(warehouseCommandsSchemaInfo),
       mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.lightlyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
@@ -313,12 +313,12 @@ object WarehouseNamespace:
 
     val warehouseEventsTopicPlanGenerator = TopicPlanGenerator.make(
       mkTenant = () => tenantName,
-      mkName = _ => "Events",
+      mkName = _ => "events",
       mkNamespace = () => namespaceName,
       mkProducersCount = i => producerEventsPlanGenerators.size,
       mkProducerGenerator = producerIndex => producerEventsPlanGenerators(producerIndex),
-      mkPartitioning = mkDefaultTopicPartitioning,
-      mkPersistency = mkDefaultPersistency,
+      mkPartitioning = _ => Partitioned(8),
+      mkPersistency = _ => Persistent(),
       mkSchemaInfos = _ => List(warehouseEventsSchemaInfo),
       mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.moderatelyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,

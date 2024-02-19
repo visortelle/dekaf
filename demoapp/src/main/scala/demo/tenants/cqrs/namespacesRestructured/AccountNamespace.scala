@@ -24,7 +24,7 @@ object AccountNamespace:
     .build()
 
   def mkPlanGenerator = (tenantName: TenantName) =>
-    val namespaceName = "Account"
+    val namespaceName = "account"
 
     // These are "main" events, meaning that they are dictating a latter event
     val producerCommandsPlanGenerators = List(
@@ -371,12 +371,12 @@ object AccountNamespace:
 
     val accountCommandsTopicPlanGenerator = TopicPlanGenerator.make(
       mkTenant = () => tenantName,
-      mkName = _ => "Commands",
+      mkName = _ => "commands",
       mkNamespace = () => namespaceName,
       mkProducersCount = i => producerCommandsPlanGenerators.size,
       mkProducerGenerator = producerIndex => producerCommandsPlanGenerators(producerIndex),
-      mkPartitioning = mkDefaultTopicPartitioning,
-      mkPersistency = mkDefaultPersistency,
+      mkPartitioning = _ => NonPartitioned(),
+      mkPersistency = _ => Persistent(),
       mkSchemaInfos = _ => List(accountCommandsSchemaInfo),
       mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.moderatelyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
@@ -388,12 +388,12 @@ object AccountNamespace:
     )
     val accountEventsTopicPlanGenerator = TopicPlanGenerator.make(
       mkTenant = () => tenantName,
-      mkName = _ => "Events",
+      mkName = _ => "events",
       mkNamespace = () => namespaceName,
       mkProducersCount = i => producerEventsPlanGenerators.size,
       mkProducerGenerator = producerIndex => producerEventsPlanGenerators(producerIndex),
-      mkPartitioning = mkDefaultTopicPartitioning,
-      mkPersistency = mkDefaultPersistency,
+      mkPartitioning = _ => Partitioned(5),
+      mkPersistency = _ => Persistent(),
       mkSchemaInfos = _ => List(accountEventsSchemaInfo),
       mkSubscriptionsCount = i => DemoAppTopicConfig.SubscriptionAmount.heavilyLoadedTopic,
       mkSubscriptionType = _ => pulsarClientApi.SubscriptionType.Shared,
