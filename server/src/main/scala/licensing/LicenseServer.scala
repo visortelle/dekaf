@@ -66,7 +66,6 @@ object LicenseServer:
             println(s"License Token: ${if licenseToken.isEmpty || licenseToken == dekafDesktopFreeLicenseToken then "<not_provided>" else maskedToken}")
         }
         _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
-        config <- readConfig
         keygenClient <- ZIO.attempt {
             new KeygenClient(
                 licenseToken = licenseToken,
