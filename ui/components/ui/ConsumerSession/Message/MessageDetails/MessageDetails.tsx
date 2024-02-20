@@ -30,8 +30,9 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
       <Tabs<TabKey>
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}
-        tabs={{
-          value: {
+        tabs={[
+          {
+            key: 'value',
             title: 'Value',
             render: () => {
               return (
@@ -52,7 +53,8 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
               );
             }
           },
-          metadata: {
+          {
+            key: 'metadata',
             title: 'Metadata',
             render: () => {
               return (
@@ -74,7 +76,8 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
               );
             }
           },
-          properties: {
+          {
+            key: 'properties',
             title: propertiesFieldTitle,
             render: () => {
               return (
@@ -95,7 +98,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
               );
             }
           }
-        }}
+        ]}
       />
     </div>
   );

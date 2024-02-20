@@ -197,9 +197,10 @@ const Notes: React.FC<NotesProps> = (props) => {
     <div className={s.Notes}>
       <div className={s.NoteTabs}>
         <Tabs
-          tabs={Object.fromEntries(notesToShow.map(note => {
+          tabs={notesToShow.map(note => {
             const isFactoryNote = factoryNotes.some(n => n.metadata.id === note.metadata.id);
-            const tab: Tab = {
+            const tab: Tab<string> = {
+              key: note.metadata.id,
               title: note.metadata.name,
               render: () => (
                 <div className={s.MarkdownPreview}>
@@ -272,8 +273,8 @@ const Notes: React.FC<NotesProps> = (props) => {
                 </div>
               )
             };
-            return [note.metadata.id, tab];
-          }))}
+            return tab;
+          })}
           activeTab={selectedNoteId}
           onActiveTabChange={setSelectedNoteId}
           size='small'

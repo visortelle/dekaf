@@ -5,7 +5,8 @@ import closeIcon from './close.svg';
 import newTabIcon from './new-tab.svg';
 import SmallButton from '../SmallButton/SmallButton';
 
-export type Tab = {
+export type Tab<TK extends string> = {
+  key: TK,
   title: string | React.ReactElement;
   render: () => React.ReactNode;
   isRenderAlways?: boolean;
@@ -14,7 +15,7 @@ export type Tab = {
 }
 
 export type TabsProps<TK extends string> = {
-  tabs: Partial<Record<TK, Tab>>;
+  tabs: Tab<TK>[];
   activeTab: TK;
   onActiveTabChange: (tab: TK) => void;
   closeTitle?: string,
@@ -37,21 +38,17 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
     }
   }, [scrollToTabRef.current]);
 
-  const tabEntries = Array.isArray(tabs)
-    ? tabs.map(tabKey => [tabKey, { title: tabKey, render: () => null }] as [TabKey, Tab])
-    : Object.entries<Tab>(tabs as { [s: string]: Tab });
-
   return (
     <div className={`${s.Tabs} ${props.size === 'small' ? s.Small : ''} ${props.direction === 'vertical' ? s.TabsVertical : ''}`}>
       <div style={{ display: 'flex' }}>
         <div className={`${s.TabsList} ${props.direction === 'vertical' ? s.TabsListVertical : ''}`}>
-          {tabEntries.map(([tabKey, tab]) => {
+          {props.tabs.map((tab) => {
             return (
               <div
-                key={tabKey}
-                className={`${s.Tab} ${tabKey === props.activeTab ? s.ActiveTab : ''} ${props.direction === 'vertical' ? s.TabVertical : ''}`}
-                onClick={() => props.onActiveTabChange(tabKey as TabKey)}
-                ref={props.scrollToTabId === tabKey ? scrollToTabRef : undefined}
+                key={tab.key}
+                className={`${s.Tab} ${tab.key === props.activeTab ? s.ActiveTab : ''} ${props.direction === 'vertical' ? s.TabVertical : ''}`}
+                onClick={() => props.onActiveTabChange(tab.key as TabKey)}
+                ref={props.scrollToTabId === tab.key ? scrollToTabRef : undefined}
               >
                 <div className={s.TabTitle}>{tab.title}</div>
 
@@ -84,9 +81,9 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
       </div>
 
       <div className={s.TabContent}>
-        {tabEntries.map(([tabKey, tab]) => {
+        {props.tabs.map((tab) => {
           return (
-            <TabContent key={tabKey} isShow={props.activeTab === tabKey} isRenderAlways={tab.isRenderAlways}>
+            <TabContent key={tab.key} isShow={props.activeTab === tab.key} isRenderAlways={tab.isRenderAlways}>
               {tab.render()}
             </TabContent>
           );

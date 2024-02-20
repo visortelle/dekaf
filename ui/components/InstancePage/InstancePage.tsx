@@ -94,22 +94,6 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               active: Boolean(matchPath(routes.instance.resourceGroups._.path, pathname))
             },
             {
-              linkTo: '',
-              text: "Produce",
-              onClick: () => { },
-              type: "regular",
-              position: "right",
-              active: false
-            },
-            {
-              linkTo: '',
-              text: "Consume",
-              onClick: () => { },
-              type: "regular",
-              position: "right",
-              active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
-            },
-            {
               linkTo: routes.instance.createTenant._.get(),
               text: 'Create Tenant',
               onClick: () => { },
