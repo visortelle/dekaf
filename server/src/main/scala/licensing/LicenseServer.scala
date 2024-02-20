@@ -12,8 +12,16 @@ import java.time.temporal.ChronoField
 val KeygenAccountId = "add36df4-cf52-4909-b352-51318cb23d99"
 val KeygenApiUrl = "https://api.keygen.sh"
 
-val desktopFreeLicenseId = "33a8cc38-5062-4f30-91d6-31b0797ea9d0"
-val desktopFreeLicenseToken = "prod-f6339ce7067c062724ca5e2bb2d36690b3637aed1c5f93e740148d4f1f2e4f6av3"
+val dekafFreeLicenseId = "1030ea22-a6aa-4536-8bc6-b68a1c60f060"
+val dekafFreeLicenseToken = "activ-d0eb6d34c548e19db6484f381089d7adv3"
+
+val dekafDesktopFreeLicenseId = "33a8cc38-5062-4f30-91d6-31b0797ea9d0"
+val dekafDesktopFreeLicenseToken = "activ-e1efa74db369bc80191f076b8c786acav3"
+
+val isDesktopBuild = buildinfo.ExtraBuildInfo.isDesktopBuild
+
+val freeLicenseId = if isDesktopBuild then dekafDesktopFreeLicenseId else dekafFreeLicenseId
+val freeLicenseToken = if isDesktopBuild then dekafDesktopFreeLicenseToken else dekafFreeLicenseToken
 
 val Graffiti =
     """
@@ -48,19 +56,17 @@ object LicenseServer:
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
-        licenseId <- ZIO.attempt(config.licenseId.getOrElse(desktopFreeLicenseId))
-        licenseToken <- ZIO.attempt(config.licenseToken.getOrElse(desktopFreeLicenseToken))
+        licenseId <- ZIO.attempt(config.licenseId.getOrElse(freeLicenseId))
+        licenseToken <- ZIO.attempt(config.licenseToken.getOrElse(freeLicenseToken))
         _ <- ZIO.attempt {
             val maskedToken = {
                 val charsToMask = licenseToken.length - 4
                 "*" * charsToMask + licenseToken.drop(charsToMask)
             }
-            println(s"License ID: ${if licenseId.isEmpty || licenseId == desktopFreeLicenseId then "<not_provided>" else licenseId}")
-            println(s"License Token: ${if licenseToken.isEmpty || licenseToken == desktopFreeLicenseToken then "<not_provided>" else maskedToken}")
+            println(s"License ID: ${if licenseId.isEmpty || licenseId == dekafDesktopFreeLicenseId then "<not_provided>" else licenseId}")
+            println(s"License Token: ${if licenseToken.isEmpty || licenseToken == dekafDesktopFreeLicenseToken then "<not_provided>" else maskedToken}")
         }
         _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
-        
-        config <- readConfig
         keygenClient <- ZIO.attempt {
             new KeygenClient(
                 licenseToken = licenseToken,
@@ -109,7 +115,7 @@ object LicenseServer:
         config <- readConfig
         keygenClient <- ZIO.attempt {
             new KeygenClient(
-                licenseToken = config.licenseToken.getOrElse(desktopFreeLicenseToken),
+                licenseToken = config.licenseToken.getOrElse(freeLicenseToken),
                 keygenApiUrl = KeygenApiUrl,
                 keygenAccountId = KeygenAccountId
             )

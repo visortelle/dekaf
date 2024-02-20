@@ -255,10 +255,10 @@ async function resolveUrlRedirects(url: string, maxRedirects: number): Promise<s
 
 async function unzipFile(source: string, destination: string) {
   return new Promise<void>(async (resolve, reject) => {
-    try {      
+    try {
       await fsExtra.ensureDir(destination);
 
-      yauzl.open(source, {lazyEntries: true}, (err, zipFile) => {
+      yauzl.open(source, { lazyEntries: true }, (err, zipFile) => {
         if (err) {
           zipFile.close();
           reject(err);
@@ -276,7 +276,7 @@ async function unzipFile(source: string, destination: string) {
             strippedFileName = path.join(...strippedFileName);
 
             const fullPath = path.join(destination, strippedFileName);
-  
+
             const dirPath = path.dirname(fullPath);
 
             await fsExtra.ensureDir(dirPath);
@@ -284,7 +284,7 @@ async function unzipFile(source: string, destination: string) {
             if (/\/$/.test(strippedFileName)) {
               await fsExtra.ensureDir(path.join(destination, strippedFileName));
               zipFile.readEntry();
-            } else {             
+            } else {
               zipFile.openReadStream(entry, (readErr, readStream) => {
                 if (readErr) {
                   zipFile.close();
@@ -293,9 +293,9 @@ async function unzipFile(source: string, destination: string) {
                 }
 
                 const file = fs.createWriteStream(path.join(destination, strippedFileName));
-                
+
                 readStream.pipe(file);
-                
+
                 file.on('finish', () => {
                   // Wait until the file is finished writing, then read the next entry.
                   // @ts-ignore: Typing for close() is wrong.
@@ -305,7 +305,7 @@ async function unzipFile(source: string, destination: string) {
 
                   file.on('error', (err) => {
                     zipFile.close();
-                    
+
                     reject(err);
                   });
                 });

@@ -70,7 +70,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
       return res;
     },
-    { refreshInterval: 15_000 }
+    { refreshInterval: 5_000 }
   );
 
   if (statsError !== undefined) {
@@ -168,8 +168,9 @@ const Overview: React.FC<OverviewProps> = (props) => {
             <Tabs<TabKey>
               activeTab={activeTab}
               onActiveTabChange={setActiveTab}
-              tabs={{
-                'stats': {
+              tabs={[
+                {
+                  key: 'stats',
                   title: 'Statistics',
                   render: () => (
                     <div className={s.Tab}>
@@ -183,7 +184,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
                     </div>
                   )
                 },
-                'stats-internal': {
+                {
+                  key: 'stats-internal',
                   title: 'Internal Statistics',
                   render: () => (
                     <div className={s.Tab}>
@@ -196,7 +198,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                     </div>
                   )
                 }
-              }}
+              ]}
             />
           </div>
         </div>

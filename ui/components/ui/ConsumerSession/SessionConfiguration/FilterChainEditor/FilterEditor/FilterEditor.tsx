@@ -59,13 +59,11 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
           value={item}
           itemType='message-filter'
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedMessageFilter
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedMessageFilter
           })}
           onChange={(item) => {

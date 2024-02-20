@@ -58,13 +58,11 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
           value={item}
           itemType='basic-message-filter-target'
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedBasicMessageFilterTarget
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedBasicMessageFilterTarget
           })}
           onChange={(item) => {

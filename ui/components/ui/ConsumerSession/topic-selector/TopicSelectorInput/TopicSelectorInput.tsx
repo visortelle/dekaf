@@ -49,7 +49,10 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     `${props.libraryContext.pulsarResource.topicPersistency}://${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}/${props.libraryContext.pulsarResource.topic}` :
     undefined;
 
-  const topicSelector = topicSelectorFromManagedSpec(itemSpec, topicFqn);
+  const topicSelector = useMemo(
+    () => topicSelectorFromManagedSpec(itemSpec, topicFqn),
+    [itemSpec, topicFqn]
+  );
 
   const namespaceFqn = (props.libraryContext.pulsarResource.type === 'namespace' || props.libraryContext.pulsarResource.type === 'topic') ?
     `${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}` :
@@ -70,13 +73,11 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         value={item}
         itemType='topic-selector'
         onPick={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
+          type: 'value',
           val: item as ManagedTopicSelector
         })}
         onSave={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
+          type: 'value',
           val: item as ManagedTopicSelector
         })}
         onChange={(item) => {

@@ -46,13 +46,11 @@ const DeserializerInput: React.FC<DeserializerInputProps> = (props) => {
           value={item}
           itemType='deserializer'
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedDeserializer
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedDeserializer
           })}
           onChange={(item) => {

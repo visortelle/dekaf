@@ -1,6 +1,5 @@
 import React from 'react';
 import s from './NamespaceBundlesEditor.module.css'
-import stt from '../../../ui/Tabs/Tabs.module.css';
 import * as pbc from "../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
 import * as pbn from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import Tabs from "../../../ui/Tabs/Tabs";
@@ -29,7 +28,7 @@ export type NamespaceBundlesEditorProps = {
 const NamespaceBundlesEditor: React.FC<NamespaceBundlesEditorProps> = (props) => {
   const modals = Modals.useContext();
   const namespaceFqn = `${props.tenant}/${props.namespace}`;
-  const { notifyError, notifySuccess } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
   const { namespaceServiceClient, clustersServiceClient } = GrpcClient.useContext();
   const [activeTab, setActiveTab] = React.useState<string | undefined>();
 
@@ -123,7 +122,8 @@ const NamespaceBundlesEditor: React.FC<NamespaceBundlesEditorProps> = (props) =>
               activeTab={activeTab}
               onActiveTabChange={setActiveTab}
               size='small'
-              tabs={Object.fromEntries(clusters.map(cluster => [cluster, ({
+              tabs={clusters.map(cluster => ({
+                key: cluster,
                 title: cluster,
                 render: () => {
                   return (
@@ -222,7 +222,7 @@ const NamespaceBundlesEditor: React.FC<NamespaceBundlesEditorProps> = (props) =>
                     </div>
                   )
                 }
-              })]))}
+              }))}
             />
           )
         }

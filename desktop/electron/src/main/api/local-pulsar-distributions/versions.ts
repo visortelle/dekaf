@@ -54,6 +54,20 @@ export const pulsarReleaseLines: PulsarReleaseLine[] = [
     ]
   },
   {
+    minorVersion: '3.2',
+    versionType: 'regular',
+    releasedAt: '2023-02-05T00:00:00Z',
+    activeSupportEndsAt: '2024-08-05T00:00:00Z',
+    securitySupportEndsAt: '2024-08-05T00:00:00Z',
+    knownVersions: [
+      {
+        version: "3.2.0",
+        downloadUrl: "https://www.apache.org/dyn/closer.lua/pulsar/pulsar-3.2.0/apache-pulsar-3.2.0-bin.tar.gz?action=download",
+        sha512: "194b3a4d51b972ec58c8f2ae4ccaadb3cac229984ea5e7e8a396a1210d4b3adde83ab30ef31c9aa384942f81959da91ab250f5689cd010b4ae71a2b10956af2c"
+      }
+    ]
+  },
+  {
     minorVersion: '2.11',
     versionType: 'regular',
     releasedAt: '2023-01-11T00:00:00Z',

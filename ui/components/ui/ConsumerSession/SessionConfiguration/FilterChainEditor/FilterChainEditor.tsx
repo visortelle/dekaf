@@ -62,13 +62,11 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           itemType='message-filter-chain'
           value={item}
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedMessageFilterChain
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedMessageFilterChain
           })}
           onChange={(item) => {

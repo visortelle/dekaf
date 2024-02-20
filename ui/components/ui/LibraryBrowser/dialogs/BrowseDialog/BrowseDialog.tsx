@@ -33,7 +33,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   const [selectedItemRefreshKey, setSelectedItemRefreshKey] = useState<number>(0);
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const [searchResultsRefreshKey, setSearchResultsRefreshKey] = useState<number>(0);
-  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext)]);
+  const [searchInContexts, setSearchInContexts] = useState<ResourceMatcher[]>([resourceMatcherFromContext(props.libraryContext, 'derive-from-context')]);
   const [isSelectRequested, setIsSelectRequested] = useState(false);
 
   useEffect(() => {

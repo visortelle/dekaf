@@ -67,13 +67,11 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         value={item}
         itemType='consumer-session-start-from'
         onPick={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
+          type: 'value',
           val: item as ManagedConsumerSessionStartFrom
         })}
         onSave={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
+          type: 'value',
           val: item as ManagedConsumerSessionStartFrom
         })}
         onChange={(item) => {

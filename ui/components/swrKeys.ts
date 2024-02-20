@@ -1,6 +1,15 @@
 import stringify from "safe-stable-stringify";
+import { ResourceMatcher } from "./ui/LibraryBrowser/model/resource-matchers";
+import { ManagedItemType } from "./ui/LibraryBrowser/model/user-managed-items";
 
 export const swrKeys = {
+  dekaf: {
+    library: {
+      itemCount: {
+        _: (props: { itemType: ManagedItemType, availableForContexts: ResourceMatcher[] }) => [props.itemType, JSON.stringify(props.availableForContexts)]
+      }
+    }
+  },
   pulsar: {
     auth: {
       credentials: {
