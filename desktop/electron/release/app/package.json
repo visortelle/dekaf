@@ -1,7 +1,7 @@
 {
-  "name": "electron-react-boilerplate",
-  "version": "1.0.0-beta",
-  "description": "A foundation for scalable desktop apps",
+  "name": "dekaf",
+  "version": "1.0.0",
+  "description": "Modern UI for Apache Pulsar",
   "license": "MIT",
   "author": {
     "name": "Electron React Boilerplate Maintainers",

@@ -11,7 +11,7 @@ import path from 'node:path';
 import { ErrorHappened } from "../api/types";
 import axios from 'axios';
 import { LocalPulsarInstance } from "../local-pulsar-instances/types";
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow, nativeImage } from "electron";
 import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 import { sendMessage } from "../api/send-message";
@@ -87,12 +87,21 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
 
   sendMessage(apiChannel, req);
 
+  const resourcePath = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../../../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(resourcePath, ...paths);
+  };
+
   if (proc.type.type === "dekaf" && status === 'ready') {
     const url = proc.type.runtimeConfig.publicBaseUrl;
     const win = new BrowserWindow({
       width: 1280,
       height: 800,
       show: false,
+      icon: nativeImage.createFromPath(getAssetPath("iconWithoutText.png")),
       backgroundColor: '#f5f5f5',
     });
 
@@ -216,8 +225,12 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
   if (win !== undefined && !win.isDestroyed()) {
     win.close();
   }
-
-  proc.childProcess.kill();
+   
+  if(proc.childProcess.pid !== undefined && process.platform === 'win32') {
+    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T']) 
+  } else {
+    proc.childProcess.kill();
+  }
 
   updateProcessStatus(arg.processId, 'stopping');
 }
@@ -333,8 +346,8 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   }
 
   const env = {
+    ...instanceConfig.config.env,
     'JAVA_HOME': paths.javaHome,
-    ...instanceConfig.config.env
   };
 
   const processId = uuid();
@@ -374,8 +387,8 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
     });
   });
 
-  process.on('exit', (code) => {
-    if (code === 0 || code === sigTermExitCode || code === null) {
+  process.on('exit', (code, signal) => {
+    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
       return;
@@ -557,8 +570,8 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     });
   });
 
-  process.on('exit', (code) => {
-    if (code === 0 || code === sigTermExitCode || code === null) {
+  process.on('exit', (code, signal) => {
+    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
       return;
@@ -626,8 +639,8 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
     });
   });
 
-  process.on('exit', (code) => {
-    if (code === 0 || code === sigTermExitCode || code === null) {
+  process.on('exit', (code, signal) => {
+    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
       updateProcessStatus(processId, 'unknown');
       deleteProcess(processId);
       return;

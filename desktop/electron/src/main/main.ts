@@ -49,12 +49,12 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  const RESOURCES_PATH = app.isPackaged
+  const resourcePath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
 
   const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
+    return path.join(resourcePath, ...paths);
   };
 
   mainWindow = new BrowserWindow({
@@ -63,8 +63,11 @@ const createWindow = async () => {
     height: 728,
     minWidth: 972,
     maxWidth: 972,
-    icon: getAssetPath('icon.png'),
+    icon: getAssetPath('iconWithoutText.png'),
+    autoHideMenuBar: true,
+    maximizable: false,
     webPreferences: {
+      devTools: isDebug,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -72,6 +75,10 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+
+  mainWindow.on('maximize', () => {
+    mainWindow ? mainWindow.unmaximize() : {}
+  });
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {

@@ -5,9 +5,7 @@ import fs from 'node:fs';
 import fsAsync from 'node:fs/promises';
 import fsExtra from 'fs-extra';
 import tar from 'tar';
-import { pipeline } from 'node:stream';
-import zlib from 'node:zlib';
-import { promisify } from 'node:util';
+import yauzl from 'yauzl';
 import crypto from 'node:crypto';
 import streamAsync from 'stream/promises';
 
@@ -97,7 +95,7 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
       props?.onUnpackStart === undefined ? {} : props.onUnpackStart();
 
       if (target.unpack?.format === 'zip') {
-        await unzipFile(sourceArchive, destDir + '/abc');
+        await unzipFile(sourceArchive, destDir);
       } else {
         const readStream = fs.createReadStream(sourceArchive).pipe(tar.x({ strip, C: destDir }));
 
@@ -256,11 +254,78 @@ async function resolveUrlRedirects(url: string, maxRedirects: number): Promise<s
 }
 
 async function unzipFile(source: string, destination: string) {
-  const pipelineAsync = promisify(pipeline);
-  await pipelineAsync(
-    fs.createReadStream(source),
-    zlib.createUnzip(),
-    fs.createWriteStream(destination)
-  );
-}
+  return new Promise<void>(async (resolve, reject) => {
+    try {
+      await fsExtra.ensureDir(destination);
 
+      yauzl.open(source, { lazyEntries: true }, (err, zipFile) => {
+        if (err) {
+          zipFile.close();
+          reject(err);
+          return;
+        }
+
+        zipFile.readEntry();
+
+        zipFile.on('entry', async (entry) => {
+          try {
+            let pathSeparatorRegex = /[\\/]/
+            let strippedFileName = entry.fileName.split(pathSeparatorRegex);
+            strippedFileName.shift();
+
+            strippedFileName = path.join(...strippedFileName);
+
+            const fullPath = path.join(destination, strippedFileName);
+
+            const dirPath = path.dirname(fullPath);
+
+            await fsExtra.ensureDir(dirPath);
+
+            if (/\/$/.test(strippedFileName)) {
+              await fsExtra.ensureDir(path.join(destination, strippedFileName));
+              zipFile.readEntry();
+            } else {
+              zipFile.openReadStream(entry, (readErr, readStream) => {
+                if (readErr) {
+                  zipFile.close();
+                  reject(readErr);
+                  return;
+                }
+
+                const file = fs.createWriteStream(path.join(destination, strippedFileName));
+
+                readStream.pipe(file);
+
+                file.on('finish', () => {
+                  // Wait until the file is finished writing, then read the next entry.
+                  // @ts-ignore: Typing for close() is wrong.
+                  file.close(() => {
+                    zipFile.readEntry();
+                  });
+
+                  file.on('error', (err) => {
+                    zipFile.close();
+
+                    reject(err);
+                  });
+                });
+              });
+            }
+          } catch (e) {
+            zipFile.close();
+            reject(e);
+          }
+        });
+        zipFile.on('end', (err) => {
+          resolve();
+        });
+        zipFile.on('error', (err) => {
+          zipFile.close();
+          reject(err);
+        });
+      });
+    } catch (e) {
+      reject(e);
+    }
+  })
+}

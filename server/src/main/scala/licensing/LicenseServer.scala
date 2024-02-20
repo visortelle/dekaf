@@ -1,6 +1,6 @@
 package licensing
 
-import zio.*
+import zio.{System as SystemZIO, *}
 import keygen.{KeygenClient, *}
 
 import java.util.UUID
@@ -52,6 +52,7 @@ object LicenseServer:
             println(s"https://teal.tools")
             println(s"Built at: ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).toString}")
             println(s"More info: https://dekaf.io")
+            println(s"Java version: ${System.getProperty("java.version")}")
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
