@@ -85,6 +85,10 @@ const Library: React.FC<LibraryProps> = (props) => {
                       libraryContext={props.libraryContext}
                       availableForContexts={resourceMatchers}
                       onItemCount={(itemCount) => {
+                        if (itemCount === undefined) {
+                          return;
+                        }
+
                         setItemCountPerType(v => ({
                           ...v,
                           [itemType]: itemCount
