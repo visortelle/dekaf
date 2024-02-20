@@ -10,7 +10,7 @@ export type BrowseLibraryButtonProps = {
   itemType: ManagedItemType,
   libraryContext: LibraryContext,
   availableForContexts: ResourceMatcher[],
-  onItemCount: (count: number) => void,
+  onItemCount: (count: number | undefined) => void,
   isHideSelectButton?: boolean
 };
 

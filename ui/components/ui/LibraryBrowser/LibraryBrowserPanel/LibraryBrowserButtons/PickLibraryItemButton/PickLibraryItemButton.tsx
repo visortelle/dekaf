@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './PickLibraryItemButton.module.css'
 import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
@@ -20,7 +20,7 @@ export type LibraryBrowserPickButtonProps = {
   onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
   availableForContexts: ResourceMatcher[];
-  onItemCount?: (count: number) => void;
+  onItemCount?: (count: number | undefined) => void;
   isHideSelectButton?: boolean
 };
 
@@ -57,6 +57,12 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
   if (itemCountError) {
     notifyError(`Unable to get library item count. ${props.itemType}`);
   }
+
+  useEffect(() => {
+    if (props.onItemCount !== undefined) {
+      props.onItemCount(itemCount);
+    }
+  }, [itemCount]);
 
   return itemCount === undefined ?
     null : (
