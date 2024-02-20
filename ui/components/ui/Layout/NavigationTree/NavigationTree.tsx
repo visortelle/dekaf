@@ -155,6 +155,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [filterQuery]);
 
   const navigateToPath = (path: TreePath) => {
+    if (path.length === 0) {
+      scrollToItem(0);
+      return;
+    }
+
     setScrollToPath((scrollToPath) => ({ ...scrollToPath, path, cursor: 0, state: 'in-progress' }));
     setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(path)]));
   }
@@ -503,6 +508,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             onClick={() => navigateToPath(props.selectedNodePath)}
             appearance='borderless-semitransparent'
             type='regular'
+            disabled={filterPath.length > 0}
           />
         </div>
       </div>
