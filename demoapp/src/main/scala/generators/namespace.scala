@@ -3,6 +3,7 @@ package generators
 import _root_.client.adminClient
 import zio.*
 import scala.util.{Failure, Success, Try}
+import scala.jdk.CollectionConverters.*
 
 type NamespaceName = String
 type NamespaceIndex = Int
@@ -87,8 +88,10 @@ object NamespacePlanExecutor:
         _ <- ZIO.logInfo(s"Allocating resources for namespace ${namespacePlan.name}")
         namespaceFqn <- ZIO.attempt(mkNamespaceFqn(namespacePlan))
         _ <- ZIO.attempt {
-            val isNamespaceExists = Try(adminClient.namespaces.getPolicies(namespaceFqn)) match
-                case Success(_) => true
+            val isNamespaceExists = Try {
+                adminClient.namespaces.getNamespaces(namespacePlan.tenant).contains(namespaceFqn)
+            } match
+                case Success(isExists) => isExists
                 case Failure(_) => false
 
             if !isNamespaceExists then adminClient.namespaces.createNamespace(namespaceFqn)

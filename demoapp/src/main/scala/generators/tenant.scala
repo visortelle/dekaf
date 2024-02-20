@@ -56,9 +56,11 @@ object TenantPlanExecutor:
         _ <- ZIO.logInfo(s"Allocating resources for tenant ${tenantPlan.name}")
         clusters <- ZIO.attempt(adminClient.clusters.getClusters.asScala.toList)
         _ <- ZIO.attempt {
-            val isTenantExists = Try(adminClient.tenants.getTenantInfo(tenantPlan.name)) match
-              case Success(_) => true
-              case Failure(_) => false
+            val isTenantExists = {
+              Try(adminClient.tenants.getTenants.asScala.contains(tenantPlan.name)) match
+                case Success(isExists) => isExists
+                case Failure(_) => false
+            }
 
             if !isTenantExists then
               val tenantInfo = TenantInfo.builder.allowedClusters(clusters.toSet.asJava).build

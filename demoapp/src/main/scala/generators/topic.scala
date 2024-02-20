@@ -7,7 +7,8 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.schema.SchemaInfo
 import zio.*
-import scala.util.{boundary, Failure, Success, Try}
+import scala.util.{Failure, Success, Try}
+import scala.jdk.CollectionConverters.*
 
 type TopicName = String
 type TopicIndex = Int
@@ -162,15 +163,13 @@ object TopicPlanExecutor:
             _ <- ZIO.logInfo(s"Allocating resources for topic ${topicPlan.name}")
             topicFqn <- ZIO.attempt(topicPlan.topicFqn)
             _ <- ZIO.attempt {
-                val isTopicExists = Try(getIsTopicExists(adminClient, topicFqn)) match
-                    case Success(_) => true
-                    case Failure(_) => false
+                val isTopicExists = getIsTopicExists(adminClient, topicFqn)
 
                 if !isTopicExists then
-                  topicPlan.partitioning match
-                      case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
-                      case NonPartitioned() =>
-                          adminClient.topics.createNonPartitionedTopic(topicFqn)
+                    topicPlan.partitioning match
+                        case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
+                        case NonPartitioned() =>
+                            adminClient.topics.createNonPartitionedTopic(topicFqn)
             }
             _ <- ZIO.foreachDiscard(topicPlan.schemaInfos) { schemaInfo =>
                 ZIO.attempt(adminClient.schemas.createSchema(topicFqn, schemaInfo))
@@ -207,18 +206,18 @@ object TopicPlanExecutor:
         _ <- ProducerPlanExecutor.startProduce(topicPlan) <&> TopicPlanExecutor.startConsume(topicPlan)
     } yield ()
 
-def getIsTopicExists(pulsarAdmin: PulsarAdmin, topicFqn: String): Boolean = boundary:
-  try
-    pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn)
-    boundary.break(true)
-  catch {
-    case _: Throwable =>
-      try {
-        pulsarAdmin.topics().getStats(topicFqn)
-        boundary.break(true)
-      } catch {
-        case _: Throwable => boundary.break(false)
-      }
+def getIsTopicExists(pulsarAdmin: PulsarAdmin, topicFqn: String): Boolean =
+    Try {
+        val topicFqnChunks = topicFqn.split('/')
+        val tenant = topicFqnChunks(2)
+        val namespace = topicFqnChunks(3)
+        val topic = topicFqnChunks(4)
 
-      boundary.break(false)
-  }
+        val partitionedTopics = pulsarAdmin.topics().getPartitionedTopicList(s"$tenant/$namespace").asScala.toVector
+        val nonPartitionedTopics = pulsarAdmin.topics().getList(s"$tenant/$namespace").asScala.toVector
+        val allTopics = partitionedTopics ++ nonPartitionedTopics
+
+        allTopics.contains(topicFqn)
+    } match
+        case Success(isExists) => isExists
+        case Failure(_)        => false
