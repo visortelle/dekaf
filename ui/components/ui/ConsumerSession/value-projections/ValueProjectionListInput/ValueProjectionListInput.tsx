@@ -49,13 +49,11 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
           value={item}
           itemType='value-projection-list'
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedValueProjectionList
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedValueProjectionList
           })}
           onChange={(item) => {

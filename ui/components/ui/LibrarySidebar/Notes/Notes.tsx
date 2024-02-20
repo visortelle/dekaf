@@ -44,7 +44,7 @@ const Notes: React.FC<NotesProps> = (props) => {
     const req = new pb.ListLibraryItemsRequest();
     req.setTypesList([mipb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT]);
 
-    const resourceMatcher = resourceMatcherFromContext(props.libraryContext);
+    const resourceMatcher = resourceMatcherFromContext(props.libraryContext, 'derive-from-context');
     const resourceMatcherPb = resourceMatcherToPb(resourceMatcher);
 
     req.setContextsList([resourceMatcherPb]);
@@ -89,7 +89,7 @@ const Notes: React.FC<NotesProps> = (props) => {
 
     const newNote: LibraryItem = {
       metadata: {
-        availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+        availableForContexts: [resourceMatcherFromContext(props.libraryContext, 'derive-from-context')],
         updatedAt: new Date().toISOString()
       },
       spec: markdownDocument
@@ -197,9 +197,10 @@ const Notes: React.FC<NotesProps> = (props) => {
     <div className={s.Notes}>
       <div className={s.NoteTabs}>
         <Tabs
-          tabs={Object.fromEntries(notesToShow.map(note => {
+          tabs={notesToShow.map(note => {
             const isFactoryNote = factoryNotes.some(n => n.metadata.id === note.metadata.id);
-            const tab: Tab = {
+            const tab: Tab<string> = {
+              key: note.metadata.id,
               title: note.metadata.name,
               render: () => (
                 <div className={s.MarkdownPreview}>
@@ -272,8 +273,8 @@ const Notes: React.FC<NotesProps> = (props) => {
                 </div>
               )
             };
-            return [note.metadata.id, tab];
-          }))}
+            return tab;
+          })}
           activeTab={selectedNoteId}
           onActiveTabChange={setSelectedNoteId}
           size='small'

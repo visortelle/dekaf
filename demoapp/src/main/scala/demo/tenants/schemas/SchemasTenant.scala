@@ -4,31 +4,31 @@ import generators.*
 import zio.*
 
 object SchemasTenant:
-  val tenantName = s"schema-types-${java.time.Instant.now().getEpochSecond}"
+    val tenantName = s"demo-schema-types"
 
-  def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
-      val namespacePlanGenerators = List(
-          namespaces.BooleanNamespace.mkPlanGenerator(tenantName),
-          namespaces.Int8Namespace.mkPlanGenerator(tenantName),
-          namespaces.Int16Namespace.mkPlanGenerator(tenantName),
-          namespaces.Int32Namespace.mkPlanGenerator(tenantName),
-          namespaces.Int64Namespace.mkPlanGenerator(tenantName),
-          namespaces.FloatNamespace.mkPlanGenerator(tenantName),
-          namespaces.DoubleNamespace.mkPlanGenerator(tenantName),
-          namespaces.StringNamespace.mkPlanGenerator(tenantName),
-          namespaces.BytesNamespace.mkPlanGenerator(tenantName),
-          namespaces.AvroNamespace.mkPlanGenerator(tenantName),
-          namespaces.JsonNamespace.mkPlanGenerator(tenantName),
-          namespaces.ProtobufNativeNamespace.mkPlanGenerator(tenantName),
-      )
+    def mkTenantPlanGenerator: Task[TenantPlanGenerator] =
+        val namespacePlanGenerators = List(
+            namespaces.BooleanNamespace.mkPlanGenerator(tenantName),
+            namespaces.Int8Namespace.mkPlanGenerator(tenantName),
+            namespaces.Int16Namespace.mkPlanGenerator(tenantName),
+            namespaces.Int32Namespace.mkPlanGenerator(tenantName),
+            namespaces.Int64Namespace.mkPlanGenerator(tenantName),
+            namespaces.FloatNamespace.mkPlanGenerator(tenantName),
+            namespaces.DoubleNamespace.mkPlanGenerator(tenantName),
+            namespaces.StringNamespace.mkPlanGenerator(tenantName),
+            namespaces.BytesNamespace.mkPlanGenerator(tenantName),
+            namespaces.AvroNamespace.mkPlanGenerator(tenantName),
+            namespaces.JsonNamespace.mkPlanGenerator(tenantName),
+            namespaces.ProtobufNativeNamespace.mkPlanGenerator(tenantName)
+        )
 
-      TenantPlanGenerator.make(
-          mkName = _ => tenantName,
-          mkNamespacesCount = _ => namespacePlanGenerators.size,
-          mkNamespaceGenerator = namespaceIndex => namespacePlanGenerators(namespaceIndex)
-      )
+        TenantPlanGenerator.make(
+            mkName = _ => tenantName,
+            mkNamespacesCount = _ => namespacePlanGenerators.size,
+            mkNamespaceGenerator = namespaceIndex => namespacePlanGenerators(namespaceIndex)
+        )
 
-  def mkTenantPlan: Task[TenantPlan] = for {
-      tenantPlanGenerator <- mkTenantPlanGenerator
-      tenantPlan <- TenantPlan.make(tenantPlanGenerator, 0)
-  } yield tenantPlan
+    def mkTenantPlan: Task[TenantPlan] = for {
+        tenantPlanGenerator <- mkTenantPlanGenerator
+        tenantPlan <- TenantPlan.make(tenantPlanGenerator, 0)
+    } yield tenantPlan

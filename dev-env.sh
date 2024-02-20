@@ -1,5 +1,9 @@
+this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
 export DEKAF_LICENSE_ID="db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6"
-export DEKAF_LICENSE_TOKEN="activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3"
+export DEKAF_LICENSE_TOKEN="activ-b8240503c17c1c70508dad0444ffc014v3"
+# dekaf-for-teams-dev activ-b8240503c17c1c70508dad0444ffc014v3
+# dekaf-desktop-dev activ-36faa778fa03d3aa0eae4953458d32cev3
 
 # export DEKAF_PULSAR_BROKER_URL="pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651"
 # export DEKAF_PULSAR_WEB_URL="https://cluster-f.o-xy6ek.snio.cloud"
@@ -10,6 +14,13 @@ export DEKAF_LICENSE_TOKEN="activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3"
 # export DEKAF_PUBLIC_BASE_URL="http://localhost:8090/demo"
 # export DEKAF_BASE_PATH="/demo"
 
+function add_envoy_to_path() {
+  envoy_bin=$( $this_dir/envoy/getEnvoyDir.scala )
+  envoy_dir="${this_dir}/$( dirname $envoy_bin )"
+
+  export PATH="${PATH}:${envoy_dir}"
+}
+
 function configure_kubectl() {
   tmp_dir=$(mktemp -d)
   kube_config_path="${tmp_dir}/kubeconfig.yml"
@@ -18,6 +29,7 @@ function configure_kubectl() {
   export KUBECONFIG="${kube_config_path}"
 }
 
+add_envoy_to_path
 configure_kubectl
 
 alias k="kubectl"

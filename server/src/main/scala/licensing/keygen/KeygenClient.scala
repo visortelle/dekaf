@@ -76,8 +76,11 @@ class KeygenClient(
             .body(body)
             .response(asJsonEither[KeygenErrorRes, KeygenLicense])
             .send(httpBackend)
-        result <- ZIO.fromEither(res.body)
-    } yield result
+        license <- ZIO.fromEither(res.body)
+        _ <- ZIO.when(!license.isActive)(
+            ZIO.die(new Exception(s"The provided product license is not active: ${license.data.attributes.status.getOrElse(".")}. Obtain a new license or get help: https://dekaf.io"))
+        )
+    } yield license
 
     def licenseHeartbeatPing(machineId: String): Task[Unit] = for {
         _ <- ZIO.logInfo("License session heartbeat ping.")

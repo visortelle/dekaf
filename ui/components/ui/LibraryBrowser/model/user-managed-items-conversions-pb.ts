@@ -46,6 +46,9 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM: return "consumer-session-start-from";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN: return "consumer-session-pause-trigger-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_ID: return "message-id";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_DATE_TIME: return "date-time";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME: return "relative-date-time";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER: return "message-filter";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN: return "message-filter-chain";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE: return "coloring-rule";
@@ -67,6 +70,9 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "consumer-session-start-from": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM;
     case "consumer-session-pause-trigger-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN;
     case "producer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;
+    case "message-id": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_ID;
+    case "date-time": return pb.ManagedItemType.MANAGED_ITEM_TYPE_DATE_TIME;
+    case "relative-date-time": return pb.ManagedItemType.MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME;
     case "message-filter": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER;
     case "message-filter-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN;
     case "coloring-rule": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE;

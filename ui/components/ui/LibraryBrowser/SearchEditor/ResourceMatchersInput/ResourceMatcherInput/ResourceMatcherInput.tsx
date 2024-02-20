@@ -5,12 +5,13 @@ import NamespaceMatcherInput from './NamespaceMatcherInput/NamespaceMatcherInput
 import TopicMatcherInput from './TopicMatcherInput/TopicMatcherInput';
 import { ResourceMatcher } from '../../../model/resource-matchers';
 import Select from '../../../../Select/Select';
-import { getDefaultInstanceMatcher, getDefaultNamespaceMatcher, getDefaultTenantMatcher, getDefaultTopicMatcher } from './default-matchers';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import { LibraryContext, resourceMatcherFromContext } from '../../../model/library-context';
 
 export type ResourceMatcherInputProps = {
   value: ResourceMatcher;
   onChange: (value: ResourceMatcher) => void;
+  libraryContext: LibraryContext;
   isReadOnly?: boolean;
 };
 
@@ -25,10 +26,22 @@ const ResourceMatcherInput: React.FC<ResourceMatcherInputProps> = (props) => {
             value={props.value.type}
             onChange={(v) => {
               switch (v) {
-                case "instance-matcher": props.onChange(getDefaultInstanceMatcher()); return;
-                case "topic-matcher": props.onChange(getDefaultTopicMatcher()); return;
-                case "namespace-matcher": props.onChange(getDefaultNamespaceMatcher()); return;
-                case "tenant-matcher": props.onChange(getDefaultTenantMatcher()); return;
+                case "instance-matcher": {
+                  props.onChange(resourceMatcherFromContext(props.libraryContext, 'instance'))
+                  break;
+                };
+                case "topic-matcher": {
+                  props.onChange(resourceMatcherFromContext(props.libraryContext, 'topic'));
+                  break;
+                }
+                case "namespace-matcher": {
+                  props.onChange(resourceMatcherFromContext(props.libraryContext, 'namespace'));
+                  break;
+                }
+                case "tenant-matcher": {
+                  props.onChange(resourceMatcherFromContext(props.libraryContext, 'tenant'));
+                  break;
+                }
               }
             }}
             list={[

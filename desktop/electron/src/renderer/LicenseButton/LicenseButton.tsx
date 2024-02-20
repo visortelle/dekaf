@@ -13,7 +13,7 @@ const LicenseButton: React.FC<LicenseButtonProps> = (props) => {
     <div className={s.LicenseButton}>
       <SmallButton
         type='regular'
-        text='Edit License Info'
+        text='Enter License Info'
         onClick={() => {
           modals.push({
             id: 'license-info',

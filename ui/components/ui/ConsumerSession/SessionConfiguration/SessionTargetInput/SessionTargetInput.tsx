@@ -67,13 +67,11 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
           itemType='consumer-session-target'
           value={item}
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedConsumerSessionTarget
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedConsumerSessionTarget
           })}
           onChange={(item) => {

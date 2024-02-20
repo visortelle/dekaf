@@ -149,18 +149,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.path, pathname))
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.consumerSession._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicPersistency: props.topicPersistency,
-      }),
-      text: "Produce",
-      onClick: () => { },
-      type: "regular",
-      active: false
-    },
-    {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
         tenant: props.tenant,
         namespace: props.namespace,

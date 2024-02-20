@@ -49,13 +49,11 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
           itemType='coloring-rule-chain'
           value={item}
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedColoringRuleChain
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedColoringRuleChain
           })}
           onChange={(item) => {

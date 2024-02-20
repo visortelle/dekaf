@@ -80,14 +80,14 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div
           className={s.Control}
-          style={{ position: 'relative' }}
+          style={{ position: 'relative', width: '320rem' }}
           data-tooltip-id={tooltipId}
           data-tooltip-html={'Search in message keys and values.'}
         >
           <Input
             value={props.searchInResults}
             onChange={props.onSearchInResultsChange}
-            placeholder='Search in found'
+            placeholder='Search in loaded messages'
             size='small'
             clearable
           />

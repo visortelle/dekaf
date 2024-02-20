@@ -19,6 +19,7 @@ export type Paths = {
   getPulsarStandalonePaths: (instanceId: string) => PulsarStandalonePaths,
   dekafDir: string,
   dekafBin: string,
+  envoyDir: string,
   remotePulsarConnectionsDir: string,
   getRemotePulsarConnectionDir: (connectionId: string) => string,
   getRemotePulsarConnectionConfigPath: (connectionId: string) => string,

@@ -6,6 +6,7 @@ import useInterval from '../../app/hooks/use-interval';
 import Select, { ListItem } from '../Select/Select';
 import Input from '../Input/Input';
 import SmallButton from '../SmallButton/SmallButton';
+import * as Notification from '../../app/Notifications/Notifications';
 
 const logsColorPalette: string[] = [
   colorsByName['slate-700'],
@@ -43,6 +44,7 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
   const logsRef = useRef<HTMLDivElement>(null);
   const [sourceFilter, setSourceFilter] = useState(allSources);
   const [filter, setFilter] = useState('');
+  const { notifySuccess } = Notification.useContext();
 
   const scrollToBottom = (bottomOffset?: number, behavior?: 'auto' | 'smooth') => {
     const scrollParent = logsRef.current?.children[0];
@@ -119,7 +121,17 @@ const LogsView: React.FC<LogsViewProps> = (props) => {
           <Input value={filter} onChange={setFilter} placeholder='Search in logs' />
         </div>
         <div>Shown <strong>{filteredItems.length}</strong> of latest <strong>{props.logs.length}</strong> entries</div>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '12rem' }}>
+          <SmallButton
+            type='regular'
+            text='Copy'
+            onClick={async () => {
+              const textToCopy = filteredItems.map(it => `${it.epoch} ${it.source} ${it.content}`).join('');
+              await navigator.clipboard.writeText(textToCopy);
+
+              notifySuccess(`Logs has been successfully copied to clipboard.`);
+            }}
+          />
           <SmallButton type='regular' text='Clear' onClick={props.onClear} />
         </div>
       </div>
