@@ -6,10 +6,14 @@ export type LibraryContext = {
   pulsarResource: PulsarResource
 }
 
-export function resourceMatcherFromContext(context: LibraryContext): m.ResourceMatcher {
+export type DesiredMatcherType = PulsarResource['type'] | 'derive-from-context';
+
+export function resourceMatcherFromContext(context: LibraryContext, desiredMatcherType: DesiredMatcherType): m.ResourceMatcher {
   const pulsarResource = context.pulsarResource;
 
-  if (pulsarResource.type === 'instance') {
+  const matcherType = desiredMatcherType === 'derive-from-context' ? pulsarResource.type : desiredMatcherType;
+
+  if (matcherType === 'instance') {
     const instanceMatcher: m.InstanceMatcher = {
       reactKey: uuid(),
       type: 'instance-matcher'
@@ -18,28 +22,33 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
     return instanceMatcher;
   }
 
-  if (pulsarResource.type === 'tenant') {
+  if (matcherType === 'tenant') {
+    const tenant = (pulsarResource.type === 'tenant' || pulsarResource.type === 'namespace' || pulsarResource.type === 'topic') ? pulsarResource.tenant : '';
+
     const tenantMatcher: m.TenantMatcher = {
       reactKey: uuid(),
       type: 'tenant-matcher',
       value: {
         reactKey: uuid(),
         type: 'exact-tenant-matcher',
-        tenant: pulsarResource.tenant
+        tenant
       }
     };
 
     return tenantMatcher;
   }
 
-  if (pulsarResource.type === 'namespace') {
+  if (matcherType === 'namespace') {
+    const tenant = (pulsarResource.type === 'tenant' || pulsarResource.type === 'namespace' || pulsarResource.type === 'topic') ? pulsarResource.tenant : '';
+    const namespace = (pulsarResource.type === 'namespace' || pulsarResource.type === 'topic') ? pulsarResource.namespace : '';
+
     const tenantMatcher: m.TenantMatcher = {
       reactKey: uuid(),
       type: 'tenant-matcher',
       value: {
         reactKey: uuid(),
         type: 'exact-tenant-matcher',
-        tenant: pulsarResource.tenant
+        tenant
       }
     };
     const namespaceMatcher: m.NamespaceMatcher = {
@@ -49,21 +58,25 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
         reactKey: uuid(),
         type: 'exact-namespace-matcher',
         tenant: tenantMatcher,
-        namespace: pulsarResource.namespace
+        namespace
       },
     };
 
     return namespaceMatcher;
   }
 
-  if (pulsarResource.type === 'topic') {
+  if (matcherType === 'topic') {
+    const tenant = (pulsarResource.type === 'tenant' || pulsarResource.type === 'namespace' || pulsarResource.type === 'topic') ? pulsarResource.tenant : '';
+    const namespace = (pulsarResource.type === 'namespace' || pulsarResource.type === 'topic') ? pulsarResource.namespace : '';
+    const topic = (pulsarResource.type === 'topic') ? pulsarResource.topic : '';
+
     const tenantMatcher: m.TenantMatcher = {
       reactKey: uuid(),
       type: 'tenant-matcher',
       value: {
         reactKey: uuid(),
         type: 'exact-tenant-matcher',
-        tenant: pulsarResource.tenant
+        tenant
       }
     };
     const namespaceMatcher: m.NamespaceMatcher = {
@@ -73,7 +86,7 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
         reactKey: uuid(),
         type: 'exact-namespace-matcher',
         tenant: tenantMatcher,
-        namespace: pulsarResource.namespace
+        namespace
       },
     };
 
@@ -84,7 +97,7 @@ export function resourceMatcherFromContext(context: LibraryContext): m.ResourceM
         reactKey: uuid(),
         type: 'exact-topic-matcher',
         namespace: namespaceMatcher,
-        topic: pulsarResource.topic
+        topic
       }
     }
 

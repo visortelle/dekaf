@@ -28,7 +28,7 @@ export function handleGetPaths(event: Electron.IpcMainEvent): void {
 }
 
 export const getUserDataDir = () => {
-  // The default userDataDir is ~/Library/Application Support.
+  // The default Electron userDataDir is ~/Library/Application Support.
   // It contains the space in the path, and Pulsar <=3.1.2 is unable to run with spaces in path
   const isMac = os.platform() === "darwin";
   if (isMac) {
@@ -77,6 +77,8 @@ export function getPaths(): Paths {
   const getRemotePulsarConnectionConfigPath = (connectionId: string) => path.resolve(path.join(getRemotePulsarConnectionDir(connectionId), "remote-pulsar-connection.json"));
 
   const dekafDir = path.resolve(path.join(assetsDir, 'dekaf'));
+  const envoyDir = path.resolve(path.join(assetsDir, 'envoy'));
+
   const getRemoteConnectionDekafDataDir = (connectionId: string) => path.resolve(path.join(getRemotePulsarConnectionDir(connectionId), "dekaf-data"));
 
   const dekafDemoappDir = path.resolve(path.join(assetsDir, 'dekaf-demoapp'));
@@ -100,9 +102,10 @@ export function getPaths(): Paths {
     getPulsarLocalInstanceDekafDataDir,
     getPulsarStandalonePaths,
     dekafDir,
-    dekafBin: isWindows 
+    dekafBin: isWindows
       ? path.resolve(path.join(dekafDir, 'bin', 'dekaf.bat'))
       : path.resolve(path.join(dekafDir, 'bin', 'dekaf')),
+    envoyDir,
     remotePulsarConnectionsDir,
     getRemotePulsarConnectionDir,
     getRemotePulsarConnectionConfigPath,

@@ -5,7 +5,9 @@ import io.circe.generic.semiauto.*
 
 case class KeygenLicenseDataAttributes(
     name: Option[String],
-    metadata: Map[String, String]
+    metadata: Map[String, String],
+    expiry: Option[String],
+    status: Option[String]
 )
 
 given Decoder[KeygenLicenseDataAttributes] = deriveDecoder[KeygenLicenseDataAttributes]
@@ -30,7 +32,8 @@ given Encoder[KeygenLicenseData] = deriveEncoder[KeygenLicenseData]
 
 case class KeygenLicense(
     data: KeygenLicenseData
-)
+):
+    def isActive: Boolean = data.attributes.status.getOrElse("") == "ACTIVE"
 
 given Decoder[KeygenLicense] = deriveDecoder[KeygenLicense]
 given Encoder[KeygenLicense] = deriveEncoder[KeygenLicense]

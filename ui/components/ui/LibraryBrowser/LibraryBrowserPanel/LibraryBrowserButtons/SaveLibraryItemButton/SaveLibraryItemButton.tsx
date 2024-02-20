@@ -62,7 +62,7 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
           case false: {
             libraryItem = {
               metadata: {
-                availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
+                availableForContexts: [resourceMatcherFromContext(props.libraryContext, 'derive-from-context')],
                 updatedAt: new Date().toISOString()
               },
               spec: cloneDeep(props.item)

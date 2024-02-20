@@ -17,6 +17,7 @@ import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker
 import { sendMessage } from "../api/send-message";
 import { getConnectionConfig } from "../remote-pulsar-connections/handlers";
 import tcpPortUsed from 'tcp-port-used';
+import nodeProcess from 'node:process';
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -224,9 +225,9 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
   if (win !== undefined && !win.isDestroyed()) {
     win.close();
   }
-   
+
   if(proc.childProcess.pid !== undefined && process.platform === 'win32') {
-    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T']) 
+    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T'])
   } else {
     proc.childProcess.kill();
   }
@@ -263,18 +264,18 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   await fsExtra.ensureDir(path.dirname(instancePaths.standaloneConfPath));
 
   // // XXX - maybe not a good idea to always remove ledgers LOCK before start
-  // const ledgersLock = path.join(instancePaths.bookkeeperDir, 'current', 'ledgers', 'LOCK');
-  // if (fs.existsSync(ledgersLock)) {
-  //   console.info(`Removing ledgers LOCK file at ${ledgersLock}`);
-  //   await fsExtra.removeSync(ledgersLock);
-  // }
+  const ledgersLock = path.join(instancePaths.bookkeeperDir, 'current', 'ledgers', 'LOCK');
+  if (fs.existsSync(ledgersLock)) {
+    console.info(`Removing ledgers LOCK file at ${ledgersLock}`);
+    await fsExtra.removeSync(ledgersLock);
+  }
 
-  // // XXX - maybe not a good idea to always remove metadata LOCK before start
-  // const metadataLock = path.join(instancePaths.metadataDir, 'LOCK');
-  // if (fs.existsSync(metadataLock)) {
-  //   console.info(`Removing metadata LOCK file at ${metadataLock}`);
-  //   await fsExtra.removeSync(metadataLock);
-  // }
+  // XXX - maybe not a good idea to always remove metadata LOCK before start
+  const metadataLock = path.join(instancePaths.metadataDir, 'LOCK');
+  if (fs.existsSync(metadataLock)) {
+    console.info(`Removing metadata LOCK file at ${metadataLock}`);
+    await fsExtra.removeSync(metadataLock);
+  }
 
   async function ensureFreePortOrThrow(port: number) {
     const isUsed = await tcpPortUsed.check(port);
@@ -386,14 +387,14 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
     });
   });
 
-  process.on('exit', (code, signal) => {
-    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
-      updateProcessStatus(processId, 'unknown');
-      deleteProcess(processId);
-      return;
-    }
+  process.on('exit', (code) => {
+    const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
+      'unknown' :
+      'failed';
 
-    updateProcessStatus(processId, 'failed');
+    updateProcessStatus(processId, processStatus);
+
+    deleteProcess(processId);
   });
 }
 
@@ -420,6 +421,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     "DEKAF_DATA_DIR": dekafDataDir,
     "DEKAF_PORT": String(port),
     "DEKAF_PUBLIC_BASE_URL": publicBaseUrl,
+    "PATH": `${nodeProcess.env['PATH']}:${paths.envoyDir}`
   };
 
   if (connection.dekafLicenseId.length) {
@@ -568,14 +570,14 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     });
   });
 
-  process.on('exit', (code, signal) => {
-    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
-      updateProcessStatus(processId, 'unknown');
-      deleteProcess(processId);
-      return;
-    }
+  process.on('exit', (code) => {
+    const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
+      'unknown' :
+      'failed';
 
-    updateProcessStatus(processId, 'failed');
+    updateProcessStatus(processId, processStatus);
+
+    deleteProcess(processId);
   });
 }
 
@@ -637,13 +639,13 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
     });
   });
 
-  process.on('exit', (code, signal) => {
-    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
-      updateProcessStatus(processId, 'unknown');
-      deleteProcess(processId);
-      return;
-    }
+  process.on('exit', (code) => {
+    const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
+      'unknown' :
+      'failed';
 
-    updateProcessStatus(processId, 'failed');
+    updateProcessStatus(processId, processStatus);
+
+    deleteProcess(processId);
   });
 }

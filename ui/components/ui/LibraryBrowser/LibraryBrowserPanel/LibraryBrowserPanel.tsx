@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
 import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
@@ -45,6 +45,8 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
   const modals = Modals.useContext();
   const { notifySuccess } = Notifications.useContext();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const availableForContexts = useMemo(() => [resourceMatcherFromContext(props.libraryContext, 'derive-from-context')], [props.libraryContext]);
 
   return (
     <div className={s.LibraryBrowserPanel} ref={hoverRef}>
@@ -118,7 +120,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             modals.pop();
           }}
           libraryContext={props.libraryContext}
-          availableForContexts={[resourceMatcherFromContext(props.libraryContext)]}
+          availableForContexts={availableForContexts}
         />
         {(!props.isReadOnly && (isHovered || props.isForceShowButtons)) && (
           <div className={s.Buttons}>

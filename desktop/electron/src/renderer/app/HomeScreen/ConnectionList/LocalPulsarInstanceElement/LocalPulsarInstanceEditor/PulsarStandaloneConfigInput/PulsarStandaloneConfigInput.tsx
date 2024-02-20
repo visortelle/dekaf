@@ -164,7 +164,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
         </div>
       </FormItem>
 
-      <FormItem>
+      {/* <FormItem>
         <FormLabel
           content="Wipe Data Before Each Launch"
           help={(
@@ -184,7 +184,7 @@ const PulsarStandaloneConfigInput: React.FC<PulsarStandaloneConfigInputProps> = 
             onChange={(v) => props.onChange({ ...props.value, wipeData: v })}
           />
         </div>
-      </FormItem>
+      </FormItem> */}
 
       <FormItem>
         <FormLabel

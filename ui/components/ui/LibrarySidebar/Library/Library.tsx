@@ -40,7 +40,7 @@ const Library: React.FC<LibraryProps> = (props) => {
   const [refreshItemCountKey, setRefreshItemCountKey] = useState(0);
 
   useEffect(() => {
-    setResourceMatchers([resourceMatcherFromContext(props.libraryContext)]);
+    setResourceMatchers([resourceMatcherFromContext(props.libraryContext, 'derive-from-context')]);
   }, [props.libraryContext]);
 
   useEffect(() => {
@@ -60,6 +60,8 @@ const Library: React.FC<LibraryProps> = (props) => {
       <div>
         {
           itemTypes.sort((a, b) => getReadableItemType(a).localeCompare(getReadableItemType(b))).map(itemType => {
+            const itemCount = itemCountPerType[itemType] ?? 0;
+
             return (
               <div key={itemType}>
                 <div className={s.ItemType}>
@@ -71,7 +73,7 @@ const Library: React.FC<LibraryProps> = (props) => {
                       />
                     </div>
 
-                    {itemCountPerType[itemType] === undefined && (
+                    {itemCount === 0 && (
                       <div style={{ display: 'flex', justifySelf: 'center', marginLeft: '-12rem' }}>
                         <NoData />
                       </div>
@@ -83,6 +85,10 @@ const Library: React.FC<LibraryProps> = (props) => {
                       libraryContext={props.libraryContext}
                       availableForContexts={resourceMatchers}
                       onItemCount={(itemCount) => {
+                        if (itemCount === undefined) {
+                          return;
+                        }
+
                         setItemCountPerType(v => ({
                           ...v,
                           [itemType]: itemCount

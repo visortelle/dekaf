@@ -34,8 +34,9 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
   return (
     <div className={s.Library}>
       <Tabs<TabKey>
-        tabs={{
-          'notes': {
+        tabs={[
+          {
+            key: 'notes',
             title: <span style={{ display: 'inline-flex', gap: '1ch'}}>🗒 Notes{itemsCount.notes === undefined ? <NoData /> : <>&nbsp;<strong>{itemsCount.notes}</strong></>}</span>,
             render: () => (
               <Notes
@@ -46,7 +47,8 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
             ),
             isRenderAlways: true,
           },
-          'library': {
+          {
+            key: 'library',
             title: <span style={{ display: 'inline-flex', gap: '1ch'}}>📚 Library{itemsCount.library === undefined ? <NoData /> : <>&nbsp;<strong>{itemsCount.library}</strong></>}</span>,
             render: () => (
               <Library
@@ -62,7 +64,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
           //   render: () => <>favorites</>,
           //   isRenderAlways: true,
           // },
-        }}
+        ]}
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}
       />

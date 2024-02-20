@@ -8,5 +8,5 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
         enableDemoAppTenant = highPriority.enableDemoAppTenant.orElse(lowPriority.enableDemoAppTenant),
         demoAppConfig = highPriority.demoAppConfig.orElse(lowPriority.demoAppConfig),
         enableSchemasTenant = highPriority.enableSchemasTenant.orElse(lowPriority.enableSchemasTenant),
-        schemasConfig = highPriority.schemasConfig.orElse(lowPriority.schemasConfig),
+        schemasConfig = highPriority.schemasConfig.orElse(lowPriority.schemasConfig)
     )

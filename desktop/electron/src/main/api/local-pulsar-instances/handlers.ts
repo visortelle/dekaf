@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import fsAsync from 'fs/promises';
 import fsExtra from 'fs-extra';
 import { apiChannel } from '../../channels';
@@ -79,7 +80,17 @@ export async function handleListLocalPulsarInstances(event: Electron.IpcMainEven
 
     const instanceIds = await fsExtra.readdir(instancesDir);
 
-    const instanceConfigs = await Promise.all(instanceIds.map(getInstanceConfig));
+    const instanceConfigs: LocalPulsarInstance[] = [];
+    for (let id of instanceIds) {
+      // XXX - after the instance deletion, the <instance dir>/data may be not deleted because Pulsar still writes something.
+      // Don't have time now to think on how to fix that in a better way.
+      try {
+        const config = await getInstanceConfig(id);
+        instanceConfigs.push(config);
+      } catch (_) {
+        // do nothing
+      }
+    }
 
     const req: ListLocalPulsarInstancesResult = {
       type: "ListLocalPulsarInstancesResult",
@@ -127,6 +138,11 @@ export async function handleDeleteLocalPulsarInstance(event: Electron.IpcMainEve
 export const getInstanceConfig = async (instanceId: string): Promise<LocalPulsarInstance> => {
   const paths = getPaths();
   const configFilePath = paths.getPulsarLocalInstanceConfigPath(instanceId);
+
+  if (!fs.existsSync(configFilePath)) {
+    throw new Error(`Pulsar instance dir exists, but config file isn't found: ${instanceId}`);
+  }
+
   const configFileContent = await fsAsync.readFile(configFilePath, { encoding: 'utf-8' });
   const config = JSON.parse(configFileContent) as LocalPulsarInstance;
   return config;

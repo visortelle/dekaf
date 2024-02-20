@@ -32,6 +32,7 @@ const ConnectionMetadataEditor: React.FC<ConnectionMetadataEditorProps> = (props
           )}
           isRequired
         />
+
         <div style={{ width: '420rem', display: 'flex', gap: '8rem', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>
             <Input
@@ -47,6 +48,8 @@ const ConnectionMetadataEditor: React.FC<ConnectionMetadataEditorProps> = (props
             appearance='borderless-semitransparent'
           />
         </div>
+
+        <div style={{ fontSize: '14rem', padding: '12rem 0' }}><strong>ID:</strong> {props.value.id}</div>
       </FormItem>
 
       <FormItem>

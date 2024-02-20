@@ -640,6 +640,7 @@ const Session: React.FC<SessionProps> = (props) => {
         messages={messages}
         consumerName={consumerName.current}
         currentTopic={currentTopicFqn}
+        libraryContext={props.libraryContext}
       />
     </div>
   );

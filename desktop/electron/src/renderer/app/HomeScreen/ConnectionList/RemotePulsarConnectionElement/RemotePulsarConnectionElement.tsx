@@ -16,6 +16,7 @@ import ProcessLogsViewButton from '../../../../ui/LogsView/ProcessLogsViewButton
 import EditRemotePulsarConnectionButton from './EditRemotePulsarConnectionButton/EditRemotePulsarConnectionButton';
 import DeleteLocalPulsarInstanceButton from '../LocalPulsarInstanceElement/DeleteLocalPulsarInstanceButton/DeleteLocalPulsarInstanceButton';
 import DeleteRemotePulsarConnectionButton from './DeleteRemotePulsarConnectionButton/DeleteRemotePulsarConnectionButton';
+import { colorsByName } from '../../../../ui/ColorPickerButton/ColorPicker/color-palette';
 
 export type RemotePulsarConnectionElementProps = {
   connection: RemotePulsarConnection
@@ -83,9 +84,21 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
 
   const isShowProcessStatuses = dekafProcessStatus !== undefined && dekafProcessStatus !== 'unknown';
 
+  const colorElement = props.connection.metadata.color === undefined ? null : (
+    <div
+      style={{
+        width: '24rem',
+        height: '24rem',
+        background: colorsByName[props.connection.metadata.color],
+        marginRight: '12rem',
+        borderRadius: '4rem'
+      }}
+    />
+  );
+
   return (
     <div className={s.RemotePulsarConnectionElement}>
-      <H3>{props.connection.metadata.name}</H3>
+      <H3>{colorElement}{props.connection.metadata.name}</H3>
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.connection.metadata.lastUsedAt))}</div>
 
       <div style={{ display: isShowProcessStatuses ? 'block' : 'none' }}>

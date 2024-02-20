@@ -84,7 +84,7 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
       <NothingToShow
         content={(
           <div style={{ textAlign: 'center' }}>
-            <div style={{ marginBottom: '12rem'}}>
+            <div style={{ marginBottom: '12rem' }}>
               The topic is partitioned, but no active partitions found. In this case topic policies can't be loaded.
             </div>
             <CreateMissedPartitionsButton topicFqn={`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`} />
@@ -94,8 +94,9 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
     </div>
   ) : null;
 
-  const tabs: Partial<Record<TabsKey, Tab>> = isPartition ? {
-    'topic-compaction': {
+  const tabs: Tab<TabsKey>[] = isPartition ? [
+    {
+      key: 'topic-compaction',
       title: 'Topic Compaction',
       render: () => (
         <div className={s.ConfigurationTable}>
@@ -112,9 +113,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
           />
         </div>
       )
-    },
-  } : {
-    "delayed-delivery": {
+    }] : [{
+      key: 'delayed-delivery',
       title: 'Delayed Delivery',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -127,7 +127,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "geo-replication": {
+    {
+      key: 'geo-replication',
       title: 'Geo Replication',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -140,7 +141,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "limits": {
+    {
+      key: 'limits',
       title: 'Limits',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -156,7 +158,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "message-deduplication": {
+    {
+      key: 'message-deduplication',
       title: 'Message Deduplication',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -170,7 +173,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "messaging": {
+    {
+      key: 'messaging',
       title: 'Messaging',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -186,7 +190,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "persistence": {
+    {
+      key: 'persistence',
       title: 'Persistence',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -199,7 +204,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "rate-limits": {
+    {
+      key: 'rate-limits',
       title: 'Rate Limits',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -216,7 +222,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "retention": {
+    {
+      key: 'retention',
       title: 'Retention',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -232,7 +239,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    "schema": {
+    {
+      key: 'schema',
       title: 'Schema',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -245,7 +253,8 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
         </div>
       )
     },
-    'topic-compaction': {
+    {
+      key: 'topic-compaction',
       title: 'Topic Compaction',
       render: () => isNoActivePartitions ? noActivePartitionsError : (
         <div className={s.ConfigurationTable}>
@@ -267,8 +276,7 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
           )}
         </div>
       )
-    },
-  };
+    }];
 
   return (
     <div className={s.Policies}>

@@ -51,13 +51,11 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
             itemType='coloring-rule'
             value={item}
             onPick={(item) => props.onChange({
-              type: 'reference',
-              ref: item.metadata.id,
+              type: 'value',
               val: item as ManagedColoringRule
             })}
             onSave={(item) => props.onChange({
-              type: 'reference',
-              ref: item.metadata.id,
+              type: 'value',
               val: item as ManagedColoringRule
             })}
             onChange={(item) => {

@@ -69,6 +69,8 @@
 .DynamicConfigValue {
   display: flex;
   position: relative;
+  align-items: center;
+  gap: 12rem;
 }
 
 .DynamicConfigValueEditor {

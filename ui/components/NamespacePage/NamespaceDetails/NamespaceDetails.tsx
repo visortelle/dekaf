@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import replicationClustersField from './fields/replication-clusters';
@@ -75,8 +75,9 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
           activeTab={activeTab as TabsKey}
           direction='vertical'
           onActiveTabChange={setActiveTab}
-          tabs={{
-            'access-control': {
+          tabs={[
+            {
+              key: 'access-control',
               title: 'Access Control',
               render: () => (
                 <div>
@@ -94,7 +95,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            bundles: {
+            {
+              key: 'bundles',
               title: 'Bundles',
               render: () => (
                 <div>
@@ -110,7 +112,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            "compute-resources": {
+            {
+              key: 'compute-resources',
               title: 'Compute Resources',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -125,7 +128,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            "delayed-delivery": {
+            {
+              key: 'delayed-delivery',
               title: 'Delayed Delivery',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -138,7 +142,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            encryption: {
+            {
+              key: 'encryption',
               title: 'Encryption',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -151,7 +156,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            "geo-replication": {
+            {
+              key: 'geo-replication',
               title: 'Geo Replication',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -165,7 +171,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            'limits': {
+            {
+              key: 'limits',
               title: 'Limits',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -182,7 +189,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            messaging: {
+            {
+              key: 'messaging',
               title: 'Messaging',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -200,7 +208,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            'message-deduplication': {
+            {
+              key: 'message-deduplication',
               title: 'Message Deduplication',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -214,7 +223,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            "persistence": {
+            {
+              key: 'persistence',
               title: 'Persistence',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -227,7 +237,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            'rate-limits': {
+            {
+              key: 'rate-limits',
               title: 'Rate Limits',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -244,7 +255,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            retention: {
+            {
+              key: 'retention',
               title: 'Retention',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -260,7 +272,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            schema: {
+            {
+              key: 'schema',
               title: 'Schema',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -275,7 +288,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            'tiered-storage': {
+            {
+              key: 'tiered-storage',
               title: 'Tiered Storage',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -288,7 +302,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                 </div>
               )
             },
-            "topic-compaction": {
+            {
+              key: 'topic-compaction',
               title: 'Topic Compaction',
               render: () => (
                 <div className={s.ConfigurationTable}>
@@ -300,8 +315,8 @@ const NamespaceDetails: React.FC<NamespaceDetailsProps> = (props) => {
                   />
                 </div>
               )
-            },
-          }}
+            }
+          ]}
         />
       </div>
 

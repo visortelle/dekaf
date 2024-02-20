@@ -44,13 +44,11 @@ const MarkdownDocumentEditor: React.FC<MarkdownDocumentEditorProps> = (props) =>
           itemType='consumer-session-target'
           value={item}
           onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedMarkdownDocument
           })}
           onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
+            type: 'value',
             val: item as ManagedMarkdownDocument
           })}
           onChange={(item) => {

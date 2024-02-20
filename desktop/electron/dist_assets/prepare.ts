@@ -1,6 +1,9 @@
 import path from 'node:path';
 import os from 'node:os';
+import fs from 'node:fs';
+import fsExtra from 'fs-extra';
 import { DownloaderTarget, download } from './downloader/downloader';
+import { execSync } from 'node:child_process';
 
 const graalvmArchiveName = `graalvm-bin-archive`;
 const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarget[] => {
@@ -9,12 +12,12 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
   return [
     {
       taskId: graalvmArchiveName + '-darwin-x64',
-      source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_macos-x64_bin.tar.gz',
+      source: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_macos-x64_bin.tar.gz',
       dest,
       unpack: { strip: 1 },
       checksum: {
         algorithm: 'sha512',
-        hash: 'c4da8f6b6823f7cde16ff5261eef2278c4b03d3926ef099c419fc0a5a4b367e897a7b141c71c6f29b35769f23dc973d9f8c538addccc191ae3eb021d53ddcb9d'
+        hash: 'b69c2c5eab8aaeb7c7c3e2a3354d43602be5ee09f5b723afb9ca56f05e276e90a315c7f95cc8d8141dc8c9092623f7c2045cd83851ba1f808335aa95136f7a50'
       },
       when: {
         platform: 'darwin',
@@ -24,12 +27,12 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
     },
     {
       taskId: graalvmArchiveName + '-darwin-arm64',
-      source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_macos-aarch64_bin.tar.gz',
+      source: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_macos-aarch64_bin.tar.gz',
       dest,
       unpack: { strip: 1 },
       checksum: {
         algorithm: 'sha512',
-        hash: 'bd4eff80d5e7b6d9915cafdf8bf3771741c01c97cb25a5b995dd15fd61ac32b02405a9f7e41e4761a581a033db57112d4dce984fcf8dc88f4ef8c4886b4387a6'
+        hash: 'b989f1f060507a2988f933b2904e3ab4605e308b579ab63ea25c7da187ba0dccc9d6734d2a66095b8759c7b9e31f2c4eea97cf953e3eb4c11ae8ea8135d5b7b5'
       },
       when: {
         platform: 'darwin',
@@ -39,12 +42,12 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
     },
     {
       taskId: graalvmArchiveName + '-linux-x64',
-      source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz',
+      source: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
       dest,
       unpack: { strip: 1 },
       checksum: {
-        algorithm: 'sha256',
-        hash: 'ee6286773c659afeefdf2f989a133e7a631c60897f2263ac183794ee1d6438f4'
+        algorithm: 'sha512',
+        hash: 'ea460b941ccd7f03009be5e7db3590149dc2c2617ade26fcfeec61d8da7b4910b5876b1887f58e322b74410b39605504b6d79ee00aa4cd4a2c278e9b7be3eeec'
       },
       when: {
         platform: 'linux',
@@ -59,7 +62,7 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
       unpack: { strip: 1 },
       checksum: {
         algorithm: 'sha512',
-        hash: 'dcae9dd51bdfe4042f179f71fa1a815441b2580e3b6239ac0775ae3375d809f6e600e6fe89ab6f8d6059222a06d0094a0a3e091409959bfb9e40e7e3d443f478'
+        hash: 'e806e2565c1c6791ba6c32cdb0ce8261bb59390e5164d9256236b76d6aa45b67e89d1b36ab5dff1ea2472f90a6cf184b59a3c50df2f6d8f78c8abdd84427687f'
       },
       when: {
         platform: 'linux',
@@ -71,13 +74,13 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
       taskId: graalvmArchiveName + '-win32-x64',
       source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_windows-x64_bin.zip',
       dest,
-      unpack: { 
-        format: 'zip',        
-        strip: 1 
+      unpack: {
+        format: 'zip',
+        strip: 1
       },
       checksum: {
         algorithm: 'sha512',
-        hash: '4e2d34a25244a474907cddb3c6130c8bb4a207a3472d7a50a2b8e676d439278f309ee40948e3860d99dbd6fa6545eb3b6a48c48ab1f2d11ff07621bf73b9e062'
+        hash: '0a3f9fc5054f44d7326a4e62923290a0dd43af2a89141f3da76d70096412be06705c2c57bc60119d2ef75070bfbe2d6d13a97a95acb010adae428410f1897ed9'
       },
       when: {
         platform: 'win32',
@@ -87,6 +90,20 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
     },
   ]
 };
+
+function getEnvoy(destDir: string) {
+  fsExtra.ensureDirSync(destDir);
+
+  const projectRoot = path.join(process.cwd(), '..', '..');
+  const envoyBinRelToProjectRoot = execSync(path.join(projectRoot, 'envoy', 'getEnvoyDir.scala'), { encoding: 'utf-8' }).trim();
+  const envoyBinSrc = path.resolve(projectRoot, envoyBinRelToProjectRoot).trim();
+
+  const envoyBinDest = path.join(destDir, path.basename(envoyBinSrc));
+
+  console.info(`Copying envoy from`, envoyBinSrc, 'to', envoyBinDest);
+
+  fs.copyFileSync(envoyBinSrc, envoyBinDest);
+}
 
 async function prepare() {
   const platform = os.platform();
@@ -124,6 +141,8 @@ async function prepare() {
     unpack: { strip: 1 }
   }
   await download(dekafDemoappDist, { onError });
+
+  getEnvoy(path.resolve(path.join(distAssetsOutDir, 'envoy')));
 }
 
 prepare();

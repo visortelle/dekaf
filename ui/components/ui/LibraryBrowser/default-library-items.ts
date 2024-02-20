@@ -278,7 +278,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
 export function getDefaultLibraryItem(itemType: ManagedItemType, libraryContext: LibraryContext): LibraryItem {
   return {
     metadata: {
-      availableForContexts: [resourceMatcherFromContext(libraryContext)],
+      availableForContexts: [resourceMatcherFromContext(libraryContext, 'derive-from-context')],
       updatedAt: new Date().toISOString()
     },
     spec: getDefaultManagedItem(itemType, libraryContext)

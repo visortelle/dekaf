@@ -33,6 +33,7 @@ const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
                   const newMatchers = props.value.map(mt => mt.reactKey === matcher.reactKey ? v : mt);
                   props.onChange(newMatchers);
                 }}
+                libraryContext={props.libraryContext}
                 isReadOnly={props.isReadOnly}
               />
             </div>
@@ -41,7 +42,7 @@ const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
         itemName='Context'
         onChange={(v) => props.onChange(v)}
         onAdd={() => {
-          const newMatcher = resourceMatcherFromContext(props.libraryContext);
+          const newMatcher = resourceMatcherFromContext(props.libraryContext, 'derive-from-context');
           const newMatchers = [...props.value, newMatcher];
           props.onChange(newMatchers);
         }}
