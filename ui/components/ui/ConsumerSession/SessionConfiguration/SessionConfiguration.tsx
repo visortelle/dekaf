@@ -98,8 +98,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               itemType='consumer-session-config'
               onPick={(item) => {
                 const newValue: ManagedConsumerSessionConfigValOrRef = {
-                  type: 'reference',
-                  ref: item.metadata.id,
+                  type: 'value',
                   val: item as ManagedConsumerSessionConfig
                 };
 
@@ -109,8 +108,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                 props.onChange(newValue);
               }}
               onSave={(item) => props.onChange({
-                type: 'reference',
-                ref: item.metadata.id,
+                type: 'value',
                 val: item as ManagedConsumerSessionConfig
               })}
               onChange={(item) => {

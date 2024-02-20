@@ -73,13 +73,11 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         value={item}
         itemType='topic-selector'
         onPick={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
+          type: 'value',
           val: item as ManagedTopicSelector
         })}
         onSave={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
+          type: 'value',
           val: item as ManagedTopicSelector
         })}
         onChange={(item) => {
