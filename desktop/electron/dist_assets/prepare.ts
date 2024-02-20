@@ -42,7 +42,7 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
     },
     {
       taskId: graalvmArchiveName + '-linux-x64',
-      source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz',
+      source: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
       dest,
       unpack: { strip: 1 },
       checksum: {
@@ -62,7 +62,7 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
       unpack: { strip: 1 },
       checksum: {
         algorithm: 'sha512',
-        hash: ''
+        hash: 'e806e2565c1c6791ba6c32cdb0ce8261bb59390e5164d9256236b76d6aa45b67e89d1b36ab5dff1ea2472f90a6cf184b59a3c50df2f6d8f78c8abdd84427687f'
       },
       when: {
         platform: 'linux',

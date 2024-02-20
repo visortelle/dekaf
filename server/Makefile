@@ -12,8 +12,11 @@ clean:
 .PHONY: build-any
 build-any:
 	cd ./data/js && npm install && npm run build
+
 	cp -r ./data ./src/universal/
 	rm -rf ./src/universal/data/js/node_modules
+
+	cp -a ./src/main/resources/ui ./src/universal/
 
 .PHONY: build
 build: # Build

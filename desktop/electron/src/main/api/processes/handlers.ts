@@ -225,9 +225,9 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
   if (win !== undefined && !win.isDestroyed()) {
     win.close();
   }
-   
+
   if(proc.childProcess.pid !== undefined && process.platform === 'win32') {
-    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T']) 
+    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T'])
   } else {
     proc.childProcess.kill();
   }
@@ -387,14 +387,14 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
     });
   });
 
-  process.on('exit', (code, signal) => {
-    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
-      updateProcessStatus(processId, 'unknown');
-      deleteProcess(processId);
-      return;
-    }
+  process.on('exit', (code) => {
+    const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
+      'unknown' :
+      'failed';
 
-    updateProcessStatus(processId, 'failed');
+    updateProcessStatus(processId, processStatus);
+
+    deleteProcess(processId);
   });
 }
 
@@ -570,14 +570,14 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     });
   });
 
-  process.on('exit', (code, signal) => {
-    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
-      updateProcessStatus(processId, 'unknown');
-      deleteProcess(processId);
-      return;
-    }
+  process.on('exit', (code) => {
+    const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
+      'unknown' :
+      'failed';
 
-    updateProcessStatus(processId, 'failed');
+    updateProcessStatus(processId, processStatus);
+
+    deleteProcess(processId);
   });
 }
 
@@ -639,13 +639,13 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
     });
   });
 
-  process.on('exit', (code, signal) => {
-    if (code === 0 || code === 1 || code === sigTermExitCode || code === null) {
-      updateProcessStatus(processId, 'unknown');
-      deleteProcess(processId);
-      return;
-    }
+  process.on('exit', (code) => {
+    const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
+      'unknown' :
+      'failed';
 
-    updateProcessStatus(processId, 'failed');
+    updateProcessStatus(processId, processStatus);
+
+    deleteProcess(processId);
   });
 }
