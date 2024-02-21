@@ -1,7 +1,7 @@
 import React from "react";
 import s from "./Overview.module.css";
 import useSWR, { useSWRConfig } from "swr";
-import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
+import st from '../../ui/SimpleTable/SimpleTable.module.css';
 import * as Notifications from "../../app/contexts/Notifications";
 import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
 import * as Either from "fp-ts/lib/Either";
@@ -18,11 +18,14 @@ import {
   TenantInfo,
   UpdateTenantRequest,
 } from "../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb";
+import * as namespacePb from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import A from "../../ui/A/A";
-import TooltipElement from "../../ui/Tooltip/TooltipElement/TooltipElement";
-import { help } from "../../ui/help";
 import LibrarySidebar from "../../ui/LibrarySidebar/LibrarySidebar";
 import { LibraryContext } from "../../ui/LibraryBrowser/model/library-context";
+import FormItem from "../../ui/ConfigurationTable/FormItem/FormItem";
+import FormLabel from "../../ui/ConfigurationTable/FormLabel/FormLabel";
+import Td from "../../ui/SimpleTable/Td";
+import NoData from "../../ui/NoData/NoData";
 
 export type ConfigurationProps = {
   tenant: string;
@@ -30,7 +33,7 @@ export type ConfigurationProps = {
 };
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
-  const { clustersServiceClient, tenantServiceClient } =
+  const { clustersServiceClient, tenantServiceClient, namespaceServiceClient } =
     GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
@@ -40,6 +43,22 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   const swrKey = swrKeys.pulsar.tenants.tenant.configuration._({
     tenant: props.tenant,
   });
+
+  const { data: namespaces, error: namespacesError } = useSWR<string[]>(
+    swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
+    async () => {
+      const req = new namespacePb.ListNamespacesRequest();
+      req.setTenant(props.tenant);
+
+      const res = await namespaceServiceClient.listNamespaces(req, null);
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return [];
+      }
+
+      return res.getNamespacesList().map(ns => ns.split('/')[1]);
+    }
+  );
 
   const { data: clusters, error: clustersError } = useSWR(
     swrKeys.pulsar.clusters._(),
@@ -261,40 +280,56 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   return (
     <div className={s.Overview}>
       <div className={s.LeftPanel}>
-        <ConfigurationTable
-          fields={[
-            {
-              id: "allowedClusters",
-              title: "Allowed clusters",
-              description: (
-                <span>List of clusters to which the configuration of this <TooltipElement tooltipHelp={help["tenant"]} link="https://pulsar.apache.org/docs/3.1.x/concepts-multi-tenancy/">tenant</TooltipElement> applies.</span>
-              ),
-              input: allowedClustersInput,
-              isRequired: true,
-            },
-            {
-              id: "adminRoles",
-              title: "Admin roles",
-              description: (
-                <span>
-                  Here you could manage authenticated admin roles (or "principal") that allowed to manage this tenant.
-                  <br />
-                  A client with the admin role (or "principal") token can then create, modify and destroy namespaces, and grant and revoke permissions to other role tokens on those namespaces.
-                  <ul>
-                    <li>
-                      <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-overview/">More about Pulsar security</A>
-                    </li>
-                    <li>
-                      <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-authorization/">More about authorization in Pulsar</A>
-                    </li>
-                  </ul>
-                </span>
-              ),
-              input: adminRolesInput,
-            },
-          ]}
-        />
+        <div style={{ marginBottom: '24rem' }}>
+          <table className={st.Table} style={{ width: '100%' }}>
+            <tbody>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell} style={{ width: '240rem' }}>Tenant FQN</td>
+                <Td>
+                  <div>{props.tenant}</div>
+                </Td>
+              </tr>
+              <tr className={st.Row}>
+                <td className={st.HighlightedCell} style={{ width: '240rem' }}>Namespace Count</td>
+                <Td>
+                  <div>{namespaces === undefined ? <NoData /> : namespaces.length}</div>
+                </Td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <FormItem>
+          <FormLabel
+            content="Allowed Clusters"
+            help={<span>List of clusters to which the configuration of this tenant applies.</span>}
+          />
+          {allowedClustersInput}
+        </FormItem>
+
+        <FormItem>
+          <FormLabel
+            content="Admin Roles"
+            help={(
+              <span>
+                Here you could manage authenticated admin roles (or "principal") that allowed to manage this tenant.
+                <br />
+                A client with the admin role (or "principal") token can then create, modify and destroy namespaces, and grant and revoke permissions to other role tokens on those namespaces.
+                <ul>
+                  <li>
+                    <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-overview/">More about Pulsar security</A>
+                  </li>
+                  <li>
+                    <A isExternalLink href="https://pulsar.apache.org/docs/3.1.x/security-authorization/">More about authorization in Pulsar</A>
+                  </li>
+                </ul>
+              </span>
+            )}
+          />
+          {adminRolesInput}
+        </FormItem>
       </div>
+
       <div className={s.RightPanel}>
         <LibrarySidebar
           libraryContext={props.libraryContext}

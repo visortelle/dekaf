@@ -22,7 +22,9 @@ export type BrowseDialogProps = {
   libraryContext: LibraryContext,
   onCanceled: () => void,
   onSelected: (libraryItem: LibraryItem) => void,
-  isHideSelectButton?: boolean
+  isHideSelectButton?: boolean,
+  isHideCancelButton?: boolean,
+  isSearchResultsOnly?: boolean,
 };
 
 const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
@@ -60,7 +62,6 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
       }
 
       if (resCode === Code.NOT_FOUND) {
-        notifyError(`Unable to find the item with id: ${selectedItemId}`);
         setIsSelectRequested(false);
         return;
       }
@@ -82,23 +83,35 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   }, [selectedItemId, selectedItemRefreshKey, isSelectRequested]);
 
   return (
-    <div className={s.BrowseDialog}>
-      <div className={s.Content}>
-        <div className={s.SearchInContexts}>
-          <FormItem>
-            <FormLabel
-              content={<H3>Search in Contexts</H3>}
-            />
-            {selectedItem !== undefined && (
-              <ResourceMatchersInput
-                value={searchInContexts}
-                onChange={setSearchInContexts}
-                libraryContext={props.libraryContext}
-                isReadOnly={false}
+    <div
+      className={s.BrowseDialog}
+      style={{
+        width: props.isSearchResultsOnly ? undefined : 'calc(100vw - 48rem)',
+        height: props.isSearchResultsOnly ? undefined : 'calc(100vh - 96rem)',
+        paddingLeft: props.isSearchResultsOnly ? undefined : '12rem'
+      }}
+    >
+      <div
+        className={s.Content}
+        style={{ gridTemplateColumns: props.isSearchResultsOnly ? '1fr' : '360rem 420rem 1fr' }}
+      >
+        {!props.isSearchResultsOnly && (
+          <div className={s.SearchInContexts}>
+            <FormItem>
+              <FormLabel
+                content={<H3>Search in Contexts</H3>}
               />
-            )}
-          </FormItem>
-        </div>
+              {selectedItem !== undefined && (
+                <ResourceMatchersInput
+                  value={searchInContexts}
+                  onChange={setSearchInContexts}
+                  libraryContext={props.libraryContext}
+                  isReadOnly={false}
+                />
+              )}
+            </FormItem>
+          </div>
+        )}
 
         <div className={s.SearchResults}>
           <SearchResults
@@ -130,25 +143,29 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
           />
         </div>
 
-        <div className={s.Editor}>
-          {selectedItem !== undefined && (
-            <LibraryItemEditor
-              mode={'viewer'}
-              value={selectedItem}
-              onChange={() => { }}
-              libraryContext={props.libraryContext}
-              libraryBrowserPanel={{ hiddenElements: ["save-button"] }}
-            />
-          )}
-        </div>
+        {!props.isSearchResultsOnly && (
+          <div className={s.Editor}>
+            {selectedItem !== undefined && (
+              <LibraryItemEditor
+                mode={'viewer'}
+                value={selectedItem}
+                onChange={() => { }}
+                libraryContext={props.libraryContext}
+                libraryBrowserPanel={{ hiddenElements: ["save-button"] }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       <div className={s.Footer}>
-        <Button
-          type='regular'
-          text='Cancel'
-          onClick={props.onCanceled}
-        />
+        {!props.isHideCancelButton && (
+          <Button
+            type='regular'
+            text='Cancel'
+            onClick={props.onCanceled}
+          />
+        )}
         {!props.isHideSelectButton && (
           <Button
             type='primary'

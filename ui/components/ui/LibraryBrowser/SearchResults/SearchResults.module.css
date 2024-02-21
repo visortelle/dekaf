@@ -10,7 +10,7 @@
 }
 
 .Toolbar {
-  flex: 0 0 48rem;
+  flex: 0 0 38rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;

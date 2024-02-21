@@ -16,7 +16,6 @@ import Tabs, { Tab } from '../../../ui/Tabs/Tabs';
 import ConfirmationButton from '../../../ui/ConfirmationButton/ConfirmationButton';
 import deleteIcon from './delete.svg';
 import backIcon from './back-icon.svg';
-import { helpNote } from './help-note';
 import { blogNote } from './blog-note';
 import defaultMarkdown from './default.md';
 import RenameButton from '../../../ui/RenameButton/RenameButton';
@@ -26,17 +25,18 @@ import SmallButton from '../../SmallButton/SmallButton';
 
 export type NotesProps = {
   libraryContext: LibraryContext,
-  onCount: (count: number) => void
+  onCount: (count: number) => void,
+  isVisible: boolean
 };
 
-const factoryNotes = [helpNote, blogNote];
+const factoryNotes = [blogNote];
 
 const Notes: React.FC<NotesProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [notes, setNotes] = useState<ManagedMarkdownDocument[]>([]);
   const [fetchCount, setFetchCount] = useState(0);
-  const [selectedNoteId, setSelectedNoteId] = useState<string>(props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : helpNote.metadata.id);
+  const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : undefined);
   const [refreshIframeKey, setRefreshIframeKey] = useState(0);
   const modals = Modals.useContext();
 
@@ -171,7 +171,7 @@ const Notes: React.FC<NotesProps> = (props) => {
 
     setNotes(v => {
       const newNotes = v.filter(nt => nt.metadata.id !== id);
-      const defaultNoteId = props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : helpNote.metadata.id;
+      const defaultNoteId = props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : undefined;
       setSelectedNoteId(newNotes.length > 0 ? newNotes[0].metadata.id : defaultNoteId);
       return newNotes;
     });
@@ -185,12 +185,40 @@ const Notes: React.FC<NotesProps> = (props) => {
   if (props.libraryContext.pulsarResource.type === 'instance') {
     notesToShow = notesToShow.concat([blogNote]);
   }
-  notesToShow = notesToShow.concat([helpNote]);
 
   const selectedNote = notesToShow?.find(note => note.metadata.id === selectedNoteId);
 
+  const createNewNote = async () => {
+    const newMarkdownDocument: ManagedMarkdownDocument = {
+      metadata: {
+        id: uuid(),
+        descriptionMarkdown: '',
+        name: `Note ${notes.length + 1}`,
+        type: "markdown-document"
+      },
+      spec: {
+        markdown: defaultMarkdown
+      }
+    };
+
+    await createNote(newMarkdownDocument);
+    await fetchNotes();
+  };
+
   if (fetchCount === 0) {
     return <div style={{ padding: '12rem' }}>Loading...</div>;
+  }
+
+  if (notes.length === 0) {
+    return (
+      <div style={{ margin: '12rem', padding: '12rem', background: 'var(--surface-color)', borderRadius: '12rem'}}>
+        <SmallButton
+          type='primary'
+          onClick={createNewNote}
+          text='Create First Note'
+        />
+      </div>
+    );
   }
 
   return (
@@ -227,6 +255,7 @@ const Notes: React.FC<NotesProps> = (props) => {
                         await updateNote(newNote);
                       }}
                       isReadOnly={isFactoryNote}
+                      isHidden={!props.isVisible}
                     />
                   )}
                 </div>
@@ -275,26 +304,11 @@ const Notes: React.FC<NotesProps> = (props) => {
             };
             return tab;
           })}
-          activeTab={selectedNoteId}
+          activeTab={selectedNoteId!}
           onActiveTabChange={setSelectedNoteId}
           size='small'
           newTab={{
-            onNewTab: async () => {
-              const newMarkdownDocument: ManagedMarkdownDocument = {
-                metadata: {
-                  id: uuid(),
-                  descriptionMarkdown: '',
-                  name: `Note ${notes.length + 1}`,
-                  type: "markdown-document"
-                },
-                spec: {
-                  markdown: defaultMarkdown
-                }
-              };
-
-              await createNote(newMarkdownDocument);
-              await fetchNotes();
-            },
+            onNewTab: createNewNote,
             title: "Create new note"
           }}
           scrollToTabId={selectedNoteId}

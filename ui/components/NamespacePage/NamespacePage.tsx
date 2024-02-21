@@ -93,18 +93,18 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.overview._.path, pathname))
           },
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.details._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Details',
-            onClick: () => { },
-            type: 'regular',
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.details._.path, pathname))
-          },
-          {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Topics',
             onClick: () => { },
             type: 'regular',
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname))
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.details._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Details',
+            onClick: () => { },
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.details._.path, pathname))
           },
           {
             text: 'Delete',
