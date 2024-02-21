@@ -1,0 +1,25 @@
+.Library {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.ItemType {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  gap: 24rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ItemTypeHeader {
+  padding: 8rem 12rem;
+  display: grid;
+  gap: 24rem;
+  grid-template-columns: 200rem 4ch 1fr;
+  justify-items: flex-end;
+  align-items: center;
+}
+
+.ResourceMatchers {
+  padding: 48rem 12rem;
+}

@@ -290,6 +290,16 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
+    if (sessionState === 'paused') {
+      const selectedMessageIndex = messagesToShow.findIndex(it => it.numMessageProcessed === selectedMessages[0]);
+      if (selectedMessageIndex > 0) {
+        virtuosoRef.current?.scrollIntoView({ index: selectedMessageIndex, align: 'center' });
+        return;
+      }
+
+      scrollToBottom();
+    }
+
     if (sessionState === 'running') {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
@@ -318,7 +328,6 @@ const Session: React.FC<SessionProps> = (props) => {
   useEffect(() => {
     if (sessionState === 'pausing' && messagesLoadedPerSecond.now === 0) {
       setSessionState('paused');
-      setTimeout(scrollToBottom, 250);
     }
   }, [sessionState, messagesLoadedPerSecond]);
 

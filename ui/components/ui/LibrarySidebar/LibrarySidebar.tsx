@@ -3,9 +3,9 @@ import s from './LibrarySidebar.module.css'
 import Tabs from '../Tabs/Tabs';
 import Notes from './Notes/Notes';
 import { LibraryContext } from '../LibraryBrowser/model/library-context';
-import Library from './Library/Library';
 import objectHash from 'object-hash';
 import NoData from '../NoData/NoData';
+import Library from './Library/Library';
 
 export type LibrarySidebarProps = {
   libraryContext: LibraryContext
