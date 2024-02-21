@@ -33,9 +33,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12rem;
+  padding: 24rem 12rem;
   border-radius: 8rem;
   margin: 12rem;
+  align-self: flex-start;
 }
 
 .Content {
