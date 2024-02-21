@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterCurrentMessageKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterCurrentMessageValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte, TestOpMatchesJSON, TestOpContainsJSON } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 import { jsonModifierFromPb, jsonModifierToPb } from "../../JsonModifierInput/json-modifier/json-modifier-conversions-pb";
 
@@ -205,6 +205,34 @@ export function testOpStringMatchesRegexToPb(v: TestOpStringMatchesRegex): pb.Te
   return resultPb;
 }
 
+export function testOpMatchesJSONToPb(v: TestOpMatchesJSON): pb.TestOpMatchesJSON {
+  const resultPb = new pb.TestOpMatchesJSON();
+  resultPb.setMatchesJson(v.matchesJson);
+
+  return resultPb;
+}
+
+export function testOpMatchesJSONFromPb(v: pb.TestOpMatchesJSON): TestOpMatchesJSON {
+  return {
+    type: "TestOpMatchesJSON",
+    matchesJson: v.getMatchesJson()
+  }
+}
+
+export function testOpContainsJSONToPb(v: TestOpContainsJSON): pb.TestOpContainsJSON {
+  const resultPb = new pb.TestOpContainsJSON();
+  resultPb.setContainsJson(v.containsJson);
+
+  return resultPb;
+}
+
+export function testOpContainsJSONFromPb(v: pb.TestOpContainsJSON): TestOpContainsJSON {
+  return {
+    type: "TestOpContainsJSON",
+    containsJson: v.getContainsJson()
+  }
+}
+
 export function testOpArrayAnyFromPb(v: pb.TestOpArrayAny): TestOpArrayAny {
   const itemFieldTargetPb = v.getItemFieldTarget();
 
@@ -268,6 +296,8 @@ export function anyTestOpFromPb(v: pb.AnyTestOp): AnyTestOp {
     case pb.AnyTestOp.OpCase.OP_STRING_MATCHES_REGEX: op = testOpStringMatchesRegexFromPb(v.getOpStringMatchesRegex()!); break;
     case pb.AnyTestOp.OpCase.OP_ARRAY_ANY: op = testOpArrayAnyFromPb(v.getOpArrayAny()!); break;
     case pb.AnyTestOp.OpCase.OP_ARRAY_ALL: op = testOpArrayAllFromPb(v.getOpArrayAll()!); break;
+    case pb.AnyTestOp.OpCase.OP_MATCHES_JSON: op = testOpMatchesJSONFromPb(v.getOpMatchesJson()!); break;
+    case pb.AnyTestOp.OpCase.OP_CONTAINS_JSON: op = testOpContainsJSONFromPb(v.getOpContainsJson()!); break;
     default: throw new Error("Failed to convert AnyTestOp. Unknown type.");
   }
 
@@ -298,6 +328,8 @@ export function anyTestOpToPb(v: AnyTestOp): pb.AnyTestOp {
     case "TestOpStringMatchesRegex": resultPb.setOpStringMatchesRegex(testOpStringMatchesRegexToPb(v.op)); break;
     case "TestOpArrayAny": resultPb.setOpArrayAny(testOpArrayAnyToPb(v.op)); break;
     case "TestOpArrayAll": resultPb.setOpArrayAll(testOpArrayAllToPb(v.op)); break;
+    case "TestOpMatchesJSON": resultPb.setOpMatchesJson(testOpMatchesJSONToPb(v.op)); break;
+    case "TestOpContainsJSON": resultPb.setOpContainsJson(testOpContainsJSONToPb(v.op)); break;
     default: throw new Error("Failed to convert AnyTestOp. Unknown type.");
   }
 
@@ -379,15 +411,15 @@ export function basicMessageFilterOpToPb(v: BasicMessageFilterOp): pb.BasicMessa
   return resultPb;
 }
 
-export function basicMessageFilterKeyTargetFromPb(v: pb.BasicMessageFilterKeyTarget): BasicMessageFilterKeyTarget {
+export function basicMessageFilterKeyTargetFromPb(v: pb.BasicMessageFilterCurrentMessageKeyTarget): BasicMessageFilterCurrentMessageKeyTarget {
   return {
-    type: "BasicMessageFilterKeyTarget",
+    type: "BasicMessageFilterCurrentMessageKeyTarget",
     jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
   }
 }
 
-export function basicMessageFilterKeyTargetToPb(v: BasicMessageFilterKeyTarget): pb.BasicMessageFilterKeyTarget {
-  const resultPb = new pb.BasicMessageFilterKeyTarget();
+export function basicMessageFilterKeyTargetToPb(v: BasicMessageFilterCurrentMessageKeyTarget): pb.BasicMessageFilterCurrentMessageKeyTarget {
+  const resultPb = new pb.BasicMessageFilterCurrentMessageKeyTarget();
   if (v.jsonFieldSelector !== undefined) {
     resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
   }
@@ -395,15 +427,15 @@ export function basicMessageFilterKeyTargetToPb(v: BasicMessageFilterKeyTarget):
   return resultPb;
 }
 
-export function basicMessageFilterValueTargetFromPb(v: pb.BasicMessageFilterValueTarget): BasicMessageFilterValueTarget {
+export function basicMessageFilterValueTargetFromPb(v: pb.BasicMessageFilterCurrentMessageValueTarget): BasicMessageFilterCurrentMessageValueTarget {
   return {
-    type: "BasicMessageFilterValueTarget",
+    type: "BasicMessageFilterCurrentMessageValueTarget",
     jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
   }
 }
 
-export function basicMessageFilterValueTargetToPb(v: BasicMessageFilterValueTarget): pb.BasicMessageFilterValueTarget {
-  const resultPb = new pb.BasicMessageFilterValueTarget();
+export function basicMessageFilterValueTargetToPb(v: BasicMessageFilterCurrentMessageValueTarget): pb.BasicMessageFilterCurrentMessageValueTarget {
+  const resultPb = new pb.BasicMessageFilterCurrentMessageValueTarget();
   if (v.jsonFieldSelector !== undefined) {
     resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
   }
@@ -490,10 +522,10 @@ export function basicMessageFilterTargetToPb(v: BasicMessageFilterTarget): pb.Ba
   const resultPb = new pb.BasicMessageFilterTarget();
 
   switch (v.target.type) {
-    case "BasicMessageFilterKeyTarget":
+    case "BasicMessageFilterCurrentMessageKeyTarget":
       resultPb.setTargetKey(basicMessageFilterKeyTargetToPb(v.target))
       break;
-    case "BasicMessageFilterValueTarget":
+    case "BasicMessageFilterCurrentMessageValueTarget":
       resultPb.setTargetValue(basicMessageFilterValueTargetToPb(v.target))
       break;
     case "BasicMessageFilterPropertyTarget":

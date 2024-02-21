@@ -1,20 +1,19 @@
-package topicpolicies
+package topic_policies
 
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{CompactionThresholdEnabled, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DispatchRateSpecified, DispatchRateUnspecified, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersRequest, GetMaxConsumersResponse, GetMaxMessageSizeRequest, GetMaxMessageSizeResponse, GetMaxProducersRequest, GetMaxProducersResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxUnackedMessagesOnConsumerRequest, GetMaxUnackedMessagesOnConsumerResponse, GetMaxUnackedMessagesOnSubscriptionRequest, GetMaxUnackedMessagesOnSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetPersistenceRequest, GetPersistenceResponse, GetPublishRateRequest, GetPublishRateResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersSpecified, MaxConsumersUnspecified, MaxMessageSizeDisabled, MaxMessageSizeEnabled, MaxProducersSpecified, MaxProducersUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxUnackedMessagesOnConsumerSpecified, MaxUnackedMessagesOnConsumerUnspecified, MaxUnackedMessagesOnSubscriptionSpecified, MaxUnackedMessagesOnSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, PersistenceSpecified, PersistenceUnspecified, PublishRateSpecified, PublishRateUnspecified, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersRequest, RemoveMaxConsumersResponse, RemoveMaxMessageSizeRequest, RemoveMaxMessageSizeResponse, RemoveMaxProducersRequest, RemoveMaxProducersResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxUnackedMessagesOnConsumerRequest, RemoveMaxUnackedMessagesOnConsumerResponse, RemoveMaxUnackedMessagesOnSubscriptionRequest, RemoveMaxUnackedMessagesOnSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemovePublishRateRequest, RemovePublishRateResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSchemaCompatibilityStrategyRequest, RemoveSchemaCompatibilityStrategyResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SchemaCompatibilityStrategyInherited, SchemaCompatibilityStrategySpecified, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersRequest, SetMaxConsumersResponse, SetMaxMessageSizeRequest, SetMaxMessageSizeResponse, SetMaxProducersRequest, SetMaxProducersResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxUnackedMessagesOnConsumerRequest, SetMaxUnackedMessagesOnConsumerResponse, SetMaxUnackedMessagesOnSubscriptionRequest, SetMaxUnackedMessagesOnSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetPersistenceRequest, SetPersistenceResponse, SetPublishRateRequest, SetPublishRateResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified, TopicpoliciesServiceGrpc}
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
-import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies as pb
+import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.*
+import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, PublishRate, RetentionPolicies, SubscribeRate}
+import org.apache.pulsar.common.policies.data.*
 import pulsar_auth.RequestContext
 
-import java.util.concurrent.TimeUnit
-import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters.*
 
-class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesService:
+class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesService:
     val logger: Logger = Logger(getClass.getName)
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
@@ -59,7 +58,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 )
             )
         } catch {
-            case err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetBacklogQuotasResponse(status = Some(status)))
         }
@@ -87,7 +86,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting backlog quota policy (destination storage) on topic ${request.topic} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota policy (destination storage) on topic ${request.topic} to $backlogQuota")
                     adminClient.topicPolicies(request.isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
@@ -102,13 +101,13 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting backlog quota (message age) on topic ${request.topic} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota (message age) on topic ${request.topic} to $backlogQuota")
                     adminClient.topicPolicies(request.isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
             Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            case err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetBacklogQuotasResponse(status = Some(status)))
         }
@@ -129,7 +128,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
             Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            case err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
         }
@@ -151,7 +150,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 delayedDelivery = delayedDeliveryPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetDelayedDeliveryResponse(status = Some(status)))
         }
@@ -168,7 +167,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setDelayedDeliveryPolicy(request.topic, delayedDeliveryPolicies)
             Future.successful(SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetDelayedDeliveryResponse(status = Some(status)))
         }
@@ -180,7 +179,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeDelayedDeliveryPolicy(request.topic)
             Future.successful(RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDelayedDeliveryResponse(status = Some(status)))
         }
@@ -201,7 +200,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 messageTtl = messageTtlPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMessageTtlResponse(status = Some(status)))
         }
@@ -213,7 +212,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMessageTTL(request.topic, request.messageTtlSeconds)
             Future.successful(SetMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMessageTtlResponse(status = Some(status)))
         }
@@ -225,7 +224,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMessageTTL(request.topic)
             Future.successful(RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMessageTtlResponse(status = Some(status)))
         }
@@ -247,7 +246,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 retention = retentionPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetRetentionResponse(status = Some(status)))
         }
@@ -261,7 +260,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setRetention(request.topic, retention)
             Future.successful(SetRetentionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetRetentionResponse(status = Some(status)))
         }
@@ -273,7 +272,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeRetention(request.topic)
             Future.successful(RemoveRetentionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveRetentionResponse(status = Some(status)))
         }
@@ -294,7 +293,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxUnackedMessagesOnConsumer = maxUnackedMessagesOnConsumerPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
@@ -306,7 +305,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnConsumer(request.topic, request.maxUnackedMessagesOnConsumer)
             Future.successful(SetMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
@@ -319,7 +318,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnConsumer(request.topic)
             Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
@@ -340,7 +339,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxUnackedMessagesOnSubscription = maxUnackedMessagesOnSubscriptionPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
@@ -352,7 +351,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnSubscription(request.topic, request.maxUnackedMessagesOnSubscription)
             Future.successful(SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
@@ -364,7 +363,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnSubscription(request.topic)
             Future.successful(RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
@@ -381,8 +380,9 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                             case InactiveTopicDeleteMode.delete_when_no_subscriptions =>
                                 InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS
                             case InactiveTopicDeleteMode.delete_when_subscriptions_caught_up =>
-                                InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP,
-                            maxInactiveDurationSeconds = v.getMaxInactiveDurationSeconds,
+                                InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP
+                        ,
+                        maxInactiveDurationSeconds = v.getMaxInactiveDurationSeconds,
                         deleteWhileInactive = v.isDeleteWhileInactive
                     ))
 
@@ -391,7 +391,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 inactiveTopicPolicies = inactiveTopicPoliciesPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetInactiveTopicPoliciesResponse(status = Some(status)))
         }
@@ -410,11 +410,13 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                     inactiveTopicPolicies.setInactiveTopicDeleteMode(InactiveTopicDeleteMode.delete_when_no_subscriptions)
                 case InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP =>
                     inactiveTopicPolicies.setInactiveTopicDeleteMode(InactiveTopicDeleteMode.delete_when_subscriptions_caught_up)
+                case _ =>
+                    throw new IllegalArgumentException("InactiveTopicPoliciesDeleteMode should be specified.")
 
             adminClient.topicPolicies(request.isGlobal).setInactiveTopicPolicies(request.topic, inactiveTopicPolicies)
             Future.successful(SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetInactiveTopicPoliciesResponse(status = Some(status)))
         }
@@ -426,7 +428,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeInactiveTopicPolicies(request.topic)
             Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(status)))
         }
@@ -450,7 +452,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 persistence = persistencePb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetPersistenceResponse(status = Some(status)))
         }
@@ -463,7 +465,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setPersistence(request.topic, persistencePolicies)
             Future.successful(SetPersistenceResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetPersistenceResponse(status = Some(status)))
         }
@@ -475,7 +477,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removePersistence(request.topic)
             Future.successful(RemovePersistenceResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemovePersistenceResponse(status = Some(status)))
         }
@@ -494,7 +496,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 deduplication
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetDeduplicationResponse(status = Some(status)))
         }
@@ -506,7 +508,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setDeduplicationStatus(request.topic, request.enabled)
             Future.successful(SetDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetDeduplicationResponse(status = Some(status)))
         }
@@ -518,7 +520,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationStatus(request.topic)
             Future.successful(RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDeduplicationResponse(status = Some(status)))
         }
@@ -537,7 +539,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 interval
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
@@ -549,7 +551,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setDeduplicationSnapshotInterval(request.topic, request.interval)
             Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
@@ -561,7 +563,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationSnapshotInterval(request.topic)
             Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
@@ -585,7 +587,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 dispatchRate = dispatchRatePb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetDispatchRateResponse(status = Some(status)))
         }
@@ -604,7 +606,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setDispatchRate(request.topic, dispatchRate)
             Future.successful(SetDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetDispatchRateResponse(status = Some(status)))
         }
@@ -616,7 +618,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeDispatchRate(request.topic)
             Future.successful(RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDispatchRateResponse(status = Some(status)))
         }
@@ -640,7 +642,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 replicatorDispatchRate = replicatorDispatchRatePb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetReplicatorDispatchRateResponse(status = Some(status)))
         }
@@ -659,7 +661,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setReplicatorDispatchRate(request.topic, dispatchRate)
             Future.successful(SetReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetReplicatorDispatchRateResponse(status = Some(status)))
         }
@@ -671,7 +673,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeReplicatorDispatchRate(request.topic)
             Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(status)))
         }
@@ -695,7 +697,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 subscriptionDispatchRate = subscriptionDispatchRatePb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetSubscriptionDispatchRateResponse(status = Some(status)))
         }
@@ -714,7 +716,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setSubscriptionDispatchRate(request.topic, dispatchRate)
             Future.successful(SetSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetSubscriptionDispatchRateResponse(status = Some(status)))
         }
@@ -726,7 +728,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionDispatchRate(request.topic)
             Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(status)))
         }
@@ -742,7 +744,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 threshold
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetCompactionThresholdResponse(status = Some(status)))
         }
@@ -754,7 +756,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setCompactionThreshold(request.topic, request.threshold)
             Future.successful(SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetCompactionThresholdResponse(status = Some(status)))
         }
@@ -766,7 +768,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeCompactionThreshold(request.topic)
             Future.successful(RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveCompactionThresholdResponse(status = Some(status)))
         }
@@ -788,7 +790,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 publishRate = publishRatePb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetPublishRateResponse(status = Some(status)))
         }
@@ -801,7 +803,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setPublishRate(request.topic, publishRate)
             Future.successful(SetPublishRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetPublishRateResponse(status = Some(status)))
         }
@@ -813,7 +815,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removePublishRate(request.topic)
             Future.successful(RemovePublishRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemovePublishRateResponse(status = Some(status)))
         }
@@ -834,7 +836,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxConsumersPerSubscription = maxConsumersPerSubscriptionPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
@@ -846,7 +848,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxConsumersPerSubscription(request.topic, request.maxConsumersPerSubscription)
             Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
@@ -858,7 +860,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumersPerSubscription(request.topic)
             Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
@@ -879,7 +881,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxProducers = maxProducersPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxProducersResponse(status = Some(status)))
         }
@@ -891,7 +893,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxProducers(request.topic, request.maxProducers)
             Future.successful(SetMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxProducersResponse(status = Some(status)))
         }
@@ -903,7 +905,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxProducers(request.topic)
             Future.successful(RemoveMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxProducersResponse(status = Some(status)))
         }
@@ -924,7 +926,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxSubscriptionsPerTopic = maxSubscriptionsPerTopicPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
@@ -936,7 +938,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxSubscriptionsPerTopic(request.topic, request.maxSubscriptionsPerTopic)
             Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
@@ -948,7 +950,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxSubscriptionsPerTopic(request.topic)
             Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
@@ -969,7 +971,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxConsumers = maxConsumersPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxConsumersResponse(status = Some(status)))
         }
@@ -981,7 +983,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxConsumers(request.topic, request.maxConsumers)
             Future.successful(SetMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxConsumersResponse(status = Some(status)))
         }
@@ -993,7 +995,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumers(request.topic)
             Future.successful(RemoveMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxConsumersResponse(status = Some(status)))
         }
@@ -1021,7 +1023,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 subscriptionTypesEnabled = subscriptionTypesEnabledPb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
@@ -1034,6 +1036,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER => SubscriptionType.Failover
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED => SubscriptionType.Shared
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED => SubscriptionType.Key_Shared
+                case _ => throw new IllegalArgumentException("Subscription type not specified")
 
         try {
             logger.info(s"Setting subscription types enabled policy for topic ${request.topic}")
@@ -1042,7 +1045,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setSubscriptionTypesEnabled(request.topic, subscriptionTypesEnabled)
             Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
@@ -1054,7 +1057,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionTypesEnabled(request.topic)
             Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
         }
@@ -1076,7 +1079,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 subscribeRate = subscribeRatePb
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetSubscribeRateResponse(status = Some(status)))
         }
@@ -1090,7 +1093,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setSubscribeRate(request.topic, subscribeRate)
             Future.successful(SetSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetSubscribeRateResponse(status = Some(status)))
         }
@@ -1102,7 +1105,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeSubscribeRate(request.topic)
             Future.successful(RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveSubscribeRateResponse(status = Some(status)))
         }
@@ -1125,7 +1128,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 )
             )
         } catch {
-            case err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
@@ -1138,7 +1141,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             val status = Status(code = Code.OK.index)
             Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
         } catch {
-            case err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
@@ -1150,7 +1153,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeSchemaCompatibilityStrategy(request.topic)
             Future.successful(RemoveSchemaCompatibilityStrategyResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
@@ -1166,7 +1169,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 maxMessageSize
             ))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxMessageSizeResponse(status = Some(status)))
         }
@@ -1178,7 +1181,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).setMaxMessageSize(request.topic, request.maxMessageSize)
             Future.successful(SetMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxMessageSizeResponse(status = Some(status)))
         }
@@ -1190,7 +1193,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             adminClient.topicPolicies(request.isGlobal).removeMaxMessageSize(request.topic)
             Future.successful(RemoveMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
-            err =>
+            case err: Exception =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxMessageSizeResponse(status = Some(status)))
         }

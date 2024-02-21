@@ -48,6 +48,8 @@ object ManagedMarkdownDocumentValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedMarkdownDocumentValOrRef type")
 
     def toPb(v: ManagedMarkdownDocumentValOrRef): pb.ManagedMarkdownDocumentValOrRef =
         v.value match

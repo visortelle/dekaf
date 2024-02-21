@@ -24,8 +24,9 @@ case class JsMessageFilter(jsCode: String):
 
                         val fn = polyglotContext.eval("js", evalCode)
                         jsFn = Some(fn)
+
                         fn.execute().asBoolean()
-                        
+
                 TestResult(isOk = isOk, error = None)
             catch {
                 case err: Throwable =>

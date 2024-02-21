@@ -1,9 +1,10 @@
-package consumer.message_filter.basic_message_filter.targets
+package consumer.message_filter.basic_message_filter.targets.impl
 
 import _root_.consumer.session_runner.{CurrentMessageVarName, JsLibsVarName}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import consumer.message_filter.basic_message_filter.targets.impl.BasicMessageFilterArrayFieldTarget
 
-case class BasicMessageFilterFieldTarget(
+case class BasicMessageFilterArrayFieldTarget(
     jsonFieldSelector: Option[String] = None
 ):
     def resolveVarName(objectVarName: String): String =
@@ -13,9 +14,9 @@ case class BasicMessageFilterFieldTarget(
             case None =>
                 s"$objectVarName"
 
-object BasicMessageFilterFieldTarget:
-    def fromPb(v: pb.BasicMessageFilterFieldTarget): BasicMessageFilterFieldTarget =
-        BasicMessageFilterFieldTarget(jsonFieldSelector = v.jsonFieldSelector)
+object BasicMessageFilterArrayFieldTarget:
+    def fromPb(v: pb.BasicMessageFilterFieldTarget): BasicMessageFilterArrayFieldTarget =
+        BasicMessageFilterArrayFieldTarget(jsonFieldSelector = v.jsonFieldSelector)
 
-    def toPb(v: BasicMessageFilterFieldTarget): pb.BasicMessageFilterFieldTarget =
+    def toPb(v: BasicMessageFilterArrayFieldTarget): pb.BasicMessageFilterFieldTarget =
         pb.BasicMessageFilterFieldTarget(jsonFieldSelector = v.jsonFieldSelector)

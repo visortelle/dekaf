@@ -342,7 +342,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting backlog quota policy (destination storage) on namespace ${request.namespace} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota policy (destination storage) on namespace ${request.namespace} to $backlogQuota")
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
@@ -357,7 +357,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting backlog quota (message age) on namespace ${request.namespace} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota (message age) on namespace ${request.namespace} to $backlogQuota")
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
@@ -489,7 +489,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     .build
                 case None => BookieAffinityGroupData.builder.build
 
-            logger.info(s"Setting bookie affinity group for namespace ${request.namespace}. ${groupData}")
+            logger.info(s"Setting bookie affinity group for namespace ${request.namespace}. $groupData")
             adminClient.namespaces.setBookieAffinityGroup(request.namespace, groupData)
             Future.successful(SetBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
@@ -836,6 +836,8 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     inactiveTopicPolicies.setInactiveTopicDeleteMode(InactiveTopicDeleteMode.delete_when_no_subscriptions)
                 case InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP =>
                     inactiveTopicPolicies.setInactiveTopicDeleteMode(InactiveTopicDeleteMode.delete_when_subscriptions_caught_up)
+                case _ =>
+                    throw new IllegalArgumentException("Invalid inactiveTopicDeleteMode mode")
 
             adminClient.namespaces.setInactiveTopicPolicies(request.namespace, inactiveTopicPolicies)
             Future.successful(SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
@@ -1753,6 +1755,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER => SubscriptionType.Failover
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED => SubscriptionType.Shared
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED => SubscriptionType.Key_Shared
+                case _ => throw new IllegalArgumentException("Subscription type not specified")
 
         try {
             logger.info(s"Setting subscription types enabled policy for namespace ${request.namespace}")
@@ -1965,6 +1968,8 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     pb.GetResourceGroupResponse.ResourceGroup.Unspecified(new ResourceGroupUnspecified())
                 case Some(v) =>
                     pb.GetResourceGroupResponse.ResourceGroup.Specified(new ResourceGroupSpecified(resourceGroup = v))
+                case None =>
+                    pb.GetResourceGroupResponse.ResourceGroup.Unspecified(new ResourceGroupUnspecified())
 
             val resourceGroups = Option(adminClient.resourcegroups.getResourceGroups).map(_.asScala.toSeq).getOrElse(Seq.empty[String])
 

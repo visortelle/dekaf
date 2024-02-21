@@ -49,6 +49,8 @@ object ManagedMessageIdValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedMessageIdValOrRef type")
 
     def toPb(v: ManagedMessageIdValOrRef): pb.ManagedMessageIdValOrRef =
         v.value match

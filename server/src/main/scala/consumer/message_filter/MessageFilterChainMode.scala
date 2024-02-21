@@ -10,6 +10,7 @@ object MessageFilterChainMode:
         mode match
             case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL => MessageFilterChainMode.All
             case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY => MessageFilterChainMode.Any
+            case _                                                       => MessageFilterChainMode.All
 
     def toPb(mode: MessageFilterChainMode): pb.MessageFilterChainMode =
         mode match

@@ -1,11 +1,11 @@
 import React from 'react';
 import s from './BasicMessageFilterValueTargetInput.module.css'
-import { BasicMessageFilterValueTarget } from '../../../../../../basic-message-filter-types';
+import { BasicMessageFilterCurrentMessageValueTarget } from '../../../../../../basic-message-filter-types';
 import Input from '../../../../../../../Input/Input';
 
 export type BasicMessageFilterValueTargetInputProps = {
-  value: BasicMessageFilterValueTarget,
-  onChange: (v: BasicMessageFilterValueTarget) => void,
+  value: BasicMessageFilterCurrentMessageValueTarget,
+  onChange: (v: BasicMessageFilterCurrentMessageValueTarget) => void,
   isReadOnly?: boolean
 };
 

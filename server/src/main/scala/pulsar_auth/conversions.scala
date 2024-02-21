@@ -8,3 +8,4 @@ def credentialsTypePbFromCredentials(credentials: Credentials): pb.CredentialsTy
         case EmptyCredentials(_) => pb.CredentialsType.CREDENTIALS_TYPE_EMPTY
         case OAuth2Credentials(_, _, _, _, _) => pb.CredentialsType.CREDENTIALS_TYPE_OAUTH2
         case JwtCredentials(_, _) => pb.CredentialsType.CREDENTIALS_TYPE_JWT
+        case AuthParamsStringCredentials(_, _, _) => pb.CredentialsType.CREDENTIALS_TYPE_AUTH_PARAMS_STRING

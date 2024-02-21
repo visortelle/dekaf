@@ -1,6 +1,11 @@
 import React from 'react';
 import s from './AnyTestOpTypeSelect.module.css'
-import { AnyTestOp, TestOpArrayAll, TestOpArrayAny } from '../../../../../../basic-message-filter-types';
+import {
+  AnyTestOp,
+  TestOpArrayAll,
+  TestOpArrayAny,
+  TestOpMatchesJSON
+} from '../../../../../../basic-message-filter-types';
 import Select from '../../../../../../../Select/Select';
 import { v4 as uuid } from 'uuid';
 
@@ -48,6 +53,12 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
             type: "group", title: "List", items: [
               { type: "item", title: "where every", value: "TestOpArrayAll" },
               { type: "item", title: "where some", value: "TestOpArrayAny" },
+            ]
+          },
+          {
+            type: "group", title: "JSON", items: [
+              { type: "item", title: "contains JSON", value: "TestOpContainsJSON" },
+              { type: "item", title: "matches JSON", value: "TestOpMatchesJSON" },
             ]
           }
         ]}
@@ -232,6 +243,50 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
               });
               break;
             }
+            case "TestOpMatchesJSON": {
+              if (jsonOps.includes(props.value.op.type)) {
+                props.onChange({
+                  ...props.value,
+                  op: {
+                    type: "TestOpMatchesJSON",
+                    matchesJson: getStringOpValue(props.value.op)
+                  }
+                });
+                return;
+              }
+
+              props.onChange({
+                ...props.value,
+                op: {
+                  type: "TestOpMatchesJSON",
+                  matchesJson: ""
+                }
+              });
+
+              break;
+            }
+            case "TestOpContainsJSON": {
+              if (jsonOps.includes(props.value.op.type)) {
+                props.onChange({
+                  ...props.value,
+                  op: {
+                    type: "TestOpContainsJSON",
+                    containsJson: getStringOpValue(props.value.op)
+                  }
+                });
+                return;
+              }
+
+              props.onChange({
+                ...props.value,
+                op: {
+                  type: "TestOpContainsJSON",
+                  containsJson: ""
+                }
+              });
+
+              break;
+            }
             case "TestOpArrayAll": {
               if (props.value.op.type === "TestOpArrayAny") {
                 const newOp: TestOpArrayAll = {
@@ -309,6 +364,11 @@ const numberOps: AnyTestOp['op']['type'][] = [
   'TestOpNumberGte',
 ];
 
+const jsonOps: AnyTestOp['op']['type'][] = [
+  'TestOpMatchesJSON',
+  'TestOpContainsJSON'
+];
+
 export function getStringOpValue(op: AnyTestOp['op']): string {
   switch (op.type) {
     case "TestOpNumberEq": return op.eq;
@@ -322,6 +382,9 @@ export function getStringOpValue(op: AnyTestOp['op']): string {
     case "TestOpStringStartsWith": return op.startsWith;
     case "TestOpStringEndsWith": return op.endsWith;
     case "TestOpStringMatchesRegex": return op.pattern;
+
+    case "TestOpMatchesJSON": return op.matchesJson;
+    case "TestOpContainsJSON": return op.containsJson;
 
     default: throw new Error(`Can't get unary value of ${op.type}`);
   }

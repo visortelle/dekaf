@@ -7,9 +7,7 @@ import consumer.message_filter.basic_message_filter.operations.TestOpTrait
 import consumer.session_runner.{ConsumerSessionContext, CurrentMessageVarName, JsonValue, MessageValueAsJson, TestResult}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
-case class BasicMessageFilter(
-    op: BasicMessageFilterOp
-):
+case class BasicMessageFilter(op: BasicMessageFilterOp):
     private var jsFn: Option[Value] = None
 
     def test(polyglotContext: Context, target: BasicMessageFilterTarget): TestResult =

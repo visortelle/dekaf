@@ -10,7 +10,8 @@ type ConsumerSessionEvent =
     ConsumerSessionEventMessagesProcessed |
     ConsumerSessionEventTimeElapsed |
     ConsumerSessionEventTopicEndReached |
-    ConsumerSessionEventUnexpectedErrorOccurred
+    ConsumerSessionEventUnexpectedErrorOccurred |
+    ConsumerSessionEventMessageId
 
 object ConsumerSessionEvent:
     def fromPb(v: pb.ConsumerSessionEvent): ConsumerSessionEvent = v.event match
@@ -22,6 +23,8 @@ object ConsumerSessionEvent:
         case pb.ConsumerSessionEvent.Event.EventTimeElapsed(evt)             => ConsumerSessionEventTimeElapsed.fromPb(evt)
         case pb.ConsumerSessionEvent.Event.EventTopicEndReached(evt)         => ConsumerSessionEventTopicEndReached.fromPb(evt)
         case pb.ConsumerSessionEvent.Event.EventUnexpectedErrorOccurred(evt) => ConsumerSessionEventUnexpectedErrorOccurred.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventMessageId(evt)               => ConsumerSessionEventMessageId.fromPb(evt)
+        case _ => throw new IllegalArgumentException(s"Unknown ConsumerSessionEvent type.")
 
     def toPb(v: ConsumerSessionEvent): pb.ConsumerSessionEvent =
         val eventPb = v match
@@ -41,5 +44,8 @@ object ConsumerSessionEvent:
                 pb.ConsumerSessionEvent.Event.EventTopicEndReached(ConsumerSessionEventTopicEndReached.toPb(v))
             case v: ConsumerSessionEventUnexpectedErrorOccurred =>
                 pb.ConsumerSessionEvent.Event.EventUnexpectedErrorOccurred(ConsumerSessionEventUnexpectedErrorOccurred.toPb(v))
+            case v: ConsumerSessionEventMessageId =>
+                pb.ConsumerSessionEvent.Event.EventMessageId(ConsumerSessionEventMessageId.toPb(v))
+
 
         pb.ConsumerSessionEvent(event = eventPb)

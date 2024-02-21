@@ -75,6 +75,16 @@ export type TestOpStringMatchesRegex = {
   flags: string
 }
 
+export type TestOpMatchesJSON = {
+  type: "TestOpMatchesJSON",
+  matchesJson: string
+}
+
+export type TestOpContainsJSON = {
+  type: "TestOpContainsJSON",
+  containsJson: string
+}
+
 export type TestOpArraySize = {
   type: "TestOpArraySize",
   // TODO
@@ -143,7 +153,9 @@ export type AnyTestOp = {
   TestOpObjectHasKey |
   TestOpObjectHasValue |
   TestOpObjectHasValueAtKey |
-  TestOpObjectSize
+  TestOpObjectSize |
+  TestOpMatchesJSON |
+  TestOpContainsJSON
 }
 
 export type BasicMessageFilterBracesMode = "all" | "any";
@@ -162,13 +174,13 @@ export type BasicMessageFilterOp = {
   reactKey: string
 }
 
-export type BasicMessageFilterKeyTarget = {
-  type: "BasicMessageFilterKeyTarget",
+export type BasicMessageFilterCurrentMessageKeyTarget = {
+  type: "BasicMessageFilterCurrentMessageKeyTarget",
   jsonFieldSelector?: string
 }
 
-export type BasicMessageFilterValueTarget = {
-  type: "BasicMessageFilterValueTarget",
+export type BasicMessageFilterCurrentMessageValueTarget = {
+  type: "BasicMessageFilterCurrentMessageValueTarget",
   jsonFieldSelector?: string
 }
 
@@ -190,8 +202,8 @@ export type BasicMessageFilterFieldTarget = {
 export type BasicMessageFilterTarget = {
   type: "BasicMessageFilterTarget",
   target:
-  BasicMessageFilterKeyTarget |
-  BasicMessageFilterValueTarget |
+  BasicMessageFilterCurrentMessageKeyTarget |
+  BasicMessageFilterCurrentMessageValueTarget |
   BasicMessageFilterPropertyTarget |
   BasicMessageFilterSessionContextStateTarget,
   jsonModifier?: JsonModifier
