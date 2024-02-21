@@ -101,14 +101,12 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
               <FormLabel
                 content={<H3>Search in Contexts</H3>}
               />
-              {selectedItem !== undefined && (
-                <ResourceMatchersInput
-                  value={searchInContexts}
-                  onChange={setSearchInContexts}
-                  libraryContext={props.libraryContext}
-                  isReadOnly={false}
-                />
-              )}
+              <ResourceMatchersInput
+                value={searchInContexts}
+                onChange={setSearchInContexts}
+                libraryContext={props.libraryContext}
+                isReadOnly={false}
+              />
             </FormItem>
           </div>
         )}
@@ -123,6 +121,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
             onDeleted={(deletedItemId) => {
               if (selectedItemId === deletedItemId) {
                 setSelectedItemId(undefined);
+                setSelectedItem(undefined);
               }
 
               // TODO
