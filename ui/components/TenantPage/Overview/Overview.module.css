@@ -9,6 +9,9 @@
 .LeftPanel {
   padding: 24rem 12rem 0 12rem;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24rem;
 }
 
 .RightPanel {

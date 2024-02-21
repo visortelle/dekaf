@@ -11,7 +11,8 @@ export type Tab<TK extends string> = {
   render: () => React.ReactNode;
   isRenderAlways?: boolean;
   onClose?: () => void;
-  extraControls?: React.ReactElement
+  extraControls?: React.ReactElement,
+  style?: React.CSSProperties
 }
 
 export type TabsProps<TK extends string> = {
@@ -29,7 +30,6 @@ export type TabsProps<TK extends string> = {
 };
 
 function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
-  const { tabs } = props;
   const scrollToTabRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -83,7 +83,12 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
       <div className={s.TabContent}>
         {props.tabs.map((tab) => {
           return (
-            <TabContent key={tab.key} isShow={props.activeTab === tab.key} isRenderAlways={tab.isRenderAlways}>
+            <TabContent
+              key={tab.key}
+              isShow={props.activeTab === tab.key}
+              isRenderAlways={tab.isRenderAlways}
+              style={tab.style}
+            >
               {tab.render()}
             </TabContent>
           );
@@ -99,6 +104,7 @@ export type TabContentProps = {
   isShow: boolean;
   isRenderAlways?: boolean;
   direction?: 'row' | 'column';
+  style?: React.CSSProperties
   children: React.ReactNode;
 }
 export const TabContent: React.FC<TabContentProps> = (props) => {
@@ -111,7 +117,8 @@ export const TabContent: React.FC<TabContentProps> = (props) => {
       display: props.isShow ? 'flex' : 'none',
       flex: '1 1',
       overflowX: 'hidden',
-      flexDirection: props.direction === 'row' ? 'row' : 'column'
+      flexDirection: props.direction === 'row' ? 'row' : 'column',
+      ...props.style
     }}>
       {props.children}
     </div>

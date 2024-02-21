@@ -1,7 +1,16 @@
 .ConsumerSessions {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
 .BrowseDialog {
   border-top: 1px solid var(--border-color);
+  margin: 0 12rem;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .NewSessionButton {

@@ -46,6 +46,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
               />
             ),
             isRenderAlways: true,
+            style: { overflow: 'hidden' }
           },
           {
             key: 'notes',

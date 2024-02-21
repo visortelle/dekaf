@@ -53,6 +53,16 @@ const AllObjectTypes: React.FC<AllObjectTypesProps> = (props) => {
 
   return (
     <div className={s.Library}>
+      <div className={s.ResourceMatchers}>
+        <H3>Search in Contexts</H3>
+
+        <ResourceMatchersInput
+          value={resourceMatchers}
+          onChange={setResourceMatchers}
+          libraryContext={props.libraryContext}
+        />
+      </div>
+
       <div>
         {
           itemTypes.sort((a, b) => getReadableItemType(a).localeCompare(getReadableItemType(b))).map(itemType => {
@@ -101,16 +111,6 @@ const AllObjectTypes: React.FC<AllObjectTypesProps> = (props) => {
             );
           })
         }
-      </div>
-
-      <div className={s.ResourceMatchers}>
-        <H3>Search in Contexts</H3>
-
-        <ResourceMatchersInput
-          value={resourceMatchers}
-          onChange={setResourceMatchers}
-          libraryContext={props.libraryContext}
-        />
       </div>
     </div>
   );

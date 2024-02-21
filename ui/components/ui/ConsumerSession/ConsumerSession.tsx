@@ -416,7 +416,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
       {currentView === 'messages' && messages.length === 0 && (
         <div className={s.NoDataToShow}>
-          {sessionState === 'initializing' && 'Initializing session.'}
+          {sessionState === 'initializing' && 'Initializing session...'}
           {sessionState === 'running' && 'Awaiting for new messages...'}
           {sessionState === 'paused' && 'No messages where loaded.'}
         </div>

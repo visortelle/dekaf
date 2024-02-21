@@ -4,7 +4,6 @@ import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
 import BrowseDialog from '../../../LibraryBrowser/dialogs/BrowseDialog/BrowseDialog';
 import { navigateToConsumerSession } from '../navigateToConsumerSession';
 import { useNavigate } from 'react-router';
-import Button from '../../../Button/Button';
 import addIcon from './add.svg';
 import SmallButton from '../../../SmallButton/SmallButton';
 

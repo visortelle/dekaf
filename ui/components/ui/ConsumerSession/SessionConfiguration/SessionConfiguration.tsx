@@ -67,7 +67,11 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionConfig>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
+    return (
+      <div style={{ margin: '12rem', flex: '1' }}>
+        <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
+      </div>
+    );
   }
 
   const item = resolveResult.value;
