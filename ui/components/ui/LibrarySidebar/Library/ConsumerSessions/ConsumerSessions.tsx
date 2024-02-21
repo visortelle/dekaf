@@ -4,6 +4,9 @@ import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
 import BrowseDialog from '../../../LibraryBrowser/dialogs/BrowseDialog/BrowseDialog';
 import { navigateToConsumerSession } from '../navigateToConsumerSession';
 import { useNavigate } from 'react-router';
+import Button from '../../../Button/Button';
+import addIcon from './add.svg';
+import SmallButton from '../../../SmallButton/SmallButton';
 
 export type ConsumerSessionsProps = {
   libraryContext: LibraryContext
@@ -14,6 +17,20 @@ const ConsumerSessions: React.FC<ConsumerSessionsProps> = (props) => {
 
   return (
     <div className={s.ConsumerSessions}>
+      <div className={s.NewSessionButton}>
+        <SmallButton
+          type='primary'
+          text='New Consumer Session'
+          svgIcon={addIcon}
+          onClick={() => {
+            navigateToConsumerSession({
+              libraryContext: props.libraryContext,
+              navigate
+            });
+          }}
+        />
+      </div>
+
       <div className={s.BrowseDialog}>
         <BrowseDialog
           itemType='consumer-session-config'
@@ -21,7 +38,7 @@ const ConsumerSessions: React.FC<ConsumerSessionsProps> = (props) => {
           onCanceled={() => undefined}
           onSelected={(libraryItem) => {
             navigateToConsumerSession({
-              item: libraryItem.spec,
+              session: libraryItem.spec,
               libraryContext: props.libraryContext,
               navigate
             });

@@ -62,7 +62,6 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
       }
 
       if (resCode === Code.NOT_FOUND) {
-        notifyError(`Unable to find the item with id: ${selectedItemId}`);
         setIsSelectRequested(false);
         return;
       }

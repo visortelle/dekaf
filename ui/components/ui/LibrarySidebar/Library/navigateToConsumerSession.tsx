@@ -6,22 +6,22 @@ import { routes } from "../../../routes";
 export type NavigateToConsumerSessionProps = {
   libraryContext: LibraryContext,
   navigate: NavigateFunction,
-  item: ManagedItem
+  session?: ManagedItem
 };
 
 export function navigateToConsumerSession(props: NavigateToConsumerSessionProps) {
-  const { navigate, libraryContext, item } = props;
+  const { navigate, libraryContext, session } = props;
 
   if (libraryContext.pulsarResource.type === 'instance') {
     navigate(routes.instance.consumerSession._.get({
-      managedConsumerSessionId: item.metadata.id
+      managedConsumerSessionId: session?.metadata.id
     }));
   }
 
   if (props.libraryContext.pulsarResource.type === 'tenant') {
     navigate(routes.tenants.tenant.consumerSession._.get({
       tenant: props.libraryContext.pulsarResource.tenant,
-      managedConsumerSessionId: item.metadata.id
+      managedConsumerSessionId: session?.metadata.id
     }));
   }
 
@@ -29,7 +29,7 @@ export function navigateToConsumerSession(props: NavigateToConsumerSessionProps)
     navigate(routes.tenants.tenant.namespaces.namespace.consumerSession._.get({
       tenant: props.libraryContext.pulsarResource.tenant,
       namespace: props.libraryContext.pulsarResource.namespace,
-      managedConsumerSessionId: item.metadata.id
+      managedConsumerSessionId: session?.metadata.id
     }));
   }
 
@@ -39,7 +39,7 @@ export function navigateToConsumerSession(props: NavigateToConsumerSessionProps)
       namespace: props.libraryContext.pulsarResource.namespace,
       topic: props.libraryContext.pulsarResource.topic,
       topicPersistency: props.libraryContext.pulsarResource.topicPersistency,
-      managedConsumerSessionId: item.metadata.id
+      managedConsumerSessionId: session?.metadata.id
     }));
   }
 }

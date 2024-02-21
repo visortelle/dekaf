@@ -27,7 +27,7 @@ const BrowseLibraryButton: React.FC<BrowseLibraryButtonProps> = (props) => {
       onPick={(v) => {
         if (v.metadata.type === 'consumer-session-config') {
           navigateToConsumerSession({
-            item: v,
+            session: v,
             libraryContext: props.libraryContext,
             navigate
           });
