@@ -62,7 +62,7 @@ export const pulsarReleaseLines: PulsarReleaseLine[] = [
     knownVersions: [
       {
         version: "3.2.0",
-        downloadUrl: "https://www.apache.org/dyn/closer.lua/pulsar/pulsar-3.2.0/apache-pulsar-3.2.0-bin.tar.gz?action=download",
+        downloadUrl: "https://apache-pulsar-releases.s3.us-east-2.amazonaws.com/apache-pulsar-3.2.0-bin.tar.gz",
         sha512: "194b3a4d51b972ec58c8f2ae4ccaadb3cac229984ea5e7e8a396a1210d4b3adde83ab30ef31c9aa384942f81959da91ab250f5689cd010b4ae71a2b10956af2c"
       }
     ]
