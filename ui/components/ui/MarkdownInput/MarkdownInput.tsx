@@ -14,6 +14,7 @@ export type MarkdownInputProps = {
   minHeight?: number,
   isReadOnly?: boolean,
   modalTitle?: string,
+  isHidden?: boolean
 };
 
 const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
@@ -28,7 +29,7 @@ const MarkdownInput: React.FC<MarkdownInputProps> = (props) => {
       }}
     >
       <div style={{ marginBottom: '8rem' }}>
-        <MarkdownPreview markdown={props.value} />
+        <MarkdownPreview markdown={props.value} isHidden={props.isHidden} />
       </div>
       {props.value === '' && <div className={s.EmptyMarkdown}>No content</div>}
 

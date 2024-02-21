@@ -85,13 +85,9 @@ const Library: React.FC<LibraryProps> = (props) => {
                       libraryContext={props.libraryContext}
                       availableForContexts={resourceMatchers}
                       onItemCount={(itemCount) => {
-                        if (itemCount === undefined) {
-                          return;
-                        }
-
                         setItemCountPerType(v => ({
                           ...v,
-                          [itemType]: itemCount
+                          [itemType]: itemCount || 0
                         }));
                       }}
                       isHideSelectButton={itemType !== 'consumer-session-config'}
