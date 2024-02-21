@@ -186,7 +186,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         }),
         text: "Details",
         onClick: () => { },
-        position: 'right',
+        position: 'left',
         type: "regular",
         testId: "topic-details-button",
         active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.details._.path, pathname))
@@ -205,13 +205,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       text: "Schema",
       onClick: () => { },
       type: "regular",
-      position: 'right',
+      position: 'left',
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
     },
     {
       text: "Delete",
       type: "danger",
-      position: 'right',
+      position: 'left',
       testId: "topic-page-delete-button",
       onClick: () =>
         modals.push({

@@ -109,24 +109,28 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
     <div className={s.SearchResults}>
       {(
         <>
-          <div className={s.Filters}>
-            <Input
-              placeholder="Filter by name, description, or id"
-              value={filterInputValue}
-              onChange={setFilterInputValue}
-              appearance='no-borders'
-              clearable
-            />
-          </div>
-          <div className={s.Toolbar}>
-            <div style={{ display: 'inline-flex' }}>
-              <SortInput<SortOption>
-                options={['Name', 'Last Modified']}
-                value={sort}
-                onChange={setSort}
-              />
-            </div>
-          </div>
+          {props.items.length > 0 && (
+            <>
+              <div className={s.Filters}>
+                <Input
+                  placeholder="Filter by name, description, or id"
+                  value={filterInputValue}
+                  onChange={setFilterInputValue}
+                  appearance='no-borders'
+                  clearable
+                />
+              </div>
+              <div className={s.Toolbar}>
+                <div style={{ display: 'inline-flex' }}>
+                  <SortInput<SortOption>
+                    options={['Name', 'Last Modified']}
+                    value={sort}
+                    onChange={setSort}
+                  />
+                </div>
+              </div>
+            </>
+          )}
           {filteredItems.length === 0 && (
             <div className={s.NothingToShow}>
               <NothingToShow />

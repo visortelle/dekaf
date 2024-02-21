@@ -60,7 +60,8 @@ sanitizeOptions.allowedAttributes = Object.assign(sanitizeOptions.allowedAttribu
 sanitizeOptions.allowedSchemes.push('data');
 
 export type MarkdownPreviewProps = {
-  markdown: string
+  markdown: string,
+  isHidden?: boolean
 };
 
 const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
@@ -82,9 +83,11 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
     // XXX - Timeout here is a fix of broken mermaid rendering in case
     // we display the markdown preview component inside a modal dialog.
     mermaidRerenderTimeout.current = setTimeout(() => {
-      mermaid.contentLoaded();
+      if (!props.isHidden) { // Fix errors that happen when mermaid container is in DOM, but isn't visible
+        mermaid.contentLoaded();
+      }
     }, 300);
-  }, [renderedMarkdown]);
+  }, [renderedMarkdown, props.isHidden]);
 
   return (
     <div className={s.MarkdownPreview}>

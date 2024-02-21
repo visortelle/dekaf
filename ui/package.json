@@ -38,7 +38,7 @@
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "markdown-it": "^14.0.0",
-    "mermaid": "^10.6.1",
+    "mermaid": "^10.8.0",
     "monaco-editor": "^0.44.0",
     "nanoid": "^4.0.0",
     "numeral": "^2.0.6",
