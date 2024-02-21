@@ -51,7 +51,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
   };
 
   let flexDirection: 'row' | 'column' = 'row';
-  if (itemSpec.target.target.type === "BasicMessageFilterValueTarget" && itemSpec.target.target.jsonFieldSelector !== undefined) {
+  if (itemSpec.target.target.type === "BasicMessageFilterCurrentMessageValueTarget" && itemSpec.target.target.jsonFieldSelector !== undefined) {
     flexDirection = 'column';
   }
 
@@ -91,8 +91,8 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
             <Select<TargetType>
               size='small'
               list={[
-                { type: 'item', title: 'message value', value: 'BasicMessageFilterValueTarget' },
-                { type: 'item', title: 'message key', value: 'BasicMessageFilterKeyTarget' },
+                { type: 'item', title: 'message value', value: 'BasicMessageFilterCurrentMessageValueTarget' },
+                { type: 'item', title: 'message key', value: 'BasicMessageFilterCurrentMessageKeyTarget' },
                 // { type: 'item', title: 'message property', value: 'BasicMessageFilterPropertyTarget' },
                 // { type: 'item', title: 'state', value: 'BasicMessageFilterSessionContextStateTarget' }
               ]}
@@ -100,11 +100,11 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
               onChange={v => {
                 let newTarget: BasicMessageFilterTarget;
                 switch (v) {
-                  case "BasicMessageFilterKeyTarget":
-                    newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterKeyTarget", jsonFieldSelector: "" } };
+                  case "BasicMessageFilterCurrentMessageKeyTarget":
+                    newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterCurrentMessageKeyTarget", jsonFieldSelector: "" } };
                     break;
-                  case "BasicMessageFilterValueTarget":
-                    newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterValueTarget", jsonFieldSelector: "" } };
+                  case "BasicMessageFilterCurrentMessageValueTarget":
+                    newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterCurrentMessageValueTarget", jsonFieldSelector: "" } };
                     break;
                   case "BasicMessageFilterPropertyTarget":
                     newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterPropertyTarget", propertyKey: "" } };
@@ -119,15 +119,15 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
               isReadOnly={props.isReadOnly}
             />
           </div>
-          {target.type === "BasicMessageFilterValueTarget" && (
+          {target.type === "BasicMessageFilterCurrentMessageValueTarget" && (
             <Toggle
               value={target.jsonFieldSelector !== undefined}
               onChange={(v) => {
-                if (target.type === "BasicMessageFilterValueTarget") {
+                if (target.type === "BasicMessageFilterCurrentMessageValueTarget") {
                   const newTarget: BasicMessageFilterTarget = {
                     ...itemSpec.target,
                     target: {
-                      type: "BasicMessageFilterValueTarget",
+                      type: "BasicMessageFilterCurrentMessageValueTarget",
                       jsonFieldSelector: v ? '' : undefined,
                     }
                   };
@@ -141,7 +141,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
           <Toggle
             value={itemSpec.target.jsonModifier !== undefined}
             onChange={(v) => {
-              if (target.type === "BasicMessageFilterValueTarget") {
+              if (target.type === "BasicMessageFilterCurrentMessageValueTarget" || target.type === "BasicMessageFilterCurrentMessageKeyTarget") {
                 const newTarget: BasicMessageFilterTarget = {
                   ...itemSpec.target,
                   jsonModifier: v ? {
@@ -160,7 +160,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
         </div>
 
         <div className={s.Target}>
-          {target.type === "BasicMessageFilterValueTarget" && target.jsonFieldSelector !== undefined && (
+          {target.type === "BasicMessageFilterCurrentMessageValueTarget" && target.jsonFieldSelector !== undefined && (
             <div style={{ display: 'flex', alignItems: 'center', flex: '1', marginTop: '8rem' }}>
               <BasicMessageFilterValueTargetInput
                 value={target}

@@ -42,6 +42,8 @@ object ManagedConsumerSessionEventSpec:
             ManagedConsumerSessionEventSpec(event = ConsumerSessionEventTopicEndReached.fromPb(evt))
         case pb.ManagedConsumerSessionEventSpec.Event.EventUnexpectedErrorOccurred(evt) =>
             ManagedConsumerSessionEventSpec(event = ConsumerSessionEventUnexpectedErrorOccurred.fromPb(evt))
+        case _ =>
+            throw new IllegalArgumentException("Invalid ManagedConsumerSessionEventSpec type")
 
     def toPb(v: ManagedConsumerSessionEventSpec): pb.ManagedConsumerSessionEventSpec =
         pb.ManagedConsumerSessionEventSpec(
@@ -100,6 +102,8 @@ object ManagedConsumerSessionEventValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedConsumerSessionEventValOrRef type")
 
     def toPb(v: ManagedConsumerSessionEventValOrRef): pb.ManagedConsumerSessionEventValOrRef =
         v.value match

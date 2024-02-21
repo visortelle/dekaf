@@ -71,6 +71,8 @@ object ManagedConsumerSessionConfigValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedConsumerSessionConfigValOrRef type")
 
     def toPb(v: ManagedConsumerSessionConfigValOrRef): pb.ManagedConsumerSessionConfigValOrRef =
         v.value match

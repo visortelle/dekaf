@@ -13,6 +13,8 @@ import TestOpNumberLtInput from './TestOpNumberLtInput/TestOpNumberLtInput';
 import TestOpNumberLteInput from './TestOpNumberLteInput/TestOpNumberLteInput';
 import TestOpNumberGtInput from './TestOpNumberGtInput/TestOpNumberGtInput';
 import TestOpNumberGteInput from './TestOpNumberGteInput/TestOpNumberGteInput';
+import TestOpMatchesJSONInput from "./TestOpMatchesJSONInput/TestOpMatchesJSONInput";
+import TestOpContainsJSONInput from "./TestOpContainsJSONInput/TestOpContainsJSONInput";
 
 export type AnyTestOpInputProps = {
   value: AnyTestOp,
@@ -94,7 +96,18 @@ const AnyTestOpInput: React.FC<AnyTestOpInputProps> = (props) => {
           isReadOnly={props.isReadOnly}
         />
       )}
-
+      {props.value.op.type === "TestOpMatchesJSON" && (
+        <TestOpMatchesJSONInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
+      {props.value.op.type === "TestOpContainsJSON" && (
+        <TestOpContainsJSONInput
+          value={props.value.op}
+          onChange={(v) => props.onChange({ ...props.value, op: v })}
+        />
+      )}
       {props.value.op.type === "TestOpArrayAll" && (
         <TestOpArrayAllInput
           value={props.value.op}

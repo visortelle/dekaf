@@ -60,6 +60,8 @@ object ManagedDateTimeValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedDateTimeValOrRef type")
 
     def toPb(v: ManagedDateTimeValOrRef): pb.ManagedDateTimeValOrRef =
         v.value match

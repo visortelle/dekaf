@@ -17,7 +17,8 @@ object ManagedTopicSelectorSpec:
                 ManagedTopicSelectorSpec(topicSelector = MultiTopicSelector.fromPb(v))
             case pb.ManagedTopicSelectorSpec.TopicSelector.NamespacedRegexTopicSelector(v) =>
                 ManagedTopicSelectorSpec(topicSelector = NamespacedRegexTopicSelector.fromPb(v))
-            case _ => throw new Exception("Unknown ManagedTopicSelectorSpec")
+            case _ => 
+                throw new Exception("Invalid ManagedTopicSelectorSpec type")
 
     def toPb(v: ManagedTopicSelectorSpec): pb.ManagedTopicSelectorSpec =
         v.topicSelector match
@@ -69,7 +70,8 @@ object ManagedTopicSelectorValOrRef:
                     value = None,
                     reference = Some(v)
                 )
-            case _ => throw new Exception("Unknown ManagedTopicSelectorValOrRef")
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedTopicSelectorValOrRef type")
 
     def toPb(v: ManagedTopicSelectorValOrRef): pb.ManagedTopicSelectorValOrRef =
         v.value match

@@ -2,6 +2,7 @@ package consumer.message_filter.basic_message_filter.targets
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import _root_.consumer.json_modifier.JsonModifier
+import consumer.message_filter.basic_message_filter.targets.impl.{BasicMessageFilterCurrentMessageKeyTarget, BasicMessageFilterCurrentMessageValueTarget}
 
 case class BasicMessageFilterTarget(
     target: BasicMessageFilterTargetTrait,
@@ -9,10 +10,7 @@ case class BasicMessageFilterTarget(
 ) extends BasicMessageFilterTargetTrait:
     def resolveVarName(): String = jsonModifier match
         case None => target.resolveVarName()
-        case Some(modifier) =>
-            s"""
-               |(${modifier.modifier.jsCode})(${target.resolveVarName()})
-               |""".stripMargin
+        case Some(modifier) => s"(${modifier.modifier.jsCode})(${target.resolveVarName()})"
 
 object BasicMessageFilterTarget:
     def fromPb(v: pb.BasicMessageFilterTarget): BasicMessageFilterTarget =
@@ -21,12 +19,12 @@ object BasicMessageFilterTarget:
         v.target match
             case pb.BasicMessageFilterTarget.Target.TargetKey(target) =>
                 BasicMessageFilterTarget(
-                    target = BasicMessageFilterKeyTarget.fromPb(target),
+                    target = BasicMessageFilterCurrentMessageKeyTarget.fromPb(target),
                     jsonModifier = jsonModifier
                 )
             case pb.BasicMessageFilterTarget.Target.TargetValue(target) =>
                 BasicMessageFilterTarget(
-                    target = BasicMessageFilterValueTarget.fromPb(target),
+                    target = BasicMessageFilterCurrentMessageValueTarget.fromPb(target),
                     jsonModifier = jsonModifier
                 )
             case _ => throw new Exception("Failed to convert BasicMessageFilterTarget. Unknown type")
@@ -35,13 +33,13 @@ object BasicMessageFilterTarget:
         val jsonModifier = v.jsonModifier.map(JsonModifier.toPb)
 
         v.target match
-            case target: BasicMessageFilterKeyTarget =>
+            case target: BasicMessageFilterCurrentMessageKeyTarget =>
                 pb.BasicMessageFilterTarget(
-                    target = pb.BasicMessageFilterTarget.Target.TargetKey(BasicMessageFilterKeyTarget.toPb(target)),
+                    target = pb.BasicMessageFilterTarget.Target.TargetKey(BasicMessageFilterCurrentMessageKeyTarget.toPb(target)),
                     jsonModifier = jsonModifier
                 )
-            case target: BasicMessageFilterValueTarget =>
+            case target: BasicMessageFilterCurrentMessageValueTarget =>
                 pb.BasicMessageFilterTarget(
-                    target = pb.BasicMessageFilterTarget.Target.TargetValue(BasicMessageFilterValueTarget.toPb(target)),
+                    target = pb.BasicMessageFilterTarget.Target.TargetValue(BasicMessageFilterCurrentMessageValueTarget.toPb(target)),
                     jsonModifier = jsonModifier
                 )

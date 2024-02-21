@@ -110,7 +110,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
                 target: {
                   type: "BasicMessageFilterTarget",
                   target: {
-                    type: "BasicMessageFilterValueTarget"
+                    type: "BasicMessageFilterCurrentMessageValueTarget"
                   }
                 }
               }
@@ -220,7 +220,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
           target: {
             type: "BasicMessageFilterTarget",
             target: {
-              type: "BasicMessageFilterValueTarget",
+              type: "BasicMessageFilterCurrentMessageValueTarget",
             }
           },
         }

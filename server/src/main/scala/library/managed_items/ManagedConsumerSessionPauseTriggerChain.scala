@@ -59,6 +59,8 @@ object ManagedConsumerSessionPauseTriggerChainValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedConsumerSessionPauseTriggerChainValOrRef type")
 
     def toPb(v: ManagedConsumerSessionPauseTriggerChainValOrRef): pb.ManagedConsumerSessionPauseTriggerChainValOrRef =
         v.value match

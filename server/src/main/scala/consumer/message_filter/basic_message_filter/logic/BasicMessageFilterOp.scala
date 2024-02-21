@@ -21,11 +21,11 @@ case class BasicMessageFilterOp(
             case braces: BasicMessageFilterBraces =>
                 val allOpsFns = "[" + braces.ops.map(_.genJsFnCode(target)).mkString(",") + "]"
                 val assignResult = braces.mode match
-                    case BasicMessageFilterBracesMode.All => s"const result = ${allOpsFns}.every(fn => fn());"
-                    case BasicMessageFilterBracesMode.Any => s"const result = ${allOpsFns}.some(fn => fn());"
+                    case BasicMessageFilterBracesMode.All => s"const result = $allOpsFns.every(fn => fn());"
+                    case BasicMessageFilterBracesMode.Any => s"const result = $allOpsFns.some(fn => fn());"
 
                 s"""(() => {
-                   |    ${assignResult}
+                   |    $assignResult
                    |    return ${if isNegated then "!result" else "result"};
                    |})""".stripMargin
 

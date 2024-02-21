@@ -55,6 +55,8 @@ object ManagedValueProjectionListValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedValueProjectionListValOrRef type")
 
     def toPb(v: ManagedValueProjectionListValOrRef): pb.ManagedValueProjectionListValOrRef =
         v.value match

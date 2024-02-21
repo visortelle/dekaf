@@ -61,6 +61,8 @@ object ManagedRelativeDateTimeValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedRelativeDateTimeValOrRef type")
 
 
     def toPb(v: ManagedRelativeDateTimeValOrRef): pb.ManagedRelativeDateTimeValOrRef =

@@ -8,10 +8,11 @@ enum RegexSubscriptionMode:
 object RegexSubscriptionMode:
     def fromPb(v: pb.RegexSubscriptionMode): RegexSubscriptionMode =
         v match
-            case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY => RegexSubscriptionMode.PersistentOnly
+            case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY     => RegexSubscriptionMode.PersistentOnly
             case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY => RegexSubscriptionMode.NonPersistentOnly
-            case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS => RegexSubscriptionMode.All
-        
+            case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS          => RegexSubscriptionMode.All
+            case _                                                                    => throw new IllegalArgumentException(s"Unknown RegexSubscriptionMode.")
+
     def toPb(v: RegexSubscriptionMode): pb.RegexSubscriptionMode =
         v match
             case RegexSubscriptionMode.PersistentOnly => pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY

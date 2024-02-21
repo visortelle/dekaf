@@ -12,6 +12,8 @@ object BasicMessageFilterBracesMode:
                 BasicMessageFilterBracesMode.All
             case pb.BasicMessageFilterBracesMode.BASIC_MESSAGE_FILTER_BRACES_MODE_ANY =>
                 BasicMessageFilterBracesMode.Any
+            case _ =>
+                BasicMessageFilterBracesMode.All
 
     def toPb(v: BasicMessageFilterBracesMode): pb.BasicMessageFilterBracesMode =
         v match

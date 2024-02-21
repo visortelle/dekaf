@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tools.teal.pulsar.ui.topicpolicies.v1;
+package tools.teal.pulsar.ui.topic_policies.v1;
 
 import "google/rpc/status.proto";
 
@@ -797,7 +797,7 @@ message RemoveMaxMessageSizeResponse {
   google.rpc.Status status = 1;
 }
 
-service TopicpoliciesService {
+service TopicPoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
   rpc SetBacklogQuotas(SetBacklogQuotasRequest) returns (SetBacklogQuotasResponse);

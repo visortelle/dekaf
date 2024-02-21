@@ -1,10 +1,14 @@
 package consumer.message_filter.basic_message_filter.operations
 
 import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
-import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterTargetTrait, BasicMessageFilterVarTarget, BasicMessageFilterFieldTarget}
+import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTargetTrait
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import consumer.message_filter.basic_message_filter.targets.impl.{BasicMessageFilterArrayFieldTarget, BasicMessageFilterVarTarget}
 
-case class TestOpArrayAny(itemFieldTarget: Option[BasicMessageFilterFieldTarget] = None, testItemOp: BasicMessageFilterOp) extends TestOpTrait:
+case class TestOpArrayAny(
+                             itemFieldTarget: Option[BasicMessageFilterArrayFieldTarget] = None,
+                             testItemOp: BasicMessageFilterOp
+) extends TestOpTrait:
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
         val varName = target.resolveVarName()
         val fieldVarCode = itemFieldTarget match
@@ -25,12 +29,12 @@ case class TestOpArrayAny(itemFieldTarget: Option[BasicMessageFilterFieldTarget]
 object TestOpArrayAny:
     def fromPb(v: pb.TestOpArrayAny): TestOpArrayAny =
         TestOpArrayAny(
-            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterFieldTarget.fromPb),
+            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterArrayFieldTarget.fromPb),
             testItemOp = BasicMessageFilterOp.fromPb(v.testItemOp.get)
         )
 
     def toPb(v: TestOpArrayAny): pb.TestOpArrayAny =
         pb.TestOpArrayAny(
-            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterFieldTarget.toPb),
+            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterArrayFieldTarget.toPb),
             testItemOp = Some(BasicMessageFilterOp.toPb(v.testItemOp))
         )

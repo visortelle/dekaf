@@ -63,6 +63,8 @@ object ManagedMessageFilterChainValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedMessageFilterChainValOrRef type")
 
     def toPb(v: ManagedMessageFilterChainValOrRef): pb.ManagedMessageFilterChainValOrRef =
         v.value match
