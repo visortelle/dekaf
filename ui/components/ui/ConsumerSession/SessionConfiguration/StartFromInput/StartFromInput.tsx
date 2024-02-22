@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './StartFromInput.module.css'
 import Select, { List } from '../../../Select/Select';
 import DatetimePicker from '../../../DatetimePicker/DatetimePicker';
@@ -42,6 +42,13 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionStartFrom>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }

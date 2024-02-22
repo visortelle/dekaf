@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './ColoringRuleChainInput.module.css'
 import ColoringRuleInput from './ColoringRuleInput/ColoringRuleInput';
 import { ManagedColoringRule, ManagedColoringRuleChain, ManagedColoringRuleChainSpec, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
@@ -22,6 +22,12 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedColoringRuleChain>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
 
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
