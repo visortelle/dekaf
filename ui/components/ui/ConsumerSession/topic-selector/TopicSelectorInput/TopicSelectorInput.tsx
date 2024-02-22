@@ -58,14 +58,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     `${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}` :
     undefined;
 
-  let list: List<ManagedTopicSelectorSpec['topicSelector']['type']> = [
-    { type: 'item', title: 'Specific Topic(s)', value: 'multi-topic-selector' },
-    { type: 'item', title: 'Namespaced RegExp', value: 'namespaced-regex-topic-selector' },
-  ];
-
-  if (props.libraryContext.pulsarResource.type === 'topic') {
-    list = [{ type: 'item', title: 'Current Topic', value: 'current-topic' }, ...list];
-  }
+  const isNotApplicableInThisContext = props.value.val?.spec.topicSelector.type === 'current-topic' && props.libraryContext.pulsarResource.type !== 'topic';
 
   return (
     <div className={s.TopicsSelectorsInput} ref={hoverRef}>
@@ -97,7 +90,11 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
 
       <FormItem>
         <Select<ManagedTopicSelectorSpec['topicSelector']['type']>
-          list={list}
+          list={[
+            { type: 'item', title: 'Specific Topic(s)', value: 'multi-topic-selector' },
+            { type: 'item', title: 'Namespaced RegExp', value: 'namespaced-regex-topic-selector' },
+            { type: 'item', title: 'Current Topic', value: 'current-topic' }
+          ]}
           onChange={(v) => {
             if (v === 'current-topic') {
               onSpecChange({ topicSelector: { type: 'current-topic' } });
@@ -250,6 +247,9 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
             />
           </FormItem>
         </>
+      )}
+      {isNotApplicableInThisContext && (
+        <strong style={{ color: 'var(--accent-color-red)', display: 'block', marginTop: '-4rem' }}>The topic selector is not applicable in this context.</strong>
       )}
     </div>
   );
