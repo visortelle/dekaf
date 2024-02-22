@@ -9,7 +9,7 @@ clean:
 	rm -rf ../demoapp/src/main/scala/pb
 
 .PHONY: build
-build: build-ui build-demoapp
+build: check-breaking-changes build-ui build-demoapp
 
 define buf_build
 	cd ./proto && \
@@ -17,6 +17,15 @@ define buf_build
 	buf lint --path ./tools/teal/pulsar/$(1) && \
 	buf generate --output ../../ --template ./tools/teal/pulsar/$(1)/buf.gen.yaml --path tools/teal/pulsar/$(1) --include-imports --include-wkt
 endef
+
+check-breaking-changes:
+	@echo "Checking for breaking changes..."
+	@$(eval BREAKING_CHANGES := $(shell cd ./proto && buf breaking --against "../../.git#subdir=proto/proto"))
+	@if [ -n "$(BREAKING_CHANGES)" ]; then \
+		echo "Breaking changes detected:"; \
+		echo "$(BREAKING_CHANGES)"; \
+		exit 1; \
+	fi
 
 build-ui:
 	$(call buf_build,ui)
