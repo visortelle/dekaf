@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './ValueProjectionInput.module.css'
 import BasicMessageFilterTargetInput from '../../../SessionConfiguration/FilterChainEditor/FilterEditor/BasicFilterEditor/BasicMessageFilterTargetInput/BasicMessageFilterTargetInput';
 import { LibraryContext } from '../../../../LibraryBrowser/model/library-context';
@@ -23,6 +23,13 @@ const ValueProjectionInput: React.FC<ValueProjectionInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedValueProjection>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }

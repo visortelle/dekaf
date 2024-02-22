@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import s from './TopicSelectorInput.module.css'
 import { ManagedTopicSelector, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
 import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
@@ -28,6 +28,13 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedTopicSelector>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
@@ -249,7 +256,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         </>
       )}
       {isNotApplicableInThisContext && (
-        <strong style={{ color: 'var(--accent-color-red)', display: 'block', marginTop: '-4rem' }}>The topic selector is not applicable in this context.</strong>
+        <span style={{ color: 'var(--accent-color-red)', display: 'block', marginTop: '-4rem' }}>The topic selector is not applicable in this context.</span>
       )}
     </div>
   );

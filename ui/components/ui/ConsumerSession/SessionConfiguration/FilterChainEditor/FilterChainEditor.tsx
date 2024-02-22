@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import * as t from '../../types';
 import { ManagedBasicMessageFilterTargetValOrRef, ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
@@ -35,6 +35,12 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const resolveResult = useManagedItemValue<ManagedMessageFilterChain>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
 
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />

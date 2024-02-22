@@ -66,6 +66,13 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   }, [isAdvancedConfig, isShowAdvanced]);
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionConfig>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return (
       <div style={{ margin: '12rem', flex: '1' }}>

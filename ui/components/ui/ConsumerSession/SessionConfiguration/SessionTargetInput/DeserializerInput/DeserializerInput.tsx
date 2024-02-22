@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './DeserializerInput.module.css'
 import { ManagedDeserializer, ManagedDeserializerSpec, ManagedDeserializerValOrRef } from '../../../../LibraryBrowser/model/user-managed-items';
 import { Deserializer } from '../../../deserializer/deserializer';
@@ -21,6 +21,13 @@ const DeserializerInput: React.FC<DeserializerInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedDeserializer>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
