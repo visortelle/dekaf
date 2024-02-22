@@ -14,7 +14,7 @@ const JsJsonModifier: React.FC<JsJsonModifierProps> = (props) => {
       <CodeEditor
         value={props.value.jsCode}
         onChange={(v) => props.onChange({ ...props.value, jsCode: v || '' })}
-        height={60}
+        height={80}
         language='javascript'
       />
     </div>

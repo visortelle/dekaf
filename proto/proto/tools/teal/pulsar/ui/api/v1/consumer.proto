@@ -359,7 +359,7 @@ message TestOpStringStartsWith {
 
 message TestOpStringEndsWith {
   string ends_with = 1;
-  bool is_case_insensitive = 2;
+  bool is_case_insensitive = 3;
 }
 
 message TestOpStringMatchesRegex {
