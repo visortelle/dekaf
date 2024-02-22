@@ -1,0 +1,7 @@
+.LicenseButton {
+  display: inline-flex;
+  flex-direction: column;
+  white-space: nowrap;
+  justify-content: flex-end;
+  text-align: right;
+}
