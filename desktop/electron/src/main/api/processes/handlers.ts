@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getPaths } from "../fs/handlers";
 import { ActiveChildProcesses, ActiveProcess, ActiveProcesses, ActiveProcessesUpdated, ActiveWindows, DekafRuntimeConfig, DekafToPulsarConnection, DekafWindowClosed, GetActiveProcessesResult, KillProcess, LogEntry, ProcessId, ProcessLogEntryReceived, ProcessLogs, ProcessStatus, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from "./types";
 import { getInstanceConfig } from "../local-pulsar-instances/handlers";
@@ -88,8 +88,8 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
   sendMessage(apiChannel, req);
 
   const resourcePath = app.isPackaged
-  ? path.join(process.resourcesPath, 'assets')
-  : path.join(__dirname, '../../../../assets');
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../../../assets');
 
   const getAssetPath = (...paths: string[]): string => {
     return path.join(resourcePath, ...paths);
@@ -226,10 +226,10 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     win.close();
   }
 
-  if(proc.childProcess.pid !== undefined && process.platform === 'win32') {
-    spawn("taskkill", ["/PID", proc.childProcess.pid.toString(), '/F', '/T'])
+  if (activeProcesses[arg.processId].type.type === 'pulsar-standalone') {
+    killProcessForcefully(proc.childProcess);
   } else {
-    proc.childProcess.kill();
+    killProcess(proc.childProcess);
   }
 
   updateProcessStatus(arg.processId, 'stopping');
@@ -351,9 +351,9 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   };
 
   const processId = uuid();
-  const process = spawn(pulsarBin, processArgs, { env });
-  process.stdout.setEncoding('utf-8');
-  process.stderr.setEncoding('utf-8');
+  const proc = spawn(pulsarBin, processArgs, { env });
+  proc.stdout.setEncoding('utf-8');
+  proc.stderr.setEncoding('utf-8');
 
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
@@ -369,25 +369,25 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   const newActiveChildProcesses: ActiveChildProcesses = {
     ...activeChildProcesses,
     [processId]: {
-      childProcess: process,
+      childProcess: proc,
     }
   }
 
   updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
-  process.stdout.on('data', (data) => {
+  proc.stdout.on('data', (data) => {
     (data as string).split('\n\n').forEach(line => {
       appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
     });
   });
 
-  process.stderr.on('data', (data) => {
+  proc.stderr.on('data', (data) => {
     (data as string).split('\n\n').forEach(line => {
       appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
     });
   });
 
-  process.on('exit', (code) => {
+  proc.on('exit', (code) => {
     const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
       'unknown' :
       'failed';
@@ -530,9 +530,9 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const dekafBin = paths.dekafBin;
   const processId = uuid();
 
-  const process = spawn(dekafBin, processArgs, { env });
-  process.stdout.setEncoding('utf-8');
-  process.stderr.setEncoding('utf-8');
+  const proc = spawn(dekafBin, processArgs, { env });
+  proc.stdout.setEncoding('utf-8');
+  proc.stderr.setEncoding('utf-8');
 
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
@@ -552,25 +552,25 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
   const newActiveChildProcesses: ActiveChildProcesses = {
     ...activeChildProcesses,
     [processId]: {
-      childProcess: process,
+      childProcess: proc,
     }
   }
 
   updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
-  process.stdout.on('data', (data) => {
+  proc.stdout.on('data', (data) => {
     (data as string).split('\n\n').forEach(line => {
       appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
     });
   });
 
-  process.stderr.on('data', (data) => {
+  proc.stderr.on('data', (data) => {
     (data as string).split('\n\n').forEach(line => {
       appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
     });
   });
 
-  process.on('exit', (code) => {
+  proc.on('exit', (code) => {
     const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
       'unknown' :
       'failed';
@@ -603,9 +603,9 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
   const dekafDemoappBin = paths.dekafDemoappBin;
   const processId = uuid();
 
-  const process = spawn(dekafDemoappBin, processArgs, { env });
-  process.stdout.setEncoding('utf-8');
-  process.stderr.setEncoding('utf-8');
+  const proc = spawn(dekafDemoappBin, processArgs, { env });
+  proc.stdout.setEncoding('utf-8');
+  proc.stderr.setEncoding('utf-8');
 
   const newActiveProcesses: ActiveProcesses = {
     ...activeProcesses,
@@ -621,25 +621,25 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
   const newActiveChildProcesses: ActiveChildProcesses = {
     ...activeChildProcesses,
     [processId]: {
-      childProcess: process,
+      childProcess: proc,
     }
   }
 
   updateActiveProcesses(newActiveProcesses, newActiveChildProcesses, event);
 
-  process.stdout.on('data', (data) => {
+  proc.stdout.on('data', (data) => {
     (data as string).split('\n\n').forEach(line => {
       appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
     });
   });
 
-  process.stderr.on('data', (data) => {
+  proc.stderr.on('data', (data) => {
     (data as string).split('\n\n').forEach(line => {
       appendLog(processId, { processId, content: line, epoch: Date.now() }, event);
     });
   });
 
-  process.on('exit', (code) => {
+  proc.on('exit', (code) => {
     const processStatus: ProcessStatus = code === 0 || code === sigTermExitCode || code === null ?
       'unknown' :
       'failed';
@@ -649,3 +649,35 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
     deleteProcess(processId);
   });
 }
+
+function killProcess(proc: ChildProcessWithoutNullStreams) {
+  if (proc.pid !== undefined && process.platform === 'win32') {
+    spawn("taskkill", ["/PID", proc.pid.toString(), '/T'])
+  } else {
+    proc.kill();
+  }
+}
+
+function killProcessForcefully(proc: ChildProcessWithoutNullStreams) {
+  if (proc.pid !== undefined && process.platform === 'win32') {
+    spawn("taskkill", ["/PID", proc.pid.toString(), '/T', '/F'])
+  } else {
+    proc.kill('SIGKILL');
+  }
+}
+
+function killAllProcesses() {
+  Object.entries(activeProcesses).forEach(([processId, activeProcess]) => {
+    const proc = activeChildProcesses[processId];
+
+    if (activeProcess.type.type === 'pulsar-standalone') {
+      killProcessForcefully(proc.childProcess);
+    } else {
+      killProcess(proc.childProcess);
+    }
+  });
+}
+
+app.on('will-quit', () => {
+  killAllProcesses();
+});
