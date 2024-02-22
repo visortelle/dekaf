@@ -123,7 +123,7 @@ export function topicSelectorFromManagedSpec(spec: ManagedTopicSelectorSpec, cur
 
   if (topicSelector.type === 'current-topic') {
     if (currentTopicFqn === undefined) {
-      throw new Error('Current topic FQN should be defined for the CurrentTopicSelector');
+      return { type: 'multi-topic-selector', topicFqns: [] };
     }
 
     return { type: 'multi-topic-selector', topicFqns: [currentTopicFqn] };

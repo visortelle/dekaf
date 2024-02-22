@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './SessionTargetInput.module.css'
 import TopicSelectorInput from '../../topic-selector/TopicSelectorInput/TopicSelectorInput';
 import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
@@ -39,6 +39,12 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionTarget>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
 
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />

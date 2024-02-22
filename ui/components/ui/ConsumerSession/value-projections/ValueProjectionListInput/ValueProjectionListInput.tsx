@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './ValueProjectionListInput.module.css'
 import ListInput from '../../../ConfigurationTable/ListInput/ListInput';
 import ValueProjectionInput from './ValueProjectionInput/ValueProjectionInput';
@@ -22,6 +22,13 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedValueProjectionList>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }

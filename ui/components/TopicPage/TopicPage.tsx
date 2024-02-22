@@ -93,7 +93,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const partitionName = isPartition ? props.topic.replace(partitionRegexp, "$2") : undefined;
 
   let topicCrumbType: CrumbType;
-  if (partitioning !== undefined) {
+  if (partitioning?.isPartitioned) {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic-partitioned" : "non-persistent-topic-partitioned"
   } else {
     topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic"

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './FilterEditor.module.css'
 import * as t from '../../../types';
 import JsFilterEditor, { defaultJsFilterValue } from './JsFilterEditor/JsFilterEditor';
@@ -32,6 +32,13 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   })
 
   const resolveResult = useManagedItemValue<ManagedMessageFilter>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }

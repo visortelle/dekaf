@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './BasicMessageFilterTargetInput.module.css'
 import { BasicMessageFilterTarget } from '../../../../../basic-message-filter-types';
 import Select from '../../../../../../Select/Select';
@@ -26,6 +26,13 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedBasicMessageFilterTarget>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
