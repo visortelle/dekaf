@@ -400,7 +400,7 @@ const Session: React.FC<SessionProps> = (props) => {
       <Toolbar
         config={config}
         sessionState={sessionState}
-        messages={messages}
+        messages={messagesToShow}
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded.current}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
