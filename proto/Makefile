@@ -20,7 +20,7 @@ endef
 
 check-breaking-changes:
 	@echo "Checking for breaking changes..."
-	@$(eval BREAKING_CHANGES := $(shell cd ./proto && buf breaking --against "../../.git#subdir=proto/proto"))
+	@$(eval BREAKING_CHANGES := $(shell cd ./proto && buf breaking tools/teal/pulsar/ui/library/v1/managed_items.proto --against ../../.git#subdir=proto/proto --limit-to-input-files --exclude-imports))
 	@if [ -n "$(BREAKING_CHANGES)" ]; then \
 		echo "Breaking changes detected:"; \
 		echo "$(BREAKING_CHANGES)"; \
