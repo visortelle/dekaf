@@ -18,6 +18,7 @@ import { sendMessage } from "../api/send-message";
 import { getConnectionConfig } from "../remote-pulsar-connections/handlers";
 import tcpPortUsed from 'tcp-port-used';
 import nodeProcess from 'node:process';
+import electron from 'electron';
 
 portfinder.setBasePort(13200);
 portfinder.setHighestPort(13300);
@@ -97,6 +98,12 @@ function updateProcessStatus(processId: ProcessId, status: ProcessStatus) {
 
   if (proc.type.type === "dekaf" && status === 'ready') {
     const url = proc.type.runtimeConfig.publicBaseUrl;
+
+    if (proc.type.isOpenInBrowser) {
+      electron.shell.openExternal(url);
+      return;
+    }
+
     const win = new BrowserWindow({
       width: 1280,
       height: 800,
@@ -196,7 +203,7 @@ export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: Spaw
       await runPulsarStandalone(arg.process.instanceId, event);
       return;
     } else if (arg.process.type === "dekaf") {
-      await runDekaf(arg.process.connection, event);
+      await runDekaf(arg.process.connection, event, arg.process.isOpenInBrowser);
     } else if (arg.process.type === "dekaf-demoapp") {
       await runDekafDemoapp(arg.process.connection, event);
     }
@@ -226,7 +233,7 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     win.close();
   }
 
-  if (activeProcesses[arg.processId].type.type === 'pulsar-standalone') {
+  if (activeProcesses[arg.processId].type.type === 'pulsar-standalone' || activeProcesses[arg.processId].type.type === 'dekaf-demoapp') {
     killProcessForcefully(proc.childProcess);
   } else {
     killProcess(proc.childProcess);
@@ -398,7 +405,7 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
   });
 }
 
-export async function runDekaf(connection: DekafToPulsarConnection, event: Electron.IpcMainEvent) {
+export async function runDekaf(connection: DekafToPulsarConnection, event: Electron.IpcMainEvent, isOpenInBrowser: boolean) {
   const paths = getPaths();
 
   const connectionId = connection.type === "local-pulsar-instance" ? connection.instanceId : connection.connectionId;
@@ -541,6 +548,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
       type: {
         type: "dekaf",
         connection,
+        isOpenInBrowser,
         runtimeConfig: {
           port,
           publicBaseUrl
@@ -670,7 +678,7 @@ function killAllProcesses() {
   Object.entries(activeProcesses).forEach(([processId, activeProcess]) => {
     const proc = activeChildProcesses[processId];
 
-    if (activeProcess.type.type === 'pulsar-standalone') {
+    if (activeProcess.type.type === 'pulsar-standalone' || activeProcess.type.type === 'dekaf-demoapp') {
       killProcessForcefully(proc.childProcess);
     } else {
       killProcess(proc.childProcess);

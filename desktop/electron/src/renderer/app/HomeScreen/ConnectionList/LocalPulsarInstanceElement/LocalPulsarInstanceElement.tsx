@@ -4,7 +4,7 @@ import { LocalPulsarInstance, UpdateLocalPulsarInstance } from '../../../../../m
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { GetActiveProcesses, KillProcess, ProcessStatus, SpawnProcess } from '../../../../../main/api/processes/types';
 import { v4 as uuid } from 'uuid';
-import { apiChannel, logsChannel } from '../../../../../main/channels';
+import { apiChannel } from '../../../../../main/channels';
 import ProcessLogsViewButton from '../../../../ui/LogsView/ProcessLogsViewButton/ProcessLogsViewButton';
 import ProcessStatusIndicator from './ProcessStatusIndicator/ProcessStatusIndicator';
 import { LogSource } from '../../../../ui/LogsView/ProcessLogsView/ProcessLogsView';
@@ -46,6 +46,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
   const [dekafLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
   const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
   const [isMissingPulsarDistribution, setIsMissingPulsarDistribution] = useState<boolean | undefined>(undefined);
+  const [isOpenInBrowser] = useLocalStorage<boolean>(localStorageKeys.isOpenInBrowser, { defaultValue: false });
 
   const isWithDemoapp = Boolean(props.pulsarInstance.config.extensions?.some(ext => ext.type === "DekafDemoappExtension"));
 
@@ -72,11 +73,12 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       type: "SpawnProcess",
       process: {
         type: "dekaf",
+        isOpenInBrowser,
         connection: {
           type: "local-pulsar-instance",
           instanceId: props.pulsarInstance.metadata.id,
           dekafLicenseId,
-          dekafLicenseToken
+          dekafLicenseToken,
         }
       },
       processId: uuid()

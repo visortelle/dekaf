@@ -9,6 +9,9 @@ import Input from '../../../ui/Input/Input';
 import IconToggle from '../../../ui/IconToggle/IconToggle';
 import CreateRemotePulsarConnectionButton from './CreateRemotePulsarConnectionButton/CreateRemotePulsarConnectionButton';
 import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
+import useLocalStorage from "use-local-storage-state";
+import Toggle from '../../../ui/Toggle/Toggle';
+import { localStorageKeys } from '../../local-storage';
 
 export type ConnectionListProps = {};
 
@@ -17,6 +20,7 @@ type SortBy = 'name' | 'last-used';
 const ConnectionList: React.FC<ConnectionListProps> = (props) => {
   const [localPulsarInstances, setLocalPulsarInstances] = useState<LocalPulsarInstance[]>([]);
   const [remotePulsarConnections, setRemotePulsarConnections] = useState<RemotePulsarConnection[]>([]);
+  const [isOpenInBrowser, setIsOpenInBrowser] = useLocalStorage<boolean>(localStorageKeys.isOpenInBrowser, { defaultValue: false });
   const [sortBy, setSortBy] = useState<SortBy>('last-used')
   const [filter, setFilter] = useState('');
 
@@ -126,6 +130,14 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
         })}
       </div>
       <div style={{ marginTop: 'auto', padding: '12rem 18rem 24rem 18rem', display: 'grid', gap: '8rem', borderTop: '1px solid var(--border-color)' }}>
+        <div style={{ marginLeft: 'auto' }}>
+          <Toggle
+            value={isOpenInBrowser}
+            onChange={setIsOpenInBrowser}
+            label='Open in Browser'
+          />
+        </div>
+
         <CreateRemotePulsarConnectionButton />
         <CreateLocalPulsarInstanceButton />
       </div>
