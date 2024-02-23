@@ -12,7 +12,8 @@ export type SpawnProcess = {
     instanceId: string
   } | {
     type: "dekaf",
-    connection: DekafToPulsarConnection
+    connection: DekafToPulsarConnection,
+    isOpenInBrowser: boolean
   } | {
     type: "dekaf-demoapp",
     connection: DekafToPulsarConnection
@@ -48,7 +49,8 @@ export type ActiveProcess = {
   } | {
     type: "dekaf",
     connection: DekafToPulsarConnection,
-    runtimeConfig: DekafRuntimeConfig
+    runtimeConfig: DekafRuntimeConfig,
+    isOpenInBrowser: boolean
   } | {
     type: "dekaf-demoapp",
     connection: DekafToPulsarConnection

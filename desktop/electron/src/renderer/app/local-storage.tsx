@@ -1,4 +1,5 @@
 export const localStorageKeys = {
   dekafLicenseId: 'dekafLicenseId',
-  dekafLicenseToken: 'dekafLicenseToken'
+  dekafLicenseToken: 'dekafLicenseToken',
+  isOpenInBrowser: 'isOpenInBrowser'
 } as const;
