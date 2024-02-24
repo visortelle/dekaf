@@ -179,19 +179,10 @@ object BytesNamespace:
                     mkName = _ => s"random-1MB",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkMessage = _ => _ => Message(mkRandomBytes(MB))
+                            mkMessage = _ => _ => Message(mkRandomBytes(MB)),
+                            mkSchedule = _ => Schedule.fixed(Duration.fromSeconds(5))
                         ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-5MB",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkMessage = _ => _ => Message(mkRandomBytes(MB * 5))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
+                    mkSchemaInfos = mkSchemaInfos,
                 )
             ) ++ getHighLoadTopics
 
