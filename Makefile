@@ -2,6 +2,9 @@
 build-desktop-app:
 	cd ./desktop/electron && make build
 
+	cd ./ui && make test
+	cd ./server && make test
+
 .PHONY: build-docker-images
 build-docker-images:
 	cd ./docker/dekaf && make build
