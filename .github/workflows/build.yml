@@ -7,8 +7,8 @@ jobs:
       matrix:
         include:
           - runner: ubuntu-22.04
-          - runner: macos-14-large # Intel
-          - runner: macos-14-xlarge # M1
+          - runner: macos-13 # Intel
+          - runner: macos-14 # M1
 
     runs-on: ["${{ matrix.runner }}"]
 
@@ -26,6 +26,7 @@ jobs:
 
       - name: Build Desktop App
         run: |
+          uname -a
           nix build -L
           nix-shell --run 'make build-desktop-app'
 
