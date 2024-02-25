@@ -160,9 +160,7 @@ export async function download(target: DownloaderTarget, props?: DownloadFilePro
     let bytesTotal = 0;
     let bytesReceived = 0;
 
-    const tempDir = target.cacheDir === undefined ?
-      await fsAsync.mkdtemp(path.join(os.tmpdir(), `dekaf`)) :
-      target.cacheDir;
+    const tempDir = await fsAsync.mkdtemp(path.join(os.tmpdir(), `dekaf`));
 
     console.info(`Created temporary directory: ${tempDir}`);
 
