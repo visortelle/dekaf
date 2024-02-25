@@ -57,6 +57,7 @@ jobs:
           compression-level: 0
 
   build-desktop-app-windows:
+    needs: [build-desktop-app]
     strategy:
       matrix:
         include:
