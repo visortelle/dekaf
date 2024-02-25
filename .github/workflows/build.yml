@@ -95,8 +95,8 @@ jobs:
         name: Upload S3
         id: S3
         with:
-          aws_key_id: ${{ secrets.AWS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_key_id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
           aws_bucket: ${{ secrets.DEKAF_DESKTOP_RELEASES_AWS_BUCKET }}
           source_dir: 'desktop/electron/release/build/'
           destination_dir: dekaf-desktop/${{ github.ref_name }}-${{ matrix.release-platform }}
