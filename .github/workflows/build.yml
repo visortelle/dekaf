@@ -20,19 +20,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build Desktop App
-        run: |
-          mkdir a
-          echo abc > a/b
-      - uses: shallwefootball/s3-upload-action@master
-        name: Upload S3
-        with:
-          aws_key_id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
-          aws_bucket: dekaf-desktop-releases
-          source_dir: 'a/'
-          destination_dir: dekaf-desktop/${{ github.ref_name }}-${{ matrix.release-platform }}
-
       - name: Git LFS Pull
         run: git lfs pull
 
@@ -52,9 +39,9 @@ jobs:
         with:
           aws_key_id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
           aws_secret_access_key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
-          aws_bucket: ${{ secrets.DEKAF_DESKTOP_RELEASES_AWS_BUCKET }}
+          aws_bucket: dekaf-desktop-releases
           source_dir: 'desktop/electron/release/build/'
-          destination_dir: dekaf-desktop/${{ github.ref_name }}-${{ matrix.release-platform }}
+          destination_dir: dekaf-desktop/releases/${{ github.ref_name }}-${{ matrix.release-platform }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -110,9 +97,9 @@ jobs:
         with:
           aws_key_id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
           aws_secret_access_key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
-          aws_bucket: ${{ secrets.DEKAF_DESKTOP_RELEASES_AWS_BUCKET }}
+          aws_bucket: dekaf-desktop-releases
           source_dir: 'desktop/electron/release/build/'
-          destination_dir: dekaf-desktop/${{ github.ref_name }}-${{ matrix.release-platform }}
+          destination_dir: dekaf-desktop/releases/${{ github.ref_name }}-${{ matrix.release-platform }}
 
   # build-docker-images:
   #   strategy:
