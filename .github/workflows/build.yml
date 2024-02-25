@@ -2,13 +2,16 @@ on:
   - push
 
 jobs:
-  build-and-test-application:
+  build-desktop-app:
     strategy:
       matrix:
         include:
           - runner: ubuntu-22.04
-          - runner: macos-13 # Intel
-          - runner: macos-14 # M1
+            release-platform: linux-x86
+          # - runner: macos-13 # Intel
+              # release-platform: macos-x64
+          # - runner: macos-14 # M1
+              # release-platform: macos-aarch64
 
     runs-on: ["${{ matrix.runner }}"]
 
@@ -29,6 +32,73 @@ jobs:
           uname -a
           nix build -L
           nix-shell --run 'make build-desktop-app'
+
+      - uses: shallwefootball/s3-upload-action@master
+        name: Upload S3
+        id: S3
+        with:
+          aws_key_id: ${{ secrets.AWS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_bucket: ${{ secrets.DEKAF_DESKTOP_RELEASES_AWS_BUCKET }}
+          source_dir: 'desktop/electron/release/build/'
+          destination_dir: dekaf-desktop/${{ github.ref_name }}-${{ matrix.release-platform }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server/target/universal/dekaf.tgz
+          path: |
+            server/target/universal/dekaf.tgz
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demoapp/target/universal/dekaf-demoapp.tgz
+          path: |
+            demoapp/target/universal/dekaf-demoapp.tgz
+          compression-level: 0
+
+  build-desktop-app-windows:
+    strategy:
+      matrix:
+        include:
+          - runner: windows-2022
+
+    runs-on: ["${{ matrix.runner }}"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: server/target/universal/dekaf.tgz
+      - uses: actions/download-artifact@v4
+        with:
+          name: demoapp/target/universal/dekaf-demoapp.tgz
+
+      - name: Build Desktop App
+        shell: pwsh
+        run: |
+          cd desktop/electron
+          npm ci
+          npm run package
+
+      - uses: shallwefootball/s3-upload-action@master
+        name: Upload S3
+        id: S3
+        with:
+          aws_key_id: ${{ secrets.AWS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_bucket: ${{ secrets.DEKAF_DESKTOP_RELEASES_AWS_BUCKET }}
+          source_dir: 'desktop/electron/release/build/'
+          destination_dir: dekaf-desktop/${{ github.ref_name }}-${{ matrix.release-platform }}
 
   # build-docker-images:
   #   strategy:
