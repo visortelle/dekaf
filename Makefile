@@ -1,8 +1,6 @@
-.PHONY: build-and-test-application
-build-and-test-application:
-	cd ./proto && make clean-and-build
-	cd ./ui && make clean-and-build && make test
-	cd ./server && make clean-and-build && make test
+.PHONY: build-desktop-app
+build-desktop-app:
+	cd ./desktop/electron && make build
 
 .PHONY: build-docker-images
 build-docker-images:

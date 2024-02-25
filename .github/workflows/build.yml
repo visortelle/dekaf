@@ -6,12 +6,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: arm64
-            arch: arm64
-          - runner: x64
-            arch: x64
+          - runner: ubuntu-latest
+          # - runner: arm64
+            # arch: arm64
+          # - runner: x64
+            # arch: x64
 
-    runs-on: [self-hosted, "${{ matrix.runner }}"]
+    runs-on: ["${{ matrix.runner }}"]
 
     steps:
       - uses: actions/checkout@v3
@@ -21,88 +22,92 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
 
-      - name: Installing Nix
-        uses: cachix/install-nix-action@v22
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          install_options: --no-daemon
-          extra_nix_config: experimental-features = nix-command flakes
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/flake-checker-action@main
 
-      - name: Build app
+      # - name: Install Nix
+      #   uses: cachix/install-nix-action@v22
+      #   with:
+      #     nix_path: nixpkgs=channel:nixos-unstable
+      #     install_options: --no-daemon
+      #     extra_nix_config: experimental-features = nix-command flakes
+
+      - name: Build Desktop App
         run: |
           nix build -L
-          nix-shell --run 'make build-and-test-application'
+          nix-shell --run 'make build-desktop-app'
 
-  build-docker-images:
-    strategy:
-      matrix:
-        include:
-          - runner: arm64
-            arch: arm64
-          - runner: x64
-            arch: x64
+  # build-docker-images:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - runner: arm64
+  #           arch: arm64
+  #         - runner: x64
+  #           arch: x64
 
-    runs-on: [self-hosted, "${{ matrix.runner }}"]
+  #   runs-on: [self-hosted, "${{ matrix.runner }}"]
 
-    env:
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  #   env:
+  #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  #     DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Git LFS Pull
-        run: git lfs pull
+  #     - name: Git LFS Pull
+  #       run: git lfs pull
 
-      - name: Installing Nix
-        uses: cachix/install-nix-action@v22
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          install_options: --no-daemon
-          extra_nix_config: experimental-features = nix-command flakes
+  #     - name: Installing Nix
+  #       uses: cachix/install-nix-action@v22
+  #       with:
+  #         nix_path: nixpkgs=channel:nixos-unstable
+  #         install_options: --no-daemon
+  #         extra_nix_config: experimental-features = nix-command flakes
 
-      - name: Build Docker images
-        shell: bash
-        run: nix-shell --run 'make build-docker-images'
+  #     - name: Build Docker images
+  #       shell: bash
+  #       run: nix-shell --run 'make build-docker-images'
 
-  post-build-docker-images:
-    runs-on: self-hosted
-    needs: build-docker-images
+  # post-build-docker-images:
+  #   runs-on: self-hosted
+  #   needs: build-docker-images
 
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
-      EKS_CLUSTER_REGION: ${{ secrets.EKS_CLUSTER_REGION }}
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+  #   env:
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #     EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  #     EKS_CLUSTER_REGION: ${{ secrets.EKS_CLUSTER_REGION }}
+  #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  #     DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  #     PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Git LFS Pull
-        run: git lfs pull
+  #     - name: Git LFS Pull
+  #       run: git lfs pull
 
-      - name: Installing Nix
-        uses: cachix/install-nix-action@v22
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          install_options: --no-daemon
-          extra_nix_config: experimental-features = nix-command flakes
+  #     - name: Installing Nix
+  #       uses: cachix/install-nix-action@v22
+  #       with:
+  #         nix_path: nixpkgs=channel:nixos-unstable
+  #         install_options: --no-daemon
+  #         extra_nix_config: experimental-features = nix-command flakes
 
-      - name: Create multiarch Docker manifest
-        shell: bash
-        run: nix-shell --run 'make create-multiarch-docker-manifest'
+  #     - name: Create multiarch Docker manifest
+  #       shell: bash
+  #       run: nix-shell --run 'make create-multiarch-docker-manifest'
 
-      - name: Publish Helm chart
-        shell: bash
-        run: nix-shell --run 'make publish-helm-chart'
+  #     - name: Publish Helm chart
+  #       shell: bash
+  #       run: nix-shell --run 'make publish-helm-chart'
 
-      - name: Deploy Dekaf demo
-        shell: bash
-        run: nix-shell --run 'cd ./deployment/dekaf && make deploy'
+  #     - name: Deploy Dekaf demo
+  #       shell: bash
+  #       run: nix-shell --run 'cd ./deployment/dekaf && make deploy'
