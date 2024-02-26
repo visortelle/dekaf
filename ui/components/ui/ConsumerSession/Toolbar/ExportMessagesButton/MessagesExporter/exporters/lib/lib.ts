@@ -44,7 +44,7 @@ export function splitMessagesToChunks(messages: PartialMessageDescriptor[], maxB
   messages.forEach((message, i) => {
     const messageSize = sizeof(message);
 
-    const isChunkFilled = chunkSize !== 0 && chunkSize + messageSize > maxBytesPerChunk;
+    const isChunkFilled = chunkSize !== 0 && (chunkSize + messageSize > maxBytesPerChunk);
 
     if (isChunkFilled) {
       lastMessageIndex = i;

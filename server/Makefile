@@ -6,7 +6,7 @@ clean:
 	rm -rf ./target
 
 .PHONY: test
-clean:
+test:
 	sbt test
 
 .PHONY: build-any
