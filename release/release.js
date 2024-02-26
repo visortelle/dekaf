@@ -4,6 +4,7 @@ const path = require('node:path');
 const { execSync } = require('node:child_process');
 
 const version = process.argv[2];
+const gitBranch = execSync(`git symbolic-ref HEAD 2>/dev/null`).toString();
 const gitTag = `v${version}`;
 
 if (version === undefined) {
@@ -13,7 +14,7 @@ if (version === undefined) {
 
 const repoRoot = path.join(__dirname, '..');
 
-function checkIsVersionExists(version) {
+function checkIsVersionExists() {
   try {
     return execSync(`git tag -l v${version}`, { cwd: repoRoot }).toString() !== '';
   } catch (err) {
@@ -22,27 +23,30 @@ function checkIsVersionExists(version) {
   };
 }
 
-const isExists = checkIsVersionExists(version);
+const isExists = checkIsVersionExists();
 if (isExists) {
   console.info(`Version ${version} already exists`);
   process.exit(1);
 }
 
 
-function setDesktopAppVersion(version) {
+function setDesktopAppVersion() {
   const dekafDesktopRoot = path.join(repoRoot, 'desktop', 'electron');
   execSync(`npm version ${version} --allow-same-version`, { cwd: dekafDesktopRoot, stdio: 'inherit', encoding: 'utf-8' });
 }
 
-function setVersion(version) {
-  execSync(`git tag -a ${gitTag} -m "Bump Dekaf version to: ${version}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
-}
+function setAndPushVersion() {
+  setDesktopAppVersion(version);
 
-function pushGitTag(gitTag) {
+  const gitMessage = `Bump Dekaf version to: ${version}`;
+
+  execSync(`git tag -a ${gitTag} -m "${gitMessage}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
+
+  execSync(`git add ${repoRoot}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
+  execSync(`git commit -m  "${gitMessage}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
+
+  execSync(`git push origin ${gitBranch}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
   execSync(`git push origin refs/tags/${gitTag}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
-
 }
 
-setDesktopAppVersion(version);
-setVersion(version);
-pushGitTag(gitTag);
+setAndPushVersion();
