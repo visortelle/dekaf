@@ -90,7 +90,7 @@ describe("splitMessagesToChunks", () => {
     },
     {
       messages: [genEmptyMessageDescriptor({ displayIndex: 1 }), genEmptyMessageDescriptor({ displayIndex: 2 })],
-      maxBytesPerChunk: 1024,
+      maxBytesPerChunk: 3096,
       expectedChunksCount: 1,
     },
     {

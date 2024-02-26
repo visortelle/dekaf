@@ -72,7 +72,7 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
     },
     {
       taskId: graalvmArchiveName + '-win32-x64',
-      source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_windows-x64_bin.zip',
+      source: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_windows-x64_bin.zip',
       dest,
       unpack: {
         format: 'zip',
@@ -95,7 +95,7 @@ function getEnvoy(destDir: string) {
   fsExtra.ensureDirSync(destDir);
 
   const projectRoot = path.join(process.cwd(), '..', '..');
-  const envoyBinRelToProjectRoot = execSync(path.join(projectRoot, 'envoy', 'getEnvoyDir.scala'), { encoding: 'utf-8' }).trim();
+  const envoyBinRelToProjectRoot = execSync(`node ${path.join(projectRoot, 'envoy', 'get-envoy-dir.js')}`, { encoding: 'utf-8' }).trim();
   const envoyBinSrc = path.resolve(projectRoot, envoyBinRelToProjectRoot).trim();
 
   const envoyBinDest = path.join(destDir, path.basename(envoyBinSrc));
