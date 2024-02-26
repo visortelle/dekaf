@@ -72,7 +72,7 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
     },
     {
       taskId: graalvmArchiveName + '-win32-x64',
-      source: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_windows-x64_bin.zip',
+      source: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_windows-x64_bin.zip',
       dest,
       unpack: {
         format: 'zip',
