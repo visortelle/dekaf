@@ -15,7 +15,7 @@ const repoRoot = path.join(__dirname, '..');
 
 function checkIsVersionExists(version) {
   try {
-    return execSync(`git tag -l v${version}..`, { cwd: repoRoot }).toString() !== '';
+    return execSync(`git tag -l v${version}`, { cwd: repoRoot }).toString() !== '';
   } catch (err) {
     console.log(err);
     return false;
@@ -31,15 +31,15 @@ if (isExists) {
 
 function setDesktopAppVersion(version) {
   const dekafDesktopRoot = path.join(repoRoot, 'desktop', 'electron');
-  execSync(`npm version ${version}`, { cwd: dekafDesktopRoot });
+  execSync(`npm version ${version} --allow-same-version`, { cwd: dekafDesktopRoot, stdio: 'inherit', encoding: 'utf-8' });
 }
 
 function setVersion(version) {
-  execSync(`git tag -a v${gitTag} -m "Bump Dekaf version to: ${version}"`, { cwd: repoRoot });
+  execSync(`git tag -a ${gitTag} -m "Bump Dekaf version to: ${version}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
 }
 
 function pushGitTag(gitTag) {
-  execSync(`git push origin refs/tags/${gitTag}`, { cwd: repoRoot });
+  execSync(`git push origin refs/tags/${gitTag}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
 
 }
 
