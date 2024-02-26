@@ -64,6 +64,9 @@ jobs:
 
     runs-on: ["${{ matrix.runner }}"]
 
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+
     steps:
       - uses: actions/checkout@v4
         with:
