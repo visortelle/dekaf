@@ -70,7 +70,6 @@
               pkgs.dotty
               pkgs.scalafmt
               pkgs.scalafix
-              pkgs.scala-cli
               pkgs.sbt
               pkgs.maven
 

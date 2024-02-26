@@ -34,8 +34,7 @@ jobs:
           nix-shell --run 'make build-desktop-app'
 
       - uses: shallwefootball/s3-upload-action@master
-        name: Upload S3
-        id: S3
+        name: Upload Dekaf Desktop release to S3
         with:
           aws_key_id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
           aws_secret_access_key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
@@ -80,14 +79,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dekaf-tgz-ubuntu-22.04
-          path: server/target/universal/dekaf.tgz
+          path: server/target/universal/
       - uses: actions/download-artifact@v4
         with:
           name: dekaf-demoapp-tgz-ubuntu-22.04
-          path: demoapp/target/universal/dekaf-demoapp.tgz
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+          path: demoapp/target/universal/
 
       - name: Build Desktop App
         shell: pwsh
@@ -97,7 +93,7 @@ jobs:
           npm run package
 
       - uses: shallwefootball/s3-upload-action@master
-        name: Upload S3
+        name: Upload Dekaf Desktop release to S3
         id: S3
         with:
           aws_key_id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}

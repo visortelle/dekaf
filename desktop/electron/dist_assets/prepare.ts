@@ -95,7 +95,7 @@ function getEnvoy(destDir: string) {
   fsExtra.ensureDirSync(destDir);
 
   const projectRoot = path.join(process.cwd(), '..', '..');
-  const envoyBinRelToProjectRoot = execSync(path.join(projectRoot, 'envoy', 'getEnvoyDir.scala'), { encoding: 'utf-8' }).trim();
+  const envoyBinRelToProjectRoot = execSync(`node ${path.join(projectRoot, 'envoy', 'get-envoy-dir.js')}`, { encoding: 'utf-8' }).trim();
   const envoyBinSrc = path.resolve(projectRoot, envoyBinRelToProjectRoot).trim();
 
   const envoyBinDest = path.join(destDir, path.basename(envoyBinSrc));
