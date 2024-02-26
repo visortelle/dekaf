@@ -1,5 +1,7 @@
 on:
-  - push
+  push:
+    tags:
+      - '**'
 
 jobs:
   build-desktop-app:
@@ -100,7 +102,7 @@ jobs:
           aws-access-key-id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
           aws-secret-access-key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
           aws-region: us-east-2
-      - run: aws s3 sync desktop/electron/release/build/ s3://dekaf-desktop-releases/dekaf-desktop/releases/${{ github.ref_name }}-${{ matrix.release-platform }} --delete
+      - run: aws s3 sync desktop/electron/release/build/ s3://dekaf-desktop-releases/dekaf-desktop/releases/${{ github.ref_name }}-windows-x64 --delete
 
   # build-docker-images:
   #   strategy:
