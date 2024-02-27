@@ -312,6 +312,8 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
     standaloneConfContent = standaloneConfContent + `\n\nwebServicePort=${port}`;
   }
 
+  standaloneConfContent = standaloneConfContent + `\n\nbindAddress=127.0.0.1`;
+
   standaloneConfContent = standaloneConfContent + "\n"
 
   await fsAsync.writeFile(instancePaths.standaloneConfPath, standaloneConfContent, { encoding: 'utf-8' });

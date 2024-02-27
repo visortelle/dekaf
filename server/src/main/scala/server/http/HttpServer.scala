@@ -68,10 +68,11 @@ object HttpServer:
 
     def run: IO[Throwable, Unit] = for
         config <- readConfig
+        host = "127.0.0.1"
         port <- ZIO.attempt(config.internalHttpPort.get)
 
         _ <- ZIO.logInfo(s"HTTP server listening on port $port")
         app <- ZIO.attempt(createApp(config))
-        _ <- ZIO.attempt(app.start(port))
+        _ <- ZIO.attempt(app.start(host, port))
         _ <- ZIO.never
     yield ()
