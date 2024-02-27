@@ -15,7 +15,7 @@ export DEKAF_LICENSE_TOKEN="activ-b8240503c17c1c70508dad0444ffc014v3"
 # export DEKAF_BASE_PATH="/demo"
 
 function add_envoy_to_path() {
-  envoy_bin=$( $this_dir/envoy/getEnvoyDir.scala )
+  envoy_bin=$( node $this_dir/envoy/get-envoy-dir.js )
   envoy_dir="${this_dir}/$( dirname $envoy_bin )"
 
   export PATH="${PATH}:${envoy_dir}"
