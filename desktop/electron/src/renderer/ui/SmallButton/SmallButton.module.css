@@ -86,6 +86,12 @@
   fill: #fff;
 }
 
+
+.Button.Danger.Borderless,
+.Button.Danger.BorderlessSemitransparent {
+  color: var(--accent-color-red);
+}
+
 .Button:hover {
   opacity: 0.5;
   cursor: pointer;
