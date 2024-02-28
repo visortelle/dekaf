@@ -139,7 +139,7 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
         </div>
 
         <CreateRemotePulsarConnectionButton />
-        <CreateLocalPulsarInstanceButton />
+        {!window.electron.isWindows && <CreateLocalPulsarInstanceButton />}
       </div>
     </div>
   );
