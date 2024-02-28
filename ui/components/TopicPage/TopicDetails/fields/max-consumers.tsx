@@ -7,7 +7,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import Input from '../../../ui/Input/Input';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/topic_policies_pb";
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';

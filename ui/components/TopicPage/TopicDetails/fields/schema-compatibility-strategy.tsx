@@ -7,7 +7,7 @@ import Select from "../../../ui/Select/Select";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/topic_policies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
 

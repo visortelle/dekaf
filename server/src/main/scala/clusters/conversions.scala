@@ -50,14 +50,15 @@ object conversions:
 
         b.build
 
-    def proxyProtocolToPb(proxyProtocol: ProxyProtocol): pb.ProxyProtocol =
+    def proxyProtocolToPb(proxyProtocol: ProxyProtocol): Option[pb.ProxyProtocol] =
         proxyProtocol match
-            case ProxyProtocol.SNI => pb.ProxyProtocol.PROXY_PROTOCOL_SNI
+            case ProxyProtocol.SNI => Some(pb.ProxyProtocol.PROXY_PROTOCOL_SNI)
+            case _                 => None
 
-    def proxyProtocolFromPb(proxyProtocol: pb.ProxyProtocol): Option[ProxyProtocol] =
+    def proxyProtocolFromPb(proxyProtocol: Option[pb.ProxyProtocol]): Option[ProxyProtocol] =
         proxyProtocol match
-            case pb.ProxyProtocol.PROXY_PROTOCOL_SNI => Some(ProxyProtocol.SNI)
-            case _                                   => None
+            case Some(pb.ProxyProtocol.PROXY_PROTOCOL_SNI) => Some(ProxyProtocol.SNI)
+            case _                                         => None
 
     def failureDomainToPb(failureDomain: FailureDomain): pb.FailureDomain =
         pb.FailureDomain(brokers = failureDomain.getBrokers.asScala.toSeq)
