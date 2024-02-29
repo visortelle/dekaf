@@ -91,18 +91,18 @@ const getGraalvmDownloaderTargets = ({ dest }: { dest: string }): DownloaderTarg
   ]
 };
 
-function getEnvoy(destDir: string) {
+function getBinaryDependencies(destDir: string) {
   fsExtra.ensureDirSync(destDir);
 
   const projectRoot = path.join(process.cwd(), '..', '..');
-  const envoyBinRelToProjectRoot = execSync(`node ${path.join(projectRoot, 'envoy', 'get-envoy-dir.js')}`, { encoding: 'utf-8' }).trim();
-  const envoyBinSrc = path.resolve(projectRoot, envoyBinRelToProjectRoot).trim();
+  const binaryDepsDirRelToRoot = execSync(`node ${path.join(projectRoot, 'bin', 'get-bin-dir.js')}`, { encoding: 'utf-8' }).trim();
 
-  const envoyBinDest = path.join(destDir, path.basename(envoyBinSrc));
+  const binaryDepsSourceDir = path.resolve(projectRoot, binaryDepsDirRelToRoot).trim();
+  const binaryDepsDestDir = path.join(destDir, path.basename(binaryDepsSourceDir));
 
-  console.info(`Copying envoy from`, envoyBinSrc, 'to', envoyBinDest);
+  console.info(`Copying binary dependencies from`, binaryDepsSourceDir, 'to', binaryDepsDestDir);
 
-  fs.copyFileSync(envoyBinSrc, envoyBinDest);
+  fsExtra.copySync(path.resolve(binaryDepsSourceDir), binaryDepsDestDir, { recursive: true });
 }
 
 async function prepare() {
@@ -142,7 +142,7 @@ async function prepare() {
   }
   await download(dekafDemoappDist, { onError });
 
-  getEnvoy(path.resolve(path.join(distAssetsOutDir, 'envoy')));
+  getBinaryDependencies(path.resolve(path.join(distAssetsOutDir, 'bin')));
 }
 
 prepare();
