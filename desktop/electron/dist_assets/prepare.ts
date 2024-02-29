@@ -98,11 +98,10 @@ function getBinaryDependencies(destDir: string) {
   const binaryDepsDirRelToRoot = execSync(`node ${path.join(projectRoot, 'bin', 'get-bin-dir.js')}`, { encoding: 'utf-8' }).trim();
 
   const binaryDepsSourceDir = path.resolve(projectRoot, binaryDepsDirRelToRoot).trim();
-  const binaryDepsDestDir = path.join(destDir, path.basename(binaryDepsSourceDir));
 
-  console.info(`Copying binary dependencies from`, binaryDepsSourceDir, 'to', binaryDepsDestDir);
+  console.info(`Copying binary dependencies from`, binaryDepsSourceDir, 'to', destDir);
 
-  fsExtra.copySync(path.resolve(binaryDepsSourceDir), binaryDepsDestDir, { recursive: true });
+  fsExtra.copySync(path.resolve(binaryDepsSourceDir), destDir, { recursive: true });
 }
 
 async function prepare() {

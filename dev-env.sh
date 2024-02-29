@@ -16,7 +16,7 @@ export DEKAF_LICENSE_TOKEN="activ-b8240503c17c1c70508dad0444ffc014v3"
 
 function add_binary_dependencies_to_path() {
   set -e
-  bin_dir="${this_dir}/$( $this_dir/bin/get-bin-dir.js )"
+  bin_dir=$( $this_dir/bin/get-bin-dir.js )
 
   export PATH="${PATH}:${bin_dir}"
   set +e
