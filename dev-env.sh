@@ -14,11 +14,12 @@ export DEKAF_LICENSE_TOKEN="activ-b8240503c17c1c70508dad0444ffc014v3"
 # export DEKAF_PUBLIC_BASE_URL="http://localhost:8090/demo"
 # export DEKAF_BASE_PATH="/demo"
 
-function add_envoy_to_path() {
-  envoy_bin=$( $this_dir/envoy/getEnvoyDir.scala )
-  envoy_dir="${this_dir}/$( dirname $envoy_bin )"
+function add_binary_dependencies_to_path() {
+  set -e
+  bin_dir=$( $this_dir/bin/get-bin-dir.js )
 
-  export PATH="${PATH}:${envoy_dir}"
+  export PATH="${PATH}:${bin_dir}"
+  set +e
 }
 
 function configure_kubectl() {
@@ -29,7 +30,7 @@ function configure_kubectl() {
   export KUBECONFIG="${kube_config_path}"
 }
 
-add_envoy_to_path
+add_binary_dependencies_to_path
 configure_kubectl
 
 alias k="kubectl"

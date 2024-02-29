@@ -40,6 +40,8 @@ import _root_.library.LibraryServiceImpl
 import _root_.pulsar_auth.PulsarAuthInterceptor
 
 object GrpcServer:
+    var isRunning: Boolean = false
+
     private val pulsarAuthInterceptor = new PulsarAuthInterceptor()
 
     private def createGrpcServer(port: Int) = ServerBuilder
@@ -72,6 +74,7 @@ object GrpcServer:
         _ <- ZIO.logInfo(s"gRPC server listening port: ${port}")
         server <- ZIO.attempt(createGrpcServer(port))
         _ <- ZIO.attempt(server.start)
+        _ <- ZIO.attempt({ isRunning = true })
         _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination)
         _ <- ZIO.never
     yield ()
