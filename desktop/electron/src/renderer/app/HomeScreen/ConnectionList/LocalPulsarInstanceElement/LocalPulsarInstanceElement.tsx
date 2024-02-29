@@ -263,6 +263,9 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.pulsarInstance.metadata.lastUsedAt))}</div>
 
       <div><strong>Pulsar version:</strong>&nbsp;{props.pulsarInstance.config.pulsarVersion}</div>
+
+      <div><strong>Space occupied:</strong>&nbsp;{i18n.formatBytes(props.pulsarInstance.size)}</div>
+
       {isMissingPulsarDistribution && (
         <div style={{ display: 'flex', gap: '12rem', alignItems: 'center' }}>
           <div style={{ color: 'var(--accent-color-red)' }}>Selected Pulsar version is not installed.</div>
