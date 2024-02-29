@@ -4,7 +4,7 @@ import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import com.google.protobuf.Descriptors
 import com.google.protobuf.Descriptors.FileDescriptor
 
-import java.io.FileInputStream
+import java.io.{ByteArrayOutputStream, FileInputStream, OutputStream, PrintStream, PrintWriter}
 import java.nio.file.Paths
 import scala.sys.process.*
 import scala.jdk.CollectionConverters.*
@@ -14,12 +14,11 @@ import com.google.protobuf.DescriptorProtos.FileDescriptorSet
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.impl
 import org.apache.pulsar.common.protocol.schema.ProtobufNativeSchemaData
+import org.apache.commons.lang3.SystemUtils
 
 import scala.reflect.ClassTag
-import java.io.OutputStream
-import java.io.PrintStream
-
 import _root_.config.readConfigAsync
+
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 
@@ -87,17 +86,33 @@ object compiler:
     }
 
     private def compileFile(f: FileEntry, srcDir: os.Path, depsDir: os.Path): (String, Either[Throwable, CompiledFile]) =
+        def runCommand(cmd: Seq[String]): (Int, String) =
+            val stdoutStream = new ByteArrayOutputStream()
+            val stdoutWriter = new PrintWriter(stdoutStream)
+            val stderrWriter = new PrintWriter(stdoutStream)
+            val exitValue = cmd.!(ProcessLogger(stdoutWriter.println, stderrWriter.println))
+            stdoutWriter.close()
+            stderrWriter.close()
+            (exitValue, stdoutStream.toString)
+
         val inputFile = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))
         val descriptorSetOut = srcDir / os.PathChunk.SeqPathChunk((f.relativePath + ".pb").split("/"))
-        val protocLogFile = srcDir / s"${f.relativePath.replace(java.io.File.separator, "--")}-protoc.log"
-        val protocCommand =
-            s"protoc --include_imports --descriptor_set_out=$descriptorSetOut -I $srcDir -I $depsDir $inputFile &> $protocLogFile"
+        val protocBin = if SystemUtils.IS_OS_WINDOWS then "protoc.exe" else "protoc"
+        val protocCommand = Seq(
+            protocBin,
+            "--include_imports",
+            s"--descriptor_set_out=$descriptorSetOut",
+            "-I",
+            srcDir.toString,
+            "-I",
+            depsDir.toString,
+            inputFile.toString
+        )
 
-        val protocProcess = Seq("sh", "-c", s"set -ue; $protocCommand").run
+        val (exitValue, stdout) = runCommand(protocCommand)
 
-        if protocProcess.exitValue != 0 then
-            val compilationError = os.read(protocLogFile)
-            return (f.relativePath, Left(new Exception(s"Failed to compile $inputFile.\nError: $compilationError")))
+        if exitValue != 0 then
+            return (f.relativePath, Left(new Exception(s"Failed to compile $inputFile.\nError: $stdout")))
 
         val descriptorSetOutContent = os.read.inputStream(descriptorSetOut)
         val descriptorSet = FileDescriptorSet.parseFrom(descriptorSetOutContent)

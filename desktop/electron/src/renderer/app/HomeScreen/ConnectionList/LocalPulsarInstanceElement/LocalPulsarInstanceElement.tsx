@@ -21,6 +21,7 @@ import PulsarDistributionPicker from './LocalPulsarInstanceEditor/PulsarDistribu
 import { cloneDeep } from 'lodash';
 import { usePrevious } from '../../../hooks/use-previous';
 import { colorsByName } from '../../../../ui/ColorPickerButton/ColorPicker/color-palette';
+import ForceKillButton from './ForceKillButton/ForceKillButton';
 
 const getInstalledPulsarVersions = () => {
   const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
@@ -181,7 +182,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       }
 
       if (prevDekafDemoappProcessStatus !== 'ready' && dekafDemoappProcessStatus === 'ready' && (dekafProcessStatus === undefined || dekafProcessStatus === 'unknown')) {
-        startDekaf();
+        setTimeout(startDekaf, 1000); // There are rare cases when Pulsar standalone reports that it is ready, but it is actually not.
         return;
       }
     }
@@ -304,18 +305,21 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
           <ProcessStatusIndicator processId={pulsarProcessId} onStatusChange={setPulsarProcessStatus} />
           <strong>Pulsar status:&nbsp;</strong>{renderStatus(pulsarProcessStatus)}
+          {(pulsarProcessStatus === 'stopping' && pulsarProcessId !== undefined) && <ForceKillButton processId={pulsarProcessId} />}
         </div>
 
         {isWithDemoapp && (
           <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
             <ProcessStatusIndicator processId={dekafDemoappProcessId} onStatusChange={setDekafDemoappProcessStatus} />
             <strong>Demoapp status:&nbsp;</strong>{renderStatus(dekafDemoappProcessStatus)}
+            {(dekafDemoappProcessStatus === 'stopping' && dekafDemoappProcessId !== undefined) && <ForceKillButton processId={dekafDemoappProcessId} />}
           </div>
         )}
 
         <div style={{ display: 'flex', gap: '8rem', alignItems: 'center' }}>
           <ProcessStatusIndicator processId={dekafProcessId} onStatusChange={setDekafProcessStatus} />
           <strong>Dekaf status:&nbsp;</strong>{renderStatus(dekafProcessStatus)}
+          {(dekafProcessId === 'stopping' && dekafProcessId !== undefined) && <ForceKillButton processId={dekafProcessId} />}
         </div>
       </div>
 

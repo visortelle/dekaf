@@ -233,11 +233,12 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     win.close();
   }
 
-  if (activeProcesses[arg.processId].type.type === 'pulsar-standalone' || activeProcesses[arg.processId].type.type === 'dekaf-demoapp') {
-    killProcessForcefully(proc.childProcess);
+  if (arg.isForce) {
+    killProcessForcefully(proc.childProcess)
   } else {
     killProcess(proc.childProcess);
   }
+
 
   updateProcessStatus(arg.processId, 'stopping');
 }
@@ -428,7 +429,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     "DEKAF_DATA_DIR": dekafDataDir,
     "DEKAF_PORT": String(port),
     "DEKAF_PUBLIC_BASE_URL": publicBaseUrl,
-    "PATH": `${nodeProcess.env['PATH']}:${paths.envoyDir}`
+    "PATH": `${nodeProcess.env['PATH']}:${paths.binDir}`
   };
 
   if (connection.dekafLicenseId.length) {
@@ -678,11 +679,7 @@ function killAllProcesses() {
   Object.entries(activeProcesses).forEach(([processId, activeProcess]) => {
     const proc = activeChildProcesses[processId];
 
-    if (activeProcess.type.type === 'pulsar-standalone' || activeProcess.type.type === 'dekaf-demoapp') {
-      killProcessForcefully(proc.childProcess);
-    } else {
-      killProcess(proc.childProcess);
-    }
+    killProcess(proc.childProcess);
   });
 }
 
