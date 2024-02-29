@@ -14,3 +14,12 @@
 .Name {
   padding-right: 94rem;
 }
+
+.SpaceOccupied {
+  cursor: pointer;
+}
+
+.SpaceOccupied:hover {
+  opacity: 0.6;
+  transition: all 0.2s ease-in-out;
+}

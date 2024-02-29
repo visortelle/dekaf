@@ -88,7 +88,7 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
     window.electron.ipcRenderer.sendMessage(apiChannel, req);
   }
 
-  useInterval(() => refreshLocalPulsarInstancesSize(), 1000 * 5);
+  useInterval(() => refreshLocalPulsarInstancesSize(), 1000 * 60);
 
   const connections = [...localPulsarInstances, ...remotePulsarConnections];
 
