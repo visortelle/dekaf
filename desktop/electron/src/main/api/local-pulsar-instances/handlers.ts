@@ -8,12 +8,13 @@ import {
   DeleteLocalPulsarInstance,
   ListLocalPulsarInstances,
   ListLocalPulsarInstancesResult,
-  LocalPulsarInstancesSizeRefreshed,
   LocalPulsarInstance,
   LocalPulsarInstanceCreated,
   LocalPulsarInstanceDeleted,
+  LocalPulsarInstancesSizeRefreshed,
   LocalPulsarInstanceUpdated,
-  UpdateLocalPulsarInstance, RefreshLocalPulsarInstancesSize
+  RefreshLocalPulsarInstancesSize,
+  UpdateLocalPulsarInstance
 } from './types';
 import fastFolderSize from 'fast-folder-size';
 import {ErrorHappened} from '../api/types';
@@ -194,11 +195,7 @@ export const getInstanceConfig = async (instanceId: string): Promise<LocalPulsar
   const config = JSON.parse(configFileContent) as LocalPulsarInstance;
 
   const fastFolderSizeAsync = promisify(fastFolderSize);
-  const size = await fastFolderSizeAsync(instanceDir);
-
-  console.log(`Pulsar instance ${instanceDir} size: ${size} bytes`);
-
-  config.size = size;
+  config.size = await fastFolderSizeAsync(instanceDir);
 
   return config;
 }
