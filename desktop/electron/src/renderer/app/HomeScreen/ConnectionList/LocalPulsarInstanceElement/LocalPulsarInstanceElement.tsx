@@ -264,7 +264,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
       <div><strong>Pulsar version:</strong>&nbsp;{props.pulsarInstance.config.pulsarVersion}</div>
 
-      <div><strong>Space occupied:</strong>&nbsp;{i18n.formatBytes(props.pulsarInstance.size)}</div>
+      <div><strong>Space occupied:</strong>&nbsp;{props.pulsarInstance.size ? i18n.formatBytes(props.pulsarInstance.size) : "-"}</div>
 
       {isMissingPulsarDistribution && (
         <div style={{ display: 'flex', gap: '12rem', alignItems: 'center' }}>
@@ -333,6 +333,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
               process: {
                 type: "pulsar-standalone",
                 instanceId: props.pulsarInstance.metadata.id,
+                instanceConfig: props.pulsarInstance
               },
               processId: uuid()
             };
