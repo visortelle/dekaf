@@ -23,7 +23,8 @@ export type SpawnProcess = {
 
 export type KillProcess = {
   type: "KillProcess",
-  processId: string
+  processId: string,
+  isForce?: boolean
 };
 
 export type DekafToPulsarConnection = {
