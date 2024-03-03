@@ -97,7 +97,7 @@ object compiler:
 
         val inputFile = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))
         val descriptorSetOut = srcDir / os.PathChunk.SeqPathChunk((f.relativePath + ".pb").split("/"))
-        val protocBin = if SystemUtils.IS_OS_WINDOWS then "protoc.exe" else "protoc"
+        val protocBin = if SystemUtils.IS_OS_WINDOWS then "protoc.exe" else "protoc.bin"
         val protocCommand = Seq(
             protocBin,
             "--include_imports",
