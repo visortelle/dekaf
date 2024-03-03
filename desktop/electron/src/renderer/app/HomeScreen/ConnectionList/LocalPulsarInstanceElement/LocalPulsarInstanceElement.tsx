@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import s from './LocalPulsarInstanceElement.module.css'
-import { LocalPulsarInstance, UpdateLocalPulsarInstance } from '../../../../../main/api/local-pulsar-instances/types';
+import {
+  LocalPulsarInstance,
+  RefreshLocalPulsarInstancesSize,
+  UpdateLocalPulsarInstance
+} from '../../../../../main/api/local-pulsar-instances/types';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { GetActiveProcesses, KillProcess, ProcessStatus, SpawnProcess } from '../../../../../main/api/processes/types';
 import { v4 as uuid } from 'uuid';
@@ -22,6 +26,7 @@ import { cloneDeep } from 'lodash';
 import { usePrevious } from '../../../hooks/use-previous';
 import { colorsByName } from '../../../../ui/ColorPickerButton/ColorPicker/color-palette';
 import ForceKillButton from './ForceKillButton/ForceKillButton';
+import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
 
 const getInstalledPulsarVersions = () => {
   const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
@@ -264,6 +269,24 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
       <div><strong>Last used:</strong>&nbsp;{i18n.formatDateTime(new Date(props.pulsarInstance.metadata.lastUsedAt))}</div>
 
       <div><strong>Pulsar version:</strong>&nbsp;{props.pulsarInstance.config.pulsarVersion}</div>
+
+      <div
+        className={s.SpaceOccupied}
+        onClick={() => {
+          function refreshLocalPulsarInstancesSize() {
+            const req: RefreshLocalPulsarInstancesSize = { type: "RefreshLocalPulsarInstancesSize" };
+            window.electron.ipcRenderer.sendMessage(apiChannel, req);
+          }
+
+          refreshLocalPulsarInstancesSize();
+        }}
+        data-tooltip-content={"Click to recalculate"}
+        data-tooltip-id={tooltipId}
+        style={{ display: 'inline-block' }}
+      >
+        <strong>Storage space:</strong>&nbsp;{props.pulsarInstance.size ? i18n.formatBytes(props.pulsarInstance.size) : <NoData />}
+      </div>
+
       {isMissingPulsarDistribution && (
         <div style={{ display: 'flex', gap: '12rem', alignItems: 'center' }}>
           <div style={{ color: 'var(--accent-color-red)' }}>Selected Pulsar version is not installed.</div>
@@ -334,6 +357,7 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
               process: {
                 type: "pulsar-standalone",
                 instanceId: props.pulsarInstance.metadata.id,
+                instanceConfig: props.pulsarInstance
               },
               processId: uuid()
             };
