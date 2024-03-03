@@ -3,6 +3,7 @@
   border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 8rem;
   position: relative;
 }
@@ -13,4 +14,13 @@
 
 .Name {
   padding-right: 94rem;
+}
+
+.SpaceOccupied {
+  cursor: pointer;
+}
+
+.SpaceOccupied:hover {
+  opacity: 0.6;
+  transition: all 0.2s ease-in-out;
 }
