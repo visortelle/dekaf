@@ -6,7 +6,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import io.grpc.{Server, ServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
 import _root_.config.readConfig
-
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import com.tools.teal.pulsar.ui.api.v1.pulsar_auth.PulsarAuthServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerServiceGrpc
@@ -22,7 +21,6 @@ import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.TopicpoliciesServiceGrpc
 import com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc
-
 import _root_.pulsar_auth.PulsarAuthServiceImpl
 import _root_.consumer.ConsumerServiceImpl
 import _root_.topic.TopicServiceImpl
@@ -38,14 +36,17 @@ import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topicpolicies.TopicpoliciesServiceImpl
 import _root_.library.LibraryServiceImpl
 import _root_.pulsar_auth.PulsarAuthInterceptor
+import io.grpc.netty.NettyServerBuilder
+
+import java.net.InetSocketAddress
 
 object GrpcServer:
     var isRunning: Boolean = false
 
     private val pulsarAuthInterceptor = new PulsarAuthInterceptor()
 
-    private def createGrpcServer(port: Int) = ServerBuilder
-        .forPort(port)
+    private def createGrpcServer(host: String, port: Int) = NettyServerBuilder
+        .forAddress(new InetSocketAddress(host, port))
 
         .addService(PulsarAuthServiceGrpc.bindService(PulsarAuthServiceImpl(), ExecutionContext.global))
         .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
@@ -69,10 +70,11 @@ object GrpcServer:
 
     def run: ZIO[Any, Throwable, Unit] = for
         config <- readConfig
+        host = "127.0.0.1"
         port <- ZIO.attempt(config.internalGrpcPort.get)
 
-        _ <- ZIO.logInfo(s"gRPC server listening port: ${port}")
-        server <- ZIO.attempt(createGrpcServer(port))
+        _ <- ZIO.logInfo(s"gRPC server listening port: $port")
+        server <- ZIO.attempt(createGrpcServer(host, port))
         _ <- ZIO.attempt(server.start)
         _ <- ZIO.attempt({ isRunning = true })
         _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination)

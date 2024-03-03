@@ -10,8 +10,8 @@ case class EnvoyConfigProps(
 )
 
 def renderEnvoyConfig(config: EnvoyConfigProps): String =
-    val isWindows = System.os.isWindows
-    val address = if isWindows then "127.0.0.1" else "0.0.0.0"
+    val isDesktopBuild = buildinfo.ExtraBuildInfo.isDesktopBuild
+    val address = if isDesktopBuild then "127.0.0.1" else "0.0.0.0"
 
     s"""
 static_resources:
@@ -91,7 +91,7 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: $address
+                    address: 127.0.0.1
                     port_value: ${config.grpcServerPort}
     - name: pulsar_ui_http
       connect_timeout: 0.25s
@@ -104,7 +104,7 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: $address
+                    address: 127.0.0.1
                     port_value: ${config.httpServerPort}
                   """.stripMargin
 
