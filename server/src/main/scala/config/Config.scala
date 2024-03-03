@@ -22,7 +22,7 @@ case class Config(
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     //
     @describe("Path to the persistent data directory.")
-    dataDir: Option[String] = Some("./data"),
+    dataDir: Option[String] = Some(s"${java.nio.file.Paths.get(".").toAbsolutePath}/data"),
     //
     @describe("License id.")
     licenseId: Option[String] = None,

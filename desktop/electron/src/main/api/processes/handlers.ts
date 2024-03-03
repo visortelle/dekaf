@@ -10,8 +10,8 @@ import fsAsync from 'fs/promises';
 import path from 'node:path';
 import { ErrorHappened } from "../api/types";
 import axios from 'axios';
-import { LocalPulsarInstance } from "../local-pulsar-instances/types";
-import { app, BrowserWindow, nativeImage } from "electron";
+import {LocalPulsarInstance} from "../local-pulsar-instances/types";
+import {app, BrowserWindow, nativeImage} from "electron";
 import portfinder from 'portfinder';
 import { colorsByName } from "../../../renderer/ui/ColorPickerButton/ColorPicker/color-palette";
 import { sendMessage } from "../api/send-message";
@@ -200,7 +200,7 @@ function updateActiveProcesses(newActiveProcesses: ActiveProcesses, newActiveChi
 export async function handleSpawnProcess(event: Electron.IpcMainEvent, arg: SpawnProcess): Promise<void> {
   try {
     if (arg.process.type === "pulsar-standalone") {
-      await runPulsarStandalone(arg.process.instanceId, event);
+      await runPulsarStandalone(arg.process.instanceId, arg.process.instanceConfig, event);
       return;
     } else if (arg.process.type === "dekaf") {
       await runDekaf(arg.process.connection, event, arg.process.isOpenInBrowser);
@@ -233,11 +233,12 @@ export async function handleKillProcess(event: Electron.IpcMainEvent, arg: KillP
     win.close();
   }
 
-  if (activeProcesses[arg.processId].type.type === 'pulsar-standalone' || activeProcesses[arg.processId].type.type === 'dekaf-demoapp') {
-    killProcessForcefully(proc.childProcess);
+  if (arg.isForce) {
+    killProcessForcefully(proc.childProcess)
   } else {
     killProcess(proc.childProcess);
   }
+
 
   updateProcessStatus(arg.processId, 'stopping');
 }
@@ -260,7 +261,7 @@ export async function handleResendProcessLogs(event: Electron.IpcMainEvent, arg:
   event.reply(logsChannel, req);
 }
 
-export async function runPulsarStandalone(instanceId: string, event: Electron.IpcMainEvent) {
+export async function runPulsarStandalone(instanceId: string, instanceConfig: LocalPulsarInstance, event: Electron.IpcMainEvent) {
   const paths = getPaths();
 
   const instancePaths = paths.getPulsarStandalonePaths(instanceId);
@@ -290,8 +291,6 @@ export async function runPulsarStandalone(instanceId: string, event: Electron.Ip
       throw new Error(`The local Pulsar instance is going to use port ${port}, that is already in use by another process or local Pulsar instance.`);
     }
   }
-
-  const instanceConfig = await getInstanceConfig(instanceId);
 
   const pulsarVersion = instanceConfig.config.pulsarVersion;
   const pulsarBin = paths.getPulsarBin(pulsarVersion);
@@ -430,7 +429,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     "DEKAF_DATA_DIR": dekafDataDir,
     "DEKAF_PORT": String(port),
     "DEKAF_PUBLIC_BASE_URL": publicBaseUrl,
-    "PATH": `${nodeProcess.env['PATH']}:${paths.envoyDir}`
+    "PATH": `${nodeProcess.env['PATH']}:${paths.binDir}`
   };
 
   if (connection.dekafLicenseId.length) {
@@ -680,11 +679,7 @@ function killAllProcesses() {
   Object.entries(activeProcesses).forEach(([processId, activeProcess]) => {
     const proc = activeChildProcesses[processId];
 
-    if (activeProcess.type.type === 'pulsar-standalone' || activeProcess.type.type === 'dekaf-demoapp') {
-      killProcessForcefully(proc.childProcess);
-    } else {
-      killProcess(proc.childProcess);
-    }
+    killProcess(proc.childProcess);
   });
 }
 

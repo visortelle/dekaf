@@ -11,6 +11,7 @@ export type LocalPulsarInstance = {
   type: "LocalPulsarInstance"
   metadata: ConnectionMetadata,
   config: PulsarStandaloneConfig,
+  size?: number,
 };
 
 export type PulsarStandaloneExtension = {
@@ -74,3 +75,13 @@ export type ListLocalPulsarInstancesResult = {
   type: "ListLocalPulsarInstancesResult",
   configs: LocalPulsarInstance[]
 }
+
+export type RefreshLocalPulsarInstancesSize = {
+  type: "RefreshLocalPulsarInstancesSize",
+}
+
+export type LocalPulsarInstancesSizeRefreshed = {
+  type: "LocalPulsarInstancesSizeRefreshed",
+  instancesSizeMap: Map<string, number | undefined>
+}
+

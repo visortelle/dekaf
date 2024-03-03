@@ -3,8 +3,24 @@ import { handleGetPaths } from "./fs/handlers";
 import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleGetPulsarDistributionFileAtPath, handleGetPulsarDistributionStatus, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
 import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted, GetPulsarDistributionStatus, GetPulsarDistributionFileAtPath, GetPulsarDistributionFileAtPathResult } from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
-import { CreateLocalPulsarInstance, DeleteLocalPulsarInstance, ListLocalPulsarInstances, ListLocalPulsarInstancesResult, LocalPulsarInstanceCreated, LocalPulsarInstanceDeleted, LocalPulsarInstanceUpdated, UpdateLocalPulsarInstance } from './local-pulsar-instances/types';
-import { handleCreateLocalPulsarInstance, handleDeleteLocalPulsarInstance, handleListLocalPulsarInstances, handleUpdateLocalPulsarInstance } from './local-pulsar-instances/handlers';
+import {
+  CreateLocalPulsarInstance,
+  DeleteLocalPulsarInstance,
+  ListLocalPulsarInstances,
+  ListLocalPulsarInstancesResult,
+  LocalPulsarInstancesSizeRefreshed,
+  LocalPulsarInstanceCreated,
+  LocalPulsarInstanceDeleted,
+  LocalPulsarInstanceUpdated,
+  UpdateLocalPulsarInstance, RefreshLocalPulsarInstancesSize
+} from './local-pulsar-instances/types';
+import {
+  handleCreateLocalPulsarInstance,
+  handleDeleteLocalPulsarInstance,
+  handleListLocalPulsarInstances,
+  handleRefreshLocalPulsarInstancesSize,
+  handleUpdateLocalPulsarInstance
+} from './local-pulsar-instances/handlers';
 import { ActiveProcessesUpdated, DekafWindowClosed, GetActiveProcesses, GetActiveProcessesResult, KillProcess, ProcessLogEntryReceived, ProcessStatusUpdated, ResendProcessLogs, ResendProcessLogsResult, SpawnProcess } from './processes/types';
 import { handleGetActiveProcesses, handleKillProcess, handleResendProcessLogs, handleSpawnProcess } from './processes/handlers';
 import { CreateRemotePulsarConnection, DeleteRemotePulsarConnection, ListRemotePulsarConnections, ListRemotePulsarConnectionsResult, RemotePulsarConnectionCreated, RemotePulsarConnectionDeleted, RemotePulsarConnectionUpdated, UpdateRemotePulsarConnection } from './remote-pulsar-connections/types';
@@ -28,6 +44,8 @@ export type ApiEvent = ErrorHappened |
   DeleteLocalPulsarInstance |
   ListLocalPulsarInstances |
   ListLocalPulsarInstancesResult |
+  RefreshLocalPulsarInstancesSize |
+  LocalPulsarInstancesSizeRefreshed |
   LocalPulsarInstanceCreated |
   LocalPulsarInstanceDeleted |
   LocalPulsarInstanceUpdated |
@@ -76,6 +94,8 @@ export const apiService: ApiService = {
       case "GetPulsarDistributionFileAtPath": handleGetPulsarDistributionFileAtPath(event, arg);
         break;
       case "ListLocalPulsarInstances": handleListLocalPulsarInstances(event, arg);
+        break;
+      case "RefreshLocalPulsarInstancesSize": handleRefreshLocalPulsarInstancesSize(event, arg);
         break;
       case "CreateLocalPulsarInstance": handleCreateLocalPulsarInstance(event, arg);
         break;

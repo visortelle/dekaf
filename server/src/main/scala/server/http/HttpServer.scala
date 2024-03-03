@@ -12,6 +12,7 @@ import _root_.pulsar_auth
 import io.circe.parser.decode as decodeJson
 import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
 import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
+import _root_.server.grpc.GrpcServer
 
 import scala.jdk.CollectionConverters.*
 import _root_.licensing.Licensing
@@ -63,7 +64,14 @@ object HttpServer:
                     }
                 )
             }
-            .get("/health", ctx => ctx.result("OK"))
+            .get("/health", ctx => {
+                if GrpcServer.isRunning then
+                    ctx.status(200)
+                    ctx.result("ok")
+                else
+                    ctx.status(503)
+                    ctx.result("fail")
+            })
             .routes(PulsarAuthRoutes.routes)
 
     def run: IO[Throwable, Unit] = for

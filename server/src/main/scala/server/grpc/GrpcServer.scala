@@ -41,6 +41,8 @@ import io.grpc.netty.NettyServerBuilder
 import java.net.InetSocketAddress
 
 object GrpcServer:
+    var isRunning: Boolean = false
+
     private val pulsarAuthInterceptor = new PulsarAuthInterceptor()
 
     private def createGrpcServer(host: String, port: Int) = NettyServerBuilder
@@ -74,6 +76,7 @@ object GrpcServer:
         _ <- ZIO.logInfo(s"gRPC server listening port: $port")
         server <- ZIO.attempt(createGrpcServer(host, port))
         _ <- ZIO.attempt(server.start)
-        _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination())
+        _ <- ZIO.attempt({ isRunning = true })
+        _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination)
         _ <- ZIO.never
     yield ()

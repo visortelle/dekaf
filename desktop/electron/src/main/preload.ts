@@ -22,6 +22,7 @@ const electronHandler = {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
+  isWindows: process.platform === 'win32',
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

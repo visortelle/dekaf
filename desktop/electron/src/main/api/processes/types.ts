@@ -9,7 +9,8 @@ export type SpawnProcess = {
   processId: ProcessId,
   process: {
     type: "pulsar-standalone",
-    instanceId: string
+    instanceId: string,
+    instanceConfig: LocalPulsarInstance
   } | {
     type: "dekaf",
     connection: DekafToPulsarConnection,
@@ -22,7 +23,8 @@ export type SpawnProcess = {
 
 export type KillProcess = {
   type: "KillProcess",
-  processId: string
+  processId: string,
+  isForce?: boolean
 };
 
 export type DekafToPulsarConnection = {

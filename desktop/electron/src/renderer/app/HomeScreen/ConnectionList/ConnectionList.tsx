@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import s from './ConnectionList.module.css'
-import { ListLocalPulsarInstances, LocalPulsarInstance } from '../../../../main/api/local-pulsar-instances/types';
+import {
+  ListLocalPulsarInstances, LocalPulsarInstancesSizeRefreshed,
+  LocalPulsarInstance, RefreshLocalPulsarInstancesSize
+} from '../../../../main/api/local-pulsar-instances/types';
 import { apiChannel } from '../../../../main/channels';
 import LocalPulsarInstanceElement from './LocalPulsarInstanceElement/LocalPulsarInstanceElement';
 import { ListRemotePulsarConnections, RemotePulsarConnection } from '../../../../main/api/remote-pulsar-connections/types';
@@ -10,6 +13,7 @@ import IconToggle from '../../../ui/IconToggle/IconToggle';
 import CreateRemotePulsarConnectionButton from './CreateRemotePulsarConnectionButton/CreateRemotePulsarConnectionButton';
 import CreateLocalPulsarInstanceButton from './CreateLocalPulsarInstanceButton/CreateLocalPulsarInstanceButton';
 import useLocalStorage from "use-local-storage-state";
+import useInterval from "../../hooks/use-interval";
 import Toggle from '../../../ui/Toggle/Toggle';
 import { localStorageKeys } from '../../local-storage';
 
@@ -33,6 +37,16 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
     window.electron.ipcRenderer.on(apiChannel, (arg) => {
       if (arg.type === "ListLocalPulsarInstancesResult") {
         setLocalPulsarInstances(arg.configs);
+      }
+
+      if (arg.type === "LocalPulsarInstancesSizeRefreshed") {
+        setLocalPulsarInstances(localPulsarInstances =>
+          localPulsarInstances.map(localPulsarInstance => {
+            localPulsarInstance.size = arg.instancesSizeMap.get(localPulsarInstance.metadata.id);
+
+            return localPulsarInstance;
+          })
+        );
       }
 
       const isRefreshLocalPulsarInstances =
@@ -68,6 +82,13 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
     refreshLocalPulsarInstances();
     refreshRemotePulsarConnections();
   }, []);
+
+  function refreshLocalPulsarInstancesSize() {
+    const req: RefreshLocalPulsarInstancesSize = { type: "RefreshLocalPulsarInstancesSize" };
+    window.electron.ipcRenderer.sendMessage(apiChannel, req);
+  }
+
+  useInterval(() => refreshLocalPulsarInstancesSize(), 1000 * 60);
 
   const connections = [...localPulsarInstances, ...remotePulsarConnections];
 
@@ -139,7 +160,7 @@ const ConnectionList: React.FC<ConnectionListProps> = (props) => {
         </div>
 
         <CreateRemotePulsarConnectionButton />
-        <CreateLocalPulsarInstanceButton />
+        {!window.electron.isWindows && <CreateLocalPulsarInstanceButton />}
       </div>
     </div>
   );
