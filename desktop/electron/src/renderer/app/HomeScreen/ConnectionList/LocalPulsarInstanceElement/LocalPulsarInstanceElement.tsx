@@ -26,6 +26,7 @@ import { cloneDeep } from 'lodash';
 import { usePrevious } from '../../../hooks/use-previous';
 import { colorsByName } from '../../../../ui/ColorPickerButton/ColorPicker/color-palette';
 import ForceKillButton from './ForceKillButton/ForceKillButton';
+import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
 
 const getInstalledPulsarVersions = () => {
   const req: ListPulsarDistributions = { type: "ListPulsarDistributions", isInstalledOnly: true };
@@ -279,9 +280,11 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
 
           refreshLocalPulsarInstancesSize();
         }}
-        title={"Click to refresh"}
+        data-tooltip-content={"Click to recalculate"}
+        data-tooltip-id={tooltipId}
+        style={{ display: 'inline-block' }}
       >
-        <strong>Space occupied:</strong>&nbsp;{props.pulsarInstance.size ? i18n.formatBytes(props.pulsarInstance.size) : <NoData />}
+        <strong>Storage space:</strong>&nbsp;{props.pulsarInstance.size ? i18n.formatBytes(props.pulsarInstance.size) : <NoData />}
       </div>
 
       {isMissingPulsarDistribution && (
