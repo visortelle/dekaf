@@ -33,11 +33,19 @@
   grid-template-rows: min-content 1fr;
 }
 
+.ConnectionListWindowsWidth {
+  width: 426px !important;
+}
+
 .Blog {
   width: 600rem;
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+}
+
+.BlogWindowsWidth {
+  width: 532px !important;
 }
 
 .BlogIframe {

@@ -51,7 +51,7 @@ function InitialAppScreen() {
         <Modals.DefaultProvider>
           <div className={s.App}>
             <Tooltip />
-            <div className={s.ConnectionList}>
+            <div className={`${s.ConnectionList} ${window.electron.isWindows && s.ConnectionListWindowsWidth}`}>
               <div className={s.Logo}>
                 <img src={logo} />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
@@ -64,7 +64,7 @@ function InitialAppScreen() {
               </div>
               <ConnectionList />
             </div>
-            <div className={s.Blog}>
+            <div className={`${s.Blog} ${window.electron.isWindows && s.BlogWindowsWidth}`}>
               <div
                 style={{
                   padding: '12rem 18rem 8rem 18rem',
