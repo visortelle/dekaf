@@ -111,6 +111,8 @@ export function getPaths(): Paths {
     getRemotePulsarConnectionConfigPath,
     getRemoteConnectionDekafDataDir,
     dekafDemoappDir,
-    dekafDemoappBin: path.resolve(path.join(dekafDemoappDir, 'bin', 'dekaf-demoapp')),
+    dekafDemoappBin: isWindows 
+    ? path.resolve(path.join(dekafDemoappDir, 'bin', 'dekaf-demoapp'))
+    : path.resolve(path.join(dekafDemoappDir, 'bin', 'dekaf-demoapp.bat'))
   };
 }
