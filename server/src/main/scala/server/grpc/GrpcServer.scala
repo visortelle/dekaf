@@ -1,5 +1,10 @@
 package server.grpc
 
+import zio.*
+import scala.concurrent.{ExecutionContext, Future}
+import io.grpc.{Server, ServerBuilder}
+import io.grpc.protobuf.services.ProtoReflectionService
+
 import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.clusters.ClustersServiceImpl
@@ -13,6 +18,13 @@ import com.tools.teal.pulsar.ui.api.v1.schema.SchemaServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 import com.tools.teal.pulsar.ui.clusters.v1.clusters.ClustersServiceGrpc
+import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.NamespacePoliciesServiceGrpc
+import com.tools.teal.pulsar.ui.tenant.v1.tenant.TenantServiceGrpc
+import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
+import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.TopicPoliciesServiceGrpc
 import com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc
 import _root_.pulsar_auth.PulsarAuthServiceImpl
 import _root_.consumer.ConsumerServiceImpl
@@ -26,7 +38,7 @@ import _root_.clusters.ClustersServiceImpl
 import _root_.metrics.MetricsServiceImpl
 import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
-import _root_.topicpolicies.TopicpoliciesServiceImpl
+import _root_.topic_policies.TopicPoliciesServiceImpl
 import _root_.library.LibraryServiceImpl
 import _root_.pulsar_auth.PulsarAuthInterceptor
 import io.grpc.netty.NettyServerBuilder
