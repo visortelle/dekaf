@@ -13,7 +13,6 @@ import io.circe.generic.auto.*
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
-type MessagePropertyKey = String
 type JsonValue = String
 type MessageAsJsonOmittingValue = JsonValue
 type MessageValueAsJson = Either[Throwable, JsonValue]
@@ -46,7 +45,7 @@ object converters:
 
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
-            case _       => Map.empty[MessagePropertyKey, JsonValue]
+            case _       => Map.empty[String, String]
         val eventTime = Option(msg.getEventTime) match
             case Some(v) if v > 0 => Some(v)
             case _                => None

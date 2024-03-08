@@ -6,7 +6,7 @@ import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies as pb
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.*
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, PublishRate, RetentionPolicies, SubscribeRate}
 import pulsar_auth.RequestContext
 
 import scala.concurrent.Future
@@ -165,7 +165,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                 .tickTime(request.tickTimeMs)
                 .build()
             adminClient.topicPolicies(request.isGlobal).setDelayedDeliveryPolicy(request.topic, delayedDeliveryPolicies)
-            
+
             Future.successful(pb.SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -178,7 +178,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing delayed delivery policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDelayedDeliveryPolicy(request.topic)
-            
+
             Future.successful(pb.RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -214,7 +214,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting message TTL policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMessageTTL(request.topic, request.messageTtlSeconds)
-            
+
             Future.successful(pb.SetMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -227,7 +227,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing message TTL policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMessageTTL(request.topic)
-            
+
             Future.successful(pb.RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -265,7 +265,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting retention for topic ${request.topic}")
             val retention = new RetentionPolicies(request.retentionTimeInMinutes, request.retentionSizeInMb)
             adminClient.topicPolicies(request.isGlobal).setRetention(request.topic, retention)
-            
+
             Future.successful(pb.SetRetentionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -278,7 +278,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing retention for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeRetention(request.topic)
-            
+
             Future.successful(pb.RemoveRetentionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -314,7 +314,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max unacked messages on consumer policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnConsumer(request.topic, request.maxUnackedMessagesOnConsumer)
-            
+
             Future.successful(pb.SetMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -328,7 +328,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max unacked messages on consumer policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnConsumer(request.topic)
-            
+
             Future.successful(pb.RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -364,7 +364,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max unacked messages on subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnSubscription(request.topic, request.maxUnackedMessagesOnSubscription)
-            
+
             Future.successful(pb.SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -377,7 +377,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max unacked messages on subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnSubscription(request.topic)
-            
+
             Future.successful(pb.RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -445,7 +445,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing inactive topic policies for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeInactiveTopicPolicies(request.topic)
-            
+
             Future.successful(pb.RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -485,7 +485,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting persistence policy for topic ${request.topic}")
             val persistencePolicies = PersistencePolicies(request.bookkeeperEnsemble, request.bookkeeperWriteQuorum, request.bookkeeperAckQuorum, request.managedLedgerMaxMarkDeleteRate)
             adminClient.topicPolicies(request.isGlobal).setPersistence(request.topic, persistencePolicies)
-            
+
             Future.successful(pb.SetPersistenceResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -498,7 +498,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing persistence policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removePersistence(request.topic)
-            
+
             Future.successful(pb.RemovePersistenceResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -542,7 +542,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing deduplication policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationStatus(request.topic)
-            
+
             Future.successful(pb.RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -574,7 +574,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting deduplication snapshot interval policy for topic ${request.topic}. ${request.interval}")
             adminClient.topicPolicies(request.isGlobal).setDeduplicationSnapshotInterval(request.topic, request.interval)
-            
+
             Future.successful(pb.SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -587,7 +587,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing deduplication snapshot interval policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationSnapshotInterval(request.topic)
-            
+
             Future.successful(pb.RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -645,7 +645,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing dispatch rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDispatchRate(request.topic)
-            
+
             Future.successful(pb.RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -703,7 +703,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing replicator dispatch rate for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeReplicatorDispatchRate(request.topic)
-            
+
             Future.successful(pb.RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -761,7 +761,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing subscription dispatch rate for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionDispatchRate(request.topic)
-            
+
             Future.successful(pb.RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -790,7 +790,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting compaction threshold policy for topic ${request.topic}. ${request.threshold}")
             adminClient.topicPolicies(request.isGlobal).setCompactionThreshold(request.topic, request.threshold)
-            
+
             Future.successful(pb.SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -803,7 +803,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing compaction threshold policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeCompactionThreshold(request.topic)
-            
+
             Future.successful(pb.RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -841,7 +841,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting publish rate policy for topic ${request.topic}. ${request.rateInMsg}, ${request.rateInByte}")
             val publishRate = PublishRate( request.rateInMsg, request.rateInByte )
             adminClient.topicPolicies(request.isGlobal).setPublishRate(request.topic, publishRate)
-            
+
             Future.successful(pb.SetPublishRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -854,7 +854,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing publish rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removePublishRate(request.topic)
-            
+
             Future.successful(pb.RemovePublishRateResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -892,7 +892,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max consumers per subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxConsumersPerSubscription(request.topic, request.maxConsumersPerSubscription)
-            
+
             Future.successful(pb.SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -905,7 +905,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max consumers per subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumersPerSubscription(request.topic)
-            
+
             Future.successful(pb.RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -941,7 +941,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max producers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxProducers(request.topic, request.maxProducers)
-            
+
             Future.successful(pb.SetMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -954,7 +954,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max producers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxProducers(request.topic)
-            
+
             Future.successful(pb.RemoveMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -992,7 +992,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max subscriptions per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxSubscriptionsPerTopic(request.topic, request.maxSubscriptionsPerTopic)
-            
+
             Future.successful(pb.SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1005,7 +1005,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max subscriptions per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxSubscriptionsPerTopic(request.topic)
-            
+
             Future.successful(pb.RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1043,7 +1043,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max consumers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxConsumers(request.topic, request.maxConsumers)
-            
+
             Future.successful(pb.SetMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1056,7 +1056,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max consumers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumers(request.topic)
-            
+
             Future.successful(pb.RemoveMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1111,7 +1111,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             val subscriptionTypesEnabled = request.types.map(pbToSubscriptionType).toSet.asJava
             adminClient.topicPolicies(request.isGlobal).setSubscriptionTypesEnabled(request.topic, subscriptionTypesEnabled)
-            
+
             Future.successful(pb.SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1124,7 +1124,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing subscription types enabled policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionTypesEnabled(request.topic)
-            
+
             Future.successful(pb.RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1238,7 +1238,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             val maxMessageSize = Option(adminClient.topicPolicies(request.isGlobal).getMaxMessageSize(request.topic)).map(_.toInt) match
                 case None => pb.GetMaxMessageSizeResponse.MaxMessageSize.Disabled(new pb.MaxMessageSizeDisabled())
                 case Some(v) => pb.GetMaxMessageSizeResponse.MaxMessageSize.Enabled(new pb.MaxMessageSizeEnabled(maxMessageSize = v))
-            
+
             Future.successful(
                 pb.GetMaxMessageSizeResponse(
                     status = Some(Status(code = Code.OK.index)),
@@ -1256,7 +1256,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting max message size policy for topic ${request.topic}. ${request.maxMessageSize}")
             adminClient.topicPolicies(request.isGlobal).setMaxMessageSize(request.topic, request.maxMessageSize)
-            
+
             Future.successful(pb.SetMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
@@ -1269,7 +1269,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing max message size policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxMessageSize(request.topic)
-            
+
             Future.successful(pb.RemoveMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err: Exception =>
