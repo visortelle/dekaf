@@ -54,6 +54,8 @@ object ManagedBasicMessageFilterTargetValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedBasicMessageFilterTargetValOrRef type")
 
     def toPb(v: ManagedBasicMessageFilterTargetValOrRef): pb.ManagedBasicMessageFilterTargetValOrRef =
         v.value match

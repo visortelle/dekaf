@@ -252,6 +252,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 case pb.AuthAction.AUTH_ACTION_SOURCES   => AuthAction.sources
                 case pb.AuthAction.AUTH_ACTION_SINKS     => AuthAction.sinks
                 case pb.AuthAction.AUTH_ACTION_PACKAGES  => AuthAction.packages
+                case _                                   => throw new Exception("Invalid AuthAction")
         try {
             val permissions = adminClient.namespaces.getPermissions(request.namespace).asScala.toMap
 
@@ -304,10 +305,10 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                     return Future.successful(GetPermissionOnSubscriptionResponse(status = Some(status)))
                 case Some(v) =>
                     v.collect {
-                        case x if x._2.asScala.toList.length > 0 =>
+                        case x if x._2.asScala.toList.nonEmpty =>
                             x._1 -> new pb.Roles(roles = x._2.asScala.toList)
                     }
-            val roles = adminClient.namespaces.getPermissions(request.namespace).asScala.toMap.map(x => x._1).toSeq
+            val roles = adminClient.namespaces.getPermissions(request.namespace).asScala.toMap.keys.toSeq
 
             Future.successful(
                 GetPermissionOnSubscriptionResponse(

@@ -4,7 +4,10 @@ import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
 import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterFieldTarget, BasicMessageFilterTargetTrait, BasicMessageFilterVarTarget}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
-case class TestOpArrayAll(itemFieldTarget: Option[BasicMessageFilterFieldTarget] = None, testItemOp: BasicMessageFilterOp) extends TestOpTrait:
+case class TestOpArrayAll(
+    itemFieldTarget: Option[BasicMessageFilterFieldTarget] = None,
+    testItemOp: BasicMessageFilterOp
+) extends TestOpTrait:
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
         val varName = target.resolveVarName()
         val fieldVarCode = itemFieldTarget match

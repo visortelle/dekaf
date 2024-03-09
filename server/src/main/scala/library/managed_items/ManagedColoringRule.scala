@@ -63,6 +63,8 @@ object ManagedColoringRuleValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedColoringRuleValOrRef type")
 
     def toPb(v: ManagedColoringRuleValOrRef): pb.ManagedColoringRuleValOrRef =
         v.value match

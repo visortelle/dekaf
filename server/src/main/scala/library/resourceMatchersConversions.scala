@@ -32,7 +32,6 @@ def tenantMatcherToPb(v: TenantMatcher): pb.TenantMatcher =
             pb.TenantMatcher(matcher = pb.TenantMatcher.Matcher.Exact(exactTenantMatcherToPb(v)))
         case v: AllTenantMatcher =>
             pb.TenantMatcher(matcher = pb.TenantMatcher.Matcher.All(allTenantMatcherToPb(v)))
-        case _ => throw new IllegalArgumentException("Unknown matcher type")
 
 def exactNamespaceMatcherFromPb(v: pb.ExactNamespaceMatcher): ExactNamespaceMatcher =
     ExactNamespaceMatcher(tenant = tenantMatcherFromPb(v.tenant.get), namespace = v.namespace)
@@ -60,7 +59,6 @@ def namespaceMatcherToPb(v: NamespaceMatcher): pb.NamespaceMatcher =
             pb.NamespaceMatcher(matcher = pb.NamespaceMatcher.Matcher.Exact(exactNamespaceMatcherToPb(v)))
         case v: AllNamespaceMatcher =>
             pb.NamespaceMatcher(matcher = pb.NamespaceMatcher.Matcher.All(allNamespaceMatcherToPb(v)))
-        case _ => throw new IllegalArgumentException("Unknown matcher type")
 
 def exactTopicMatcherFromPb(v: pb.ExactTopicMatcher): ExactTopicMatcher =
     ExactTopicMatcher(
@@ -94,7 +92,6 @@ def topicMatcherToPb(v: TopicMatcher): pb.TopicMatcher =
     v.matcher match
         case v: ExactTopicMatcher => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.Exact(exactTopicMatcherToPb(v)))
         case v: AllTopicMatcher   => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.All(allTopicMatcherToPb(v)))
-        case _                    => throw new IllegalArgumentException("Unknown matcher type")
 
 def resourceMatcherFromPb(v: pb.ResourceMatcher): ResourceMatcher =
     v.matcher match
@@ -112,5 +109,5 @@ def resourceMatcherToPb(v: ResourceMatcher): pb.ResourceMatcher =
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Tenant(tenantMatcherToPb(v)))
         case v: NamespaceMatcher =>
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Namespace(namespaceMatcherToPb(v)))
-        case v: TopicMatcher => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(v)))
-        case _               => throw new IllegalArgumentException("Unknown matcher type")
+        case v: TopicMatcher =>
+            pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(v)))

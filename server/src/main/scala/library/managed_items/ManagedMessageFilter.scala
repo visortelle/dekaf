@@ -1,12 +1,10 @@
 package library.managed_items
 
-import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
-import _root_.consumer.message_filter.MessageFilter
-import _root_.consumer.message_filter.basic_message_filter.BasicMessageFilter
-import _root_.consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
 import _root_.consumer.message_filter.JsMessageFilter
-import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
+import _root_.consumer.message_filter.basic_message_filter.BasicMessageFilter
+import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
+import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
 case class ManagedMessageFilterSpec(
     isEnabled: Boolean,
@@ -26,6 +24,8 @@ object ManagedMessageFilterSpec:
                     BasicMessageFilter.fromPb(v)
                 case pb.ManagedMessageFilterSpec.Filter.FilterJs(v) =>
                     JsMessageFilter.fromPb(v)
+                case _ =>
+                    throw new IllegalArgumentException("Invalid ManagedMessageFilterSpec filter type")
         )
 
     def toPb(v: ManagedMessageFilterSpec): pb.ManagedMessageFilterSpec =
@@ -76,6 +76,8 @@ object ManagedMessageFilterValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedMessageFilterValOrRef type")
 
     def toPb(v: ManagedMessageFilterValOrRef): pb.ManagedMessageFilterValOrRef =
         v.value match

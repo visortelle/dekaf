@@ -56,6 +56,8 @@ object ManagedColoringRuleChainValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedColoringRuleChainValOrRef type")
 
     def toPb(v: ManagedColoringRuleChainValOrRef): pb.ManagedColoringRuleChainValOrRef =
         v.value match

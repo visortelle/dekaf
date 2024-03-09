@@ -1,11 +1,11 @@
 package main
 
+import _root_.config.ConfigProviderImpl
+import _root_.envoy.Envoy
+import _root_.licensing.LicenseServer
 import _root_.server.grpc.GrpcServer
 import _root_.server.http.HttpServer
-import _root_.licensing.LicenseServer
-import _root_.envoy.Envoy
-import _root_.config.{ConfigProvider, ConfigProviderImpl, Config}
-import main.Main.app
+import postgres.PostgresProviderImpl
 import zio.*
 
 object Main extends ZIOAppDefault:
@@ -24,6 +24,8 @@ object Main extends ZIOAppDefault:
         _ <- ZIO.never
     } yield ()
 
-    def run = app.provide(
-        ConfigProviderImpl.layer,
-    )
+    def run = app
+        /*.provide(
+            ConfigProviderImpl.layer,
+            PostgresProviderImpl.layer
+        )*/

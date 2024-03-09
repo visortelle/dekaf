@@ -14,6 +14,8 @@ object ConsumerSessionTargetConsumptionMode:
                 RegularConsumptionMode.fromPb(v)
             case pb.ConsumerSessionTargetConsumptionMode.Mode.ModeReadCompacted(v) =>
                 ReadCompactedConsumptionMode.fromPb(v)
+            case _ =>
+                throw new IllegalArgumentException("Invalid ConsumerSessionTargetConsumptionMode mode.")
 
         ConsumerSessionTargetConsumptionMode(mode = mode)
 

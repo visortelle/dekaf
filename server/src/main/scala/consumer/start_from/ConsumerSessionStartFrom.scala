@@ -16,8 +16,9 @@ object ConsumerSessionStartFrom:
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageAfterEarliest(v) => NthMessageAfterEarliest.fromPb(v)
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageBeforeLatest(v)  => NthMessageBeforeLatest.fromPb(v)
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)               => MessageId.fromPb(v)
-            case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v) => DateTime.fromPb(v)
-            case pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(v) => RelativeDateTime.fromPb(v)
+            case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v)                => DateTime.fromPb(v)
+            case pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(v)        => RelativeDateTime.fromPb(v)
+            case _ => throw IllegalArgumentException("Unknown ConsumerSessionStartFrom type.")
 
     def toPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom =
         startFrom match
@@ -31,3 +32,4 @@ object ConsumerSessionStartFrom:
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(DateTime.toPb(v)))
             case v: RelativeDateTime =>
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(RelativeDateTime.toPb(v)))
+            case _ => throw IllegalArgumentException("Unknown ConsumerSessionStartFrom type.")

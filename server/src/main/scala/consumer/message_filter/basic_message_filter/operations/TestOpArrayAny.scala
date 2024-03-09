@@ -1,10 +1,13 @@
 package consumer.message_filter.basic_message_filter.operations
 
 import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
-import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterTargetTrait, BasicMessageFilterVarTarget, BasicMessageFilterFieldTarget}
+import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterFieldTarget, BasicMessageFilterTargetTrait, BasicMessageFilterVarTarget}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
-case class TestOpArrayAny(itemFieldTarget: Option[BasicMessageFilterFieldTarget] = None, testItemOp: BasicMessageFilterOp) extends TestOpTrait:
+case class TestOpArrayAny(
+    itemFieldTarget: Option[BasicMessageFilterFieldTarget] = None,
+    testItemOp: BasicMessageFilterOp
+) extends TestOpTrait:
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
         val varName = target.resolveVarName()
         val fieldVarCode = itemFieldTarget match
@@ -12,12 +15,12 @@ case class TestOpArrayAny(itemFieldTarget: Option[BasicMessageFilterFieldTarget]
             case None => "const f = v"
 
         s"""(() => {
-           |    if (!Array.isArray(${varName})) {
+           |    if (!Array.isArray($varName)) {
            |        return false;
            |    }
            |
-           |    return ${varName}.some(v => {
-           |        ${fieldVarCode}
+           |    return $varName.some(v => {
+           |        $fieldVarCode
            |        return ${testItemOp.genJsFnCode(target = BasicMessageFilterVarTarget("f"))}();
            |    });
            |    })();""".stripMargin

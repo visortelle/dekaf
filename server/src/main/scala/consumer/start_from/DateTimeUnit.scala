@@ -22,6 +22,7 @@ object DateTimeUnit:
             case pb.DateTimeUnit.DATE_TIME_UNIT_HOUR => DateTimeUnit.Hour
             case pb.DateTimeUnit.DATE_TIME_UNIT_MINUTE => DateTimeUnit.Minute
             case pb.DateTimeUnit.DATE_TIME_UNIT_SECOND => DateTimeUnit.Second
+            case _ => throw new IllegalArgumentException(s"Unknown DateTimeUnit: $dateTimeUnit")
 
     def toPb(dateTimeUnit: DateTimeUnit): pb.DateTimeUnit =
         dateTimeUnit match

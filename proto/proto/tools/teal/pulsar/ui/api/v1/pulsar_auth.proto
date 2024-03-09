@@ -10,6 +10,7 @@ enum CredentialsType {
   CREDENTIALS_TYPE_EMPTY = 1;
   CREDENTIALS_TYPE_OAUTH2 = 2;
   CREDENTIALS_TYPE_JWT = 3;
+  CREDENTIALS_TYPE_AUTH_PARAMS_STRING = 4;
 }
 
 message MaskedCredentials {

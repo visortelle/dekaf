@@ -75,6 +75,22 @@ export type TestOpStringMatchesRegex = {
   flags: string
 }
 
+export type TestOpContainsJson = {
+  type: "TestOpContainsJson",
+  containsJson: string,
+  isCaseInsensitive: boolean
+}
+
+export type TestOpEqualsJson = {
+  type: "TestOpEqualsJson",
+  equalsJson: string
+}
+
+export type TestOpMatchesJson = {
+  type: "TestOpMatchesJson",
+  matchesJson: string
+}
+
 export type TestOpArraySize = {
   type: "TestOpArraySize",
   // TODO
@@ -143,7 +159,10 @@ export type AnyTestOp = {
   TestOpObjectHasKey |
   TestOpObjectHasValue |
   TestOpObjectHasValueAtKey |
-  TestOpObjectSize
+  TestOpObjectSize |
+  TestOpContainsJson |
+  TestOpEqualsJson |
+  TestOpMatchesJson
 }
 
 export type BasicMessageFilterBracesMode = "all" | "any";

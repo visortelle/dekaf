@@ -45,7 +45,7 @@ object converters:
 
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
-            case _       => Map.empty
+            case _       => Map.empty[String, String]
         val eventTime = Option(msg.getEventTime) match
             case Some(v) if v > 0 => Some(v)
             case _                => None

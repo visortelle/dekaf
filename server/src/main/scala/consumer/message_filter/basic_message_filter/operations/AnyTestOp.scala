@@ -18,7 +18,10 @@ case class AnyTestOp(
         TestOpStringEquals |
         TestOpStringIncludes |
         TestOpStringMatchesRegex |
-        TestOpStringStartsWith
+        TestOpStringStartsWith |
+        TestOpContainsJson |
+        TestOpEqualsJson |
+        TestOpMatchesJson
 )
 
 object AnyTestOp:
@@ -40,6 +43,9 @@ object AnyTestOp:
             case pb.AnyTestOp.Op.OpStringMatchesRegex(op) => AnyTestOp(op = TestOpStringMatchesRegex.fromPb(op))
             case pb.AnyTestOp.Op.OpArrayAny(op) => AnyTestOp(op = TestOpArrayAny.fromPb(op))
             case pb.AnyTestOp.Op.OpArrayAll(op) => AnyTestOp(op = TestOpArrayAll.fromPb(op))
+            case pb.AnyTestOp.Op.OpContainsJson(op) => AnyTestOp(op = TestOpContainsJson.fromPb(op))
+            case pb.AnyTestOp.Op.OpEqualsJson(op) => AnyTestOp(op = TestOpEqualsJson.fromPb(op))
+            case pb.AnyTestOp.Op.OpMatchesJson(op) => AnyTestOp(op = TestOpMatchesJson.fromPb(op))
             case _ => throw new Exception("Unsupported AnyTestOp")
 
     def toPb(v: AnyTestOp): pb.AnyTestOp =
@@ -60,4 +66,7 @@ object AnyTestOp:
             case op: TestOpStringMatchesRegex => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpStringMatchesRegex(TestOpStringMatchesRegex.toPb(op)))
             case op: TestOpArrayAny => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpArrayAny(TestOpArrayAny.toPb(op)))
             case op: TestOpArrayAll => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpArrayAll(TestOpArrayAll.toPb(op)))
+            case op: TestOpContainsJson => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpContainsJson(TestOpContainsJson.toPb(op)))
+            case op: TestOpEqualsJson => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpEqualsJson(TestOpEqualsJson.toPb(op)))
+            case op: TestOpMatchesJson => pb.AnyTestOp(op = pb.AnyTestOp.Op.OpMatchesJson(TestOpMatchesJson.toPb(op)))
 

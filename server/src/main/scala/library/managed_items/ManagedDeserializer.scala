@@ -56,6 +56,8 @@ object ManagedDeserializerValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedDeserializerValOrRef type")
 
     def toPb(v: ManagedDeserializerValOrRef): pb.ManagedDeserializerValOrRef =
         v.value match

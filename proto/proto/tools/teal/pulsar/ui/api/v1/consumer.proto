@@ -385,6 +385,19 @@ message TestOpObjectSize {
   BasicMessageFilterOp test_size_op = 1;
 }
 
+message TestOpEqualsJson {
+  string equals_json = 1;
+}
+
+message TestOpMatchesJson {
+  string matches_json = 1;
+}
+
+message TestOpContainsJson {
+  string contains_json = 1;
+  bool is_case_insensitive = 2;
+}
+
 message AnyTestOp {
   oneof op {
     TestOpAlwaysOk op_always_ok = 50;
@@ -407,6 +420,9 @@ message AnyTestOp {
     TestOpArrayAny op_array_any = 17; // done
     TestOpArrayAll op_array_all = 18; // done
     TestOpObjectSize op_object_size = 19;
+    TestOpEqualsJson op_equals_json = 20;
+    TestOpMatchesJson op_matches_json = 21;
+    TestOpContainsJson op_contains_json = 22;
   }
 }
 

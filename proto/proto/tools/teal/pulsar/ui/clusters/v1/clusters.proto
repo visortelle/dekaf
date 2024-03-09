@@ -23,7 +23,7 @@ message ClusterData {
   google.protobuf.StringValue broker_service_url = 3;
   google.protobuf.StringValue broker_service_url_tls = 4;
   google.protobuf.StringValue proxy_service_url = 5;
-  ProxyProtocol proxy_protocol = 6;
+  optional ProxyProtocol proxy_protocol = 6;
   repeated string peer_cluster_names = 7;
   google.protobuf.StringValue authentication_plugin = 8;
   google.protobuf.StringValue authentication_parameters = 9;

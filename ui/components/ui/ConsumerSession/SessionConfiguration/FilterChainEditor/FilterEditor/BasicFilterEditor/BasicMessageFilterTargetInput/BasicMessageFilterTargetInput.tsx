@@ -141,7 +141,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
           <Toggle
             value={itemSpec.target.jsonModifier !== undefined}
             onChange={(v) => {
-              if (target.type === "BasicMessageFilterValueTarget") {
+              if (target.type === "BasicMessageFilterValueTarget" || target.type === "BasicMessageFilterKeyTarget") {
                 const newTarget: BasicMessageFilterTarget = {
                   ...itemSpec.target,
                   jsonModifier: v ? {

@@ -26,6 +26,8 @@ object ManagedConsumerSessionStartFromSpec:
                 ManagedConsumerSessionStartFromSpec(startFrom = NthMessageAfterEarliest.fromPb(sf.value))
             case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageBeforeLatest =>
                 ManagedConsumerSessionStartFromSpec(startFrom = NthMessageBeforeLatest.fromPb(sf.value))
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedConsumerSessionStartFromSpec type")
 
     def toPb(v: ManagedConsumerSessionStartFromSpec): pb.ManagedConsumerSessionStartFromSpec =
         v.startFrom match
@@ -57,6 +59,8 @@ object ManagedConsumerSessionStartFromSpec:
                 pb.ManagedConsumerSessionStartFromSpec(
                     startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageBeforeLatest(NthMessageBeforeLatest.toPb(v))
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedConsumerSessionStartFromSpec type")
 
 case class ManagedConsumerSessionStartFrom(
     metadata: ManagedItemMetadata,
@@ -93,6 +97,8 @@ object ManagedConsumerSessionStartFromValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ =>
+                throw new IllegalArgumentException("Invalid ManagedConsumerSessionStartFromValOrRef type")
 
     def toPb(v: ManagedConsumerSessionStartFromValOrRef): pb.ManagedConsumerSessionStartFromValOrRef =
         v.value match

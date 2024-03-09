@@ -45,7 +45,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespacePoliciesServiceClient.getReplicatorDispatchRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get dispatch rate. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get replicator dispatch rate. ${res.getStatus()?.getMessage()}`);
         return;
       }
 
@@ -73,7 +73,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (initialValueError) {
-    notifyError(`Unable to get dispatch rate. ${initialValueError}`);
+    notifyError(`Unable to get replicator dispatch rate. ${initialValueError}`);
   }
 
   if (initialValue === undefined) {

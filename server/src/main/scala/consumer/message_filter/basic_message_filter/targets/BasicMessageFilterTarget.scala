@@ -9,10 +9,7 @@ case class BasicMessageFilterTarget(
 ) extends BasicMessageFilterTargetTrait:
     def resolveVarName(): String = jsonModifier match
         case None => target.resolveVarName()
-        case Some(modifier) =>
-            s"""
-               |(${modifier.modifier.jsCode})(${target.resolveVarName()})
-               |""".stripMargin
+        case Some(modifier) => s"(${modifier.modifier.jsCode})(${target.resolveVarName()})"
 
 object BasicMessageFilterTarget:
     def fromPb(v: pb.BasicMessageFilterTarget): BasicMessageFilterTarget =
