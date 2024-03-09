@@ -23,7 +23,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContextPool = ConsumerSessionContextPool()
+        val sessionContextPool = ConsumerSessionContextPool(isDebug = true)
         val basicMessageFilter = BasicMessageFilter(op = spec.op)
         val filter = MessageFilter(
             isEnabled = true,
@@ -1417,13 +1417,19 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpContainsJson(
-                            containsJson = """{ "c": 4, "d": 6 }"""
+                            containsJson = """qwer"""
                         )
                     )
                 ),
                 messageValueAsJson =
                     """
-                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
+                      |{
+                      |  "a": 1,
+                      |  "b": {
+                      |    "objectId": "qwerty",
+                      |    "d": 6
+                      |  }
+                      |}
                       |""".stripMargin
             )))
         },
@@ -1433,46 +1439,19 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpContainsJson(
-                            containsJson = """sfFDSfsdfsd8fsdfsd8f7sdf"""
+                            containsJson = """qwerty""""
                         )
                     )
                 ),
                 messageValueAsJson =
                     """
-                      |"{ \"a\": 1, \"b\": { \"veryImportantUUID\": \"sfFDSfsdfsd8fsdfsd8f7sdf\", \"d\": 6 } }"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpContainsJson.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpContainsJson(
-                            containsJson = """"c": 4"""
-                        )
-                    )
-                ),
-                messageValueAsJson =
-                    """
-                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpContainsJson.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpContainsJson(
-                            containsJson = """{ "b": { "c": 4 }}"""
-                        )
-                    )
-                ),
-                messageValueAsJson =
-                    """
-                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
+                      |{
+                      |  "a": 1,
+                      |  "b": {
+                      |    "objectId": "qwerty",
+                      |    "d": 6
+                      |  }
+                      |}
                       |""".stripMargin
             )))
         },
@@ -1483,61 +1462,19 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpContainsJson(
-                            containsJson = """{}"""
+                            containsJson = """abc""""
                         )
                     )
                 ),
                 messageValueAsJson =
                     """
-                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpContainsJson.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpContainsJson(
-                            containsJson = """{}"""
-                        )
-                    )
-                ),
-                messageValueAsJson =
-                    """
-                      |"{}"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpContainsJson.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpContainsJson(
-                            containsJson = """"""
-                        )
-                    )
-                ),
-                messageValueAsJson =
-                    """
-                      |"{}"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpContainsJson.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpContainsJson(
-                            containsJson = """"""
-                        )
-                    )
-                ),
-                messageValueAsJson =
-                    """
-                      |""
+                      |{
+                      |  "a": 1,
+                      |  "b": {
+                      |    "objectId": "qwerty",
+                      |    "d": 6
+                      |  }
+                      |}
                       |""".stripMargin
             )))
         },
@@ -1548,13 +1485,42 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpContainsJson(
-                            containsJson = """{ "b": { "c": 4 }}"""
+                            containsJson = """QwerTY"""
                         )
                     )
                 ),
                 messageValueAsJson =
                     """
-                      |"{}"
+                      |{
+                      |  "a": 1,
+                      |  "b": {
+                      |    "objectId": "qwerty",
+                      |    "d": 6
+                      |  }
+                      |}
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpContainsJson.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpContainsJson(
+                            containsJson = """QwerTY""",
+                            isCaseInsensitive = true
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |{
+                      |  "a": 1,
+                      |  "b": {
+                      |    "objectId": "qwerty",
+                      |    "d": 6
+                      |  }
+                      |}
                       |""".stripMargin
             )))
         },
