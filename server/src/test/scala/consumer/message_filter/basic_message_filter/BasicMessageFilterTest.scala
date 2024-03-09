@@ -19,7 +19,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         op: BasicMessageFilterOp,
         messageAsJsonOmittingValue: String = "{}",
         messageValueAsJson: String = "null",
-        isShouldFail: Boolean = false,
+        isShouldFail: Boolean = false
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
@@ -1530,84 +1530,99 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         ========================
          */
         test(TestOpMatchesJson.getClass.toString) {
-            val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
                 targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(matchesJson = str))),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpMatchesJson(
+                            matchesJson =
+                                s"""
+                                   |{}
+                                   |""".stripMargin
+                        )
+                    )
+                ),
                 messageValueAsJson =
                     s"""
-                       |"${StringEscapeUtils.escapeJson(str)}"
+                       |{}
                        |""".stripMargin
             )))
         },
         test(TestOpMatchesJson.getClass.toString) {
-            val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
                 targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(matchesJson = str))),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpMatchesJson(
+                            matchesJson =
+                                s"""
+                                   |{
+                                   |  "a": 42
+                                   |}
+                                   |""".stripMargin
+                        )
+                    )
+                ),
                 messageValueAsJson =
                     s"""
-                       |"${str.replace("\"", "\\\"")}"
+                       |{
+                       |    "a": 42,
+                       |    "b": 24
+                       |}
                        |""".stripMargin
             )))
         },
         test(TestOpMatchesJson.getClass.toString) {
-            val str = """{}"""
-            assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
-                messageValueAsJson =
-                    """
-                      |"{}"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpMatchesJson.getClass.toString) {
-            val str = """"""
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
                 targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
-                messageValueAsJson =
-                    """
-                      |"{}"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpMatchesJson.getClass.toString) {
-            val str = """"""
-            assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
-                messageValueAsJson =
-                    """
-                      |""
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpMatchesJson.getClass.toString) {
-            val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
-            assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(matchesJson = str))),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpMatchesJson(
+                            matchesJson =
+                                s"""
+                                   |{
+                                   |  "a": 100
+                                   |}
+                                   |""".stripMargin
+                        )
+                    )
+                ),
                 messageValueAsJson =
                     s"""
-                       |"${str.replace("\"b\"", "\"f\"").replace("\"", "\\\"")}"
+                       |{
+                       |    "a": 42,
+                       |    "b": 24
+                       |}
                        |""".stripMargin
             )))
         },
         test(TestOpMatchesJson.getClass.toString) {
-            val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
                 targetField = BasicMessageFilterValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpMatchesJson(
+                            matchesJson =
+                                s"""
+                                   |{
+                                   |  "c": {
+                                   |      "d": "hello"
+                                   |  }
+                                   |}
+                                   |""".stripMargin
+                        )
+                    )
+                ),
                 messageValueAsJson =
-                    """
-                      |"{ \"a\": 1, \"b\": {} }"
-                      |""".stripMargin
+                    s"""
+                       |{
+                       |    "a": 42,
+                       |    "c": {
+                       |        "d": "hello"
+                       |    }
+                       |}
+                       |""".stripMargin
             )))
         },
         /*

@@ -12,7 +12,7 @@ case class BasicMessageFilter(op: BasicMessageFilterOp):
 
     def test(polyglotContext: Context, target: BasicMessageFilterTarget): TestResult =
         val opEvalCode = op.genJsFnCode(target) + "()"
-
+        println(opEvalCode)
         val testResult =
             try
                 val isOk = jsFn match

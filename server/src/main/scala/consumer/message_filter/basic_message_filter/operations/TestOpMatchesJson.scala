@@ -9,9 +9,9 @@ case class TestOpMatchesJson(matchesJson: String) extends TestOpTrait:
 
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
         s"""(() => {
-           |    return $JsLibsVarName.lodash.isEqual(
-           |        JSON.parse(${target.resolveVarName()}),
-           |        JSON.parse('$escapedJson')
+           |    return $JsLibsVarName.lodash.isMatch(
+           |        ${target.resolveVarName()},
+           |        $matchesJson
            |    );
            |})();""".stripMargin
 
