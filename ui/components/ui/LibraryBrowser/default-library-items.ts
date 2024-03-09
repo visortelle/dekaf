@@ -126,7 +126,9 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
               op: {
                 type: "AnyTestOp",
                 op: {
-                  type: "TestOpIsDefined"
+                  type: "TestOpContainsJson",
+                  containsJson: '',
+                  isCaseInsensitive: false
                 }
               }
             }

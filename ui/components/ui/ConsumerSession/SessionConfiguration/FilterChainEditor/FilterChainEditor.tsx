@@ -17,7 +17,7 @@ import { defaultBasicMessageFilter } from './FilterEditor/BasicFilterEditor/defa
 import OnOffToggle from '../../../IconToggle/OnOffToggle/OnOffToggle';
 import InvertedToggle from '../../../IconToggle/InvertedToggle/InvertedToggle';
 import IconToggle from '../../../IconToggle/IconToggle';
-import { getDefaultManagedItemMetadata } from '../../../LibraryBrowser/default-library-items';
+import { getDefaultManagedItem, getDefaultManagedItemMetadata } from '../../../LibraryBrowser/default-library-items';
 
 export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;

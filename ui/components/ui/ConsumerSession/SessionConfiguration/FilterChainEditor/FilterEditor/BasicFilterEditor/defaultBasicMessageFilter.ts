@@ -10,7 +10,9 @@ export const defaultBasicMessageFilter: BasicMessageFilter = {
     op: {
       type: "AnyTestOp",
       op: {
-        type: "TestOpIsDefined",
+        type: "TestOpContainsJson",
+        isCaseInsensitive: false,
+        containsJson: ''
       }
     },
     reactKey: uuid()

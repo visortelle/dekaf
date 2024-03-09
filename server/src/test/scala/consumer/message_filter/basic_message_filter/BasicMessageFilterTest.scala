@@ -1439,7 +1439,29 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpContainsJson(
-                            containsJson = """qwerty""""
+                            containsJson = """qwerty\""""
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |{
+                      |  "a": 1,
+                      |  "b": {
+                      |    "objectId": "qwerty",
+                      |    "d": 6
+                      |  }
+                      |}
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpContainsJson.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpContainsJson(
+                            containsJson = """\"d\":6"""
                         )
                     )
                 ),
@@ -1462,7 +1484,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpContainsJson(
-                            containsJson = """abc""""
+                            containsJson = """abc\""""
                         )
                     )
                 ),

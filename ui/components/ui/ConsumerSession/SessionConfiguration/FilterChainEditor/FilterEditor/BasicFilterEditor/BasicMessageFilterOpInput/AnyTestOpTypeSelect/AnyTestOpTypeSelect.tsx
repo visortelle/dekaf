@@ -26,6 +26,13 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
           { type: "item", title: "is defined", value: "TestOpIsDefined" },
           { type: "item", title: "is null", value: "TestOpIsNull" },
           {
+            type: "group", title: "JSON", items: [
+              { type: "item", title: "contains", value: "TestOpContainsJson" },
+              { type: "item", title: "equals JSON", value: "TestOpEqualsJson" },
+              { type: "item", title: "matches JSON", value: "TestOpMatchesJson" },
+            ]
+          },
+          {
             type: "group", title: "Boolean", items: [
               { type: "item", title: "is true", value: "TestOpBoolIsTrue" },
               { type: "item", title: "is false", value: "TestOpBoolIsFalse" },
@@ -33,7 +40,7 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
           },
           {
             type: "group", title: "Number", items: [
-              { type: "item", title: "= equals", value: "TestOpNumberEq" },
+              { type: "item", title: "= equals number", value: "TestOpNumberEq" },
               { type: "item", title: "< less than", value: "TestOpNumberLt" },
               { type: "item", title: "≤ less than or equal to", value: "TestOpNumberLte" },
               { type: "item", title: "> greater than", value: "TestOpNumberGt" },
@@ -54,14 +61,7 @@ const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
               { type: "item", title: "where every", value: "TestOpArrayAll" },
               { type: "item", title: "where some", value: "TestOpArrayAny" },
             ]
-          },
-          {
-            type: "group", title: "JSON", items: [
-              { type: "item", title: "JSON includes", value: "TestOpContainsJson" },
-              { type: "item", title: "equals JSON", value: "TestOpEqualsJson" },
-              { type: "item", title: "matches JSON", value: "TestOpMatchesJson" },
-            ]
-          },
+          }
         ]}
         value={props.value.op.type}
         onChange={(v) => {
