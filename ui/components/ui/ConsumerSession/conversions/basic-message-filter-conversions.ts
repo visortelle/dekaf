@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte, TestOpMatchesJson, TestOpContainsJson } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte, TestOpMatchesJson, TestOpEqualsJson, TestOpContainsJson } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 import { jsonModifierFromPb, jsonModifierToPb } from "../../JsonModifierInput/json-modifier/json-modifier-conversions-pb";
 
@@ -205,31 +205,48 @@ export function testOpStringMatchesRegexToPb(v: TestOpStringMatchesRegex): pb.Te
   return resultPb;
 }
 
-export function testOpMatchesJSONToPb(v: TestOpMatchesJson): pb.TestOpMatchesJson {
+export function testOpContainsJsonToPb(v: TestOpContainsJson): pb.TestOpContainsJson {
+  const resultPb = new pb.TestOpContainsJson();
+  resultPb.setContainsJson(v.containsJson);
+  resultPb.setIsCaseInsensitive(v.isCaseInsensitive);
+
+  return resultPb;
+}
+
+export function testOpContainsJsonFromPb(v: pb.TestOpContainsJson): TestOpContainsJson {
+  return {
+    type: "TestOpContainsJson",
+    containsJson: v.getContainsJson(),
+    isCaseInsensitive: v.getIsCaseInsensitive()
+  }
+}
+
+export function testOpEqualsJsonToPb(v: TestOpEqualsJson): pb.TestOpEqualsJson {
+  const resultPb = new pb.TestOpEqualsJson();
+  resultPb.setEqualsJson(v.equalsJson);
+  resultPb.setEqualsJson(v.equalsJson);
+
+  return resultPb;
+}
+
+export function testOpEqualsJsonFromPb(v: pb.TestOpEqualsJson): TestOpEqualsJson {
+  return {
+    type: "TestOpEqualsJson",
+    equalsJson: v.getEqualsJson()
+  }
+}
+
+export function testOpMatchesJsonToPb(v: TestOpMatchesJson): pb.TestOpMatchesJson {
   const resultPb = new pb.TestOpMatchesJson();
   resultPb.setMatchesJson(v.matchesJson);
 
   return resultPb;
 }
 
-export function testOpMatchesJSONFromPb(v: pb.TestOpMatchesJson): TestOpMatchesJson {
+export function testOpMatchesJsonFromPb(v: pb.TestOpMatchesJson): TestOpMatchesJson {
   return {
     type: "TestOpMatchesJson",
     matchesJson: v.getMatchesJson()
-  }
-}
-
-export function testOpContainsJSONToPb(v: TestOpContainsJson): pb.TestOpContainsJson {
-  const resultPb = new pb.TestOpContainsJson();
-  resultPb.setContainsJson(v.containsJson);
-
-  return resultPb;
-}
-
-export function testOpContainsJSONFromPb(v: pb.TestOpContainsJson): TestOpContainsJson {
-  return {
-    type: "TestOpContainsJson",
-    containsJson: v.getContainsJson()
   }
 }
 
@@ -296,8 +313,9 @@ export function anyTestOpFromPb(v: pb.AnyTestOp): AnyTestOp {
     case pb.AnyTestOp.OpCase.OP_STRING_MATCHES_REGEX: op = testOpStringMatchesRegexFromPb(v.getOpStringMatchesRegex()!); break;
     case pb.AnyTestOp.OpCase.OP_ARRAY_ANY: op = testOpArrayAnyFromPb(v.getOpArrayAny()!); break;
     case pb.AnyTestOp.OpCase.OP_ARRAY_ALL: op = testOpArrayAllFromPb(v.getOpArrayAll()!); break;
-    case pb.AnyTestOp.OpCase.OP_MATCHES_JSON: op = testOpMatchesJSONFromPb(v.getOpMatchesJson()!); break;
-    case pb.AnyTestOp.OpCase.OP_CONTAINS_JSON: op = testOpContainsJSONFromPb(v.getOpContainsJson()!); break;
+    case pb.AnyTestOp.OpCase.OP_CONTAINS_JSON: op = testOpContainsJsonFromPb(v.getOpContainsJson()!); break;
+    case pb.AnyTestOp.OpCase.OP_EQUALS_JSON: op = testOpEqualsJsonFromPb(v.getOpEqualsJson()!); break;
+    case pb.AnyTestOp.OpCase.OP_MATCHES_JSON: op = testOpMatchesJsonFromPb(v.getOpMatchesJson()!); break;
     default: throw new Error("Failed to convert AnyTestOp. Unknown type.");
   }
 
@@ -328,8 +346,9 @@ export function anyTestOpToPb(v: AnyTestOp): pb.AnyTestOp {
     case "TestOpStringMatchesRegex": resultPb.setOpStringMatchesRegex(testOpStringMatchesRegexToPb(v.op)); break;
     case "TestOpArrayAny": resultPb.setOpArrayAny(testOpArrayAnyToPb(v.op)); break;
     case "TestOpArrayAll": resultPb.setOpArrayAll(testOpArrayAllToPb(v.op)); break;
-    case "TestOpMatchesJson": resultPb.setOpMatchesJson(testOpMatchesJSONToPb(v.op)); break;
-    case "TestOpContainsJson": resultPb.setOpContainsJson(testOpContainsJSONToPb(v.op)); break;
+    case "TestOpContainsJson": resultPb.setOpContainsJson(testOpContainsJsonToPb(v.op)); break;
+    case "TestOpEqualsJson": resultPb.setOpEqualsJson(testOpEqualsJsonToPb(v.op)); break;
+    case "TestOpMatchesJson": resultPb.setOpMatchesJson(testOpMatchesJsonToPb(v.op)); break;
     default: throw new Error("Failed to convert AnyTestOp. Unknown type.");
   }
 

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { StringFilterDescriptor, StringFilterValue } from '../types';
 import Input from '../../../Input/Input';
 

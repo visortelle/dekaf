@@ -1,4 +1,4 @@
-import {TestOpMatchesJson} from "../../../../../../../basic-message-filter-types";
+import { TestOpMatchesJson } from "../../../../../../../basic-message-filter-types";
 import React from "react";
 import s from "./TestOpMatchesJsonInput.module.css";
 import FormItem from "../../../../../../../../ConfigurationTable/FormItem/FormItem";
@@ -7,6 +7,7 @@ import CodeEditor from "../../../../../../../../CodeEditor/CodeEditor";
 export type TestOpMatchesJsonInputProps = {
   value: TestOpMatchesJson,
   onChange: (v: TestOpMatchesJson) => void,
+  isReadOnly?: boolean
 };
 
 const TestOpMatchesJsonInput: React.FC<TestOpMatchesJsonInputProps> = (props) => {
@@ -18,6 +19,7 @@ const TestOpMatchesJsonInput: React.FC<TestOpMatchesJsonInputProps> = (props) =>
           onChange={(v) => props.onChange({ ...props.value, matchesJson: v || '' })}
           height={80}
           language='json'
+          isReadOnly={props.isReadOnly}
         />
       </FormItem>
     </div>
