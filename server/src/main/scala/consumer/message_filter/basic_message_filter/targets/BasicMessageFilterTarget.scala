@@ -26,6 +26,11 @@ object BasicMessageFilterTarget:
                     target = BasicMessageFilterValueTarget.fromPb(target),
                     jsonModifier = jsonModifier
                 )
+            case pb.BasicMessageFilterTarget.Target.TargetProducer(target) =>
+                BasicMessageFilterTarget(
+                    target = BasicMessageFilterProducerTarget.fromPb(target),
+                    jsonModifier = jsonModifier
+                )
             case _ => throw new Exception("Failed to convert BasicMessageFilterTarget. Unknown type")
 
     def toPb(v: BasicMessageFilterTarget): pb.BasicMessageFilterTarget =
@@ -40,5 +45,10 @@ object BasicMessageFilterTarget:
             case target: BasicMessageFilterValueTarget =>
                 pb.BasicMessageFilterTarget(
                     target = pb.BasicMessageFilterTarget.Target.TargetValue(BasicMessageFilterValueTarget.toPb(target)),
+                    jsonModifier = jsonModifier
+                )
+            case target: BasicMessageFilterProducerTarget =>
+                pb.BasicMessageFilterTarget(
+                    target = pb.BasicMessageFilterTarget.Target.TargetProducer(BasicMessageFilterProducerTarget.toPb(target)),
                     jsonModifier = jsonModifier
                 )

@@ -1,6 +1,6 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte, TestOpMatchesJson, TestOpEqualsJson, TestOpContainsJson } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter, BasicMessageFilterFieldTarget, TestOpBoolIsTrue, TestOpBoolIsFalse, TestOpNumberEq, TestOpNumberLt, TestOpNumberLte, TestOpNumberGt, TestOpNumberGte, TestOpMatchesJson, TestOpEqualsJson, TestOpContainsJson, BasicMessageFilterProducerTarget } from "../basic-message-filter-types";
 import { v4 as uuid } from 'uuid';
 import { jsonModifierFromPb, jsonModifierToPb } from "../../JsonModifierInput/json-modifier/json-modifier-conversions-pb";
 
@@ -462,6 +462,17 @@ export function basicMessageFilterValueTargetToPb(v: BasicMessageFilterValueTarg
   return resultPb;
 }
 
+export function basicMessageFilterProducerTargetFromPb(v: pb.BasicMessageFilterProducerTarget): BasicMessageFilterProducerTarget {
+  return {
+    type: "BasicMessageFilterProducerTarget"
+  }
+}
+
+export function basicMessageFilterProducerTargetToPb(v: BasicMessageFilterProducerTarget): pb.BasicMessageFilterProducerTarget {
+  const resultPb = new pb.BasicMessageFilterProducerTarget();
+  return resultPb;
+}
+
 export function basicMessageFilterPropertyTargetFromPb(v: pb.BasicMessageFilterPropertyTarget): BasicMessageFilterPropertyTarget {
   return {
     type: "BasicMessageFilterPropertyTarget",
@@ -515,14 +526,17 @@ export function basicMessageFilterTargetFromPb(v: pb.BasicMessageFilterTarget): 
     case pb.BasicMessageFilterTarget.TargetCase.TARGET_KEY:
       target = basicMessageFilterKeyTargetFromPb(v.getTargetKey()!);
       break;
+    case pb.BasicMessageFilterTarget.TargetCase.TARGET_VALUE:
+      target = basicMessageFilterValueTargetFromPb(v.getTargetValue()!);
+      break;
+    case pb.BasicMessageFilterTarget.TargetCase.TARGET_PRODUCER:
+      target = basicMessageFilterProducerTargetFromPb(v.getTargetValue()!);
+      break;
     case pb.BasicMessageFilterTarget.TargetCase.TARGET_PROPERTY:
       target = basicMessageFilterPropertyTargetFromPb(v.getTargetProperty()!);
       break;
     case pb.BasicMessageFilterTarget.TargetCase.TARGET_SESSION_CONTEXT_STATE:
       target = basicMessageFilterSessionContextStateTargetFromPb(v.getTargetSessionContextState()!);
-      break;
-    case pb.BasicMessageFilterTarget.TargetCase.TARGET_VALUE:
-      target = basicMessageFilterValueTargetFromPb(v.getTargetValue()!);
       break;
     default: throw new Error("Unable to convert BasicMessageFilterTarget. Unknown type.");
   }
@@ -546,6 +560,9 @@ export function basicMessageFilterTargetToPb(v: BasicMessageFilterTarget): pb.Ba
       break;
     case "BasicMessageFilterValueTarget":
       resultPb.setTargetValue(basicMessageFilterValueTargetToPb(v.target))
+      break;
+    case "BasicMessageFilterProducerTarget":
+      resultPb.setTargetProducer(basicMessageFilterProducerTargetToPb(v.target))
       break;
     case "BasicMessageFilterPropertyTarget":
       resultPb.setTargetProperty(basicMessageFilterPropertyTargetToPb(v.target))

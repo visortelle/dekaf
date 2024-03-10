@@ -93,6 +93,7 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
               list={[
                 { type: 'item', title: 'message value', value: 'BasicMessageFilterValueTarget' },
                 { type: 'item', title: 'message key', value: 'BasicMessageFilterKeyTarget' },
+                { type: 'item', title: 'producer', value: 'BasicMessageFilterProducerTarget' },
                 // { type: 'item', title: 'message property', value: 'BasicMessageFilterPropertyTarget' },
                 // { type: 'item', title: 'state', value: 'BasicMessageFilterSessionContextStateTarget' }
               ]}
@@ -105,6 +106,9 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
                     break;
                   case "BasicMessageFilterValueTarget":
                     newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterValueTarget", jsonFieldSelector: "" } };
+                    break;
+                  case "BasicMessageFilterProducerTarget":
+                    newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterProducerTarget" } };
                     break;
                   case "BasicMessageFilterPropertyTarget":
                     newTarget = { ...itemSpec.target, target: { type: "BasicMessageFilterPropertyTarget", propertyKey: "" } };
@@ -141,7 +145,11 @@ const BasicMessageFilterTargetInput: React.FC<BasicMessageFilterTargetInputProps
           <Toggle
             value={itemSpec.target.jsonModifier !== undefined}
             onChange={(v) => {
-              if (target.type === "BasicMessageFilterValueTarget" || target.type === "BasicMessageFilterKeyTarget") {
+              if (
+                target.type === "BasicMessageFilterValueTarget" ||
+                target.type === "BasicMessageFilterKeyTarget" ||
+                target.type === "BasicMessageFilterProducerTarget"
+              ) {
                 const newTarget: BasicMessageFilterTarget = {
                   ...itemSpec.target,
                   jsonModifier: v ? {

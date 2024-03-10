@@ -2641,5 +2641,43 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                     ).getOrElse(throw new Exception("Unable to parse json")))
                 )
             )))
+        },
+        /*
+       ==================
+         * BasicMessageFilterProducerTarget *
+       ==================
+         */
+        test(BasicMessageFilterProducerTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterProducerTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "producer-abc"
+                        )
+                    )
+                ),
+                messageValueAsJson = "null",
+                messageJsonOmittingValue = PulsarMessageJsonOmittingValue(
+                    producerName = Some("producer-abc")
+                )
+            )))
+        },
+        test(BasicMessageFilterProducerTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                targetField = BasicMessageFilterProducerTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "producer-xyz"
+                        )
+                    )
+                ),
+                messageValueAsJson = "null",
+                messageJsonOmittingValue = PulsarMessageJsonOmittingValue(
+                    producerName = Some("producer-abc")
+                )
+            )))
         }
     )
