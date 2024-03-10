@@ -7,6 +7,8 @@ import _root_.consumer.deserializer.Deserializer
 import consumer.deserializer.deserializers.{TreatBytesAsJson, UseLatestTopicSchema}
 import org.apache.pulsar.client.api.Message
 import org.apache.pulsar.common.schema.SchemaType
+import io.circe.parser.parse as parseJson
+import io.circe.Json
 import io.circe.syntax.*
 import io.circe.generic.auto.*
 
@@ -18,22 +20,23 @@ type MessageAsJsonOmittingValue = JsonValue
 type MessageValueAsJson = Either[Throwable, JsonValue]
 
 case class PulsarMessageJsonOmittingValue(
-    eventTime: Option[Long],
-    publishTime: Option[Long],
-    brokerPublishTime: Option[Long],
-    messageId: Option[Array[Byte]],
-    sequenceId: Option[Long],
-    producerName: Option[String],
-    key: Option[String],
-    orderingKey: Option[Array[Byte]],
-    topic: Option[String],
-    size: Option[Int],
-    redeliveryCount: Option[Int],
-    schemaVersion: Option[Long],
-    isReplicated: Option[Boolean],
-    replicatedFrom: Option[String],
-    properties: Map[String, String]
-)
+    eventTime: Option[Long] = None,
+    publishTime: Option[Long] = None,
+    brokerPublishTime: Option[Long] = None,
+    messageId: Option[Array[Byte]] = None,
+    sequenceId: Option[Long] = None,
+    producerName: Option[String] = None,
+    key: Option[Json] = None,
+    orderingKey: Option[Array[Byte]] = None,
+    topic: Option[String] = None,
+    size: Option[Int] = None,
+    redeliveryCount: Option[Int] = None,
+    schemaVersion: Option[Long] = None,
+    isReplicated: Option[Boolean] = None,
+    replicatedFrom: Option[String] = None,
+    properties: Map[String, String] = Map.empty
+):
+    def toJson = this.asJson.noSpaces
 
 object converters:
     def serializeMessage(
@@ -54,7 +57,11 @@ object converters:
         val messageId = Option(msg.getMessageId.toByteArray)
         val sequenceId = Option(msg.getSequenceId)
         val producerName = Option(msg.getProducerName)
-        val key = Option(msg.getKey)
+        val key = Option(msg.getKey).flatMap(key => {
+            parseJson(s"""\"$key\"""") match
+                case Left(_) => None
+                case Right(k) => Some(k)
+        })
         val size = Option(msg.size)
         val orderingKey = Option(msg.getOrderingKey)
         val topic = Option(msg.getTopicName)
@@ -91,7 +98,7 @@ object converters:
             messageId = messageId.map(ByteString.copyFrom),
             sequenceId = sequenceId,
             producerName = producerName,
-            key = key,
+            key = key.map(_.noSpaces),
             orderingKey = orderingKey.map(ByteString.copyFrom),
             topic = topic,
             redeliveryCount = redeliveryCount,
@@ -103,7 +110,7 @@ object converters:
 
         ConsumerSessionMessage(
             messagePb = messagePb,
-            messageAsJsonOmittingValue = messageAsJsonOmittingValue.asJson.noSpaces,
+            messageAsJsonOmittingValue = messageAsJsonOmittingValue.toJson,
             messageValueAsJson = messageValueAsJson
         )
 

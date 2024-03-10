@@ -6,8 +6,9 @@ import consumer.message_filter.basic_message_filter.logic.*
 import consumer.message_filter.basic_message_filter.operations.*
 import consumer.message_filter.basic_message_filter.targets.*
 import consumer.session_runner
-import consumer.session_runner.ConsumerSessionContextPool
+import consumer.session_runner.{ConsumerSessionContextPool, PulsarMessageJsonOmittingValue}
 import org.apache.commons.text.StringEscapeUtils
+import io.circe.parser.parse as parseJson
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
@@ -17,7 +18,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         targetField: BasicMessageFilterTargetTrait,
         targetJsonModifier: Option[JsonModifier] = None,
         op: BasicMessageFilterOp,
-        messageAsJsonOmittingValue: String = "{}",
+        messageJsonOmittingValue: PulsarMessageJsonOmittingValue = PulsarMessageJsonOmittingValue(),
         messageValueAsJson: String = "null",
         isShouldFail: Boolean = false
     )
@@ -35,7 +36,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             filter = basicMessageFilter
         )
         val sessionContext = sessionContextPool.getNextContext
-        sessionContext.setCurrentMessage(spec.messageAsJsonOmittingValue, Right(spec.messageValueAsJson.trim))
+        sessionContext.setCurrentMessage(spec.messageJsonOmittingValue.toJson, Right(spec.messageValueAsJson.trim))
 
         val result = sessionContext.testMessageFilter(filter = filter).isOk
 
@@ -2479,6 +2480,166 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |  [{ "a": "right" }, { "a": "right" }]
                       |]
                       |""".stripMargin
+            )))
+        },
+        /*
+       ==================
+         * BasicMessageFilterValueTarget *
+       ==================
+         */
+        test(BasicMessageFilterValueTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(
+                    jsonFieldSelector = None
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "42"
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"42"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterValueTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(
+                    jsonFieldSelector = Some("")
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "42"
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"42"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterValueTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(
+                    jsonFieldSelector = Some("a.b.d[1]")
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "10"
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |{
+                      |  "a": {
+                      |    "b": {
+                      |      "d": ["5", "10", "15"]
+                      |    }
+                      |  }
+                      |}
+                      |""".stripMargin
+            )))
+        },
+        /*
+       ==================
+         * BasicMessageFilterKeyTarget *
+       ==================
+         */
+        test(BasicMessageFilterKeyTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterKeyTarget(
+                    jsonFieldSelector = None
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpIsDefined()
+                    )
+                ),
+                messageValueAsJson = "null",
+                messageJsonOmittingValue = PulsarMessageJsonOmittingValue(
+                    key = Some(parseJson(
+                        """
+                          |""
+                          |""".stripMargin.trim
+                    ).getOrElse(throw new Error("Unable to parse json")))
+                )
+            )))
+        },
+        test(BasicMessageFilterKeyTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterKeyTarget(
+                    jsonFieldSelector = None
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "my-message-key"
+                        )
+                    )
+                ),
+                messageValueAsJson = "null",
+                messageJsonOmittingValue = PulsarMessageJsonOmittingValue(
+                    key = Some(parseJson(
+                        """
+                          |"my-message-key"
+                          |""".stripMargin.trim
+                    ).getOrElse(throw new Error("Unable to parse json")))
+                )
+            )))
+        },
+        test(BasicMessageFilterKeyTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterKeyTarget(
+                    jsonFieldSelector = Some("")
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "my-message-key"
+                        )
+                    )
+                ),
+                messageValueAsJson = "null",
+                messageJsonOmittingValue = PulsarMessageJsonOmittingValue(
+                    key = Some(parseJson(
+                        """
+                          |"my-message-key"
+                          |""".stripMargin.trim
+                    ).getOrElse(throw new Error("Unable to parse json")))
+                )
+            )))
+        },
+        test(BasicMessageFilterKeyTarget.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterKeyTarget(
+                    jsonFieldSelector = Some("a.b")
+                ),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpStringEquals(
+                            equals = "my-nested-key-field"
+                        )
+                    )
+                ),
+                messageValueAsJson = "null",
+                messageJsonOmittingValue = PulsarMessageJsonOmittingValue(
+                    key = Some(parseJson(
+                        """
+                          |{
+                          |  "a": {
+                          |    "b": "my-nested-key-field"
+                          |  }
+                          |}
+                          |""".stripMargin
+                    ).getOrElse(throw new Exception("Unable to parse json")))
+                )
             )))
         }
     )

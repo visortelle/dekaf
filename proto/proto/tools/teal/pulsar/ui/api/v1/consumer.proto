@@ -451,7 +451,7 @@ message BasicMessageFilterValueTarget {
 }
 
 message BasicMessageFilterKeyTarget {
-  string key_name = 1;
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
 message BasicMessageFilterPropertyTarget {

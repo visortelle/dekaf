@@ -9,10 +9,10 @@ case class BasicMessageFilterFieldTarget(
 ):
     def resolveVarName(objectVarName: String): String =
         jsonFieldSelector match
+            case None | Some("") =>
+                s"$objectVarName"
             case Some(selector) =>
                 s"""$JsLibsVarName.lodash.get($objectVarName, '$selector')"""
-            case None =>
-                s"$objectVarName"
 
 object BasicMessageFilterFieldTarget:
     def fromPb(v: pb.BasicMessageFilterFieldTarget): BasicMessageFilterFieldTarget =
