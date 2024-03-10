@@ -206,11 +206,16 @@ export type BasicMessageFilterFieldTarget = {
   jsonFieldSelector?: string
 }
 
+export type BasicMessageFilterProducerTarget = {
+  type: "BasicMessageFilterProducerTarget",
+}
+
 export type BasicMessageFilterTarget = {
   type: "BasicMessageFilterTarget",
   target:
   BasicMessageFilterKeyTarget |
   BasicMessageFilterValueTarget |
+  BasicMessageFilterProducerTarget |
   BasicMessageFilterPropertyTarget |
   BasicMessageFilterSessionContextStateTarget,
   jsonModifier?: JsonModifier

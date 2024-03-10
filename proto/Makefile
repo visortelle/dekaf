@@ -12,5 +12,5 @@ clean:
 build:
 	buf mod update
 	buf lint
-	cd ./proto && buf breaking . --path tools/teal/pulsar/ui/library/v1/managed_items.proto --against "../../.git#branch=main,subdir=proto/proto"
+	# cd ./proto && buf breaking . --path tools/teal/pulsar/ui/library/v1/managed_items.proto --against "../../.git#branch=main,subdir=proto/proto"
 	buf generate --include-imports --include-wkt

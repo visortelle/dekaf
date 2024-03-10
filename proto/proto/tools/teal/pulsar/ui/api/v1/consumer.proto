@@ -446,12 +446,31 @@ message BasicMessageFilterOp {
   }
 }
 
+message BasicMessageFilterValueTarget {
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
 message BasicMessageFilterKeyTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
-message BasicMessageFilterValueTarget {
-  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+message BasicMessageFilterPropertyTarget {
+  string property_key = 1;
+}
+
+message BasicMessageFilterSchemaVersionTarget {
+}
+
+message BasicMessageFilterSizeTarget {
+}
+
+message BasicMessageFilterOrderingKeyTarget {
+}
+
+message BasicMessageFilterRedeliveryCountTarget {
+}
+
+message BasicMessageFilterProducerTarget {
 }
 
 message BasicMessageFilterVarTarget {
@@ -460,10 +479,6 @@ message BasicMessageFilterVarTarget {
 
 message BasicMessageFilterFieldTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
-}
-
-message BasicMessageFilterPropertyTarget {
-  string property_key = 1;
 }
 
 message BasicMessageFilterSessionContextStateTarget {
@@ -486,6 +501,11 @@ message BasicMessageFilterTarget {
     BasicMessageFilterValueTarget target_value = 2;
     BasicMessageFilterPropertyTarget target_property = 3;
     BasicMessageFilterSessionContextStateTarget target_session_context_state = 4;
+    BasicMessageFilterSchemaVersionTarget target_schema_version = 5;
+    BasicMessageFilterSizeTarget target_size = 6;
+    BasicMessageFilterOrderingKeyTarget target_ordering_key = 7;
+    BasicMessageFilterRedeliveryCountTarget target_redelivery_count = 8;
+    BasicMessageFilterProducerTarget target_producer = 9;
   }
   JsonModifier json_modifier = 50;
 }

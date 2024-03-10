@@ -10,10 +10,10 @@ case class BasicMessageFilterValueTarget(
 ) extends BasicMessageFilterTargetTrait:
     override def resolveVarName(): String =
         jsonFieldSelector match
+            case None | Some("") =>
+                s"$CurrentMessageVarName.value"
             case Some(selector) =>
                 s"""$JsLibsVarName.lodash.get($CurrentMessageVarName.value, '$selector')"""
-            case None =>
-                s"$CurrentMessageVarName.value"
 
 object BasicMessageFilterValueTarget:
     def fromPb(v: pb.BasicMessageFilterValueTarget): BasicMessageFilterValueTarget =
