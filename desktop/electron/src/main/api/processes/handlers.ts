@@ -429,7 +429,7 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     "DEKAF_DATA_DIR": dekafDataDir,
     "DEKAF_PORT": String(port),
     "DEKAF_PUBLIC_BASE_URL": publicBaseUrl,
-    "PATH": `${nodeProcess.env['PATH']}:${paths.binDir}`
+    "PATH": process.platform === 'win32' ? `${nodeProcess.env['PATH']};${paths.binDir}` : `${nodeProcess.env['PATH']}:${paths.binDir}`
   };
 
   if (connection.dekafLicenseId.length) {
@@ -661,7 +661,8 @@ export async function runDekafDemoapp(connection: DekafToPulsarConnection, event
 
 function killProcess(proc: ChildProcessWithoutNullStreams) {
   if (proc.pid !== undefined && process.platform === 'win32') {
-    spawn("taskkill", ["/PID", proc.pid.toString(), '/T'])
+    // We use "/F" flag here as without it the process couln't be stopped
+    spawn("taskkill", ["/PID", proc.pid.toString(), '/T', '/F'])
   } else {
     proc.kill();
   }
