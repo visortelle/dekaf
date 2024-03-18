@@ -33,6 +33,9 @@ if (isExists) {
 function setDesktopAppVersion() {
   const dekafDesktopRoot = path.join(repoRoot, 'desktop', 'electron');
   execSync(`npm version ${version} --allow-same-version`, { cwd: dekafDesktopRoot, stdio: 'inherit', encoding: 'utf-8' });
+
+  const dekafDesktopReleaseRoot = path.join(dekafDesktopRoot, 'release', 'app');
+  execSync(`npm version ${version} --allow-same-version`, { cwd: dekafDesktopReleaseRoot, stdio: 'inherit', encoding: 'utf-8' });
 }
 
 function setAndPushVersion() {
