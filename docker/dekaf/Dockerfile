@@ -41,8 +41,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x64; else ARCHIT
   cp -r ./bin/linux/$ARCHITECTURE/* /dekaf/bin/
 ################################################################
 
-FROM ghcr.io/graalvm/graalvm-community:20.0.2 as dekaf
-RUN gu install js
+FROM ghcr.io/graalvm/nodejs-community:23.0.2-jvm17-ol9-20231024 as dekaf
 
 RUN useradd --user-group --system --create-home --no-log-init dekaf
 USER dekaf

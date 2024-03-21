@@ -1,0 +1,41 @@
+version: '2.4'
+
+services:
+  pulsar:
+    image: apachepulsar/pulsar:3.2.1
+    restart: always
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    environment:
+      PULSAR_MEM: "-Xms512m -Xmx1024m"
+    entrypoint: /bin/bash -c "bin/pulsar standalone"
+    volumes:
+      - './data/pulsar/data/:/pulsar/data'
+    healthcheck:
+      test: ['CMD', 'bin/pulsar-admin', 'brokers', 'healthcheck']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - pulsar-net
+
+  # UI for Apache Pulsar: https://dekaf.io
+  # https://twitter.com/dekaf_io
+  dekaf:
+    image: tealtools/dekaf-dev:main-amd64
+    restart: always
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    environment:
+      DEKAF_PULSAR_WEB_URL: "http://pulsar:8080"
+      DEKAF_PULSAR_BROKER_URL: "http://pulsar:6650"
+    ports:
+      - "8090:8090"
+    networks:
+      - pulsar-net
+
+networks:
+  pulsar-net:
+    driver: bridge
