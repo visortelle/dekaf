@@ -32,10 +32,13 @@ RUN cd ./proto && make build
 RUN cd ./ui && make build
 RUN cd ./server && make build
 
-RUN cd ./server/target/universal && unzip ./dekaf-*.zip && rm ./dekaf-*.zip && mv ./dekaf-* /dekaf
-RUN cp ./server/config.yaml /dekaf/
-RUN cp -r ./server/library /dekaf/
+RUN cd ./server/target/universal && tar xvf ./dekaf.tgz && rm ./dekaf.tgz && mv ./dekaf /dekaf
+RUN cp -r ./server/data /dekaf/
 
+ARG TARGETPLATFORM
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x64; else ARCHITECTURE=arm64; fi && \
+  mkdir -p /dekaf/bin && \
+  cp -r ./bin/linux/$ARCHITECTURE/* /dekaf/bin/
 ################################################################
 
 FROM ghcr.io/graalvm/graalvm-community:20.0.2 as dekaf
@@ -46,6 +49,8 @@ USER dekaf
 WORKDIR /dekaf
 
 COPY --from=builder --chown=dekaf:dekaf /dekaf .
+
+ENV PATH="/dekaf/bin:${PATH}"
 
 EXPOSE 8090
 

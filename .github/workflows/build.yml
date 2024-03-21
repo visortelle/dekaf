@@ -4,105 +4,105 @@ on:
       - '**'
 
 jobs:
-  build-desktop-app:
-    strategy:
-      matrix:
-        include:
-          - runner: ubuntu-22.04
-            release-platform: linux-x86
-          # - runner: macos-13 # Intel
-              # release-platform: macos-x64
-          # - runner: macos-14 # M1
-              # release-platform: macos-aarch64
+  # build-desktop-app:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - runner: ubuntu-22.04
+  #           release-platform: linux-x86
+  #         # - runner: macos-13 # Intel
+  #             # release-platform: macos-x64
+  #         # - runner: macos-14 # M1
+  #             # release-platform: macos-aarch64
 
-    runs-on: ["${{ matrix.runner }}"]
+  #   runs-on: ["${{ matrix.runner }}"]
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Git LFS Pull
-        run: git lfs pull
+  #     - name: Git LFS Pull
+  #       run: git lfs pull
 
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - uses: DeterminateSystems/flake-checker-action@main
+  #     - uses: DeterminateSystems/nix-installer-action@main
+  #     - uses: DeterminateSystems/magic-nix-cache-action@main
+  #     - uses: DeterminateSystems/flake-checker-action@main
 
-      - name: Build Desktop App
-        run: |
-          uname -a
-          nix build -L
-          nix-shell --run 'make build-desktop-app'
+  #     - name: Build Desktop App
+  #       run: |
+  #         uname -a
+  #         nix build -L
+  #         nix-shell --run 'make build-desktop-app'
 
-      - uses: aws-actions/configure-aws-credentials@v1
-        name: Upload Dekaf Desktop release to S3
-        with:
-          aws-access-key-id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
-          aws-region: us-east-2
-      - run: aws s3 sync desktop/electron/release/build/ s3://dekaf-desktop-releases/${{ github.ref_name }}/${{ matrix.release-platform }} --delete
+  #     - uses: aws-actions/configure-aws-credentials@v1
+  #       name: Upload Dekaf Desktop release to S3
+  #       with:
+  #         aws-access-key-id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
+  #         aws-region: us-east-2
+  #     - run: aws s3 sync desktop/electron/release/build/ s3://dekaf-desktop-releases/${{ github.ref_name }}/${{ matrix.release-platform }} --delete
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dekaf-tgz-${{ matrix.runner }}
-          path: server/target/universal/dekaf.tgz
-          compression-level: 0
-          overwrite: true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dekaf-demoapp-tgz-${{ matrix.runner }}
-          path: demoapp/target/universal/dekaf-demoapp.tgz
-          compression-level: 0
-          overwrite: true
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: dekaf-tgz-${{ matrix.runner }}
+  #         path: server/target/universal/dekaf.tgz
+  #         compression-level: 0
+  #         overwrite: true
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: dekaf-demoapp-tgz-${{ matrix.runner }}
+  #         path: demoapp/target/universal/dekaf-demoapp.tgz
+  #         compression-level: 0
+  #         overwrite: true
 
-  build-desktop-app-windows:
-    needs: [build-desktop-app]
-    strategy:
-      matrix:
-        include:
-          - runner: windows-2022
+  # build-desktop-app-windows:
+  #   needs: [build-desktop-app]
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - runner: windows-2022
 
-    runs-on: ["${{ matrix.runner }}"]
+  #   runs-on: ["${{ matrix.runner }}"]
 
-    env:
-      NODE_OPTIONS: "--max-old-space-size=4096"
+  #   env:
+  #     NODE_OPTIONS: "--max-old-space-size=4096"
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Git LFS Pull
-        run: git lfs pull
+  #     - name: Git LFS Pull
+  #       run: git lfs pull
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20.x'
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: dekaf-tgz-ubuntu-22.04
-          path: server/target/universal/
-      - uses: actions/download-artifact@v4
-        with:
-          name: dekaf-demoapp-tgz-ubuntu-22.04
-          path: demoapp/target/universal/
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: dekaf-tgz-ubuntu-22.04
+  #         path: server/target/universal/
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: dekaf-demoapp-tgz-ubuntu-22.04
+  #         path: demoapp/target/universal/
 
-      - name: Build Desktop App
-        shell: pwsh
-        run: |
-          cd desktop/electron
-          npm ci
-          npm run package
+  #     - name: Build Desktop App
+  #       shell: pwsh
+  #       run: |
+  #         cd desktop/electron
+  #         npm ci
+  #         npm run package
 
-      - uses: aws-actions/configure-aws-credentials@v1
-        name: Upload Dekaf Desktop release to S3
-        with:
-          aws-access-key-id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
-          aws-region: us-east-2
-      - run: aws s3 sync desktop/electron/release/build/ s3://dekaf-desktop-releases/${{ github.ref_name }}/windows-x64 --delete
+  #     - uses: aws-actions/configure-aws-credentials@v1
+  #       name: Upload Dekaf Desktop release to S3
+  #       with:
+  #         aws-access-key-id: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.DEKAF_AWS_RELEASE_MANAGER_SECRET_KEY }}
+  #         aws-region: us-east-2
+  #     - run: aws s3 sync desktop/electron/release/build/ s3://dekaf-desktop-releases/${{ github.ref_name }}/windows-x64 --delete
 
   build-docker-images:
     strategy:
@@ -110,7 +110,6 @@ jobs:
         include:
           - runner: ubuntu-22.04
             release-platform: linux-x86
-
 
     runs-on: ["${{ matrix.runner }}"]
 
@@ -138,7 +137,7 @@ jobs:
         run: nix-shell --run 'make build-docker-images'
 
   post-build-docker-images:
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     needs: build-docker-images
 
     env:
