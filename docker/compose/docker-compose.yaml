@@ -4,14 +4,14 @@ services:
   pulsar:
     image: apachepulsar/pulsar:3.2.1
     restart: always
-    ports:
-      - "6650:6650"
-      - "8080:8080"
     environment:
       PULSAR_MEM: "-Xms512m -Xmx1024m"
     entrypoint: /bin/bash -c "bin/pulsar standalone"
     volumes:
       - './data/pulsar/data/:/pulsar/data'
+    ports:
+      - "6650:6650"
+      - "8080:8080"
     healthcheck:
       test: ['CMD', 'bin/pulsar-admin', 'brokers', 'healthcheck']
       interval: 5s
@@ -31,6 +31,8 @@ services:
     environment:
       DEKAF_PULSAR_WEB_URL: "http://pulsar:8080"
       DEKAF_PULSAR_BROKER_URL: "http://pulsar:6650"
+    volumes:
+      - './data/dekaf/data/library/:/dekaf/data/library'
     ports:
       - "8090:8090"
     networks:
