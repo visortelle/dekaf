@@ -56,10 +56,12 @@ RUN microdnf update -y &&\
 
 FROM scratch as dekaf
 
-RUN useradd --user-group --system --create-home --no-log-init dekaf
-USER dekaf
+COPY --from=graalvm / .
 
-COPY --from=graalvm --chown=dekaf:dekaf / .
+RUN useradd --user-group --system --create-home --no-log-init dekaf && \
+  chown -R dekaf:dekaf /
+
+USER dekaf
 
 WORKDIR /dekaf
 
