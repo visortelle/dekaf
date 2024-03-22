@@ -108,10 +108,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-22.04
-            release-platform: linux-x86
+          - runner: arm64
+            arch: arm64
+          - runner: x64
+            arch: x64
 
-    runs-on: ["${{ matrix.runner }}"]
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
 
     env:
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -137,7 +139,7 @@ jobs:
         run: nix-shell --run 'make build-docker-images'
 
   post-build-docker-images:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     needs: build-docker-images
 
     env:

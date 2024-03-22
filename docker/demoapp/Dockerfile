@@ -1,11 +1,12 @@
-FROM nixos/nix:2.16.1 as builder
+FROM nixos/nix:2.11.1 as builder
 
 WORKDIR /workdir
 
 # Configure Nix
-RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable && nix-channel --update
 COPY ./docker/demoapp/nix.conf /tmp/nix.conf
 RUN cat /tmp/nix.conf >> /etc/nix/nix.conf && rm /tmp/nix.conf
+RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable && nix-channel --update
+RUN nix-env -iA nixpkgs.git-lfs
 
 # Cache Nix dependencies
 COPY ./*.nix ./
@@ -23,12 +24,12 @@ RUN cd ./demoapp && sbt update
 COPY . .
 
 RUN cd ./demoapp && make build
-RUN cd ./demoapp/target/universal && unzip ./demoapp-*.zip && rm ./demoapp-*.zip && mv ./demoapp-* /demoapp
+RUN cd ./demoapp/target/universal && tar xvf ./dekaf-demoapp.tgz && rm ./dekaf-demoapp.tgz && mv ./dekaf-demoapp /demoapp
 RUN cp ./demoapp/config.yaml /demoapp/
 
 ################################################################
 
-FROM ghcr.io/graalvm/graalvm-community:20.0.2
+FROM ghcr.io/graalvm/nodejs-community:23.0.2-jvm17-ol9-20231024 as dekaf
 
 RUN useradd --user-group --system --create-home --no-log-init dekaf
 USER dekaf
