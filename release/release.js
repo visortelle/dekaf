@@ -43,10 +43,10 @@ function setAndPushVersion() {
 
   const gitMessage = `Bump Dekaf version to: ${version}`;
 
-  execSync(`git tag -a ${gitTag} -m "${gitMessage}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
-
   execSync(`git add ${repoRoot}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
   execSync(`git commit -m  "${gitMessage}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
+
+  execSync(`git tag -a ${gitTag} -m "${gitMessage}"`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
 
   execSync(`git push origin ${gitBranch}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
   execSync(`git push origin refs/tags/${gitTag}`, { cwd: repoRoot, stdio: 'inherit', encoding: 'utf-8' });
