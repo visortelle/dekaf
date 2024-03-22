@@ -41,11 +41,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
         logger.debug(s"Updating library item: ${request.item}")
 
         // PRODUCT PLAN LIMITATION START
-        if Vector(ProductCode.DekafFree, ProductCode.DekafDesktopFree, ProductCode.DekafForTeams).contains(Licensing.productCode) then
+        if Vector(ProductCode.DekafFree, ProductCode.DekafDesktopFree).contains(Licensing.productCode) then
             val itemsLimit = Licensing.productCode match
-                case ProductCode.DekafDesktopFree => 20
-                case ProductCode.DekafFree => 50
-                case ProductCode.DekafForTeams => 300
+                case ProductCode.DekafDesktopFree => 100
+                case ProductCode.DekafFree => 100
                 case _ => throw new Exception("Something went wrong")
 
             if library.size > itemsLimit then

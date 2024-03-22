@@ -5,7 +5,6 @@ import _root_.envoy.Envoy
 import _root_.licensing.LicenseServer
 import _root_.server.grpc.GrpcServer
 import _root_.server.http.HttpServer
-import postgres.PostgresProviderImpl
 import zio.*
 
 object Main extends ZIOAppDefault:
@@ -25,7 +24,3 @@ object Main extends ZIOAppDefault:
     } yield ()
 
     def run = app
-        /*.provide(
-            ConfigProviderImpl.layer,
-            PostgresProviderImpl.layer
-        )*/

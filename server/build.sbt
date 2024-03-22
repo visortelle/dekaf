@@ -96,11 +96,6 @@ lazy val root = project
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
 
-            // Postgres
-            "org.postgresql" % "postgresql" % "42.6.0",
-            "io.getquill" %% "quill-jdbc-zio" % "4.8.0",
-            "io.getquill" %% "quill-doobie" % "4.8.0",
-
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.12.0",
             "org.apache.commons" % "commons-text" % "1.11.0",
