@@ -115,3 +115,6 @@ target
 
 # Nix
 result
+
+# Docker
+**/slim.*.json

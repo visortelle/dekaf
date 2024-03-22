@@ -84,6 +84,8 @@
               pkgs.awscli2
               pkgs.aws-iam-authenticator
 
+              pkgs.docker-slim
+
               pkgs.git
               pkgs.git-lfs
               pkgs.unzip

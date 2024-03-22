@@ -21,7 +21,7 @@ services:
   # UI for Apache Pulsar: https://dekaf.io
   # https://twitter.com/dekaf_io
   dekaf:
-    image: tealtools/dekaf:0.1.6
+    image: tealtools/dekaf.slim:latest
     restart: always
     depends_on:
       pulsar:

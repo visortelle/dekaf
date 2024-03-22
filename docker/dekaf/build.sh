@@ -24,9 +24,11 @@ docker build \
   --pull \
   --progress plain \
   -t $tag_1 \
-  -t $tag_2 \
   -f "${this_dir}/Dockerfile" \
   "${repo_dir}"
+
+slim build --continue-after 5 --http-probe=false --include-path /dekaf --tag $tag_1 $tag1
+docker tag $tag_1 $tag_2
 
 docker push $tag_1
 docker push $tag_2
