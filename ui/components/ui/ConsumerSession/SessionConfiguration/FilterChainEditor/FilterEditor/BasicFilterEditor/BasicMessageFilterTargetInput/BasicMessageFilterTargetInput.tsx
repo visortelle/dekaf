@@ -9,7 +9,6 @@ import { useHover } from '../../../../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../../LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import Toggle from '../../../../../../Toggle/Toggle';
-import CodeEditor from '../../../../../../CodeEditor/CodeEditor';
 import JsonModifierInput from '../../../../../../JsonModifierInput/JsonModifierInput';
 
 export type BasicMessageFilterTargetInputProps = {
