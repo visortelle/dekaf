@@ -41,7 +41,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x64; else ARCHIT
   cp -r ./bin/linux/$ARCHITECTURE/* /dekaf/bin/
 ################################################################
 
-FROM ghcr.io/graalvm/nodejs-community:23.0.2-jvm17-ol9-20231024 as dekaf
+FROM ghcr.io/graalvm/nodejs-community:23.0.1-jvm20-ol9-20230725 as dekaf
 
 RUN microdnf update -y &&\
   microdnf upgrade \
