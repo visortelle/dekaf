@@ -50,7 +50,7 @@ RUN microdnf update -y &&\
   --nodocs \
   --noplugins \
   --setopt=install_weak_deps=0 && \
-  microdnf clean all \
+  microdnf clean all && \
   useradd --user-group --system --create-home --no-log-init dekaf && \
   rm -rf /usr/lib64/graalvm/graalvm-community-java20/languages/nodejs
 
