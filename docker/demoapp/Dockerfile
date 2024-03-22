@@ -23,7 +23,9 @@ RUN cd ./demoapp && sbt update
 
 COPY . .
 
+RUN cd ./proto && make build
 RUN cd ./demoapp && make build
+
 RUN cd ./demoapp/target/universal && tar xvf ./dekaf-demoapp.tgz && rm ./dekaf-demoapp.tgz && mv ./dekaf-demoapp /demoapp
 RUN cp ./demoapp/config.yaml /demoapp/
 
