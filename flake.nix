@@ -81,7 +81,7 @@
               pkgs.pulumi-bin
               pkgs.kubectl
               pkgs.kubernetes-helm
-              pkgs.awscli2
+              # pkgs.awscli2 # Temporary disable due to failing Nix build
               pkgs.aws-iam-authenticator
 
               pkgs.docker-slim
