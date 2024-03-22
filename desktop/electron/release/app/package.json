@@ -1,6 +1,6 @@
 {
   "name": "dekaf",
-  "version": "0.1.15",
+  "version": "0.1.16-beta.1",
   "description": "Modern UI for Apache Pulsar",
   "license": "MIT",
   "author": {
