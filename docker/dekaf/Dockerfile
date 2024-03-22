@@ -43,6 +43,15 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x64; else ARCHIT
 
 FROM ghcr.io/graalvm/nodejs-community:23.0.2-jvm17-ol9-20231024 as dekaf
 
+RUN microdnf update -y &&\
+  microdnf upgrade \
+  --refresh \
+  --best \
+  --nodocs \
+  --noplugins \
+  --setopt=install_weak_deps=0 && \
+  microdnf clean all && true
+
 RUN useradd --user-group --system --create-home --no-log-init dekaf
 USER dekaf
 WORKDIR /dekaf
