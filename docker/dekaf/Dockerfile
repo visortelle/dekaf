@@ -59,7 +59,7 @@ FROM scratch as dekaf
 COPY --from=graalvm / .
 
 RUN useradd --user-group --system --create-home --no-log-init dekaf && \
-  chown -R dekaf:dekaf /
+  chown -R dekaf:dekaf || true
 
 USER dekaf
 
