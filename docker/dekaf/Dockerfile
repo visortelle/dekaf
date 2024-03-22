@@ -41,7 +41,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x64; else ARCHIT
   cp -r ./bin/linux/$ARCHITECTURE/* /dekaf/bin/
 ################################################################
 
-FROM ghcr.io/graalvm/nodejs-community:23.0.1-jvm20-ol9-20230725 as dekaf
+FROM ghcr.io/graalvm/nodejs-community:23.0.1-jvm20-ol9-20230725 as graalvm
 
 RUN microdnf update -y &&\
   microdnf upgrade \
@@ -53,8 +53,11 @@ RUN microdnf update -y &&\
   microdnf clean all && \
   useradd --user-group --system --create-home --no-log-init dekaf && \
   rm -rf /usr/lib64/graalvm/graalvm-community-java20/languages/nodejs && \
-  rm -rf /usr/lib64/graalvm/graalvm-community-java20/lib/src.zip && \
+  rm -rf /usr/lib64/graalvm/graalvm-community-java20/lib/src.zip
 
+FROM scratch as dekaf
+
+COPY --from=graalvm --chown=dekaf:dekaf / .
 
 USER dekaf
 WORKDIR /dekaf
