@@ -43,7 +43,7 @@ import { handleKeyDown } from './keyboard';
 import { useDebounce } from 'use-debounce';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
-const productPlanMessagesLimit = 100 as const;
+const productPlanMessagesLimit = 500 as const;
 
 export type SessionProps = {
   sessionKey: number;

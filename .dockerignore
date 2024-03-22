@@ -6,4 +6,4 @@
 **/.metals
 **/.bsp
 
-*.binpb
+**/*.binpb
