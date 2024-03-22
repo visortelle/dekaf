@@ -17,5 +17,5 @@ else
 fi
 set -ue
 
-app_version=$(cd "${repo_dir}/server" && sbt version 2>/dev/null | grep info | tail -n 1 | cut -d ' ' -f 2 | sed -e 's/\x1b\[[0-9;]*m//g')
+app_version=$(cd "${repo_dir}/demoapp" && sbt version 2>/dev/null | grep info | tail -n 1 | cut -d ' ' -f 2 | sed -e 's/\x1b\[[0-9;]*m//g')
 echo "tealtools/${docker_repo}:${app_version}"
