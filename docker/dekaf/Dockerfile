@@ -52,7 +52,9 @@ RUN microdnf update -y &&\
   --setopt=install_weak_deps=0 && \
   microdnf clean all && \
   useradd --user-group --system --create-home --no-log-init dekaf && \
-  rm -rf /usr/lib64/graalvm/graalvm-community-java20/languages/nodejs
+  rm -rf /usr/lib64/graalvm/graalvm-community-java20/languages/nodejs && \
+  rm -rf /usr/lib64/graalvm/graalvm-community-java20/lib/src.zip && \
+
 
 USER dekaf
 WORKDIR /dekaf
