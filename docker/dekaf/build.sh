@@ -27,7 +27,6 @@ docker build \
   -f "${this_dir}/Dockerfile" \
   "${repo_dir}"
 
-slim build --continue-after 1 --http-probe=false --include-path /dekaf --tag $tag_1 $tag_1
 docker tag $tag_1 $tag_2
 
 docker push $tag_1
