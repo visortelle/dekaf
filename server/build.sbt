@@ -1,7 +1,7 @@
 val scala3Version = "3.3.3"
 val graalvmVersion = "22.3.3"
-val pulsarVersion = "3.2.0"
-val circeVersion = "0.14.5"
+val pulsarVersion = "3.2.1"
+val circeVersion = "0.14.6"
 val zioVersion = "2.0.21"
 val zioConfigVersion = "3.0.7"
 
@@ -97,11 +97,11 @@ lazy val root = project
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
 
             // Uncategorized
-            "org.apache.commons" % "commons-lang3" % "3.12.0",
+            "org.apache.commons" % "commons-lang3" % "3.14.0",
             "org.apache.commons" % "commons-text" % "1.11.0",
             "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
             "com.google.guava" % "guava" % "31.1-jre",
-            "com.lihaoyi" %% "os-lib" % "0.9.1",
+            "com.lihaoyi" %% "os-lib" % "0.9.3",
             "com.lihaoyi" %% "pprint" % "0.8.1", // Useful during development
             "io.netty" % "netty-all" % "4.1.105.Final",
             "com.fasterxml.uuid" % "java-uuid-generator" % "4.2.0"
@@ -110,7 +110,7 @@ lazy val root = project
 
 // Protobuf stuff. See also /project/scalapb.sbt
 libraryDependencies ++= Seq(
-    "com.google.protobuf" % "protobuf-java" % "3.23.4",
+    "com.google.protobuf" % "protobuf-java" % "3.24.4",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
