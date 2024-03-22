@@ -33,6 +33,8 @@ RUN cd ./ui && make build
 RUN cd ./server && make build
 
 RUN cd ./server/target/universal && tar xvf ./dekaf.tgz && rm ./dekaf.tgz && mv ./dekaf /dekaf
+
+RUN rm -rf ./server/data/js/node_modules
 RUN cp -r ./server/data /dekaf/
 
 ARG TARGETPLATFORM
