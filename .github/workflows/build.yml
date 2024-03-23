@@ -1,7 +1,5 @@
 on:
-  push:
-    tags:
-      - '**'
+  push
 
 jobs:
   # build-desktop-app:
