@@ -12,8 +12,6 @@ Global / cancelable := true
 Global / fork := true
 
 run / javaOptions ++= Seq(
-  "-Xmx8G",
-
   // Fix "Cannot get DNS TTL settings from sun.net.InetAddressCachePolicy"
   // https://github.com/apache/pulsar/issues/15349
   "--add-opens=java.management/sun.management=ALL-UNNAMED",
@@ -22,9 +20,10 @@ run / javaOptions ++= Seq(
 
 packageDoc / publishArtifact := false
 
-scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
-
-run / javaOptions ++= Seq("-Xmx8G")
+scalacOptions ++= Seq(
+    "-Xmax-inlines",
+    "100" // https://github.com/softwaremill/magnolia/issues/374
+)
 
 resolvers += Resolver.mavenCentral
 
