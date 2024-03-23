@@ -1,10 +1,10 @@
 name: "Cleanup Runners"
 on:
   schedule:
-  - cron: "*/5 * * * *"
+  - cron: "0 * * * *"
 
 jobs:
-  stale:
+  cleanup:
     strategy:
       matrix:
         include:
@@ -20,4 +20,4 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
           extra_nix_config: experimental-features = nix-command flakes
-      - run: nix-collect-garbage -d && docker system prune -a -f --volumes
+      - run: nix-collect-garbage -d && docker system prune -a -f --volumes && df -h
