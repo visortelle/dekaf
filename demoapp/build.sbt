@@ -1,11 +1,11 @@
 import scala.collection.Seq
 
-val scala3Version = "3.3.0"
-val pulsarVersion = "3.0.0"
-val zioVersion = "2.0.15"
+val scala3Version = "3.3.3"
+val pulsarVersion = "3.2.1"
+val zioVersion = "2.0.21"
 val zioConfigVersion = "3.0.7"
 val circeVersion = "0.14.6"
-val jacksonVersion = "2.15.2"
+val jacksonVersion = "2.16.2"
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
 Global / cancelable := true
@@ -64,18 +64,18 @@ lazy val root = project
             "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
 
             "dev.optics" %% "monocle-core" % "3.2.0",
-            "net.datafaker" % "datafaker" % "2.0.1",
+            "net.datafaker" % "datafaker" % "2.1.0",
             "org.scalameta" %% "munit" % "0.7.29" % Test,
             "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
             "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1",
-            "ch.qos.logback" % "logback-classic" % "1.4.12",
+            "ch.qos.logback" % "logback-classic" % "1.4.14",
         )
     )
 
 libraryDependencies ++= Seq(
-  "com.google.protobuf" % "protobuf-java" % "3.23.4",
+  "com.google.protobuf" % "protobuf-java" % "3.25.3",
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
-  "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
+  "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.1",
   "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
   "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
   "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
