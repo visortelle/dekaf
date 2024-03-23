@@ -31,7 +31,7 @@ RUN cp ./demoapp/config.yaml /demoapp/
 
 ################################################################
 
-FROM eclipse-temurin:17.0.10_7-jre-alpine as dekaf
+FROM eclipse-temurin:21.0.2_13-jre-alpine as dekaf
 
 RUN adduser -D dekaf
 USER dekaf
