@@ -56,11 +56,12 @@ RUN microdnf update -y &&\
   rm -rf /usr/lib64/graalvm/graalvm-community-java20/languages/nodejs && \
   rm -rf /usr/lib64/graalvm/graalvm-community-java20/lib/src.zip
 
-FROM scratch as dekaf
+FROM alpine:3.19.1 as dekaf
 
-COPY --from=graalvm / .
+COPY --from=graalvm /usr/lib64/graalvm /usr/lib64/graalvm
 
-RUN useradd --user-group --system --create-home --no-log-init dekaf && \
+RUN apk add --no-cache bash ca-certificates gcompat && \
+  useradd --user-group --system --create-home --no-log-init dekaf && \
   chown -R dekaf:dekaf || true
 
 USER dekaf
