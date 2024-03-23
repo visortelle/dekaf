@@ -155,6 +155,8 @@ function credentialsTypeToLabel(type: MaskedCredentials['type']): string {
       return 'OAuth2';
     case 'jwt':
       return 'JWT';
+    case 'authParamsString':
+      return 'Auth Params String';
     default:
       return 'Unknown';
   }

@@ -32,24 +32,27 @@ def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
 
     val pulsarCredentials = pulsarAuth.current match
         case None    => defaultPulsarAuth.credentials.get("Default")
-        case Some(c) => pulsarAuth.credentials.get(c)
-    pulsarCredentials match
-        case None => Left(new Exception("No credentials found for Pulsar Admin"))
-        case Some(c) =>
-            c match
-                case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
-                case cr: OAuth2Credentials =>
-                    builder.authentication(
-                        AuthenticationFactoryOAuth2.clientCredentials(
-                            URL.createURL(cr.issuerUrl),
-                            URL.createURL(cr.privateKey),
-                            cr.audience.orNull,
-                            cr.scope.orNull
-                        )
-                    )
-                case cr: AuthParamsStringCredentials =>
-                    builder.authentication(cr.authPluginClassName, cr.authParams)
-                case _ => Left(new Exception("Unsupported credentials type"))
+        case Some(current) => pulsarAuth.credentials.get(current)
+
+    pulsarCredentials.foreach {
+        case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
+        case cr: OAuth2Credentials =>
+            builder.authentication(
+                AuthenticationFactoryOAuth2.clientCredentials(
+                    URL.createURL(cr.issuerUrl),
+                    URL.createURL(cr.privateKey),
+                    cr.audience.orNull,
+                    cr.scope.orNull
+                )
+            )
+        case cr: AuthParamsStringCredentials =>
+            Try {
+                builder.authentication(cr.authPluginClassName, cr.authParams)
+            } match
+                case Failure(exception) => Left(new Exception("AuthParamsString authentication error"))
+                case Success(value) => ()
+        case _ => Left(new Exception("Unsupported credentials type"))
+    }
 
     Try(builder.build) match {
         case Success(value)     => Right(value)
@@ -73,7 +76,7 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
 
     tls.configureClient(pulsarClientConfig, config)
 
-    configureAuth(pulsarAuth, pulsarClientConfig)
+    configureClientAuth(pulsarAuth, pulsarClientConfig)
 
     // We create a single thread for each client to avoid problems with GraalJS.
     val internalExecutorProvider = ExecutorProvider(1, "shared-internal-executor")
@@ -96,25 +99,29 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
         case Failure(_) => Left(new Exception("Wrong credentials for Pulsar Client"))
     }
 
-def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData) =
+def configureClientAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData): Unit =
     val pulsarCredentials = pulsarAuth.current match
         case None => defaultPulsarAuth.credentials.get("Default")
         case Some(c) => pulsarAuth.credentials.get(c)
-    pulsarCredentials match
-        case None => Left(new Exception("No credentials found for Pulsar Admin"))
-        case Some(c) =>
-            c match
-                case cr: JwtCredentials => pulsarClientConfig.setAuthentication(AuthenticationFactory.token(cr.token))
-                case cr: OAuth2Credentials =>
-                    pulsarClientConfig.setAuthentication(
-                        AuthenticationFactoryOAuth2.clientCredentials(
-                            URL.createURL(cr.issuerUrl),
-                            URL.createURL(cr.privateKey),
-                            cr.audience.orNull,
-                            cr.scope.orNull
-                        )
-                    )
-                case cr: AuthParamsStringCredentials =>
-                    pulsarClientConfig.setAuthPluginClassName(cr.authPluginClassName)
-                    pulsarClientConfig.setAuthParams(cr.authParams)
-                case _ => Left(new Exception("Unsupported credentials type"))
+
+    pulsarCredentials.foreach {
+        case cr: JwtCredentials => pulsarClientConfig.setAuthentication(AuthenticationFactory.token(cr.token))
+        case cr: OAuth2Credentials =>
+            pulsarClientConfig.setAuthentication(
+                AuthenticationFactoryOAuth2.clientCredentials(
+                    URL.createURL(cr.issuerUrl),
+                    URL.createURL(cr.privateKey),
+                    cr.audience.orNull,
+                    cr.scope.orNull
+                )
+            )
+        case cr: AuthParamsStringCredentials =>
+            Try {
+                pulsarClientConfig.setAuthPluginClassName(cr.authPluginClassName)
+                pulsarClientConfig.setAuthParams(cr.authParams)
+            } match
+                case Failure(exception) => ()
+                case Success(value) => ()
+        case _ => ()
+    }
+

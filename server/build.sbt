@@ -91,9 +91,9 @@ lazy val root = project
             "io.circe" %% "circe-parser" % circeVersion,
 
             // Javalin
-            "io.javalin" % "javalin" % "5.3.2",
-            "io.javalin" % "javalin-rendering" % "5.3.2",
-            "org.freemarker" % "freemarker" % "2.3.31",
+            "io.javalin" % "javalin" % "6.1.3",
+            "io.javalin" % "javalin-rendering" % "6.1.3",
+            "org.freemarker" % "freemarker" % "2.3.32",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
 
             // Uncategorized

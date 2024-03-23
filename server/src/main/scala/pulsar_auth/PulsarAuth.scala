@@ -1,13 +1,13 @@
 package pulsar_auth
 
 import cats.syntax.functor.*
+import com.typesafe.scalalogging.Logger
 import io.circe.*
 import io.circe.Decoder.Result
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.parser.decode
 import io.circe.syntax.*
-import org.apache.commons.codec.binary.Base64
-import com.typesafe.scalalogging.Logger
+import io.javalin.http.{Cookie, SameSite}
 
 import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets.UTF_8
@@ -29,11 +29,11 @@ type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials | AuthP
 val logger = Logger("pulsar-auth")
 
 case class EmptyCredentials(
-    `type`: EmptyCredentialsType
+    `type`: EmptyCredentialsType = "empty"
 )
 
 case class OAuth2Credentials(
-    `type`: OAuth2CredentialsType,
+    `type`: OAuth2CredentialsType = "oauth2",
     issuerUrl: String,
     privateKey: String,
     audience: Option[String],
@@ -41,12 +41,12 @@ case class OAuth2Credentials(
 )
 
 case class JwtCredentials(
-    `type`: JwtCredentialsType,
+    `type`: JwtCredentialsType = "jwt",
     token: String
 )
 
 case class AuthParamsStringCredentials(
-    `type`: AuthParamsStringCredentialsType,
+    `type`: AuthParamsStringCredentialsType = "authParamsString",
     authPluginClassName: String,
     authParams: String
 )
@@ -72,7 +72,6 @@ given oauth2CredentialsDecoder: Decoder[OAuth2Credentials] = Decoder.instance: c
         audience <- cursor.downField("audience").as[Option[String]]
         scope <- cursor.downField("scope").as[Option[String]]
     yield OAuth2Credentials(
-        `type` = "oauth2",
         issuerUrl = issuerUrl,
         privateKey = privateKey,
         audience = audience,
@@ -88,7 +87,7 @@ given jwtCredentialsDecoder: Decoder[JwtCredentials] = Decoder.instance: cursor 
             (),
             DecodingFailure("Invalid JWT token format", cursor.history)
         )
-    yield JwtCredentials(`type` = "jwt", token = token)
+    yield JwtCredentials(token = token)
 
 given authParamsStringCredentialsEncoder: Encoder[AuthParamsStringCredentials] = deriveEncoder[AuthParamsStringCredentials]
 given authParamsStringCredentialsDecoder: Decoder[AuthParamsStringCredentials] = deriveDecoder[AuthParamsStringCredentials]
@@ -126,61 +125,64 @@ def getDefaultCredentialsFromConfig: Map[CredentialsName, Credentials] =
         case Some(jsonValue: String) =>
             decode[OAuth2Credentials](jsonValue)
                 .orElse(decode[JwtCredentials](jsonValue))
-                .getOrElse(EmptyCredentials(`type` = "empty"))
-        case _ => EmptyCredentials(`type` = "empty")
+                .getOrElse(EmptyCredentials())
+        case _ => EmptyCredentials()
 
     Map("Default" -> rawDefaultCredentials)
 
-def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
+def pulsarAuthFromCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
     val clientPulsarAuth = json match
         case None => Right(defaultPulsarAuth)
         case Some(encodedValue) =>
-            val v = URLDecoder.decode(encodedValue, UTF_8)
+            val urlDecodedPulsarAuth = URLDecoder.decode(encodedValue, UTF_8)
 
-            decode[PulsarAuth](v) match
+            decode[PulsarAuth](urlDecodedPulsarAuth) match
                 case Left(err) =>
                     logger.warn(s"Unable to parse cookie: ${err.getMessage}")
                     Left(new Exception(s"Unable to parse pulsar_auth cookie."))
-                case Right(pulsarAuth) => Right(
-                        pulsarAuth
-                    )
+                case Right(pulsarAuth) => Right(pulsarAuth)
 
     clientPulsarAuth
 
-def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
-    val pulsarAuthWithoutEncodingMetadata = pulsarAuth.copy(
-        credentials = pulsarAuth.credentials.map((name, credentials) =>
-            credentials match
-                case cr: OAuth2Credentials => (
-                        name,
-                        cr.copy(
-                            issuerUrl = URLEncoder.encode(cr.issuerUrl, UTF_8),
-                            privateKey = URLEncoder.encode(cr.privateKey, UTF_8),
-                            audience = cr.audience.map(audience => URLEncoder.encode(audience, UTF_8)),
-                            scope = cr.scope.map(scope => URLEncoder.encode(scope, UTF_8))
-                        )
-                    )
-                case _ => (name, credentials)
+def pulsarAuthToCookie(pulsarAuth: PulsarAuth): Cookie =
+    def withNewDefaultAuth(pulsarAuth: PulsarAuth): PulsarAuth =
+        // Dekaf admin can change default credentials,
+        // so we need deliver new default credentials to users.
+        pulsarAuth.copy(credentials =
+            pulsarAuth.credentials + (
+                DefaultCredentialsName -> defaultPulsarAuth.credentials(DefaultCredentialsName)
+                )
         )
-    )
+
+    val pulsarAuthJson = withNewDefaultAuth(pulsarAuth).asJson.noSpaces
+    val encodedPulsarAuth = URLEncoder.encode(pulsarAuthJson, UTF_8)
 
     val cookieName = "pulsar_auth"
-    val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
-
-    val cookiePath = config.publicBaseUrl.map {
-        java.net.URI.create(_).getPath match
+    val cookieValue = encodedPulsarAuth
+    val cookiePath = config.publicBaseUrl.map { url =>
+        java.net.URI.create(url).getPath match
             case ""   => "/"
             case path => path
     }.getOrElse("/")
+    val maxAge: Int = 31536000
+    val isSecureCookie = config.cookieSecure.getOrElse(false)
+    val protocolVersion = 0
+    val isHttpOnly = true
+    val sameSite = (config.cookieSecure, config.cookieSameSite) match
+        case (_, Some("lax")) => SameSite.LAX
+        case (_, Some("strict")) => SameSite.STRICT
+        case (Some(true), Some("none")) => SameSite.NONE
+        case _ => SameSite.LAX
 
-    val cookieSecureValue = config.cookieSecure match
-        case Some(true) => "Secure; "
-        case _          => ""
-
-    val cookieSameSiteValue = (config.cookieSecure, config.cookieSameSite) match
-        case (_, Some("lax"))           => "SameSite=Lax; "
-        case (_, Some("strict"))        => "SameSite=Strict; "
-        case (Some(true), Some("none")) => "SameSite=None; "
-        case _                          => ""
-
-    s"$cookieName=$cookieValue; Path=$cookiePath; HttpOnly; Max-Age=31536000; $cookieSameSiteValue$cookieSameSiteValue"
+    Cookie(
+        cookieName,
+        cookieValue,
+        cookiePath,
+        maxAge,
+        isSecureCookie,
+        protocolVersion,
+        isHttpOnly,
+        null,
+        null,
+        sameSite
+    )

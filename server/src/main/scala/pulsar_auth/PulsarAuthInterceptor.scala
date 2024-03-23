@@ -91,7 +91,7 @@ class PulsarAuthInterceptor extends ServerInterceptor:
                 .find(_.getName == "pulsar_auth")
                 .map(_.getValue)
 
-            parsePulsarAuthCookie(pulsarAuthCookie).getOrElse(defaultPulsarAuth)
+            pulsarAuthFromCookie(pulsarAuthCookie).getOrElse(defaultPulsarAuth)
         catch
             case e: Throwable =>
                 defaultPulsarAuth

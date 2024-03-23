@@ -1,26 +1,17 @@
 package server.http
 
-import zio.*
-import zio.ZIOAppDefault
 import _root_.config.{Config, readConfig}
-import io.javalin.Javalin
-import io.javalin.rendering.template.JavalinFreemarker
-import io.javalin.http.staticfiles.{Location, StaticFileConfig}
-
-import scala.jdk.CollectionConverters.*
-import _root_.pulsar_auth
-import io.circe.parser.decode as decodeJson
-import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
-import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
-import _root_.server.grpc.GrpcServer
-
-import scala.jdk.CollectionConverters.*
 import _root_.licensing.Licensing
 import _root_.pulsar_auth
-import _root_.pulsar_auth.{PulsarAuth, credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName}
-import io.circe.parser.decode as decodeJson
+import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
+import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
+import _root_.server.grpc.GrpcServer
+import io.javalin.Javalin
+import io.javalin.http.staticfiles.{Location, StaticFileConfig}
+import io.javalin.rendering.template.JavalinFreemarker
+import zio.*
 
-import java.text.MessageFormat
+import scala.jdk.CollectionConverters.*
 
 object HttpServer:
     private val isBinaryBuild = buildinfo.ExtraBuildInfo.isBinaryBuild
@@ -28,7 +19,7 @@ object HttpServer:
     def createApp(appConfig: Config): Javalin =
         Javalin
             .create { config =>
-                JavalinFreemarker.init()
+                config.fileRenderer(new JavalinFreemarker())
                 config.showJavalinBanner = false
                 config.staticFiles.add { (staticFiles: StaticFileConfig) =>
                     staticFiles.hostedPath = "/ui/static"
@@ -56,13 +47,14 @@ object HttpServer:
                             "licenseId" -> appConfig.licenseId.getOrElse("undefined"),
                         ).asJava
 
-                        val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                        val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson).getOrElse(defaultPulsarAuth)
+                        val encodedPulsarAuth = Option(ctx.cookie("pulsar_auth"))
+                        val pulsarAuth = pulsar_auth.pulsarAuthFromCookie(encodedPulsarAuth).getOrElse(defaultPulsarAuth)
                         PulsarAuthRoutes.setCookieAndSuccess(ctx, pulsarAuth)
 
                         ctx.render("/ui/index.ftl", model)
                     }
                 )
+                config.router.apiBuilder(PulsarAuthRoutes.endpoints)
             }
             .get("/health", ctx => {
                 if GrpcServer.isRunning then
@@ -72,7 +64,6 @@ object HttpServer:
                     ctx.status(503)
                     ctx.result("fail")
             })
-            .routes(PulsarAuthRoutes.routes)
 
     def run: IO[Throwable, Unit] = for
         config <- readConfig

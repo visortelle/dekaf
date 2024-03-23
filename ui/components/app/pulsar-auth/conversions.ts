@@ -13,6 +13,9 @@ export function maskedCredentialsFromPb(credentialsPb: pb.MaskedCredentials): Ma
     case pb.CredentialsType.CREDENTIALS_TYPE_JWT:
       type = 'jwt';
       break;
+    case pb.CredentialsType.CREDENTIALS_TYPE_AUTH_PARAMS_STRING:
+      type = 'authParamsString';
+      break;
     default:
       throw new Error(`Unknown credentials type: ${credentialsPb.getType()}`);
   }
