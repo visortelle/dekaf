@@ -4,27 +4,45 @@ import com.tools.teal.pulsar.ui.clusters.v1.clusters as pb
 import com.tools.teal.pulsar.ui.clusters.v1.clusters.{ClustersServiceGrpc, CreateClusterRequest, CreateClusterResponse, CreateFailureDomainRequest, CreateFailureDomainResponse, CreateNamespaceIsolationPolicyRequest, CreateNamespaceIsolationPolicyResponse, DeleteClusterRequest, DeleteClusterResponse, DeleteFailureDomainRequest, DeleteFailureDomainResponse, DeleteNamespaceIsolationPolicyRequest, DeleteNamespaceIsolationPolicyResponse, GetBrokersWithNamespaceIsolationPolicyRequest, GetBrokersWithNamespaceIsolationPolicyResponse, GetClusterRequest, GetClusterResponse, GetClustersRequest, GetClustersResponse, GetFailureDomainsRequest, GetFailureDomainsResponse, GetNamespaceIsolationPolicyRequest, GetNamespaceIsolationPolicyResponse, UpdateFailureDomainRequest, UpdateFailureDomainResponse, UpdateNamespaceIsolationPolicyRequest, UpdateNamespaceIsolationPolicyResponse}
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import _root_.licensing.{Licensing, ProductCode}
+import com.typesafe.scalalogging.Logger
+
+import scala.util.{Failure, Success, Try}
 import pulsar_auth.RequestContext
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
 class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
+    val logger: Logger = Logger(getClass.getName)
+
     override def getClusters(request: GetClustersRequest): Future[GetClustersResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val clusters = adminClient.clusters.getClusters
+
+            // PRODUCT PLAN LIMITATION START
+            Try(adminClient.brokers.getActiveBrokers) match
+                case Success(brokers) =>
+                    val isFreePlan = Licensing.productCode == ProductCode.DekafDesktopFree || Licensing.productCode == ProductCode.DekafFree
+                    val isLimitExceeded = brokers.size > 3 || clusters.size > 1
+                    if isFreePlan && isLimitExceeded then
+                        logger.error("The number of brokers exceeds the limit of the free version. Please visit https://dekaf.io for more information.")
+                        sys.exit(1)
+                case Failure(_) => // DO NOTHING
+            // PRODUCT PLAN LIMITATION END
+
             val status: Status = Status(code = Code.OK.index)
             Future.successful(GetClustersResponse(status = Some(status), clusters = clusters.asScala.toList))
         catch
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                return Future.successful(GetClustersResponse(status = Some(status)))
+                Future.successful(GetClustersResponse(status = Some(status)))
 
     override def getCluster(request: GetClusterRequest): Future[GetClusterResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         val clusterData =
             try adminClient.clusters.getCluster(request.cluster)
             catch
@@ -39,7 +57,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def createCluster(request: CreateClusterRequest): Future[CreateClusterResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val clusterData = request.clusterData match
                 case None =>
@@ -58,7 +76,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def deleteCluster(request: DeleteClusterRequest): Future[DeleteClusterResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             adminClient.clusters.deleteCluster(request.cluster)
 
@@ -71,7 +89,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def getFailureDomains(request: GetFailureDomainsRequest): Future[GetFailureDomainsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val failureDomains = adminClient.clusters.getFailureDomains(request.cluster)
             val failureDomainsPb = failureDomains.asScala.view.mapValues(conversions.failureDomainToPb).toMap
@@ -84,7 +102,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def createFailureDomain(request: CreateFailureDomainRequest): Future[CreateFailureDomainResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val failureDomain = conversions.failureDomainFromPb(
                 request.domain.getOrElse(throw new IllegalArgumentException("Failure domain should be specified"))
@@ -104,7 +122,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def deleteFailureDomain(request: DeleteFailureDomainRequest): Future[DeleteFailureDomainResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             adminClient.clusters.deleteFailureDomain(request.cluster, request.domainName)
             val status: Status = Status(code = Code.OK.index)
@@ -116,7 +134,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def updateFailureDomain(request: UpdateFailureDomainRequest): Future[UpdateFailureDomainResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val failureDomain = conversions.failureDomainFromPb(
                 request.domain.getOrElse(throw new IllegalArgumentException("Failure domain should be specified"))
@@ -135,7 +153,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def createNamespaceIsolationPolicy(request: CreateNamespaceIsolationPolicyRequest): Future[CreateNamespaceIsolationPolicyResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val policy = conversions.namespaceIsolationDataFromPb(
                 request.namespaceIsolationData.getOrElse(throw new IllegalArgumentException("Namespace isolation data should be specified"))
@@ -154,7 +172,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def deleteNamespaceIsolationPolicy(request: DeleteNamespaceIsolationPolicyRequest): Future[DeleteNamespaceIsolationPolicyResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             adminClient.clusters.deleteNamespaceIsolationPolicy(request.cluster, request.policyName)
             val status: Status = Status(code = Code.OK.index)
@@ -166,7 +184,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def getNamespaceIsolationPolicy(request: GetNamespaceIsolationPolicyRequest): Future[GetNamespaceIsolationPolicyResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val policy = adminClient.clusters.getNamespaceIsolationPolicy(request.cluster, request.policyName)
             val namespaceIsolationDataPb = conversions.namespaceIsolationDataToPb(policy)
@@ -179,7 +197,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
     override def updateNamespaceIsolationPolicy(request: UpdateNamespaceIsolationPolicyRequest): Future[UpdateNamespaceIsolationPolicyResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val policy = conversions.namespaceIsolationDataFromPb(
                 request.namespaceIsolationData.getOrElse(throw new IllegalArgumentException("Namespace isolation data should be specified"))
@@ -200,7 +218,7 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         request: GetBrokersWithNamespaceIsolationPolicyRequest
     ): Future[GetBrokersWithNamespaceIsolationPolicyResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try
             val brokers = adminClient.clusters.getBrokersWithNamespaceIsolationPolicy(request.cluster)
             val brokersPb = brokers.asScala.toList.map(conversions.brokerNamespaceIsolationDataToPb)
