@@ -21,7 +21,7 @@ services:
   # UI for Apache Pulsar: https://dekaf.io
   # https://twitter.com/dekaf_io
   dekaf:
-    image: tealtools/dekaf:0.1.16-beta.8
+    image: tealtools/dekaf:latest
     restart: always
     depends_on:
       pulsar:
@@ -29,10 +29,24 @@ services:
     environment:
       DEKAF_PULSAR_WEB_URL: "http://pulsar:8080"
       DEKAF_PULSAR_BROKER_URL: "pulsar://pulsar:6650"
+      # DEKAF_LICENSE_ID: ""
+      # DEKAF_LICENSE_TOKEN: ""
     volumes:
       - './data/dekaf/data/library/:/dekaf/data/library'
     ports:
       - "8090:8090"
+    networks:
+      - pulsar-net
+
+  dekaf-demoapp:
+    image: tealtools/dekaf-demoapp:latest
+    restart: always
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    environment:
+      DEKAF_DEMOAPP_PULSAR_WEB_URL: "http://pulsar:8080"
+      DEKAF_DEMOAPP_PULSAR_BROKER_URL: "pulsar://pulsar:6650"
     networks:
       - pulsar-net
 

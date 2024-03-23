@@ -33,7 +33,9 @@ RUN cp ./demoapp/config.yaml /demoapp/
 
 FROM eclipse-temurin:21.0.2_13-jre-alpine as dekaf
 
-RUN adduser -D dekaf
+RUN adduser -D dekaf && \
+  apk add --no-cache bash
+
 USER dekaf
 WORKDIR /workdir
 
