@@ -18,10 +18,10 @@ object SubscriptionPlan:
         for {
             consumerPlan <- ConsumerPlan.make
         } yield SubscriptionPlan(
-            name = "dekaf_default_subscription",
+            name = "demoapp-subscription",
             subscriptionType = SubscriptionType.Exclusive,
             consumers = Map(
-                "dekaf_default_consumer" -> consumerPlan
+                "demoapp-consumer" -> consumerPlan
             )
         )
 
@@ -55,7 +55,7 @@ case class SubscriptionPlanGenerator(
 
 object SubscriptionPlanGenerator:
     def make(
-        mkName: SubscriptionIndex => String = i => s"subscription-$i",
+        mkName: SubscriptionIndex => String = i => s"demoapp-$i",
         mkConsumersCount: SubscriptionIndex => Int = _ => 1,
         mkSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
         mkConsumerGenerator: ConsumerIndex => Task[ConsumerPlanGenerator] = _ => ConsumerPlanGenerator.make()
