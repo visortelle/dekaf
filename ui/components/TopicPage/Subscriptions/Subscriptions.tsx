@@ -320,7 +320,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             subscriptionName: {
               title: 'Name',
               render: (de) => (
-                <Link to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.get({
+                <Link to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.overview._.get({
                   tenant: props.tenant,
                   namespace: props.namespace,
                   topic: props.topic,
