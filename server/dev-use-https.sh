@@ -18,3 +18,4 @@ openssl x509 -req -days 365 -in $csr_path -signkey $key_path -out $crt_path
 export DEKAF_PROTOCOL="https"
 export DEKAF_TLS_CERTIFICATE_FILE_PATH="${crt_path}"
 export DEKAF_TLS_KEY_FILE_PATH="${key_path}"
+export DEKAF_PUBLIC_BASE_URL="https://localhost:8090"
