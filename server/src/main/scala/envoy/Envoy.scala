@@ -6,16 +6,19 @@ import org.apache.commons.lang3.SystemUtils
 import _root_.config.readConfig
 
 object Envoy:
-    def run: IO[Throwable, Unit] = 
+    def run: IO[Throwable, Unit] =
         val isDesktopBuild = buildinfo.ExtraBuildInfo.isDesktopBuild
-        
+
         for
             envoyConfigProps <- readConfig.map(c =>
                 EnvoyConfigProps(
-                httpServerPort = c.internalHttpPort.get,
-                grpcServerPort = c.internalGrpcPort.get,
-                listenPort = c.port.get,
-                basePath = c.basePath.get,
+                    httpServerPort = c.internalHttpPort.get,
+                    grpcServerPort = c.internalGrpcPort.get,
+                    listenPort = c.port.get,
+                    basePath = c.basePath.get,
+                    protocol = c.protocol.get,
+                    certificateChainFilename = c.tlsCertificateFilePath,
+                    privateKeyFilename = c.tlsKeyFilePath
                 )
             )
 
@@ -27,10 +30,10 @@ object Envoy:
 
             process <- {
                 // For Windows Desktop app Dekaf doen't start without "inheritIO" for some reason
-                if isDesktopBuild then 
+                if isDesktopBuild then
                     Command(envoyBinPath, "--config-path", configPath).inheritIO.exitCode
-                else 
-                    Command(envoyBinPath, "--config-path", configPath).successfulExitCode
+                else
+                    Command(envoyBinPath, "--config-path", configPath).inheritIO.exitCode
             }
 
             _ <- ZIO.never

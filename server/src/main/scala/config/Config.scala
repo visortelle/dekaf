@@ -5,8 +5,10 @@ import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
 import licensing.{ProductCode, LicenseInfo, AvailableLicenses}
+import _root_.envoy
 
 import java.nio.file.Path
+
 
 case class Config(
     @describe("The port the server listens on.")
@@ -17,7 +19,10 @@ case class Config(
     publicBaseUrl: Option[String] = Some("http://localhost:8090"),
     @describe("When running the application behind a reverse-proxy, it may be useful to specify a base path.")
     basePath: Option[String] = Some("/"),
-    @describe("Library contains user-defined objects like message filters, visualizations, etc.")
+
+    protocol: Option[String] = Some("http"),
+    tlsCertificateFilePath: Option[String] = None,
+    tlsKeyFilePath: Option[String] = None,
     //
     @describe("Path to the persistent data directory.")
     dataDir: Option[String] = Some(s"${java.nio.file.Paths.get(".").toAbsolutePath}/data"),
