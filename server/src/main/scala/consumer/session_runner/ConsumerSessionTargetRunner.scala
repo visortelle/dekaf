@@ -17,8 +17,6 @@ import scala.util.{Failure, Success, Try}
 
 type NonPartitionedTopicFqn = String
 
-val logger: Logger = Logger(getClass.getName)
-
 case class ConsumerSessionTargetRunner(
     targetIndex: Int,
     targetConfig: ConsumerSessionTarget,
@@ -133,6 +131,8 @@ case class ConsumerSessionTargetRunner(
 }
 
 object ConsumerSessionTargetRunner:
+    val logger: Logger = Logger(getClass.getName)
+    
     def make(
         sessionName: String,
         targetIndex: Int,

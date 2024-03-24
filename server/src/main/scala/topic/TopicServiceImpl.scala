@@ -1,44 +1,25 @@
 package topic
 
-import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
-import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import api.LongRunningProcessStatus
+import com.google.rpc.code.Code
+import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
+import com.tools.teal.pulsar.ui.topic.v1.topic.*
+import com.tools.teal.pulsar.ui.topic.v1.topic.ExpireMessagesRequest.ExpirationTarget
+import com.tools.teal.pulsar.ui.topic.v1.topic.ExpireMessagesSubscription.ExpirationTarget
+import com.tools.teal.pulsar.ui.topic.v1.topic.SkipSubscriptionMessagesRequest.SkipTarget
 import com.typesafe.scalalogging.Logger
+import consumer.start_from.MessageId
+import org.apache.pulsar.client.admin.ListTopicsOptions
+import org.apache.pulsar.client.api.MessageId as PulsarMessageId
+import org.apache.pulsar.common.naming.TopicDomain
+import pulsar_auth.RequestContext
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.FutureConverters.*
-import scala.jdk.OptionConverters.*
-import com.google.protobuf.ByteString
-import com.google.rpc.status.Status
-import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.topic.v1.topic.{
-    CreateMissedPartitionsRequest,
-    CreateMissedPartitionsResponse,
-    DeleteSubscriptionRequest,
-    DeleteSubscriptionResponse,
-    GetCompactionStatusRequest,
-    GetCompactionStatusResponse,
-    GetTopicPropertiesRequest,
-    GetTopicPropertiesResponse,
-    SetTopicPropertiesRequest,
-    SetTopicPropertiesResponse,
-    TopicProperties,
-    TriggerCompactionRequest,
-    TriggerCompactionResponse,
-    UpdatePartitionedTopicRequest,
-    UpdatePartitionedTopicResponse
-}
-
-import java.util.concurrent.{CompletableFuture, TimeUnit}
-import scala.concurrent.duration.Duration
-import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
-import org.apache.pulsar.common.naming.TopicDomain
-import org.apache.pulsar.client.admin.ListTopicsOptions
-import pulsar_auth.RequestContext
-import topic.TopicPartitioningType.NonPartitioned
-
 import scala.util.{Failure, Success, Try}
 
 class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
@@ -345,3 +326,135 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             case Success(_) =>
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(pb.DeleteSubscriptionResponse(status = Some(status)))
+
+    override def createSubscription(request: CreateSubscriptionRequest): Future[CreateSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val messageId = request.initialCursorPosition match
+            case pb.CreateSubscriptionRequest.InitialCursorPosition.Empty =>
+                PulsarMessageId.earliest
+            case pb.CreateSubscriptionRequest.InitialCursorPosition.MessageId(value) =>
+                val messageId = MessageId.fromPb(value)
+
+                PulsarMessageId.fromByteArray(messageId.messageIdBytes)
+            case pb.CreateSubscriptionRequest.InitialCursorPosition.EarliestMessage(_) =>
+                PulsarMessageId.earliest
+            case pb.CreateSubscriptionRequest.InitialCursorPosition.LatestMessage(_) =>
+                PulsarMessageId.latest
+
+        Try(
+            adminClient.topics.createSubscription(
+                request.topicFqn,
+                request.subscriptionName,
+                messageId,
+                request.isReplicated,
+                request.properties.asJava
+            )
+        ) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.CreateSubscriptionResponse(status = Some(status)))
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.CreateSubscriptionResponse(status = Some(status)))
+
+    override def expireMessages(request: ExpireMessagesRequest): Future[ExpireMessagesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(
+            request.expirationTarget match
+                case pb.ExpireMessagesRequest.ExpirationTarget.ExpireSubscription(expireSubscription) =>
+                    val expireSubscription = request.expirationTarget.expireSubscription.get
+
+                    expireSubscription.expirationTarget match
+                        case pb.ExpireMessagesSubscription.ExpirationTarget.ExpireByMessageId(expireByMessageId) =>
+                            val messageId: PulsarMessageId = expireByMessageId.messageId.flatMap(messageIdPb =>
+                                MessageId.toPulsar(MessageId.fromPb(messageIdPb))
+                            ).getOrElse(throw RuntimeException(s"Failed to parse message ID."))
+
+                            adminClient.topics().expireMessages(
+                                request.topicFqn,
+                                expireSubscription.subscriptionName,
+                                messageId,
+                                expireByMessageId.isExcluded
+                            )
+                        case pb.ExpireMessagesSubscription.ExpirationTarget.TimeInSeconds(timeInSeconds) =>
+                            adminClient.topics().expireMessages(
+                                request.topicFqn,
+                                expireSubscription.subscriptionName,
+                                timeInSeconds
+                            )
+                        case pb.ExpireMessagesSubscription.ExpirationTarget.Empty =>
+                            throw RuntimeException("Empty expire messages on subscription target (should be either message ID or time in seconds")
+                case pb.ExpireMessagesRequest.ExpirationTarget.ExpireAllSubscriptions(expireAllSubscriptions) =>
+                    val expireByTimeInSeconds: Option[Long] = request.expirationTarget.expireAllSubscriptions.flatMap(expireAllSubscriptions =>
+                        expireAllSubscriptions.timeInSeconds
+                    )
+
+                    expireByTimeInSeconds.foreach { expireByTimeInSeconds =>
+                        adminClient.topics().expireMessagesForAllSubscriptions(request.topicFqn, expireByTimeInSeconds)
+                    }
+                case pb.ExpireMessagesRequest.ExpirationTarget.Empty =>
+                    throw RuntimeException("Empty expire messages target (should be either expire of all subscriptions or on a specific one)")
+        ) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.ExpireMessagesResponse(status = Some(status)))
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.ExpireMessagesResponse(status = Some(status)))
+
+    override def skipSubscriptionMessages(request: SkipSubscriptionMessagesRequest): Future[SkipSubscriptionMessagesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(
+            request.skipTarget match
+                case SkipTarget.SkipExactNumberMessages(skipExactNumberMessages) =>
+                    skipExactNumberMessages.numberOfMessages.foreach { numberOfMessages =>
+                        adminClient.topics().skipMessages(request.topicFqn, request.subscriptionName, numberOfMessages)
+                    }
+                case SkipTarget.SkipAllMessages(_) =>
+                    adminClient.topics().skipAllMessages(request.topicFqn, request.subscriptionName)
+                case SkipTarget.Empty =>
+                    throw RuntimeException("Empty skip messages target (should be either skip of all messages or exact number of messages)")
+        ) match
+            case Failure(err: Throwable) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.SkipSubscriptionMessagesResponse(status = Some(status)))
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.SkipSubscriptionMessagesResponse(status = Some(status)))
+
+    override def resetCursor(request: ResetCursorRequest): Future[ResetCursorResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(
+            request.resetCursorTarget match
+                case ResetCursorRequest.ResetCursorTarget.Empty =>
+                    throw RuntimeException("Empty reset cursor target (should be either reset to earliest or latest message)")
+                case ResetCursorRequest.ResetCursorTarget.ResetByMessageId(resetByMessageId) =>
+                    val messageId: PulsarMessageId = resetByMessageId.messageId.flatMap(messageIdPb =>
+                        MessageId.toPulsar(MessageId.fromPb(messageIdPb))
+                    ).getOrElse(throw RuntimeException(s"Failed to parse message ID."))
+
+                    adminClient.topics().resetCursor(request.topicFqn, request.subscriptionName, messageId, resetByMessageId.isExcluded)
+                case ResetCursorRequest.ResetCursorTarget.Timestamp(timestamp) =>
+                    adminClient.topics().resetCursor(request.topicFqn, request.subscriptionName, timestamp)
+        ) match
+            case Failure(err: Throwable) =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(ResetCursorResponse(status = Some(status)))
+            case Success(_) =>
+                val status = Status(code = Code.OK.index)
+                Future.successful(ResetCursorResponse(status = Some(status)))
+
+    override def updateSubscriptionProperties(request: UpdateSubscriptionPropertiesRequest): Future[UpdateSubscriptionPropertiesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(adminClient.topics().updateSubscriptionProperties(request.topicFqn, request.subscriptionName, request.properties.asJava)) match
+            case Failure(err: Throwable) =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(UpdateSubscriptionPropertiesResponse(status = Some(status)))
+            case Success(_) =>
+                val status = Status(code = Code.OK.index)
+                Future.successful(UpdateSubscriptionPropertiesResponse(status = Some(status)))

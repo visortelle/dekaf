@@ -5,6 +5,7 @@ package tools.teal.pulsar.ui.topic.v1;
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
 import "tools/teal/pulsar/ui/api/v1/long_running_process_status.proto";
+import "tools/teal/pulsar/ui/api/v1/consumer.proto";
 
 enum TopicDomain {
   TOPIC_DOMAIN_UNSPECIFIED = 0;
@@ -368,6 +369,98 @@ message DeleteSubscriptionResponse {
   google.rpc.Status status = 1;
 }
 
+message CreateSubscriptionRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  oneof initial_cursor_position {
+    tools.teal.pulsar.ui.api.v1.MessageId message_id = 3;
+    tools.teal.pulsar.ui.api.v1.EarliestMessage earliest_message = 4;
+    tools.teal.pulsar.ui.api.v1.LatestMessage latest_message = 5;
+  };
+  map<string, string> properties = 6;
+  bool is_replicated = 7;
+}
+
+message CreateSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
+message ExpireMessagesSubscription {
+  message ExpireByMessageId {
+    tools.teal.pulsar.ui.api.v1.MessageId message_id = 1;
+    bool is_excluded = 2;
+  }
+
+  string subscription_name = 1;
+  oneof expiration_target {
+    ExpireByMessageId expire_by_message_id = 2;
+    google.protobuf.Int64Value time_in_seconds = 3;
+  }
+}
+
+message ExpireMessagesForAllSubscriptions {
+  google.protobuf.Int64Value time_in_seconds = 1;
+}
+
+message ExpireMessagesRequest {
+  string topic_fqn = 1;
+  oneof expiration_target {
+    ExpireMessagesSubscription expire_subscription = 2;
+    ExpireMessagesForAllSubscriptions expire_all_subscriptions = 3;
+  }
+}
+
+message ExpireMessagesResponse {
+  google.rpc.Status status = 1;
+}
+
+message SkipExactNumberMessages {
+  google.protobuf.Int64Value number_of_messages = 1;
+}
+
+message SkipAllMessages {}
+
+message SkipSubscriptionMessagesRequest {
+  string topic_fqn = 1;
+  oneof skip_target {
+    SkipExactNumberMessages skip_exact_number_messages = 2;
+    SkipAllMessages skip_all_messages = 3;
+  }
+  string subscription_name = 4;
+}
+
+message SkipSubscriptionMessagesResponse {
+  google.rpc.Status status = 1;
+}
+
+message ResetCursorByMessageId {
+  tools.teal.pulsar.ui.api.v1.MessageId message_id = 1;
+  bool is_excluded = 2;
+}
+
+message ResetCursorRequest {
+  string topic_fqn = 1;
+  oneof reset_cursor_target {
+    ResetCursorByMessageId reset_by_message_id = 2;
+    google.protobuf.Int64Value timestamp = 3;
+  }
+  string subscription_name = 4;
+}
+
+message ResetCursorResponse {
+  google.rpc.Status status = 1;
+}
+
+message UpdateSubscriptionPropertiesRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  map<string, string> properties = 3;
+}
+
+message UpdateSubscriptionPropertiesResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -385,5 +478,10 @@ service TopicService {
   rpc GetCompactionStatus(GetCompactionStatusRequest) returns (GetCompactionStatusResponse);
   rpc TriggerCompaction(TriggerCompactionRequest) returns (TriggerCompactionResponse);
 
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse);
   rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse);
+  rpc ExpireMessages(ExpireMessagesRequest) returns (ExpireMessagesResponse);
+  rpc SkipSubscriptionMessages(SkipSubscriptionMessagesRequest) returns (SkipSubscriptionMessagesResponse);
+  rpc ResetCursor(ResetCursorRequest) returns (ResetCursorResponse);
+  rpc UpdateSubscriptionProperties(UpdateSubscriptionPropertiesRequest) returns (UpdateSubscriptionPropertiesResponse);
 }
