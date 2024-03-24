@@ -6,7 +6,6 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/broker
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { createPortal } from 'react-dom';
 import HealthCheck from '../../../InstancePage/Overview/HealthCheck/HealthCheck';
-import { last } from 'lodash';
 import { H3 } from '../../../ui/H/H';
 
 type Status = 'unknown' | 'ok' | 'failed';
