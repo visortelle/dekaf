@@ -4,6 +4,10 @@ import useSWR from 'swr';
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { createPortal } from 'react-dom';
+import HealthCheck from '../../../InstancePage/Overview/HealthCheck/HealthCheck';
+import { last } from 'lodash';
+import { H3 } from '../../../ui/H/H';
 
 type Status = 'unknown' | 'ok' | 'failed';
 type HealthCheckResult = {
@@ -34,10 +38,13 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const { brokersServiceClient } = GrpcClient.useContext();
   const [result, setResult] = useState<HealthCheckResult>(defaultValue.healthCheckResult);
   const [brokerVersion, setBrokerVersion] = useState<Value['brokerVersion']>();
+  const lastChecked = React.useRef<number>(0);
 
   useSWR(
     swrKeys.pulsar.brokers.healthCheck._(),
     async () => {
+      lastChecked.current = Date.now();
+
       const req = new pb.HealthCheckRequest();
       const res = await brokersServiceClient.healthCheck(req, {}).catch(() => { });
 
@@ -49,18 +56,14 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
         return;
       }
 
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        setResult({
-          brokerConnection: 'unknown',
-          uiServerConnection: 'failed',
-        });
-
-        return;
+      const isBrokerConnectionOk = res.getIsOk();
+      const isReloadPage = (result.brokerConnection === 'failed' || result.uiServerConnection === 'failed') && isBrokerConnectionOk;
+      if (isReloadPage) {
+        window.location.reload();
       }
 
-
       setResult({
-        brokerConnection: res.getIsOk() ? 'ok' : 'failed',
+        brokerConnection: isBrokerConnectionOk ? 'ok' : 'failed',
         uiServerConnection: 'ok',
       });
     },
@@ -71,7 +74,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     const getBrokerVersion = async () => {
       const req = new pb.GetVersionRequest();
 
-      const res = await brokersServiceClient.getVersion(req, {}).catch(() => {});
+      const res = await brokersServiceClient.getVersion(req, {}).catch(() => { });
       if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
         setBrokerVersion(undefined);
         return;
@@ -85,21 +88,46 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   }, []);
 
   const style: CSSProperties = {
-    width: '100%',
-    height: '100%',
+    width: '100vw',
+    height: '100vh',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '32rem',
-    padding: '48rem'
+    padding: '48rem',
+    zIndex: 1000,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    position: 'fixed',
+    top: 0,
+    left: 0
   };
-  // if (result.uiServerConnection === 'failed') {
-  //   return <div style={style}>Your browser ↔ Dekaf connection check has failed.</div>;
-  // }
 
-  // if (result.brokerConnection === 'failed') {
-  //   return <div style={style}>Dekaf ↔ Pulsar Broker connection check has failed.</div>;
-  // }
+  const isShowOverlay = result.uiServerConnection === 'failed' || result.brokerConnection === 'failed';
+  const overlay = isShowOverlay ? createPortal(
+    <div style={style}>
+      <div style={{ background: '#fff', borderRadius: '12rem', padding: '24rem 48rem', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+        <div>
+          <H3>
+            There are connectivity issues
+          </H3>
+
+          <ul>
+            <li>
+              If the problem persists, contact your administrator.
+            </li>
+            <li>
+              <a target="_blank" href='https://dekaf.io/support'>🛟 Get Dekaf support</a> if you are an administrator and not sure how to fix the problem.
+            </li>
+          </ul>
+        </div>
+        <HealthCheck />
+        <div><strong>Last checked at:</strong> {new Date(lastChecked.current).toLocaleTimeString()}</div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
+  console.log('overlay', isShowOverlay);
 
   return (
     <Context.Provider
@@ -109,6 +137,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
         brokerVersion
       }}
     >
+      {overlay}
       {props.children}
     </Context.Provider>
   )
