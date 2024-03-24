@@ -23,9 +23,6 @@ services:
   dekaf:
     image: tealtools/dekaf:latest
     restart: always
-    depends_on:
-      pulsar:
-        condition: service_healthy
     environment:
       DEKAF_PULSAR_WEB_URL: "http://pulsar:8080"
       DEKAF_PULSAR_BROKER_URL: "pulsar://pulsar:6650"
