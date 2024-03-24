@@ -1,14 +1,12 @@
 package envoy
 
 import zio.*
-import zio.process.{Command, ProcessOutput}
+import zio.process.Command
 import org.apache.commons.lang3.SystemUtils
 import _root_.config.readConfig
 
 object Envoy:
     def run: IO[Throwable, Unit] =
-        val isDesktopBuild = buildinfo.ExtraBuildInfo.isDesktopBuild
-
         for
             envoyConfigProps <- readConfig.map(c =>
                 EnvoyConfigProps(
