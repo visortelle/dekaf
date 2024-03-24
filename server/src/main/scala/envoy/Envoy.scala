@@ -27,14 +27,6 @@ object Envoy:
 
             _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $configPath")
             _ <- ZIO.logInfo(s"Listening port: ${envoyConfigProps.listenPort}")
-
-            process <- {
-                // For Windows Desktop app Dekaf doen't start without "inheritIO" for some reason
-                if isDesktopBuild then
-                    Command(envoyBinPath, "--config-path", configPath).inheritIO.exitCode
-                else
-                    Command(envoyBinPath, "--config-path", configPath).inheritIO.exitCode
-            }
-
+            _ <- Command(envoyBinPath, "--config-path", configPath, "--log-level", "error").inheritIO.successfulExitCode
             _ <- ZIO.never
         yield ()
