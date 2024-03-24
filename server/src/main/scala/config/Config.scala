@@ -24,6 +24,10 @@ case class Config(
     tlsCertificateFilePath: Option[String] = None,
     @describe("TLS key file path.")
     tlsKeyFilePath: Option[String] = None,
+    @describe("Determines whether the user is forced to send the cookie over a valid HTTPS secure connection.")
+    cookieSecure: Option[Boolean] = None,
+    @describe("Determines whether the user agent should block the transmission of a cookie with cross-site requests.")
+    cookieSameSite: Option[String] = None,
     //
     @describe("Path to the persistent data directory.")
     dataDir: Option[String] = Some(s"${java.nio.file.Paths.get(".").toAbsolutePath}/data"),
@@ -96,11 +100,7 @@ case class Config(
     @describe("The port HTTP server listens on.")
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on.")
-    internalGrpcPort: Option[Int] = None,
-    @describe("Determines whether the user is forced to send the cookie over a valid HTTPS secure connection.")
-    cookieSecure: Option[Boolean] = None,
-    @describe("Determines whether the user agent should block the transmission of a cookie with cross-site requests.")
-    cookieSameSite: Option[String] = None
+    internalGrpcPort: Option[Int] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
