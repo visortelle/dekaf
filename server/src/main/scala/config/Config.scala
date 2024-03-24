@@ -4,7 +4,8 @@ import zio.{Config, *}
 import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
-import licensing.{ProductCode, LicenseInfo, AvailableLicenses}
+import licensing.{AvailableLicenses, LicenseInfo, ProductCode}
+import _root_.envoy
 
 import java.nio.file.Path
 
@@ -17,7 +18,12 @@ case class Config(
     publicBaseUrl: Option[String] = Some("http://localhost:8090"),
     @describe("When running the application behind a reverse-proxy, it may be useful to specify a base path.")
     basePath: Option[String] = Some("/"),
-    @describe("Library contains user-defined objects like message filters, visualizations, etc.")
+    @describe("Use http or https.")
+    protocol: Option[String] = Some("http"),
+    @describe("TLS certificate file path.")
+    tlsCertificateFilePath: Option[String] = None,
+    @describe("TLS key file path.")
+    tlsKeyFilePath: Option[String] = None,
     //
     @describe("Path to the persistent data directory.")
     dataDir: Option[String] = Some(s"${java.nio.file.Paths.get(".").toAbsolutePath}/data"),
@@ -83,7 +89,6 @@ case class Config(
           |Allowed values in recent JVMs are TLS, TLSv1.3, TLSv1.2 and TLSv1.1.
           |""".stripMargin)
     pulsarTlsProtocols: Option[List[String]] = None,
-
     @describe("Default authentication credentials for all users. Not recommended to use it in multi-user production environment.")
     defaultPulsarAuth: Option[String] = None,
 
@@ -92,7 +97,6 @@ case class Config(
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
-
     @describe("Determines whether the user is forced to send the cookie over a valid HTTPS secure connection.")
     cookieSecure: Option[Boolean] = None,
     @describe("Determines whether the user agent should block the transmission of a cookie with cross-site requests.")
@@ -116,7 +120,7 @@ def readConfig =
         config <- ZIO.succeed {
             val appConfig = maybeYamlConfig match
                 case Right(yamlConfig) => mergeConfigs(envConfig, yamlConfig)
-                case Left(_) => envConfig
+                case Left(_)           => envConfig
 
             val mergedConfig = mergeConfigs(defaultConfig, appConfig)
             normalizeConfig(mergedConfig)

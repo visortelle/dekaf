@@ -1,21 +1,22 @@
 package envoy
 
 import zio.*
-import zio.process.{Command, ProcessOutput}
+import zio.process.Command
 import org.apache.commons.lang3.SystemUtils
 import _root_.config.readConfig
 
 object Envoy:
-    def run: IO[Throwable, Unit] = 
-        val isDesktopBuild = buildinfo.ExtraBuildInfo.isDesktopBuild
-        
+    def run: IO[Throwable, Unit] =
         for
             envoyConfigProps <- readConfig.map(c =>
                 EnvoyConfigProps(
-                httpServerPort = c.internalHttpPort.get,
-                grpcServerPort = c.internalGrpcPort.get,
-                listenPort = c.port.get,
-                basePath = c.basePath.get,
+                    httpServerPort = c.internalHttpPort.get,
+                    grpcServerPort = c.internalGrpcPort.get,
+                    listenPort = c.port.get,
+                    basePath = c.basePath.get,
+                    protocol = c.protocol.get,
+                    certificateChainFilename = c.tlsCertificateFilePath,
+                    privateKeyFilename = c.tlsKeyFilePath
                 )
             )
 
@@ -24,14 +25,6 @@ object Envoy:
 
             _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $configPath")
             _ <- ZIO.logInfo(s"Listening port: ${envoyConfigProps.listenPort}")
-
-            process <- {
-                // For Windows Desktop app Dekaf doen't start without "inheritIO" for some reason
-                if isDesktopBuild then 
-                    Command(envoyBinPath, "--config-path", configPath).inheritIO.exitCode
-                else 
-                    Command(envoyBinPath, "--config-path", configPath).successfulExitCode
-            }
-
+            _ <- Command(envoyBinPath, "--config-path", configPath, "--log-level", "error").inheritIO.successfulExitCode
             _ <- ZIO.never
         yield ()

@@ -1,12 +1,16 @@
 package envoy
 
 import zio.*
+import java.nio.file.Paths
 
 case class EnvoyConfigProps(
     httpServerPort: Int,
     grpcServerPort: Int,
     listenPort: Int,
-    basePath: String
+    basePath: String,
+    protocol: String,
+    certificateChainFilename: Option[String],
+    privateKeyFilename: Option[String]
 )
 
 def renderEnvoyConfig(config: EnvoyConfigProps): String =
@@ -78,6 +82,7 @@ static_resources:
                 - name: envoy.filters.http.router
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+          ${genTlsConfig(config).indent(10)}
   clusters:
     - name: pulsar_ui_grpc
       connect_timeout: 0.25s
@@ -107,6 +112,24 @@ static_resources:
                     address: 127.0.0.1
                     port_value: ${config.httpServerPort}
                   """.stripMargin
+
+
+def genTlsConfig(config: EnvoyConfigProps): String =
+    config.protocol match
+        case "https" =>
+            s"""
+            |transport_socket:
+            |  name: envoy.transport_sockets.tls
+            |  typed_config:
+            |    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+            |    common_tls_context:
+            |      tls_certificates:
+            |        - certificate_chain:
+            |            filename: ${Paths.get(config.certificateChainFilename.get).toAbsolutePath.normalize.toString}
+            |          private_key:
+            |            filename: ${Paths.get(config.privateKeyFilename.get).toAbsolutePath.normalize.toString}
+            |""".stripMargin
+        case _ => ""
 
 def getEnvoyConfigPath(config: EnvoyConfigProps): IO[Throwable, os.Path] = for
     fileContent <- ZIO.succeed(renderEnvoyConfig(config))
