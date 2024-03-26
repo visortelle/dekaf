@@ -41,19 +41,6 @@ message BytesGenerator {
   }
 }
 
-message NowEventTimeGenerator {}
-message FixedEventTimeGenerator {
-  int64 event_time = 1;
-}
-
-message EventTimeGenerator {
-  oneof generator {
-    NowEventTimeGenerator generator_now = 11;
-    FixedEventTimeGenerator generator_fixed = 12;
-    JsonGenerator generator_json = 13;
-  }
-}
-
 message RandomUuidV4Generator {}
 
 message FixedStringGenerator {
@@ -78,13 +65,11 @@ enum DateTimeUnit {
   DATE_TIME_UNIT_SECOND = 7;
   DATE_TIME_UNIT_MILLISECOND = 8;
 }
-
 message FixedRelativeDateTimeGenerator {
   int32 value = 1;
   DateTimeUnit unit = 2;
   bool is_rounded_to_unit_start = 3;
 }
-
 message  RelativeDateTimeGenerator {
   oneof generator {
     FixedRelativeDateTimeGenerator generator_fixed_relative_date_time = 11;
@@ -96,11 +81,18 @@ message FixedDateTimeGenerator {
   int64 unix_epoch = 1;
 }
 
+message NowDateTimeGenerator {}
+
 message DateTimeGenerator {
   oneof generator {
+    NowDateTimeGenerator generator_now = 10;
     FixedDateTimeGenerator generator_fixed_date_time = 11;
     JsonGenerator generator_json = 12;
   }
+}
+
+message EventTimeGenerator {
+  DateTimeGenerator generator = 1;
 }
 
 message KeyGenerator {
