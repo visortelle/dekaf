@@ -11,7 +11,7 @@ object StringGenerator:
     def fromPb(v: pb.StringGenerator): StringGenerator =
         val generator = v.generator match
             case pb.StringGenerator.Generator.GeneratorFixedString(v) => FixedStringGenerator.fromPb(v)
-            case pb.StringGenerator.Generator.GeneratorJson(v)        => JsonGenerator.fromPb(v)
+            case pb.StringGenerator.Generator.GeneratorFromJsonString(v)        => JsonGenerator.fromPb(v)
             case _                                                    => throw new Exception("Invalid string generator type")
 
         StringGenerator(
@@ -21,7 +21,7 @@ object StringGenerator:
     def toPb(v: StringGenerator): pb.StringGenerator =
         val generator = v.generator match
             case v: FixedStringGenerator => pb.StringGenerator.Generator.GeneratorFixedString(FixedStringGenerator.toPb(v))
-            case v: JsonGenerator        => pb.StringGenerator.Generator.GeneratorJson(JsonGenerator.toPb(v))
+            case v: JsonGenerator        => pb.StringGenerator.Generator.GeneratorFromJsonString(JsonGenerator.toPb(v))
 
         pb.StringGenerator(
             generator = generator

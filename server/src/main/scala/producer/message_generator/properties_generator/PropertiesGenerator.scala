@@ -10,7 +10,7 @@ case class PropertiesGenerator(
 object PropertiesGenerator:
     def fromPb(v: pb.PropertiesGenerator): PropertiesGenerator =
         val generator = v.generator match
-            case pb.PropertiesGenerator.Generator.GeneratorJson(v) => JsonGenerator.fromPb(v)
+            case pb.PropertiesGenerator.Generator.GeneratorFromJsonObject(v) => JsonGenerator.fromPb(v)
             case _ => throw new Exception("Unknown properties generator type")
 
         PropertiesGenerator(
@@ -19,7 +19,7 @@ object PropertiesGenerator:
 
     def toPb(v: PropertiesGenerator): pb.PropertiesGenerator =
         val generator = v.generator match
-            case v: JsonGenerator => pb.PropertiesGenerator.Generator.GeneratorJson(JsonGenerator.toPb(v))
+            case v: JsonGenerator => pb.PropertiesGenerator.Generator.GeneratorFromJsonObject(JsonGenerator.toPb(v))
 
         pb.PropertiesGenerator(
             generator = generator

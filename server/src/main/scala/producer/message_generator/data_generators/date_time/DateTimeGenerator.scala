@@ -12,7 +12,7 @@ object DateTimeGenerator:
         val generator = v.generator match
             case pb.DateTimeGenerator.Generator.GeneratorNow(v)   => NowDateTimeGenerator.fromPb(v)
             case pb.DateTimeGenerator.Generator.GeneratorFixedDateTime(v) => FixedDateTimeGenerator.fromPb(v)
-            case pb.DateTimeGenerator.Generator.GeneratorJson(v)  => JsonGenerator.fromPb(v)
+            case pb.DateTimeGenerator.Generator.GeneratorFromJsonMsOrIso(v)  => JsonGenerator.fromPb(v)
             case _                                                 => throw new IllegalArgumentException("Unknown event time generator type")
 
         DateTimeGenerator(
@@ -23,7 +23,7 @@ object DateTimeGenerator:
         val generator = v.generator match
             case v: NowDateTimeGenerator   => pb.DateTimeGenerator.Generator.GeneratorNow(NowDateTimeGenerator.toPb(v))
             case v: FixedDateTimeGenerator => pb.DateTimeGenerator.Generator.GeneratorFixedDateTime(FixedDateTimeGenerator.toPb(v))
-            case v: JsonGenerator           => pb.DateTimeGenerator.Generator.GeneratorJson(JsonGenerator.toPb(v))
+            case v: JsonGenerator           => pb.DateTimeGenerator.Generator.GeneratorFromJsonMsOrIso(JsonGenerator.toPb(v))
 
         pb.DateTimeGenerator(
             generator = generator

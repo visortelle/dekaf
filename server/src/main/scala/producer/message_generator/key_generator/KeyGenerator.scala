@@ -14,7 +14,7 @@ object KeyGenerator:
         val generator = v.generator match
             case pb.KeyGenerator.Generator.GeneratorRandomUuidV4(v) => RandomUuidV4Generator.fromPb(v)
             case pb.KeyGenerator.Generator.GeneratorString(v) => StringGenerator.fromPb(v)
-            case pb.KeyGenerator.Generator.GeneratorJson(v) => JsonGenerator.fromPb(v)
+            case pb.KeyGenerator.Generator.GeneratorFromJson(v) => JsonGenerator.fromPb(v)
             case _ => throw new Exception("Unknown key generator type")
 
         KeyGenerator(
@@ -25,7 +25,7 @@ object KeyGenerator:
         val generator = v.generator match
             case v: RandomUuidV4Generator => pb.KeyGenerator.Generator.GeneratorRandomUuidV4(RandomUuidV4Generator.toPb(v))
             case v: StringGenerator => pb.KeyGenerator.Generator.GeneratorString(StringGenerator.toPb(v))
-            case v: JsonGenerator => pb.KeyGenerator.Generator.GeneratorJson(JsonGenerator.toPb(v))
+            case v: JsonGenerator => pb.KeyGenerator.Generator.GeneratorFromJson(JsonGenerator.toPb(v))
 
         pb.KeyGenerator(
             generator = generator

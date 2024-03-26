@@ -50,7 +50,7 @@ message FixedStringGenerator {
 message StringGenerator {
   oneof generator {
     FixedStringGenerator generator_fixed_string = 11;
-    JsonGenerator generator_json = 12;
+    JsonGenerator generator_from_json_string = 12;
   }
 }
 
@@ -66,14 +66,14 @@ enum DateTimeUnit {
   DATE_TIME_UNIT_MILLISECOND = 8;
 }
 message FixedRelativeDateTimeGenerator {
-  int32 value = 1;
+  int64 value = 1;
   DateTimeUnit unit = 2;
   bool is_rounded_to_unit_start = 3;
 }
 message  RelativeDateTimeGenerator {
   oneof generator {
     FixedRelativeDateTimeGenerator generator_fixed_relative_date_time = 11;
-    JsonGenerator generator_json = 12;
+    JsonGenerator generator_from_json_number_ms = 12;
   }
 }
 
@@ -87,7 +87,7 @@ message DateTimeGenerator {
   oneof generator {
     NowDateTimeGenerator generator_now = 10;
     FixedDateTimeGenerator generator_fixed_date_time = 11;
-    JsonGenerator generator_json = 12;
+    JsonGenerator generator_from_json_ms_or_iso = 12;
   }
 }
 
@@ -99,7 +99,7 @@ message KeyGenerator {
   oneof generator {
     RandomUuidV4Generator generator_random_uuid_v4 = 11;
     StringGenerator generator_string = 12;
-    JsonGenerator generator_json = 13;
+    JsonGenerator generator_from_json = 13;
   }
 }
 
@@ -109,15 +109,15 @@ message ValueFromTopicSchemaGenerator {
 
 message ValueGenerator {
   oneof generator {
-    BytesGenerator generator_bytes = 11;
-    JsonGenerator generator_json = 12;
+    BytesGenerator generator_from_bytes = 11;
+    JsonGenerator generator_from_json = 12;
     ValueFromTopicSchemaGenerator generator_value_from_topic_schema = 13;
   }
 }
 
 message PropertiesGenerator {
   oneof generator {
-    JsonGenerator generator_json = 11;
+    JsonGenerator generator_from_json_object = 11;
   }
 }
 
@@ -134,17 +134,18 @@ message DeliverAfterGenerator {
 }
 
 message OrderingKeyGenerator {
+  BytesGenerator from_bytes = 10;
+}
+
+message Int64Generator {
   oneof generator {
-    BytesGenerator generator_bytes = 10;
-    JsonGenerator generator_json = 11;
+    int64 generator_fixed_int64 = 10;
+    JsonGenerator generator_from_json = 11;
   }
 }
 
 message SequenceIdGenerator {
-  oneof generator {
-    int64 generator_fixed_int64 = 10;
-    JsonGenerator generator_json = 11;
-  }
+  Int64Generator generator = 1;
 }
 
 message MessageGenerator {
