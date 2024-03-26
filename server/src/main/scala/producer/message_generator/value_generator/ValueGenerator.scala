@@ -1,7 +1,7 @@
 package producer.message_generator.value_generator
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
-import producer.message_generator.RandomBytesGenerator
+import producer.message_generator.data_generators.RandomBytesGenerator
 import producer.message_generator.json_generator.JsonGenerator
 
 case class ValueGenerator(
@@ -25,6 +25,7 @@ object ValueGenerator:
             case v: RandomBytesGenerator          => pb.ValueGenerator.Generator.GeneratorRandomBytes(RandomBytesGenerator.toPb(v))
             case v: JsonGenerator                 => pb.ValueGenerator.Generator.GeneratorJson(JsonGenerator.toPb(v))
             case v: ValueFromTopicSchemaGenerator => pb.ValueGenerator.Generator.GeneratorValueFromTopicSchema(ValueFromTopicSchemaGenerator.toPb(v))
+
         pb.ValueGenerator(
             generator = generator
         )

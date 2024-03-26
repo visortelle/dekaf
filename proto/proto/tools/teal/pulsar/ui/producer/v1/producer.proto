@@ -25,6 +25,13 @@ message RandomBytesGenerator {
   int32 max_bytes = 2;
 }
 
+message BytesGenerator {
+  oneof generator {
+    RandomBytesGenerator generator_random_bytes = 11;
+    JsonGenerator generator_from_json_base64_string = 12;
+  }
+}
+
 message NowEventTimeGenerator {}
 message FixedEventTimeGenerator {
   int64 event_time = 1;
@@ -38,15 +45,51 @@ message EventTimeGenerator {
   }
 }
 
-message RandomUuidV4KeyGenerator {}
-message FixedStringKeyGenerator {
-  string key = 1;
+message RandomUuidV4Generator {}
+message FixedStringGenerator {
+  string string = 1;
+}
+
+message FixedDateTimeGenerator {
+  int64 unix_epoch = 1;
+}
+
+enum DateTimeUnit {
+  DATE_TIME_UNIT_UNSPECIFIED = 0;
+  DATE_TIME_UNIT_YEAR = 1;
+  DATE_TIME_UNIT_MONTH = 2;
+  DATE_TIME_UNIT_WEEK = 3;
+  DATE_TIME_UNIT_DAY = 4;
+  DATE_TIME_UNIT_HOUR = 5;
+  DATE_TIME_UNIT_MINUTE = 6;
+  DATE_TIME_UNIT_SECOND = 7;
+  DATE_TIME_UNIT_MILLISECOND = 8;
+}
+
+message FixedRelativeDateTimeGenerator {
+  int32 value = 1;
+  DateTimeUnit unit = 2;
+  bool is_rounded_to_unit_start = 3;
+}
+
+message  RelativeDateTimeGenerator {
+  oneof generator {
+    FixedRelativeDateTimeGenerator generator_fixed_relative_date_time = 11;
+    JsonGenerator generator_json = 12;
+  }
+}
+
+message DateTimeGenerator {
+  oneof generator {
+    FixedDateTimeGenerator generator_fixed_date_time = 11;
+    JsonGenerator generator_json = 12;
+  }
 }
 
 message KeyGenerator {
   oneof generator {
-    RandomUuidV4KeyGenerator generator_random_uuid_v4 = 11;
-    FixedStringKeyGenerator generator_fixed_string = 12;
+    RandomUuidV4Generator generator_random_uuid_v4 = 11;
+    FixedStringGenerator generator_fixed_string = 12;
     JsonGenerator generator_json = 13;
   }
 }
@@ -57,38 +100,33 @@ message ValueFromTopicSchemaGenerator {
 
 message ValueGenerator {
   oneof generator {
-    RandomBytesGenerator generator_random_bytes = 11;
+    BytesGenerator generator_bytes = 11;
     JsonGenerator generator_json = 12;
     ValueFromTopicSchemaGenerator generator_value_from_topic_schema = 13;
   }
 }
 
-message EmptyPropertiesGenerator {}
-
 message PropertiesGenerator {
   oneof generator {
-    EmptyPropertiesGenerator generator_empty = 10;
     JsonGenerator generator_json = 11;
   }
 }
 
 message DeliverAtGenerator {
   oneof generator {
-    int64 generator_unix_epoch = 10;
-    JsonGenerator generator_json_generator = 11;
+    DateTimeGenerator generator_date_time = 10;
   }
 }
 
 message DeliverAfterGenerator {
   oneof generator {
-    int64 generator_after_nanos = 10;
-    JsonGenerator generator_json = 11;
+    RelativeDateTimeGenerator generator_relative_date_time = 10;
   }
 }
 
 message OrderingKeyGenerator {
   oneof generator {
-    bytes generator_fixed_bytes = 10;
+    BytesGenerator generator_bytes = 10;
     JsonGenerator generator_json = 11;
   }
 }
