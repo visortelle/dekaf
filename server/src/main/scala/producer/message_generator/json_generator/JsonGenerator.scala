@@ -1,0 +1,26 @@
+package producer.message_generator.json_generator
+
+import com.tools.teal.pulsar.ui.producer.v1.producer as pb
+
+case class JsonGenerator(
+    generator: FixedJsonGenerator | JsJsonGenerator
+)
+
+object JsonGenerator:
+    def fromPb(v: pb.JsonGenerator): JsonGenerator =
+        val generator  = v.generator match
+            case pb.JsonGenerator.Generator.GeneratorFixed(v) => FixedJsonGenerator.fromPb(v)
+            case pb.JsonGenerator.Generator.GeneratorJs(v) => JsJsonGenerator.fromPb(v)
+            case _ => throw new Exception("Unknown generator type")
+
+        JsonGenerator(
+            generator = generator
+        )
+
+    def toPb(v: JsonGenerator): pb.JsonGenerator =
+        val generator = v.generator match
+            case v: FixedJsonGenerator => pb.JsonGenerator.Generator.GeneratorFixed(FixedJsonGenerator.toPb(v))
+            case v: JsJsonGenerator => pb.JsonGenerator.Generator.GeneratorJs(JsJsonGenerator.toPb(v))
+        pb.JsonGenerator(
+            generator = generator
+        )

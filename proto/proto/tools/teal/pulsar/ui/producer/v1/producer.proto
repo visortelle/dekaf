@@ -13,19 +13,16 @@ message JsJsonGenerator {
   string js_code = 1;
 }
 
-enum InterpretJsonAs {
-  INTERPRET_JSON_AS_UNSPECIFIED = 0;
-  INTERPRET_JSON_AS_JSON = 1;
-  INTERPRET_JSON_AS_BASE64_ENCODED_BYTES = 2;
-  INTERPRET_JSON_AS_HEX_ENCODED_BYTES = 3;
-}
-
 message JsonGenerator {
   oneof generator {
     FixedJsonGenerator generator_fixed = 11;
     JsJsonGenerator generator_js = 12;
   }
-  InterpretJsonAs interpret_json_as = 2;
+}
+
+message RandomBytesGenerator {
+  int32 min_bytes = 1;
+  int32 max_bytes = 2;
 }
 
 message NowEventTimeGenerator {}
@@ -54,15 +51,15 @@ message KeyGenerator {
   }
 }
 
-message RandomBytesGenerator {
-  int32 min_bytes = 1;
-  int32 max_bytes = 2;
+message ValueFromTopicSchemaGenerator {
+  string topic_fqn = 1;
 }
 
 message ValueGenerator {
   oneof generator {
     RandomBytesGenerator generator_random_bytes = 11;
     JsonGenerator generator_json = 12;
+    ValueFromTopicSchemaGenerator generator_value_from_topic_schema = 13;
   }
 }
 
@@ -85,18 +82,21 @@ message DeliverAtGenerator {
 message DeliverAfterGenerator {
   oneof generator {
     int64 generator_after_nanos = 10;
+    JsonGenerator generator_json = 11;
   }
 }
 
 message OrderingKeyGenerator {
   oneof generator {
     bytes generator_fixed_bytes = 10;
+    JsonGenerator generator_json = 11;
   }
 }
 
 message SequenceIdGenerator {
   oneof generator {
     int64 generator_fixed_int64 = 10;
+    JsonGenerator generator_json = 11;
   }
 }
 
@@ -179,22 +179,16 @@ message PulsarProducerConfig {
 
 message ProducerTask {
   string target_topic_fqn = 1;
-  repeated MessageGenerator message_generator = 2;
+  MessageGenerator message_generator = 2;
   PulsarProducerConfig producer_config = 3;
   google.protobuf.Int64Value limit_num_records = 10;
   google.protobuf.Int64Value limit_time_elapsed_nanos = 11;
   google.protobuf.Int64Value interval_nanos = 12;
 }
 
-message ProducerSessionTarget {
-  repeated ProducerTask tasks = 1;
-}
-
 message ProducerSession {
   string session_id = 1;
-  ProducerSessionTarget targets = 2;
-  google.protobuf.Int64Value limit_num_records = 10;
-  google.protobuf.Int64Value limit_time_elapsed_nanos = 11;
+  ProducerTask task = 2;
 }
 
 message ProducerStats {
