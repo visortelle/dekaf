@@ -205,7 +205,7 @@ message PulsarProducerConfig {
   google.protobuf.Int64Value auto_update_partitions_interval_nanos = 7;
   google.protobuf.Int32Value batching_max_bytes = 8;
   google.protobuf.Int32Value batching_max_messages = 9;
-  google.protobuf.Int32Value batching_max_publish_delay = 10;
+  google.protobuf.Int64Value batching_max_publish_delay_nanos = 10;
   google.protobuf.BoolValue block_if_queue_full = 11;
   google.protobuf.Int32Value chunk_max_message_size = 12;
   CompressionType compression_type = 13;

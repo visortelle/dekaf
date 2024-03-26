@@ -3,6 +3,8 @@ package producer.message_generator.hashing_scheme
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import org.apache.pulsar.client.api.HashingScheme as PulsarHashingScheme
 
+type HashingScheme = PulsarHashingScheme
+
 object HashingScheme:
     def fromPb(v: pb.HashingScheme): PulsarHashingScheme  =
         v match
