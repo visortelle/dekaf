@@ -226,13 +226,19 @@ message ProducerTask {
   MessageGenerator message_generator = 2;
   PulsarProducerConfig producer_config = 3;
   google.protobuf.Int64Value limit_num_records = 10;
-  google.protobuf.Int64Value limit_time_elapsed_nanos = 11;
+  google.protobuf.Int64Value limit_duration_nanos = 11;
   google.protobuf.Int64Value interval_nanos = 12;
+}
+
+message ProducerSessionTask {
+  oneof task {
+    ProducerTask task_producer = 1;
+  }
 }
 
 message ProducerSession {
   string session_id = 1;
-  ProducerTask task = 2;
+  repeated ProducerSessionTask tasks = 2;
 }
 
 message ProducerStats {

@@ -28,6 +28,9 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_VALUE_PROJECTION = 16;
   MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST = 17;
   MANAGED_ITEM_TYPE_DESERIALIZER = 18;
+  MANAGED_ITEM_TYPE_MESSAGE_GENERATOR = 19;
+  MANAGED_ITEM_TYPE_PRODUCER_TASK = 20;
+  MANAGED_ITEM_TYPE_PRODUCER_SESSION = 21;
 }
 
 message ManagedItemMetadata {
@@ -410,12 +413,28 @@ message ManagedProducerTaskSpec {
 
 message ManagedProducerTask {
   ManagedItemMetadata metadata = 1;
-  ManagedMarkdownDocumentSpec spec = 2;
+  ManagedProducerTaskSpec spec = 2;
 }
 
 message ManagedProducerTaskValOrRef {
   oneof val_or_ref {
     ManagedProducerTask val = 1;
+    string ref = 2;
+  }
+}
+
+message ManagedProducerSessionSpec {
+  repeated ManagedProducerTaskValOrRef tasks = 1;
+}
+
+message ManagedProducerSession {
+  ManagedItemMetadata metadata = 1;
+  ManagedProducerSessionSpec spec = 2;
+}
+
+message ManagedProducerSessionValOrRef {
+  oneof val_or_ref {
+    ManagedProducerSession val = 1;
     string ref = 2;
   }
 }
@@ -444,6 +463,7 @@ message ManagedItem {
     ManagedDeserializer spec_deserializer = 20;
     ManagedMessageGenerator spec_message_generator = 21;
     ManagedProducerTask spec_producer_task = 22;
+    ManagedProducerSession spec_producer_session = 23;
   }
 }
 

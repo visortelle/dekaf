@@ -21,7 +21,7 @@ case class MessageGenerator(
     sequenceIdGenerator: Option[SequenceIdGenerator]
 )
 
-object ConsumerSessionTarget:
+object MessageGenerator:
     def fromPb(v: pb.MessageGenerator): MessageGenerator =
         MessageGenerator(
             keyGenerator = v.generatorKey.map(KeyGenerator.fromPb),
