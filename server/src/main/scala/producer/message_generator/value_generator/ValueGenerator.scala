@@ -11,8 +11,8 @@ case class ValueGenerator(
 object ValueGenerator:
     def fromPb(v: pb.ValueGenerator): ValueGenerator =
         val generator = v.generator match
-            case pb.ValueGenerator.Generator.GeneratorFromBytes(v)                => BytesGenerator.fromPb(v)
-            case pb.ValueGenerator.Generator.GeneratorFromJson(v)                 => JsonGenerator.fromPb(v)
+            case pb.ValueGenerator.Generator.GeneratorFromBytes(v)            => BytesGenerator.fromPb(v)
+            case pb.ValueGenerator.Generator.GeneratorFromJson(v)             => JsonGenerator.fromPb(v)
             case pb.ValueGenerator.Generator.GeneratorValueFromTopicSchema(v) => ValueFromTopicSchemaGenerator.fromPb(v)
             case _                                                            => throw new Exception("Unknown value generator type")
 
@@ -22,7 +22,7 @@ object ValueGenerator:
 
     def toPb(v: ValueGenerator): pb.ValueGenerator =
         val generator = v.generator match
-            case v: BytesGenerator          => pb.ValueGenerator.Generator.GeneratorFromBytes(BytesGenerator.toPb(v))
+            case v: BytesGenerator                => pb.ValueGenerator.Generator.GeneratorFromBytes(BytesGenerator.toPb(v))
             case v: JsonGenerator                 => pb.ValueGenerator.Generator.GeneratorFromJson(JsonGenerator.toPb(v))
             case v: ValueFromTopicSchemaGenerator => pb.ValueGenerator.Generator.GeneratorValueFromTopicSchema(ValueFromTopicSchemaGenerator.toPb(v))
 

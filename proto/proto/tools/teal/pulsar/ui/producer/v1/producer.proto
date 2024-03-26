@@ -122,15 +122,11 @@ message PropertiesGenerator {
 }
 
 message DeliverAtGenerator {
-  oneof generator {
-    DateTimeGenerator generator_date_time = 10;
-  }
+  DateTimeGenerator generator = 1;
 }
 
 message DeliverAfterGenerator {
-  oneof generator {
-    RelativeDateTimeGenerator generator_relative_date_time = 10;
-  }
+  RelativeDateTimeGenerator generator = 1;
 }
 
 message OrderingKeyGenerator {
