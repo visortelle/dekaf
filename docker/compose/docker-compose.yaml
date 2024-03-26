@@ -6,7 +6,7 @@ services:
     restart: always
     entrypoint: /bin/bash -c "bin/pulsar standalone"
     volumes:
-      - './data/pulsar/data/:/pulsar/data'
+      - pulsar-data:/pulsar/data
     ports:
       - "6650:6650"
       - "8080:8080"
@@ -29,7 +29,7 @@ services:
       # DEKAF_LICENSE_ID: ""
       # DEKAF_LICENSE_TOKEN: ""
     volumes:
-      - './data/dekaf/data/library/:/dekaf/data/library'
+      - dekaf-library:/dekaf/data/library
     ports:
       - "8090:8090"
     networks:
@@ -46,6 +46,10 @@ services:
       DEKAF_DEMOAPP_PULSAR_BROKER_URL: "pulsar://pulsar:6650"
     networks:
       - pulsar-net
+
+volumes:
+  pulsar-data:
+  dekaf-library:
 
 networks:
   pulsar-net:
