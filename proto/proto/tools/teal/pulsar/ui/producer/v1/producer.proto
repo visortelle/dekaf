@@ -25,10 +25,19 @@ message RandomBytesGenerator {
   int32 max_bytes = 2;
 }
 
+message BytesFromBase64Generator {
+  StringGenerator generator = 1;
+}
+
+message BytesFromHexGenerator {
+  StringGenerator generator = 1;
+}
+
 message BytesGenerator {
   oneof generator {
     RandomBytesGenerator generator_random_bytes = 11;
-    JsonGenerator generator_from_json_base64_string = 12;
+    BytesFromBase64Generator generator_from_base64 = 12;
+    BytesFromHexGenerator generator_from_hex = 13;
   }
 }
 
@@ -46,12 +55,16 @@ message EventTimeGenerator {
 }
 
 message RandomUuidV4Generator {}
+
 message FixedStringGenerator {
   string string = 1;
 }
 
-message FixedDateTimeGenerator {
-  int64 unix_epoch = 1;
+message StringGenerator {
+  oneof generator {
+    FixedStringGenerator generator_fixed_string = 11;
+    JsonGenerator generator_json = 12;
+  }
 }
 
 enum DateTimeUnit {
@@ -79,6 +92,10 @@ message  RelativeDateTimeGenerator {
   }
 }
 
+message FixedDateTimeGenerator {
+  int64 unix_epoch = 1;
+}
+
 message DateTimeGenerator {
   oneof generator {
     FixedDateTimeGenerator generator_fixed_date_time = 11;
@@ -89,7 +106,7 @@ message DateTimeGenerator {
 message KeyGenerator {
   oneof generator {
     RandomUuidV4Generator generator_random_uuid_v4 = 11;
-    FixedStringGenerator generator_fixed_string = 12;
+    StringGenerator generator_string = 12;
     JsonGenerator generator_json = 13;
   }
 }

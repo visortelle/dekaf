@@ -1,4 +1,4 @@
-package producer.message_generator.data_generators
+package producer.message_generator.data_generators.bytes
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 
