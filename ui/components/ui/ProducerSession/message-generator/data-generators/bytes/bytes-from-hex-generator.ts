@@ -1,20 +1,20 @@
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
 import { StringGenerator, stringGeneratorFromPb, stringGeneratorToPb } from '../string-generator/string-generator';
 
-export type BytesFromBase64Generator = {
-  type: 'bytes-from-base64-generator',
+export type BytesFromHexGenerator = {
+  type: 'bytes-from-hex-generator',
   generator: StringGenerator
 };
 
-export function bytesFromBase64GeneratorFromPb(v: pb.BytesFromBase64Generator): BytesFromBase64Generator {
+export function bytesFromHexGeneratorFromPb(v: pb.BytesFromHexGenerator): BytesFromHexGenerator {
   return {
-    type: 'bytes-from-base64-generator',
+    type: 'bytes-from-hex-generator',
     generator: stringGeneratorFromPb(v.getGenerator()!)
   };
 }
 
-export function bytesFromBase64GeneratorToPb(v: BytesFromBase64Generator): pb.BytesFromBase64Generator {
-  const message = new pb.BytesFromBase64Generator();
+export function bytesFromHexGeneratorToPb(v: BytesFromHexGenerator): pb.BytesFromHexGenerator {
+  const message = new pb.BytesFromHexGenerator();
   message.setGenerator(stringGeneratorToPb(v.generator));
 
   return message;
