@@ -407,7 +407,7 @@ message ManagedProducerTaskSpec {
   ManagedMessageGeneratorValOrRef message_generator = 2;
   tools.teal.pulsar.ui.producer.v1.PulsarProducerConfig producer_config = 3;
   google.protobuf.Int64Value limit_num_records = 10;
-  google.protobuf.Int64Value limit_time_elapsed_nanos = 11;
+  google.protobuf.Int64Value limit_duration_nanos = 11;
   google.protobuf.Int64Value interval_nanos = 12;
 }
 
@@ -423,8 +423,26 @@ message ManagedProducerTaskValOrRef {
   }
 }
 
+message ManagedProducerSessionTaskSpec {
+  oneof task {
+    ManagedProducerTaskValOrRef task_producer = 1;
+  }
+}
+
+message ManagedProducerSessionTask {
+  ManagedItemMetadata metadata = 1;
+  ManagedProducerSessionTaskSpec spec = 2;
+}
+
+message ManagedProducerSessionTaskValOrRef {
+  oneof val_or_ref {
+    ManagedProducerSessionTask val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedProducerSessionSpec {
-  repeated ManagedProducerTaskValOrRef tasks = 1;
+  repeated ManagedProducerSessionTaskValOrRef tasks = 1;
 }
 
 message ManagedProducerSession {
@@ -463,7 +481,8 @@ message ManagedItem {
     ManagedDeserializer spec_deserializer = 20;
     ManagedMessageGenerator spec_message_generator = 21;
     ManagedProducerTask spec_producer_task = 22;
-    ManagedProducerSession spec_producer_session = 23;
+    ManagedProducerSession spec_producer_session_task = 23;
+    ManagedProducerSession spec_producer_session = 24;
   }
 }
 
