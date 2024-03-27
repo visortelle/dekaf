@@ -1,5 +1,5 @@
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
-import { JsonGenerator, jsonGeneratorFromPb } from '../json-generator/json-generator';
+import { JsonGenerator, jsonGeneratorFromPb, jsonGeneratorToPb } from '../json-generator/json-generator';
 
 export type Int64Generator = {
   type: 'int64-generator',
@@ -20,4 +20,18 @@ export function int64GeneratorFromPb(v: pb.Int64Generator): Int64Generator {
   }
 
   return { type: 'int64-generator', generator };
+}
+
+export function int64GeneratorToPb(v: Int64Generator): pb.Int64Generator {
+  const message = new pb.Int64Generator();
+  switch (v.generator.type) {
+    case 'fixed-int64':
+      message.setGeneratorFixedInt64(v.generator.n);
+      break;
+    case 'from-json':
+      message.setGeneratorFromJson(jsonGeneratorToPb(v.generator.jsonGenerator));
+      break;
+  }
+
+  return message;
 }

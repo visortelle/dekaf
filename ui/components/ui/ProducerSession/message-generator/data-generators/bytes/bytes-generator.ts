@@ -1,7 +1,7 @@
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
-import { BytesFromBase64Generator, bytesFromBase64GeneratorFromPb } from './bytes-from-base64-generator';
-import { BytesFromHexGenerator, bytesFromHexGeneratorFromPb } from './bytes-from-hex-generator';
-import { RandomBytesGenerator, randomBytesGeneratorFromPb } from './random-bytes-generator';
+import { BytesFromBase64Generator, bytesFromBase64GeneratorFromPb, bytesFromBase64GeneratorToPb } from './bytes-from-base64-generator';
+import { BytesFromHexGenerator, bytesFromHexGeneratorFromPb, bytesFromHexGeneratorToPb } from './bytes-from-hex-generator';
+import { RandomBytesGenerator, randomBytesGeneratorFromPb, randomBytesGeneratorToPb } from './random-bytes-generator';
 
 export type BytesGenerator = {
   type: 'bytes-generator',
@@ -28,4 +28,22 @@ export function bytesGeneratorFromPb(v: pb.BytesGenerator): BytesGenerator {
     default:
       throw new Error('Unknown bytes generator case');
   }
+}
+
+export function bytesGeneratorToPb(v: BytesGenerator): pb.BytesGenerator {
+  const message = new pb.BytesGenerator();
+
+  switch (v.generator.type) {
+    case 'random-bytes-generator':
+      message.setGeneratorRandomBytes(randomBytesGeneratorToPb(v.generator));
+      break;
+    case 'bytes-from-base64-generator':
+      message.setGeneratorFromBase64(bytesFromBase64GeneratorToPb(v.generator));
+      break;
+    case 'bytes-from-hex-generator':
+      message.setGeneratorFromHex(bytesFromHexGeneratorToPb(v.generator));
+      break;
+  }
+
+  return message;
 }
