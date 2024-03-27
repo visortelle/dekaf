@@ -73,12 +73,12 @@ message FixedRelativeDateTimeGenerator {
 message  RelativeDateTimeGenerator {
   oneof generator {
     FixedRelativeDateTimeGenerator generator_fixed_relative_date_time = 11;
-    JsonGenerator generator_from_json_number_ms = 12;
+    JsonGenerator generator_from_json_number_millis = 12;
   }
 }
 
 message FixedDateTimeGenerator {
-  int64 unix_epoch = 1;
+  int64 unix_epoch_millis = 1;
 }
 
 message NowDateTimeGenerator {}
@@ -87,7 +87,7 @@ message DateTimeGenerator {
   oneof generator {
     NowDateTimeGenerator generator_now = 10;
     FixedDateTimeGenerator generator_fixed_date_time = 11;
-    JsonGenerator generator_from_json_ms_or_iso = 12;
+    JsonGenerator generator_from_json_millis_or_iso = 12;
   }
 }
 
