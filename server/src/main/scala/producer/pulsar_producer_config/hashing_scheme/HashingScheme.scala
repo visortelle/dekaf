@@ -1,4 +1,4 @@
-package producer.message_generator.hashing_scheme
+package producer.pulsar_producer_config.hashing_scheme
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import org.apache.pulsar.client.api.HashingScheme as PulsarHashingScheme

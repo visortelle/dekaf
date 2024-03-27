@@ -1,4 +1,4 @@
-package producer.message_generator.access_mode
+package producer.pulsar_producer_config.access_mode
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import org.apache.pulsar.client.api.ProducerAccessMode as ProducerAccessMode

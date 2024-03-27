@@ -1,4 +1,4 @@
-package producer.message_generator.compression_type
+package producer.pulsar_producer_config.compression_type
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import org.apache.pulsar.client.api.CompressionType as PulsarCompressionType

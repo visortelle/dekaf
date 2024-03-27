@@ -1,11 +1,11 @@
 package producer.pulsar_producer_config
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
-import _root_.producer.message_generator.access_mode.AccessMode
-import _root_.producer.message_generator.batcher_builder.BatcherBuilder
-import _root_.producer.message_generator.compression_type.CompressionType
-import _root_.producer.message_generator.hashing_scheme.HashingScheme
-import _root_.producer.message_generator.message_routing_mode.MessageRoutingMode
+import producer.pulsar_producer_config.access_mode.AccessMode
+import producer.pulsar_producer_config.batcher_builder.BatcherBuilder
+import producer.pulsar_producer_config.compression_type.CompressionType
+import producer.pulsar_producer_config.hashing_scheme.HashingScheme
+import producer.pulsar_producer_config.message_routing_mode.MessageRoutingMode
 
 case class PulsarProducerConfig(
     batcherBuilder: Option[BatcherBuilder],

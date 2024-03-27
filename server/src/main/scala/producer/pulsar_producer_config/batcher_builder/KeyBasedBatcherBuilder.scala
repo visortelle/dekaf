@@ -1,4 +1,4 @@
-package producer.message_generator.batcher_builder
+package producer.pulsar_producer_config.batcher_builder
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 

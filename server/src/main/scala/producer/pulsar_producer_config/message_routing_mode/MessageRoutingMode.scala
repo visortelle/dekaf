@@ -1,4 +1,4 @@
-package producer.message_generator.message_routing_mode
+package producer.pulsar_producer_config.message_routing_mode
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import org.apache.pulsar.client.api.MessageRoutingMode as PulsarMessageRoutingMode
