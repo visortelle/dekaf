@@ -20,7 +20,11 @@ enum ManagedItemType:
     BasicMessageFilterTarget,
     ValueProjection,
     ValueProjectionList,
-    Deserializer
+    Deserializer,
+    MessageGenerator,
+    ProducerTask,
+    ProducerSessionTask,
+    ProducerSession
 
 object ManagedItemType:
     def fromPb(v: pb.ManagedItemType): ManagedItemType =
@@ -43,6 +47,10 @@ object ManagedItemType:
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION => ManagedItemType.ValueProjection
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST => ManagedItemType.ValueProjectionList
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER => ManagedItemType.Deserializer
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_GENERATOR => ManagedItemType.MessageGenerator
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_TASK => ManagedItemType.ProducerTask
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_TASK => ManagedItemType.ProducerSessionTask
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION => ManagedItemType.ProducerSession
             case _ => throw new IllegalArgumentException("Unknown ManagedItemType")
 
     def toPb(v: ManagedItemType): pb.ManagedItemType =
@@ -65,3 +73,7 @@ object ManagedItemType:
             case ManagedItemType.ValueProjection => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION
             case ManagedItemType.ValueProjectionList => pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST
             case ManagedItemType.Deserializer => pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER
+            case ManagedItemType.MessageGenerator => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_GENERATOR
+            case ManagedItemType.ProducerTask => pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_TASK
+            case ManagedItemType.ProducerSessionTask => pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_TASK
+            case ManagedItemType.ProducerSession => pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION

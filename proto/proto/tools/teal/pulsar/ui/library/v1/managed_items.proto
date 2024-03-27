@@ -30,7 +30,8 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_DESERIALIZER = 18;
   MANAGED_ITEM_TYPE_MESSAGE_GENERATOR = 19;
   MANAGED_ITEM_TYPE_PRODUCER_TASK = 20;
-  MANAGED_ITEM_TYPE_PRODUCER_SESSION = 21;
+  MANAGED_ITEM_TYPE_PRODUCER_SESSION_TASK = 21;
+  MANAGED_ITEM_TYPE_PRODUCER_SESSION = 22;
 }
 
 message ManagedItemMetadata {
@@ -481,7 +482,7 @@ message ManagedItem {
     ManagedDeserializer spec_deserializer = 20;
     ManagedMessageGenerator spec_message_generator = 21;
     ManagedProducerTask spec_producer_task = 22;
-    ManagedProducerSession spec_producer_session_task = 23;
+    ManagedProducerSessionTask spec_producer_session_task = 23;
     ManagedProducerSession spec_producer_session = 24;
   }
 }
