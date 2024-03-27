@@ -1,7 +1,7 @@
 package producer.message_generator.data_generators.int64
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
-import producer.message_generator.json_generator.JsonGenerator
+import producer.message_generator.data_generators.json_generator.JsonGenerator
 
 case class Int64Generator(
     generator: Long | JsonGenerator
