@@ -14,17 +14,24 @@ case class ValueGenerator(
     def generateMut(
         builder: TypedMessageBuilder[Array[Byte]],
         polyglotContext: Context,
-        schemaInfo: SchemaInfo
+        schemaInfo: Option[SchemaInfo]
     ): Unit =
         generator match
             case v: BytesGenerator =>
                 val bytes = v.generate(polyglotContext)
                 builder.value(bytes)
+
             case v: JsonGenerator =>
                 val json = v.generate(polyglotContext)
-                jsonToValue(schemaInfo, json.getBytes) match
-                    case Left(e)  => throw new Exception(s"Failed to convert json to value: $e")
-                    case Right(value) => builder.value(value)
+
+                schemaInfo match
+                    case None =>
+                        builder.value(json.getBytes)
+                    case Some(si) =>
+                        jsonToValue(si, json.getBytes) match
+                            case Left(e)  => throw new Exception(s"Failed to convert json to value: $e")
+                            case Right(v) => builder.value(v)
+
             case v: ValueFromTopicSchemaGenerator => ???
 
 object ValueGenerator:

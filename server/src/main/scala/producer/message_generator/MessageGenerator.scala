@@ -27,7 +27,7 @@ case class MessageGenerator(
     def generateMessageMut(
         builder: TypedMessageBuilder[Array[Byte]],
         polyglotContext: Context,
-        schemaInfo: SchemaInfo
+        schemaInfo: Option[SchemaInfo]
     ): Unit =
         keyGenerator.foreach(v => v.generateMut(builder, polyglotContext))
         valueGenerator.foreach(v => v.generateMut(builder, polyglotContext, schemaInfo))
