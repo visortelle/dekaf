@@ -1,4 +1,4 @@
-package producer.producer_session.producer_session_task
+package producer.producer_session
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import _root_.producer.producer_session.producer_session_task.ProducerSessionTask

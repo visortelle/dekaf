@@ -1,5 +1,5 @@
-import { StringValue, Int32Value, Int64Value, BoolValue } from 'google-protobuf/google/protobuf/wrappers_pb';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
+import { StringValue, Int32Value, Int64Value, BoolValue } from 'google-protobuf/google/protobuf/wrappers_pb';
 import { mapToObject } from '../../../../proto-utils/proto-utils';
 
 import { AccessMode, accessModeFromPb, accessModeToPb } from "./access-mode/access-mode";

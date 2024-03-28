@@ -225,7 +225,7 @@ message ProducerTask {
   string target_topic_fqn = 1;
   MessageGenerator message_generator = 2;
   PulsarProducerConfig producer_config = 3;
-  google.protobuf.Int64Value limit_num_records = 10;
+  google.protobuf.Int64Value num_messages = 10;
   google.protobuf.Int64Value limit_duration_nanos = 11;
   google.protobuf.Int64Value interval_nanos = 12;
 }

@@ -8,7 +8,7 @@ case class ProducerTask(
     targetTopicFqn: String,
     messageGenerator: MessageGenerator,
     producerConfig: PulsarProducerConfig,
-    limitNumRecords: Option[Long],
+    numMessages: Option[Long],
     limitDurationNanos: Option[Long],
     intervalNanos: Option[Long]
 )
@@ -17,9 +17,9 @@ object ProducerTask:
     def fromPb(v: pb.ProducerTask): ProducerTask =
         ProducerTask(
             targetTopicFqn = v.targetTopicFqn,
-            messageGenerator = MessageGenerator.fromPb(v.messageGenerator.get),
-            producerConfig = PulsarProducerConfig.fromPb(v.producerConfig.get),
-            limitNumRecords = v.limitNumRecords,
+            messageGenerator = v.messageGenerator.map(MessageGenerator.fromPb),
+            producerConfig = v.producerConfig.map(PulsarProducerConfig.fromPb),
+            numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos
         )
@@ -29,7 +29,7 @@ object ProducerTask:
             targetTopicFqn = v.targetTopicFqn,
             messageGenerator = Some(MessageGenerator.toPb(v.messageGenerator)),
             producerConfig = Some(PulsarProducerConfig.toPb(v.producerConfig)),
-            limitNumRecords = v.limitNumRecords,
+            numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos
         )
