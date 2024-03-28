@@ -236,7 +236,7 @@ message ProducerSessionTask {
   }
 }
 
-message ProducerSession {
+message ProducerSessionConfig {
   string session_id = 1;
   repeated ProducerSessionTask tasks = 2;
 }
@@ -257,7 +257,7 @@ message ProducerStats {
 
 message CreateProducerSessionRequest {
   string session_id = 1;
-  ProducerSession session = 2;
+  ProducerSessionConfig session_config = 2;
 }
 
 message CreateProducerSessionResponse {

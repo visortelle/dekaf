@@ -43,7 +43,7 @@ export type ManagedItemType =
   "message-generator" |
   "producer-task" |
   "producer-session-task" |
-  "producer-session";
+  "producer-session-config";
 
 export type ManagedItemMetadata = {
   type: ManagedItemType,
@@ -337,16 +337,16 @@ export type ManagedProducerSessionTask = {
 
 export type ManagedProducerSessionTaskValOrRef = ValOrRef<ManagedProducerSessionTask>;
 
-export type ManagedProducerSessionSpec = {
+export type ManagedProducerSessionConfigSpec = {
   tasks: ManagedProducerSessionTaskValOrRef[]
 };
 
-export type ManagedProducerSession = {
+export type ManagedProducerSessionConfig = {
   metadata: ManagedItemMetadata,
-  spec: ManagedProducerSessionSpec,
+  spec: ManagedProducerSessionConfigSpec,
 };
 
-export type ManagedProducerSessionValOrRef = ValOrRef<ManagedProducerSession>;
+export type ManagedProducerSessionConfigValOrRef = ValOrRef<ManagedProducerSessionConfig>;
 
 export type ManagedItem = ManagedMessageFilter |
   ManagedMessageFilterChain |
@@ -371,4 +371,4 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedMessageGenerator |
   ManagedProducerTask |
   ManagedProducerSessionTask |
-  ManagedProducerSession;
+  ManagedProducerSessionConfig;

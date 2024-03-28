@@ -11,7 +11,6 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_UNSPECIFIED = 0;
 
   MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
-  MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
   MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
   MANAGED_ITEM_TYPE_MESSAGE_FILTER = 4;
   MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
@@ -31,7 +30,7 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_MESSAGE_GENERATOR = 19;
   MANAGED_ITEM_TYPE_PRODUCER_TASK = 20;
   MANAGED_ITEM_TYPE_PRODUCER_SESSION_TASK = 21;
-  MANAGED_ITEM_TYPE_PRODUCER_SESSION = 22;
+  MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
 }
 
 message ManagedItemMetadata {
@@ -442,18 +441,18 @@ message ManagedProducerSessionTaskValOrRef {
   }
 }
 
-message ManagedProducerSessionSpec {
+message ManagedProducerSessionConfigSpec {
   repeated ManagedProducerSessionTaskValOrRef tasks = 1;
 }
 
-message ManagedProducerSession {
+message ManagedProducerSessionConfig {
   ManagedItemMetadata metadata = 1;
-  ManagedProducerSessionSpec spec = 2;
+  ManagedProducerSessionConfigSpec spec = 2;
 }
 
-message ManagedProducerSessionValOrRef {
+message ManagedProducerSessionConfigValOrRef {
   oneof val_or_ref {
-    ManagedProducerSession val = 1;
+    ManagedProducerSessionConfig val = 1;
     string ref = 2;
   }
 }
@@ -483,7 +482,7 @@ message ManagedItem {
     ManagedMessageGenerator spec_message_generator = 21;
     ManagedProducerTask spec_producer_task = 22;
     ManagedProducerSessionTask spec_producer_session_task = 23;
-    ManagedProducerSession spec_producer_session = 24;
+    ManagedProducerSessionConfig spec_producer_session_config = 24;
   }
 }
 
