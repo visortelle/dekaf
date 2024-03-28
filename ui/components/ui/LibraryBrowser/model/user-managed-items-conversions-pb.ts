@@ -1495,7 +1495,79 @@ export function managedProducerTaskValOrRefToPb(v: t.ManagedProducerTaskValOrRef
   return idPb;
 }
 
+export function managedProducerSessionTaskSpecFromPb(v: pb.ManagedProducerSessionTaskSpec): t.ManagedProducerSessionTaskSpec {
+  let task: t.ManagedProducerSessionTaskSpec['task'];
+  switch (v.getTaskCase()) {
+    case pb.ManagedProducerSessionTaskSpec.TaskCase.TASK_PRODUCER:
+      task = { type: 'producer-task', task: managedProducerTaskValOrRefFromPb(v.getTaskProducer()!) };
+      break;
+    default:
+      throw new Error(`Unknown ManagedProducerSessionTaskSpec task: ${v}`);
+  }
+  return {
+    task:
+  };
+}
 
+export function managedProducerSessionTaskSpecToPb(v: t.ManagedProducerSessionTaskSpec): pb.ManagedProducerSessionTaskSpec {
+  const specPb = new pb.ManagedProducerSessionTaskSpec();
+
+  switch (v.task.type) {
+    case 'producer-task':
+      specPb.setTaskProducer(managedProducerTaskValOrRefToPb(v.task.task));
+      break;
+    default:
+      throw new Error(`Unknown ManagedProducerSessionTaskSpec task: ${v.task}`);
+  }
+
+  return specPb;
+}
+
+export function managedProducerSessionTaskFromPb(v: pb.ManagedProducerSessionTask): t.ManagedProducerSessionTask {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedProducerSessionTaskSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedProducerSessionTaskToPb(v: t.ManagedProducerSessionTask): pb.ManagedProducerSessionTask {
+  const configPb = new pb.ManagedProducerSessionTask();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedProducerSessionTaskSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedProducerSessionTaskValOrRefFromPb(v: pb.ManagedProducerSessionTaskValOrRef): t.ManagedProducerSessionTaskValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedProducerSessionTaskValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedProducerSessionTaskFromPb(v.getVal()!)
+      };
+    case pb.ManagedProducerSessionTaskValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedProducerSessionTaskValOrRef: ${v}`);
+  }
+}
+
+export function managedProducerSessionTaskValOrRefToPb(v: t.ManagedProducerSessionTaskValOrRef): pb.ManagedProducerSessionTaskValOrRef {
+  const idPb = new pb.ManagedProducerSessionTaskValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedProducerSessionTaskToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedProducerSessionTaskValOrRef: ${v}`);
+  }
+  return idPb;
+}
 
 export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
   switch (v.getSpecCase()) {
