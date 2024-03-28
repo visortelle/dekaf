@@ -13,7 +13,7 @@ export function deliverAtGeneratorFromPb(v: pb.DeliverAtGenerator): DeliverAtGen
   };
 }
 
-export function deliverAfterGeneratorToPb(v: DeliverAtGenerator): pb.DeliverAtGenerator {
+export function deliverAtGeneratorToPb(v: DeliverAtGenerator): pb.DeliverAtGenerator {
   const generatorPb = new pb.DeliverAtGenerator();
   generatorPb.setGenerator(dateTimeGeneratorToPb(v.generator));
 

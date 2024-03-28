@@ -145,14 +145,14 @@ message SequenceIdGenerator {
 }
 
 message MessageGenerator {
-  KeyGenerator generator_key = 1;
-  ValueGenerator generator_value = 2;
-  PropertiesGenerator generator_properties = 3;
-  EventTimeGenerator generator_event_time = 4;
-  DeliverAtGenerator generator_deliver_at = 5;
-  DeliverAfterGenerator generator_deliver_after = 6;
-  OrderingKeyGenerator generator_ordering_key = 7;
-  SequenceIdGenerator generator_sequence_id = 8;
+  KeyGenerator key_generator = 1;
+  ValueGenerator value_generator = 2;
+  PropertiesGenerator properties_generator = 3;
+  EventTimeGenerator event_time_generator = 4;
+  DeliverAtGenerator deliver_at_generator = 5;
+  DeliverAfterGenerator deliver_after_generator = 6;
+  OrderingKeyGenerator ordering_key_generator = 7;
+  SequenceIdGenerator sequence_id_generator = 8;
 }
 
 enum CompressionType {

@@ -24,24 +24,24 @@ case class MessageGenerator(
 object MessageGenerator:
     def fromPb(v: pb.MessageGenerator): MessageGenerator =
         MessageGenerator(
-            keyGenerator = v.generatorKey.map(KeyGenerator.fromPb),
-            valueGenerator = v.generatorValue.map(ValueGenerator.fromPb),
-            propertiesGenerator = v.generatorProperties.map(PropertiesGenerator.fromPb),
-            eventTimeGenerator = v.generatorEventTime.map(EventTimeGenerator.fromPb),
-            deliverAtGenerator = v.generatorDeliverAt.map(DeliverAtGenerator.fromPb),
-            deliverAfterGenerator = v.generatorDeliverAfter.map(DeliverAfterGenerator.fromPb),
-            orderingKeyGenerator = v.generatorOrderingKey.map(OrderingKeyGenerator.fromPb),
-            sequenceIdGenerator = v.generatorSequenceId.map(SequenceIdGenerator.fromPb)
+            keyGenerator = v.keyGenerator.map(KeyGenerator.fromPb),
+            valueGenerator = v.valueGenerator.map(ValueGenerator.fromPb),
+            propertiesGenerator = v.propertiesGenerator.map(PropertiesGenerator.fromPb),
+            eventTimeGenerator = v.eventTimeGenerator.map(EventTimeGenerator.fromPb),
+            deliverAtGenerator = v.deliverAtGenerator.map(DeliverAtGenerator.fromPb),
+            deliverAfterGenerator = v.deliverAfterGenerator.map(DeliverAfterGenerator.fromPb),
+            orderingKeyGenerator = v.orderingKeyGenerator.map(OrderingKeyGenerator.fromPb),
+            sequenceIdGenerator = v.sequenceIdGenerator.map(SequenceIdGenerator.fromPb)
         )
 
     def toPb(v: MessageGenerator): pb.MessageGenerator =
         pb.MessageGenerator(
-            generatorKey = v.keyGenerator.map(KeyGenerator.toPb),
-            generatorValue = v.valueGenerator.map(ValueGenerator.toPb),
-            generatorProperties = v.propertiesGenerator.map(PropertiesGenerator.toPb),
-            generatorEventTime = v.eventTimeGenerator.map(EventTimeGenerator.toPb),
-            generatorDeliverAt = v.deliverAtGenerator.map(DeliverAtGenerator.toPb),
-            generatorDeliverAfter = v.deliverAfterGenerator.map(DeliverAfterGenerator.toPb),
-            generatorOrderingKey = v.orderingKeyGenerator.map(OrderingKeyGenerator.toPb),
-            generatorSequenceId = v.sequenceIdGenerator.map(SequenceIdGenerator.toPb)
+            keyGenerator = v.keyGenerator.map(KeyGenerator.toPb),
+            valueGenerator = v.valueGenerator.map(ValueGenerator.toPb),
+            propertiesGenerator = v.propertiesGenerator.map(PropertiesGenerator.toPb),
+            eventTimeGenerator = v.eventTimeGenerator.map(EventTimeGenerator.toPb),
+            deliverAtGenerator = v.deliverAtGenerator.map(DeliverAtGenerator.toPb),
+            deliverAfterGenerator = v.deliverAfterGenerator.map(DeliverAfterGenerator.toPb),
+            orderingKeyGenerator = v.orderingKeyGenerator.map(OrderingKeyGenerator.toPb),
+            sequenceIdGenerator = v.sequenceIdGenerator.map(SequenceIdGenerator.toPb)
         )
