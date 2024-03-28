@@ -212,7 +212,7 @@ message PulsarProducerConfig {
   map<string, string> default_crypto_key_reader = 14;
   google.protobuf.BoolValue enable_batching = 15;
   google.protobuf.BoolValue enable_chunking = 16;
-  google.protobuf.BoolValue enable_lazy_start_partitioning_producers = 17;
+  google.protobuf.BoolValue enable_lazy_start_partitioned_producers = 17;
   HashingScheme hashing_scheme = 18;
   google.protobuf.Int64Value initial_sequence_id = 19;
   google.protobuf.Int32Value max_pending_messages = 20;

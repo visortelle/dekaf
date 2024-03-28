@@ -1,10 +1,18 @@
 package producer.message_generator.data_generators.bytes
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
+import org.graalvm.polyglot.Context
 
 case class BytesGenerator(
     generator: RandomBytesGenerator | BytesFromBase64Generator | BytesFromHexGenerator
-)
+):
+    def generate(polyglotContext: Context): Array[Byte] = generator match
+        case v: RandomBytesGenerator =>
+            v.generate
+        case v: BytesFromBase64Generator =>
+            v.generate(polyglotContext)
+        case v: BytesFromHexGenerator =>
+            v.generate(polyglotContext)
 
 object BytesGenerator:
     def fromPb(v: pb.BytesGenerator): BytesGenerator =

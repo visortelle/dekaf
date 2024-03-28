@@ -14,6 +14,11 @@ case class ProducerTaskRunner(
     def cleanup(): Unit =
         producer.close()
 
+    def sendNextMessage(): Unit =
+        val messageBuilder = producer.newMessage()
+        taskConfig.messageGenerator.generateMessageMut(messageBuilder)
+        messageBuilder.send()
+
 object ProducerTaskRunner:
     def make(
         pulsarClient: PulsarClient,
@@ -42,14 +47,13 @@ object ProducerTaskRunner:
         producerBuilder.defaultCryptoKeyReader(producerConfig.defaultCryptoKeyReader.asJava)
         producerConfig.enableBatching.foreach(producerBuilder.enableBatching)
         producerConfig.enableChunking.foreach(producerBuilder.enableChunking)
-        producerConfig.enableLazyStartPartitioningProducers.foreach(producerBuilder.enableLazyStartPartitioningProducers)
+        producerConfig.enableLazyStartPartitionedProducers.foreach(producerBuilder.enableLazyStartPartitionedProducers)
         producerConfig.hashingScheme.foreach(producerBuilder.hashingScheme)
         producerConfig.initialSequenceId.foreach(producerBuilder.initialSequenceId)
         producerConfig.maxPendingMessages.foreach(producerBuilder.maxPendingMessages)
         producerConfig.messageRoutingMode.foreach(producerBuilder.messageRoutingMode)
         producerConfig.roundRobinRouterBatchingPartitionSwitchFrequency.foreach(producerBuilder.roundRobinRouterBatchingPartitionSwitchFrequency)
         producerConfig.sendTimeoutNanos.foreach(v => producerBuilder.sendTimeout(v, TimeUnit.NANOSECONDS))
-        
 
         val producer = producerBuilder.create()
 

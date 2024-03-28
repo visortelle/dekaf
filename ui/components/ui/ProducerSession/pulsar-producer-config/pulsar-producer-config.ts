@@ -25,7 +25,7 @@ export type PulsarProducerConfig = {
   defaultCryptoKeyReader: Record<string, string>;
   enableBatching: boolean | undefined;
   enableChunking: boolean | undefined;
-  enableLazyStartPartitioningProducers: boolean | undefined;
+  enableLazyStartPartitionedProducers: boolean | undefined;
   hashingScheme: HashingScheme | undefined;
   initialSequenceId: number | undefined;
   maxPendingMessages: number | undefined;
@@ -52,7 +52,7 @@ export function pulsarProducerConfigFromPb(v: pb.PulsarProducerConfig): PulsarPr
     defaultCryptoKeyReader: mapToObject(v.getDefaultCryptoKeyReaderMap()),
     enableBatching: v.getEnableBatching()?.getValue(),
     enableChunking: v.getEnableChunking()?.getValue(),
-    enableLazyStartPartitioningProducers: v.getEnableLazyStartPartitioningProducers()?.getValue(),
+    enableLazyStartPartitionedProducers: v.getEnableLazyStartPartitionedProducers()?.getValue(),
     hashingScheme: v.getHashingScheme() === undefined ? undefined : hashingSchemeFromPb(v.getHashingScheme()!),
     initialSequenceId: v.getInitialSequenceId()?.getValue(),
     maxPendingMessages: v.getMaxPendingMessages()?.getValue(),
@@ -131,8 +131,8 @@ export function pulsarProducerConfigToPb(v: PulsarProducerConfig): pb.PulsarProd
     configPb.setEnableChunking(new BoolValue().setValue(v.enableChunking));
   }
 
-  if (v.enableLazyStartPartitioningProducers !== undefined) {
-    configPb.setEnableLazyStartPartitioningProducers(new BoolValue().setValue(v.enableLazyStartPartitioningProducers));
+  if (v.enableLazyStartPartitionedProducers !== undefined) {
+    configPb.setEnableLazyStartPartitionedProducers(new BoolValue().setValue(v.enableLazyStartPartitionedProducers));
   }
 
   if (v.hashingScheme !== undefined) {

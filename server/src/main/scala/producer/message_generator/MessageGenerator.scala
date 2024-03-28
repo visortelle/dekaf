@@ -9,6 +9,10 @@ import _root_.producer.message_generator.deliver_at_generator.DeliverAtGenerator
 import _root_.producer.message_generator.deliver_after_generator.DeliverAfterGenerator
 import _root_.producer.message_generator.ordering_key_generator.OrderingKeyGenerator
 import _root_.producer.message_generator.sequence_id_generator.SequenceIdGenerator
+import org.apache.pulsar.client.api.TypedMessageBuilder
+import org.apache.pulsar.common
+import org.apache.pulsar.common.schema.SchemaInfo
+import org.graalvm.polyglot.Context
 
 case class MessageGenerator(
     keyGenerator: Option[KeyGenerator],
@@ -19,7 +23,20 @@ case class MessageGenerator(
     deliverAfterGenerator: Option[DeliverAfterGenerator],
     orderingKeyGenerator: Option[OrderingKeyGenerator],
     sequenceIdGenerator: Option[SequenceIdGenerator]
-)
+):
+    def generateMessageMut(
+        builder: TypedMessageBuilder[Array[Byte]],
+        polyglotContext: Context,
+        schemaInfo: SchemaInfo
+    ): Unit =
+        keyGenerator.foreach(v => v.generateMut(builder, polyglotContext))
+        valueGenerator.foreach(v => v.generateMut(builder, polyglotContext, schemaInfo))
+//        propertiesGenerator.foreach(_.generatePropertiesMut(builder))
+//        eventTimeGenerator.foreach(_.generateEventTimeMut(builder))
+//        deliverAtGenerator.foreach(_.generateDeliverAtMut(builder))
+//        deliverAfterGenerator.foreach(_.generateDeliverAfterMut(builder))
+//        orderingKeyGenerator.foreach(_.generateOrderingKeyMut(builder))
+//        sequenceIdGenerator.foreach(_.generateSequenceIdMut(builder))
 
 object MessageGenerator:
     def fromPb(v: pb.MessageGenerator): MessageGenerator =

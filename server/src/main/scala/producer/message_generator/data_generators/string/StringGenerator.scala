@@ -2,10 +2,15 @@ package producer.message_generator.data_generators.string
 
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import producer.message_generator.data_generators.json_generator.JsonGenerator
+import org.graalvm.polyglot.Context
 
 case class StringGenerator(
     generator: FixedStringGenerator | JsonGenerator
-)
+):
+    def generate(polyglotContext: Context): String =
+        generator match
+            case v: FixedStringGenerator => v.generate
+            case v: JsonGenerator        => v.generate(polyglotContext)
 
 object StringGenerator:
     def fromPb(v: pb.StringGenerator): StringGenerator =

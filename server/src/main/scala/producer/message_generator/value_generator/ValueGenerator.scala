@@ -3,10 +3,29 @@ package producer.message_generator.value_generator
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import producer.message_generator.data_generators.bytes.BytesGenerator
 import producer.message_generator.data_generators.json_generator.JsonGenerator
+import org.graalvm.polyglot.Context
+import org.apache.pulsar.client.api.TypedMessageBuilder
+import org.apache.pulsar.common.schema.SchemaInfo
+import _root_.producer.jsonToValue
 
 case class ValueGenerator(
     generator: BytesGenerator | JsonGenerator | ValueFromTopicSchemaGenerator
-)
+):
+    def generateMut(
+        builder: TypedMessageBuilder[Array[Byte]],
+        polyglotContext: Context,
+        schemaInfo: SchemaInfo
+    ): Unit =
+        generator match
+            case v: BytesGenerator =>
+                val bytes = v.generate(polyglotContext)
+                builder.value(bytes)
+            case v: JsonGenerator =>
+                val json = v.generate(polyglotContext)
+                jsonToValue(schemaInfo, json.getBytes) match
+                    case Left(e)  => throw new Exception(s"Failed to convert json to value: $e")
+                    case Right(value) => builder.value(value)
+            case v: ValueFromTopicSchemaGenerator => ???
 
 object ValueGenerator:
     def fromPb(v: pb.ValueGenerator): ValueGenerator =
