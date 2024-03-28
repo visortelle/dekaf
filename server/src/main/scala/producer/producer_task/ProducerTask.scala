@@ -17,8 +17,8 @@ object ProducerTask:
     def fromPb(v: pb.ProducerTask): ProducerTask =
         ProducerTask(
             targetTopicFqn = v.targetTopicFqn,
-            messageGenerator = v.messageGenerator.map(MessageGenerator.fromPb),
-            producerConfig = v.producerConfig.map(PulsarProducerConfig.fromPb),
+            messageGenerator = v.messageGenerator.map(MessageGenerator.fromPb).get,
+            producerConfig = v.producerConfig.map(PulsarProducerConfig.fromPb).get,
             numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos

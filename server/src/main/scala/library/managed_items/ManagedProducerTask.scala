@@ -9,7 +9,7 @@ case class ManagedProducerTaskSpec(
     topicSelector: ManagedTopicSelectorValOrRef,
     messageGenerator: ManagedMessageGeneratorValOrRef,
     producerConfig: PulsarProducerConfig,
-    limitNumRecords: Option[Long],
+    numMessages: Option[Long],
     limitDurationNanos: Option[Long],
     intervalNanos: Option[Long],
 )
@@ -20,7 +20,7 @@ object ManagedProducerTaskSpec:
             topicSelector = ManagedTopicSelectorValOrRef.fromPb(v.topicSelector.get),
             messageGenerator = ManagedMessageGeneratorValOrRef.fromPb(v.messageGenerator.get),
             producerConfig = PulsarProducerConfig.fromPb(v.producerConfig.get),
-            limitNumRecords = v.limitNumRecords,
+            numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos
         )
@@ -29,7 +29,7 @@ object ManagedProducerTaskSpec:
             topicSelector = Some(ManagedTopicSelectorValOrRef.toPb(v.topicSelector)),
             messageGenerator = Some(ManagedMessageGeneratorValOrRef.toPb(v.messageGenerator)),
             producerConfig = Some(PulsarProducerConfig.toPb(v.producerConfig)),
-            limitNumRecords = v.limitNumRecords,
+            numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos
         )
