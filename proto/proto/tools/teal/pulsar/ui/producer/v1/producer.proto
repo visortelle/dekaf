@@ -202,7 +202,7 @@ message PulsarProducerConfig {
   AccessMode access_mode = 4;
   google.protobuf.StringValue add_encryption_key = 5;
   google.protobuf.BoolValue auto_update_partitions = 6;
-  google.protobuf.Int64Value auto_update_partitions_interval_nanos = 7;
+  google.protobuf.Int32Value auto_update_partitions_interval_nanos = 7;
   google.protobuf.Int32Value batching_max_bytes = 8;
   google.protobuf.Int32Value batching_max_messages = 9;
   google.protobuf.Int64Value batching_max_publish_delay_nanos = 10;
@@ -218,7 +218,7 @@ message PulsarProducerConfig {
   google.protobuf.Int32Value max_pending_messages = 20;
   MessageRoutingMode message_routing_mode = 21;
   google.protobuf.Int32Value round_robin_router_batching_partition_switch_frequency = 22;
-  google.protobuf.Int64Value send_timeout_nanos = 23;
+  google.protobuf.Int32Value send_timeout_nanos = 23;
 }
 
 message ProducerTask {
@@ -299,6 +299,7 @@ message ResumeProducerSessionRequest {
 
 message ResumeProducerSessionResponse {
   google.rpc.Status status = 1;
+  int64 num_message_produced = 2;
 }
 
 service ProducerService {
@@ -306,5 +307,5 @@ service ProducerService {
   rpc DeleteProducerSession(DeleteProducerSessionRequest) returns (DeleteProducerSessionResponse);
   rpc GetProducerSessionStats(GetProducerSessionStatsRequest) returns (GetProducerSessionStatsResponse);
   rpc PauseProducerSession(PauseProducerSessionRequest) returns (PauseProducerSessionResponse);
-  rpc ResumeProducerSession(ResumeProducerSessionRequest) returns (ResumeProducerSessionResponse);
+  rpc ResumeProducerSession(ResumeProducerSessionRequest) returns (stream ResumeProducerSessionResponse);
 }

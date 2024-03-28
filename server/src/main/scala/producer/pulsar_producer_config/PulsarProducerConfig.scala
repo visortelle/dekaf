@@ -14,7 +14,7 @@ case class PulsarProducerConfig(
     accessMode: Option[AccessMode],
     addEncryptionKey: Option[String],
     autoUpdatePartitions: Option[Boolean],
-    autoUpdatePartitionsIntervalNanos: Option[Long],
+    autoUpdatePartitionsIntervalNanos: Option[Int],
     batchingMaxBytes: Option[Int],
     batchingMaxMessages: Option[Int],
     batchingMaxPublishDelayNanos: Option[Long],
@@ -30,7 +30,7 @@ case class PulsarProducerConfig(
     maxPendingMessages: Option[Int],
     messageRoutingMode: Option[MessageRoutingMode],
     roundRobinRouterBatchingPartitionSwitchFrequency: Option[Int],
-    sendTimeoutNanos: Option[Long],
+    sendTimeoutNanos: Option[Int],
 )
 
 object PulsarProducerConfig:
