@@ -37,6 +37,8 @@ import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageF
 import { Int32Value, Int64Value } from "google-protobuf/google/protobuf/wrappers_pb";
 import { deserializerFromPb, deserializerToPb } from "../../ConsumerSession/deserializer/deserializer";
 import { consumerSessionTargetConsumptionModeFromPb, consumerSessionTargetConsumptionModeToPb } from "../../ConsumerSession/consumption-mode/consumption-mode";
+import { messageGeneratorFromPb, messageGeneratorToPb } from "../../ProducerSession/message-generator/message-generator";
+import { pulsarProducerConfigFromPb, pulsarProducerConfigToPb } from "../../ProducerSession/pulsar-producer-config/pulsar-producer-config";
 
 export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType {
   switch (v) {
@@ -1354,6 +1356,146 @@ export function managedDeserializerValOrRefToPb(v: t.ManagedDeserializerValOrRef
   }
   return idPb;
 }
+
+export function managedMessageGeneratorSpecFromPb(v: pb.ManagedMessageGeneratorSpec): t.ManagedMessageGeneratorSpec {
+  return {
+    generator: messageGeneratorFromPb(v.getGenerator()!)
+  };
+}
+
+export function managedMessageGeneratorSpecToPb(v: t.ManagedMessageGeneratorSpec): pb.ManagedMessageGeneratorSpec {
+  const specPb = new pb.ManagedMessageGeneratorSpec();
+  specPb.setGenerator(messageGeneratorToPb(v.generator));
+
+  return specPb;
+}
+
+export function managedMessageGeneratorFromPb(v: pb.ManagedMessageGenerator): t.ManagedMessageGenerator {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedMessageGeneratorSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedMessageGeneratorToPb(v: t.ManagedMessageGenerator): pb.ManagedMessageGenerator {
+  const configPb = new pb.ManagedMessageGenerator();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedMessageGeneratorSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedMessageGeneratorValOrRefFromPb(v: pb.ManagedMessageGeneratorValOrRef): t.ManagedMessageGeneratorValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMessageGeneratorValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedMessageGeneratorFromPb(v.getVal()!)
+      };
+    case pb.ManagedMessageGeneratorValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedMessageGeneratorValOrRef: ${v}`);
+  }
+}
+
+export function managedMessageGeneratorValOrRefToPb(v: t.ManagedMessageGeneratorValOrRef): pb.ManagedMessageGeneratorValOrRef {
+  const idPb = new pb.ManagedMessageGeneratorValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedMessageGeneratorToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedMessageGeneratorValOrRef: ${v}`);
+  }
+  return idPb;
+}
+
+export function managedProducerTaskSpecFromPb(v: pb.ManagedProducerTaskSpec): t.ManagedProducerTaskSpec {
+  return {
+    topicSelector: managedTopicSelectorValOrRefFromPb(v.getTopicSelector()!),
+    messageGenerator: managedMessageGeneratorValOrRefFromPb(v.getMessageGenerator()!),
+    producerConfig: pulsarProducerConfigFromPb(v.getProducerConfig()!),
+    numMessages: v.getNumMessages()?.getValue(),
+    limitDurationNanos: v.getLimitDurationNanos()?.getValue(),
+    intervalNanos: v.getIntervalNanos()?.getValue()
+  };
+}
+
+export function managedProducerTaskSpecToPb(v: t.ManagedProducerTaskSpec): pb.ManagedProducerTaskSpec {
+  const specPb = new pb.ManagedProducerTaskSpec();
+
+  specPb.setTopicSelector(managedTopicSelectorValOrRefToPb(v.topicSelector));
+  specPb.setMessageGenerator(managedMessageGeneratorValOrRefToPb(v.messageGenerator));
+  specPb.setProducerConfig(pulsarProducerConfigToPb(v.producerConfig));
+
+  if (v.numMessages !== undefined) {
+    specPb.setNumMessages(new Int64Value().setValue(v.numMessages));
+  }
+
+  if (v.limitDurationNanos !== undefined) {
+    specPb.setLimitDurationNanos(new Int64Value().setValue(v.limitDurationNanos));
+  }
+
+  if (v.intervalNanos !== undefined) {
+    specPb.setIntervalNanos(new Int64Value().setValue(v.intervalNanos));
+  }
+
+  return specPb;
+}
+
+export function managedProducerTaskFromPb(v: pb.ManagedProducerTask): t.ManagedProducerTask {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedProducerTaskSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedProducerTaskToPb(v: t.ManagedProducerTask): pb.ManagedProducerTask {
+  const configPb = new pb.ManagedProducerTask();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedProducerTaskSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedProducerTaskValOrRefFromPb(v: pb.ManagedProducerTaskValOrRef): t.ManagedProducerTaskValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedProducerTaskValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedProducerTaskFromPb(v.getVal()!)
+      };
+    case pb.ManagedProducerTaskValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedProducerTaskValOrRef: ${v}`);
+  }
+}
+
+export function managedProducerTaskValOrRefToPb(v: t.ManagedProducerTaskValOrRef): pb.ManagedProducerTaskValOrRef {
+  const idPb = new pb.ManagedProducerTaskValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedProducerTaskToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedProducerTaskValOrRef: ${v}`);
+  }
+  return idPb;
+}
+
+
 
 export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
   switch (v.getSpecCase()) {
