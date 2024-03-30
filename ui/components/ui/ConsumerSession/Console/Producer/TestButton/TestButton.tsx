@@ -30,7 +30,7 @@ const TestButton: React.FC<TestButtonProps> = (props) => {
     // jsonGenerator.setGeneratorFixed(fixedJsonGenerator);
 
     const jsJsonGenerator = new pb.JsJsonGenerator();
-    jsJsonGenerator.setJsCode('() => ({key: "value", b: Math.random()})');
+    jsJsonGenerator.setJsCode('() => ({ a: libs.faker.lorem.lines() })');
     jsonGenerator.setGeneratorJs(jsJsonGenerator);
 
     valueGenerator.setGeneratorFromJson(jsonGenerator);
@@ -44,7 +44,8 @@ const TestButton: React.FC<TestButtonProps> = (props) => {
 
     producerTask.setProducerConfig(producerConf);
     producerTask.setNumMessages(new Int64Value().setValue(10));
-    producerTask.setIntervalNanos(new Int64Value().setValue(1000_000_000 * 3));
+    // producerTask.setIntervalNanos(new Int64Value().setValue(1000_000_000 * 3));
+    producerTask.setIntervalNanos(new Int64Value().setValue(1));
 
     task.setTaskProducer(producerTask);
 
