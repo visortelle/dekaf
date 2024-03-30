@@ -7,7 +7,18 @@ case class JsJsonGenerator(
     jsCode: String
 ):
     def generate(polyglotContext: Context): String =
-        polyglotContext.eval("js", jsCode).asString()
+        val codeToEval = s"""
+            |(function() {
+            |   return JSON.stringify((${jsCode})());
+            |})();
+            |""".stripMargin
+
+        try
+            polyglotContext.eval("js", codeToEval).asString()
+        catch
+            case e: Exception =>
+                e.printStackTrace()
+                throw e
 
 object JsJsonGenerator:
     def fromPb(v: pb.JsJsonGenerator): JsJsonGenerator =

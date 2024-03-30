@@ -30,10 +30,13 @@ case class ProducerTaskRunner(
         messageBuilder.send()
 
     def resume(): Unit =
+        println(s"-------------------Resuming producer task")
+        println(numMessages)
         Unsafe.unsafe { implicit unsafe =>
             ProducerTaskRunner.runtime.unsafe.runOrFork {
                 for {
                     _ <- ZIO.attempt {
+                        println(s"-------------------Sending message")
                         sendNextMessage()
                     }
                         .repeat(Schedule.recurs(numMessages - 1) && Schedule.spaced(intervalNanos.nanos))
@@ -69,10 +72,10 @@ object ProducerTaskRunner:
         producerConfig.blockIfQueueFull.foreach(producerBuilder.blockIfQueueFull)
         producerConfig.chunkMaxMessageSize.foreach(producerBuilder.chunkMaxMessageSize)
         producerConfig.compressionType.foreach(producerBuilder.compressionType)
-        
+
         if producerConfig.defaultCryptoKeyReader.nonEmpty then
             producerBuilder.defaultCryptoKeyReader(producerConfig.defaultCryptoKeyReader.asJava)
-            
+
         producerConfig.enableBatching.foreach(producerBuilder.enableBatching)
         producerConfig.enableChunking.foreach(producerBuilder.enableChunking)
         producerConfig.enableLazyStartPartitionedProducers.foreach(producerBuilder.enableLazyStartPartitionedProducers)

@@ -3,6 +3,7 @@ import Button from '../../../../Button/Button';
 import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
+import { Int64Value } from 'google-protobuf/google/protobuf/wrappers_pb';
 
 export type TestButtonProps = {};
 
@@ -21,12 +22,16 @@ const TestButton: React.FC<TestButtonProps> = (props) => {
     producerTask.setTargetTopicFqn('persistent://public/default/abc');
 
     const messageGenerator = new pb.MessageGenerator();
-
     const valueGenerator = new pb.ValueGenerator();
 
     const jsonGenerator = new pb.JsonGenerator();
-    const fixedJsonGenerator = new pb.FixedJsonGenerator();
-    jsonGenerator.setGeneratorFixed(fixedJsonGenerator);
+    // const fixedJsonGenerator = new pb.FixedJsonGenerator();
+    // fixedJsonGenerator.setJson('{"key": "value", "b": 2}');
+    // jsonGenerator.setGeneratorFixed(fixedJsonGenerator);
+
+    const jsJsonGenerator = new pb.JsJsonGenerator();
+    jsJsonGenerator.setJsCode('() => ({key: "value", b: Math.random()})');
+    jsonGenerator.setGeneratorJs(jsJsonGenerator);
 
     valueGenerator.setGeneratorFromJson(jsonGenerator);
 
@@ -38,6 +43,8 @@ const TestButton: React.FC<TestButtonProps> = (props) => {
     producerConf.setAccessMode(pb.AccessMode.ACCESS_MODE_SHARED);
 
     producerTask.setProducerConfig(producerConf);
+    producerTask.setNumMessages(new Int64Value().setValue(10));
+    producerTask.setIntervalNanos(new Int64Value().setValue(1000_000_000 * 3));
 
     task.setTaskProducer(producerTask);
 
