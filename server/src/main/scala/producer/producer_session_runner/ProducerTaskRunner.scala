@@ -18,7 +18,7 @@ case class ProducerTaskRunner(
     producer: Producer[Array[Byte]],
     schemaInfo: Option[SchemaInfo],
     numMessages: Long,
-    finishAtMillis: Long,
+    limitDurationNanos: Long,
     intervalNanos: Long
 ):
     def stop(): Unit =
@@ -27,20 +27,19 @@ case class ProducerTaskRunner(
     def sendNextMessage(): Unit =
         val messageBuilder = producer.newMessage()
         taskConfig.messageGenerator.generateMessageMut(messageBuilder, polyglotContext, schemaInfo)
-        messageBuilder.send()
+        messageBuilder.sendAsync()
 
     def resume(): Unit =
-        println(s"-------------------Resuming producer task")
         println(numMessages)
         Unsafe.unsafe { implicit unsafe =>
             ProducerTaskRunner.runtime.unsafe.runOrFork {
                 for {
                     _ <- ZIO.attempt {
-                        println(s"-------------------Sending message")
                         sendNextMessage()
                     }
                         .repeat(Schedule.recurs(numMessages - 1) && Schedule.spaced(intervalNanos.nanos))
-                        .unless(finishAtMillis < java.lang.System.currentTimeMillis())
+                        .disconnect.timeout(Duration.fromNanos(limitDurationNanos))
+                        .ensuring(ZIO.succeed(stop()))
                 } yield ()
             }
         }
@@ -102,10 +101,6 @@ object ProducerTaskRunner:
             polyglotContext = polyglotContext,
 
             numMessages = taskConfig.numMessages.getOrElse(1),
-            finishAtMillis = taskConfig.limitDurationNanos.map { v =>
-                java.lang.System.currentTimeMillis() + duration.Duration(v, TimeUnit.NANOSECONDS).toMillis
-            }.getOrElse(
-                java.lang.System.currentTimeMillis() + duration.Duration(2, TimeUnit.MINUTES).toMillis
-            ),
+            limitDurationNanos = taskConfig.limitDurationNanos.getOrElse(1000_000_000L * 60 * 5),
             intervalNanos = taskConfig.intervalNanos.getOrElse(0)
         )

@@ -41,9 +41,10 @@ const TestButton: React.FC<TestButtonProps> = (props) => {
 
     const producerConf = new pb.PulsarProducerConfig();
     producerConf.setAccessMode(pb.AccessMode.ACCESS_MODE_SHARED);
+    producerConf.setMaxPendingMessages(new Int64Value().setValue(10));
 
     producerTask.setProducerConfig(producerConf);
-    producerTask.setNumMessages(new Int64Value().setValue(10));
+    producerTask.setNumMessages(new Int64Value().setValue(10_000));
     // producerTask.setIntervalNanos(new Int64Value().setValue(1000_000_000 * 3));
     producerTask.setIntervalNanos(new Int64Value().setValue(1));
 
