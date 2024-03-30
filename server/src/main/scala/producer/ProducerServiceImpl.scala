@@ -1,10 +1,10 @@
 package producer
 
-import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
+import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, PulsarClient}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
+import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
 import _root_.schema.protobufnative
@@ -12,139 +12,61 @@ import _root_.schema.protobufnative
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import com.google.common.primitives
-import org.apache.pulsar.client.admin.PulsarAdminException
+import com.tools.teal.pulsar.ui.producer.v1.producer.{CreateProducerSessionRequest, CreateProducerSessionResponse, DeleteProducerSessionRequest, DeleteProducerSessionResponse, GetProducerSessionStatsRequest, GetProducerSessionStatsResponse, PauseProducerSessionRequest, PauseProducerSessionResponse, ResumeProducerSessionRequest, ResumeProducerSessionResponse}
+import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import io.circe.*
 import io.circe.parser.parse as parseJson
+import io.grpc.stub.StreamObserver
+import producer.producer_session.ProducerSessionConfig
+import producer.producer_session_runner.ProducerSessionRunner
 import pulsar_auth.RequestContext
 
 import java.nio.ByteBuffer
 import scala.concurrent.Future
-import scala.util.boundary, boundary.break
+import scala.util.boundary
+import boundary.break
 
-type ProducerName = String
+type ProducerSessionId = String
 
-class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
+class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
     val logger: Logger = Logger(getClass.getName)
-    var producers: Map[ProducerName, Producer[Array[Byte]]] = Map.empty
+    var sessionRunners: Map[ProducerSessionId, ProducerSessionRunner] = Map.empty
 
-    override def createProducer(request: CreateProducerRequest): Future[CreateProducerResponse] =
-        val producerName: ProducerName = request.producerName
-        logger.info(s"Creating producer: $producerName")
+    override def createProducerSession(request: CreateProducerSessionRequest): Future[CreateProducerSessionResponse] =
         val pulsarClient = RequestContext.pulsarClient.get()
-
-        try {
-            val schema = new AutoProduceBytesSchema[Array[Byte]]
-
-            val producer: Producer[Array[Byte]] = pulsarClient
-                .newProducer(schema)
-                .accessMode(ProducerAccessMode.Shared)
-                .producerName(producerName)
-                .topic(request.topic)
-                .create()
-
-            producers = producers + (producerName -> producer)
-
-            val status: Status = Status(code = Code.OK.index)
-            Future.successful(CreateProducerResponse(status = Some(status)))
-        } catch {
-            case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(CreateProducerResponse(status = Some(status)))
-        }
-
-    override def deleteProducer(request: DeleteProducerRequest): Future[DeleteProducerResponse] =
-        val producerName: ProducerName = request.producerName
-        logger.info(s"Deleting producer: $producerName")
-
-        producers.get(producerName) match
-            case Some(p) =>
-                try {
-                    producers = producers.removed(producerName)
-                    p.close()
-
-                    val status: Status = Status(code = Code.OK.index)
-                    Future.successful(DeleteProducerResponse(status = Some(status)))
-                } catch {
-                    case err =>
-                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                        Future.successful(DeleteProducerResponse(status = Some(status)))
-                }
-            case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
-                Future.successful(DeleteProducerResponse(status = Some(status)))
-
-    override def send(request: SendRequest): Future[SendResponse] = boundary:
-        val producerName: ProducerName = request.producerName
-        logger.info(s"Sending message. Producer: $producerName")
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        val producer = producers.get(producerName) match
-            case Some(p) => p
-            case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
-                break(Future.successful(SendResponse(status = Some(status))))
-
-        val messages: Seq[Either[Throwable, Message]] = request.format match
-            case MessageFormat.MESSAGE_FORMAT_JSON =>
-                val schemaInfo: Option[SchemaInfo] =
-                    try
-                        Some(adminClient.schemas.getSchemaInfo(producer.getTopic))
-                    catch {
-                        case _: PulsarAdminException.NotFoundException => None
-                        case err =>
-                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                            break(Future.successful(SendResponse(status = Some(status))))
-                    }
-
-                schemaInfo match
-                    case None =>
-                        request.messages.map(msg =>
-                            val message =
-                                Message(value = msg.value.toByteArray, key = msg.key, eventTime = msg.eventTime, properties = msg.properties)
-                            Right(message)
-                        )
-                    case Some(si) =>
-                        request.messages.map { msg =>
-                            jsonToValue(si, msg.value.toByteArray) match
-                                case Right(value) =>
-                                    val message = Message(value = value, key = msg.key, eventTime = msg.eventTime, properties = msg.properties)
-                                    Right(message)
-                                case Left(err) => Left(err)
-                        }
-            case _ =>
-                request.messages.map(msg =>
-                    val message = Message(value = msg.value.toByteArray, key = msg.key, eventTime = msg.eventTime, properties = msg.properties)
-                    Right(message)
-                )
-
-        messages.foreach(msg =>
-            msg match
-                case Right(message) =>
-                    try {
-                        var newMessage = producer.newMessage
-                            .value(message.value)
-                            .properties(message.properties.asJava)
-                        message.eventTime match
-                            case Some(t) => newMessage = newMessage.eventTime(t)
-                            case None    => // do nothing
-                        message.key match
-                            case Some(k) => newMessage = newMessage.key(k)
-                            case None    => // do nothing
-                        newMessage.sendAsync
-                    } catch {
-                        case err =>
-                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                            break(Future.successful(SendResponse(status = Some(status))))
-                    }
-                case Left(err) =>
-                    val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
-                    break(Future.successful(SendResponse(status = Some(status))))
+        val sessionId = request.sessionId
+        val sessionRunner = ProducerSessionRunner.make(
+            pulsarClient = pulsarClient,
+            adminClient = adminClient,
+            sessionId = request.sessionId,
+            sessionConfig = ProducerSessionConfig.fromPb(request.sessionConfig.get),
         )
 
-        val status: Status = Status(code = Code.OK.index)
-        Future.successful(SendResponse(status = Some(status)))
+        sessionRunners += sessionId -> sessionRunner
 
-    override def getStats(request: GetStatsRequest): Future[GetStatsResponse] = ???
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(CreateProducerSessionResponse(status = Some(status)))
+
+    override def deleteProducerSession(request: DeleteProducerSessionRequest): Future[DeleteProducerSessionResponse] = ???
+
+    override def getProducerSessionStats(request: GetProducerSessionStatsRequest): Future[GetProducerSessionStatsResponse] = ???
+
+    override def pauseProducerSession(request: PauseProducerSessionRequest): Future[PauseProducerSessionResponse] = ???
+
+    override def resumeProducerSession(request: ResumeProducerSessionRequest): Future[ResumeProducerSessionResponse] =
+        val sessionId = request.sessionId
+        val sessionRunner = sessionRunners.get(sessionId)
+
+        sessionRunner match
+            case Some(runner) =>
+                runner.resume()
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(ResumeProducerSessionResponse(status = Some(status)))
+            case None =>
+                val status: Status = Status(code = Code.NOT_FOUND.index)
+                Future.successful(ResumeProducerSessionResponse(status = Some(status)))
 
 case class Message(
     key: Option[String],

@@ -1,19 +1,50 @@
 package producer.producer_session_runner
 
-import consumer.session_runner.ConsumerSessionContext
+import consumer.session_runner.{ConsumerSessionContext, ConsumerSessionContextPool}
 import _root_.producer.producer_session.producer_session_task.ProducerSessionTask
-import org.apache.pulsar.client.api.Producer
+import _root_.producer.producer_task.ProducerTask
+import org.apache.pulsar.client.api.PulsarClient
+import org.apache.pulsar.client.admin.PulsarAdmin
+import org.graalvm.polyglot.Context
 
 case class ProducerSessionTaskRunner(
+    pulsarClient: PulsarClient,
+    adminClient: PulsarAdmin,
     taskIndex: Int,
     taskConfig: ProducerSessionTask,
-    sessionContext: ConsumerSessionContext,
+    polyglotContext: Context,
+    taskRunner: ProducerTaskRunner
 ):
-    def collectTopicFqns: Vector[String] = ???
+    def resume(): Unit =
+        taskRunner match
+            case v: ProducerTaskRunner => v.resume()
+
+    def stop(): Unit =
+        taskRunner match
+            case v: ProducerTaskRunner => v.stop()
 
 object ProducerSessionTaskRunner:
     def make(
+        pulsarClient: PulsarClient,
+        adminClient: PulsarAdmin,
         taskIndex: Int,
         taskConfig: ProducerSessionTask,
-        sessionContext: ConsumerSessionContext
-    ): ProducerSessionTaskRunner = ???
+        polyglotContext: Context
+    ): ProducerSessionTaskRunner =
+        val taskRunner = taskConfig.task match
+            case v: ProducerTask =>
+                ProducerTaskRunner.make(
+                    pulsarClient = pulsarClient,
+                    adminClient = adminClient,
+                    taskConfig = v,
+                    polyglotContext = polyglotContext
+                )
+
+        ProducerSessionTaskRunner(
+            pulsarClient = pulsarClient,
+            adminClient = adminClient,
+            taskIndex = taskIndex,
+            taskConfig = taskConfig,
+            polyglotContext = polyglotContext,
+            taskRunner = taskRunner
+        )

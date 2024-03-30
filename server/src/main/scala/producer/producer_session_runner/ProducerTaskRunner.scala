@@ -2,8 +2,8 @@ package producer.producer_session_runner
 
 import zio.*
 import org.apache.pulsar.client.api.{Producer, ProducerBuilder, PulsarClient}
-import _root_.producer.producer_task.ProducerTask
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
+import _root_.producer.producer_task.ProducerTask
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import org.apache.pulsar.common.schema.SchemaInfo
 import org.graalvm.polyglot.Context
@@ -17,9 +17,9 @@ case class ProducerTaskRunner(
     polyglotContext: Context,
     producer: Producer[Array[Byte]],
     schemaInfo: Option[SchemaInfo],
-    val numMessages: Long,
-    val finishAtMillis: Long,
-    val intervalNanos: Long
+    numMessages: Long,
+    finishAtMillis: Long,
+    intervalNanos: Long
 ):
     def stop(): Unit =
         producer.close()
@@ -29,7 +29,7 @@ case class ProducerTaskRunner(
         taskConfig.messageGenerator.generateMessageMut(messageBuilder, polyglotContext, schemaInfo)
         messageBuilder.send()
 
-    def start(): Unit =
+    def resume(): Unit =
         Unsafe.unsafe { implicit unsafe =>
             ProducerTaskRunner.runtime.unsafe.runOrFork {
                 for {
@@ -38,7 +38,6 @@ case class ProducerTaskRunner(
                     }
                         .repeat(Schedule.recurs(numMessages - 1) && Schedule.spaced(intervalNanos.nanos))
                         .unless(finishAtMillis < java.lang.System.currentTimeMillis())
-
                 } yield ()
             }
         }
@@ -70,7 +69,10 @@ object ProducerTaskRunner:
         producerConfig.blockIfQueueFull.foreach(producerBuilder.blockIfQueueFull)
         producerConfig.chunkMaxMessageSize.foreach(producerBuilder.chunkMaxMessageSize)
         producerConfig.compressionType.foreach(producerBuilder.compressionType)
-        producerBuilder.defaultCryptoKeyReader(producerConfig.defaultCryptoKeyReader.asJava)
+        
+        if producerConfig.defaultCryptoKeyReader.nonEmpty then
+            producerBuilder.defaultCryptoKeyReader(producerConfig.defaultCryptoKeyReader.asJava)
+            
         producerConfig.enableBatching.foreach(producerBuilder.enableBatching)
         producerConfig.enableChunking.foreach(producerBuilder.enableChunking)
         producerConfig.enableLazyStartPartitionedProducers.foreach(producerBuilder.enableLazyStartPartitionedProducers)

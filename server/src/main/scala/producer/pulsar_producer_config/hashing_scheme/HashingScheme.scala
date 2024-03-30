@@ -6,15 +6,15 @@ import org.apache.pulsar.client.api.HashingScheme as PulsarHashingScheme
 type HashingScheme = PulsarHashingScheme
 
 object HashingScheme:
-    def fromPb(v: pb.HashingScheme): PulsarHashingScheme  =
+    def fromPb(v: pb.HashingScheme): Option[PulsarHashingScheme]  =
         v match
-            case pb.HashingScheme.HASHING_SCHEME_JAVA_STRING_HASH => PulsarHashingScheme.JavaStringHash
-            case pb.HashingScheme.HASHING_SCHEME_MURMUR3_HASH_32 => PulsarHashingScheme.Murmur3_32Hash
-            case _ => throw Exception(s"Unknown hashing scheme: $v")
+            case pb.HashingScheme.HASHING_SCHEME_JAVA_STRING_HASH => Some(PulsarHashingScheme.JavaStringHash)
+            case pb.HashingScheme.HASHING_SCHEME_MURMUR3_HASH_32 => Some(PulsarHashingScheme.Murmur3_32Hash)
+            case _ => None
 
 
-    def toPb(v: PulsarHashingScheme): pb.HashingScheme =
+    def toPb(v: Option[PulsarHashingScheme]): pb.HashingScheme =
         v match
-            case PulsarHashingScheme.JavaStringHash => pb.HashingScheme.HASHING_SCHEME_JAVA_STRING_HASH
-            case PulsarHashingScheme.Murmur3_32Hash => pb.HashingScheme.HASHING_SCHEME_MURMUR3_HASH_32
-            case _ => throw Exception(s"Unknown hashing scheme: $v")
+            case Some(PulsarHashingScheme.JavaStringHash) => pb.HashingScheme.HASHING_SCHEME_JAVA_STRING_HASH
+            case Some(PulsarHashingScheme.Murmur3_32Hash) => pb.HashingScheme.HASHING_SCHEME_MURMUR3_HASH_32
+            case _ => pb.HashingScheme.HASHING_SCHEME_UNSPECIFIED

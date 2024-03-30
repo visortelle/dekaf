@@ -6,19 +6,19 @@ import org.apache.pulsar.client.api.ProducerAccessMode as ProducerAccessMode
 type AccessMode = ProducerAccessMode
 
 object AccessMode:
-    def fromPb(v: pb.AccessMode): ProducerAccessMode  =
+    def fromPb(v: pb.AccessMode): Option[ProducerAccessMode]  =
         v match
-            case pb.AccessMode.ACCESS_MODE_SHARED => ProducerAccessMode.Shared
-            case pb.AccessMode.ACCESS_MODE_EXCLUSIVE => ProducerAccessMode.Exclusive
-            case pb.AccessMode.ACCESS_MODE_WAIT_FOR_EXCLUSIVE => ProducerAccessMode.WaitForExclusive
-            case pb.AccessMode.ACCESS_MODE_EXCLUSIVE_WITH_FENCING => ProducerAccessMode.ExclusiveWithFencing
-            case _ => throw Exception(s"Unknown consumer access mode: $v")
+            case pb.AccessMode.ACCESS_MODE_SHARED => Some(ProducerAccessMode.Shared)
+            case pb.AccessMode.ACCESS_MODE_EXCLUSIVE => Some(ProducerAccessMode.Exclusive)
+            case pb.AccessMode.ACCESS_MODE_WAIT_FOR_EXCLUSIVE => Some(ProducerAccessMode.WaitForExclusive)
+            case pb.AccessMode.ACCESS_MODE_EXCLUSIVE_WITH_FENCING => Some(ProducerAccessMode.ExclusiveWithFencing)
+            case _ => None
 
 
-    def toPb(v: ProducerAccessMode): pb.AccessMode =
+    def toPb(v: Option[ProducerAccessMode]): pb.AccessMode =
         v match
-            case ProducerAccessMode.Shared => pb.AccessMode.ACCESS_MODE_SHARED
-            case ProducerAccessMode.Exclusive => pb.AccessMode.ACCESS_MODE_EXCLUSIVE
-            case ProducerAccessMode.WaitForExclusive => pb.AccessMode.ACCESS_MODE_WAIT_FOR_EXCLUSIVE
-            case ProducerAccessMode.ExclusiveWithFencing => pb.AccessMode.ACCESS_MODE_EXCLUSIVE_WITH_FENCING
-            case _ => throw Exception(s"Unknown consumer access mode: $v")
+            case Some(ProducerAccessMode.Shared) => pb.AccessMode.ACCESS_MODE_SHARED
+            case Some(ProducerAccessMode.Exclusive) => pb.AccessMode.ACCESS_MODE_EXCLUSIVE
+            case Some(ProducerAccessMode.WaitForExclusive) => pb.AccessMode.ACCESS_MODE_WAIT_FOR_EXCLUSIVE
+            case Some(ProducerAccessMode.ExclusiveWithFencing) => pb.AccessMode.ACCESS_MODE_EXCLUSIVE_WITH_FENCING
+            case _ => pb.AccessMode.ACCESS_MODE_UNSPECIFIED

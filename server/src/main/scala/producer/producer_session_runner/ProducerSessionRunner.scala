@@ -6,20 +6,24 @@ import consumer.session_runner.{ConsumerSessionContext, ConsumerSessionContextPo
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import producer.producer_session.ProducerSessionConfig
-
-type ProducerSessionTaskIndex = Int
+import producer.producer_session.producer_session_task.ProducerSessionTask
+import org.graalvm.polyglot.Context
 
 case class ProducerSessionRunner(
+    pulsarClient: PulsarClient,
+    adminClient: PulsarAdmin,
     sessionId: String,
     sessionConfig: ProducerSessionConfig,
-    sessionContext: ConsumerSessionContext,
-    var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[producerPb.ResumeProducerSessionResponse]],
-    var tasks: Map[ProducerSessionTaskIndex, ProducerSessionTaskRunner],
-    var numMessageProduced: Long = 0
+    polyglotContext: Context,
+    taskRunners: Vector[ProducerSessionTaskRunner] = Vector.empty,
+    var numMessageProduced: Long = 0,
+    var currentTaskIndex: Int = 0
 ):
     def incrementNumMessageProduced(): Unit = numMessageProduced = numMessageProduced + 1
 
-    def resume(): Unit = ???
+    def resume(): Unit =
+        val currentTaskRunner = taskRunners(currentTaskIndex)
+        currentTaskRunner.resume()
 
     def pause(): Unit = ???
 
@@ -31,4 +35,25 @@ object ProducerSessionRunner:
         adminClient: PulsarAdmin,
         sessionId: String,
         sessionConfig: ProducerSessionConfig
-    ): ProducerSessionRunner = ???
+    ): ProducerSessionRunner =
+        val sessionContextPool = ConsumerSessionContextPool()
+        val sessionContext = sessionContextPool.getNextContext
+
+        val taskRunners = sessionConfig.tasks.zipWithIndex.map((taskConfig, taskIndex) =>
+            ProducerSessionTaskRunner.make(
+                pulsarClient = pulsarClient,
+                adminClient = adminClient,
+                taskIndex = taskIndex,
+                taskConfig = taskConfig,
+                polyglotContext = sessionContext.context
+            )
+        )
+
+        ProducerSessionRunner(
+            pulsarClient = pulsarClient,
+            adminClient = adminClient,
+            sessionId = sessionId,
+            sessionConfig = sessionConfig,
+            polyglotContext = sessionContext.context,
+            taskRunners = taskRunners
+        )

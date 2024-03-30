@@ -9,6 +9,7 @@ import Select from '../../../Select/Select';
 import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMessage, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import DatetimePicker from '../../../DatetimePicker/DatetimePicker';
 import CodeEditor from '../../../CodeEditor/CodeEditor';
@@ -19,6 +20,7 @@ import sendIcon from './icons/send.svg';
 import s from './Producer.module.css'
 import { ValueType } from './types';
 import { valueToBytes } from './lib/lib';
+import TestButton from './TestButton/TestButton';
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -151,6 +153,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
         }
       }}
     >
+      <TestButton />
       <div className={s.Content}>
         <div className={s.Config}>
           <div className={s.ConfigLeft}>

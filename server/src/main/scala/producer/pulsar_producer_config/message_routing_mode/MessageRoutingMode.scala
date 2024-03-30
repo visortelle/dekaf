@@ -6,16 +6,16 @@ import org.apache.pulsar.client.api.MessageRoutingMode as PulsarMessageRoutingMo
 type MessageRoutingMode = PulsarMessageRoutingMode
 
 object MessageRoutingMode:
-    def fromPb(v: pb.MessageRoutingMode): PulsarMessageRoutingMode  =
+    def fromPb(v: pb.MessageRoutingMode): Option[PulsarMessageRoutingMode] =
         v match
-            case pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_CUSTOM_PARTITION => PulsarMessageRoutingMode.CustomPartition
-            case pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_ROUND_ROBIN_PARTITION => PulsarMessageRoutingMode.RoundRobinPartition
-            case pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_SINGLE_PARTITION => PulsarMessageRoutingMode.SinglePartition
-            case _ => throw Exception(s"Unknown message routing mode: $v")
+            case pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_CUSTOM_PARTITION => Some(PulsarMessageRoutingMode.CustomPartition)
+            case pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_ROUND_ROBIN_PARTITION => Some(PulsarMessageRoutingMode.RoundRobinPartition)
+            case pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_SINGLE_PARTITION => Some(PulsarMessageRoutingMode.SinglePartition)
+            case _ => None
 
-    def toPb(v: PulsarMessageRoutingMode): pb.MessageRoutingMode =
+    def toPb(v: Option[PulsarMessageRoutingMode]): pb.MessageRoutingMode =
         v match
-            case PulsarMessageRoutingMode.CustomPartition => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_CUSTOM_PARTITION
-            case PulsarMessageRoutingMode.RoundRobinPartition => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_ROUND_ROBIN_PARTITION
-            case PulsarMessageRoutingMode.SinglePartition => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_SINGLE_PARTITION
-            case _ => throw Exception(s"Unknown message routing mode: $v")
+            case Some(PulsarMessageRoutingMode.CustomPartition) => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_CUSTOM_PARTITION
+            case Some(PulsarMessageRoutingMode.RoundRobinPartition) => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_ROUND_ROBIN_PARTITION
+            case Some(PulsarMessageRoutingMode.SinglePartition) => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_SINGLE_PARTITION
+            case _ => pb.MessageRoutingMode.MESSAGE_ROUTING_MODE_UNSPECIFIED

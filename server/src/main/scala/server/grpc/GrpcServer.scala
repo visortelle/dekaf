@@ -12,7 +12,6 @@ import _root_.config.readConfig
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import com.tools.teal.pulsar.ui.api.v1.pulsar_auth.PulsarAuthServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerServiceGrpc
-import com.tools.teal.pulsar.ui.api.v1.producer.ProducerServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.pulsar_auth.PulsarAuthServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.schema.SchemaServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
@@ -22,6 +21,7 @@ import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
 import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
 import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
 import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.NamespacePoliciesServiceGrpc
+import com.tools.teal.pulsar.ui.producer.v1.producer.ProducerServiceGrpc
 import com.tools.teal.pulsar.ui.tenant.v1.tenant.TenantServiceGrpc
 import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
 import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.TopicPoliciesServiceGrpc

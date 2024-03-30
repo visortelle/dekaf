@@ -237,8 +237,7 @@ message ProducerSessionTask {
 }
 
 message ProducerSessionConfig {
-  string session_id = 1;
-  repeated ProducerSessionTask tasks = 2;
+  repeated ProducerSessionTask tasks = 1;
 }
 
 message ProducerStats {
@@ -307,5 +306,5 @@ service ProducerService {
   rpc DeleteProducerSession(DeleteProducerSessionRequest) returns (DeleteProducerSessionResponse);
   rpc GetProducerSessionStats(GetProducerSessionStatsRequest) returns (GetProducerSessionStatsResponse);
   rpc PauseProducerSession(PauseProducerSessionRequest) returns (PauseProducerSessionResponse);
-  rpc ResumeProducerSession(ResumeProducerSessionRequest) returns (stream ResumeProducerSessionResponse);
+  rpc ResumeProducerSession(ResumeProducerSessionRequest) returns (ResumeProducerSessionResponse);
 }

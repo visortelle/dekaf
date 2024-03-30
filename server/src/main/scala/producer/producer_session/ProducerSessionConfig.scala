@@ -4,19 +4,16 @@ import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import _root_.producer.producer_session.producer_session_task.ProducerSessionTask
 
 case class ProducerSessionConfig(
-    sessionId: String,
     tasks: Vector[ProducerSessionTask]
 )
 
 object ProducerSessionConfig:
     def fromPb(v: pb.ProducerSessionConfig): ProducerSessionConfig =
         ProducerSessionConfig(
-            sessionId = v.sessionId,
             tasks = v.tasks.map(ProducerSessionTask.fromPb).toVector
         )
 
     def toPb(v: ProducerSessionConfig): pb.ProducerSessionConfig =
         pb.ProducerSessionConfig(
-            sessionId = v.sessionId,
             tasks = v.tasks.map(ProducerSessionTask.toPb)
         )
