@@ -42,7 +42,6 @@ export type ManagedItemType =
   "deserializer" |
   "message-generator" |
   "producer-task" |
-  "producer-session-task" |
   "producer-session-config";
 
 export type ManagedItemMetadata = {
@@ -323,22 +322,15 @@ export type ManagedProducerTask = {
 
 export type ManagedProducerTaskValOrRef = ValOrRef<ManagedProducerTask>;
 
-export type ManagedProducerSessionTaskSpec = {
+export type ManagedProducerSessionConfigTask = {
   task: {
     type: "producer-task",
     task: ManagedProducerTaskValOrRef
   },
 };
 
-export type ManagedProducerSessionTask = {
-  metadata: ManagedItemMetadata,
-  spec: ManagedProducerSessionTaskSpec,
-};
-
-export type ManagedProducerSessionTaskValOrRef = ValOrRef<ManagedProducerSessionTask>;
-
 export type ManagedProducerSessionConfigSpec = {
-  tasks: ManagedProducerSessionTaskValOrRef[]
+  tasks: ManagedProducerSessionConfigTask[]
 };
 
 export type ManagedProducerSessionConfig = {
@@ -370,5 +362,4 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedDeserializer |
   ManagedMessageGenerator |
   ManagedProducerTask |
-  ManagedProducerSessionTask |
   ManagedProducerSessionConfig;

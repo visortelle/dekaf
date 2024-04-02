@@ -47,7 +47,6 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR: return "topic-selector";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM: return "consumer-session-start-from";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN: return "consumer-session-pause-trigger-chain";
-    case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_ID: return "message-id";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_DATE_TIME: return "date-time";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME: return "relative-date-time";
@@ -60,6 +59,9 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION: return "value-projection";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST: return "value-projection-list";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER: return "deserializer";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_GENERATOR: return "message-generator";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_TASK: return "producer-task";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -71,7 +73,6 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "topic-selector": return pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR;
     case "consumer-session-start-from": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM;
     case "consumer-session-pause-trigger-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN;
-    case "producer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;
     case "message-id": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_ID;
     case "date-time": return pb.ManagedItemType.MANAGED_ITEM_TYPE_DATE_TIME;
     case "relative-date-time": return pb.ManagedItemType.MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME;
@@ -84,6 +85,9 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "value-projection": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION;
     case "value-projection-list": return pb.ManagedItemType.MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST;
     case "deserializer": return pb.ManagedItemType.MANAGED_ITEM_TYPE_DESERIALIZER;
+    case "message-generator": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_GENERATOR;
+    case "producer-task": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_TASK;
+    case "producer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -1495,14 +1499,14 @@ export function managedProducerTaskValOrRefToPb(v: t.ManagedProducerTaskValOrRef
   return idPb;
 }
 
-export function managedProducerSessionTaskSpecFromPb(v: pb.ManagedProducerSessionTaskSpec): t.ManagedProducerSessionTaskSpec {
-  let task: t.ManagedProducerSessionTaskSpec['task'];
+export function managedProducerSessionConfigTaskFromPb(v: pb.ManagedProducerSessionConfigTask): t.ManagedProducerSessionConfigTask {
+  let task: t.ManagedProducerSessionConfigTask['task'];
   switch (v.getTaskCase()) {
-    case pb.ManagedProducerSessionTaskSpec.TaskCase.TASK_PRODUCER:
+    case pb.ManagedProducerSessionConfigTask.TaskCase.TASK_PRODUCER:
       task = { type: 'producer-task', task: managedProducerTaskValOrRefFromPb(v.getTaskProducer()!) };
       break;
     default:
-      throw new Error(`Unknown ManagedProducerSessionTaskSpec task: ${v}`);
+      throw new Error(`Unknown ManagedProducerSessionConfigTask: ${v}`);
   }
 
   return {
@@ -1510,77 +1514,30 @@ export function managedProducerSessionTaskSpecFromPb(v: pb.ManagedProducerSessio
   };
 }
 
-export function managedProducerSessionTaskSpecToPb(v: t.ManagedProducerSessionTaskSpec): pb.ManagedProducerSessionTaskSpec {
-  const specPb = new pb.ManagedProducerSessionTaskSpec();
+export function managedProducerSessionConfigTaskToPb(v: t.ManagedProducerSessionConfigTask): pb.ManagedProducerSessionConfigTask {
+  const specPb = new pb.ManagedProducerSessionConfigTask();
 
   switch (v.task.type) {
     case 'producer-task':
       specPb.setTaskProducer(managedProducerTaskValOrRefToPb(v.task.task));
       break;
     default:
-      throw new Error(`Unknown ManagedProducerSessionTaskSpec task: ${v.task}`);
+      throw new Error(`Unknown ManagedProducerSessionConfig: ${v.task}`);
   }
 
   return specPb;
 }
 
-export function managedProducerSessionTaskFromPb(v: pb.ManagedProducerSessionTask): t.ManagedProducerSessionTask {
-  return {
-    metadata: managedItemMetadataFromPb(v.getMetadata()!),
-    spec: managedProducerSessionTaskSpecFromPb(v.getSpec()!)
-  };
-}
-
-export function managedProducerSessionTaskToPb(v: t.ManagedProducerSessionTask): pb.ManagedProducerSessionTask {
-  const configPb = new pb.ManagedProducerSessionTask();
-  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
-  configPb.setSpec(managedProducerSessionTaskSpecToPb(v.spec));
-  return configPb;
-}
-
-export function managedProducerSessionTaskValOrRefFromPb(v: pb.ManagedProducerSessionTaskValOrRef): t.ManagedProducerSessionTaskValOrRef {
-  switch (v.getValOrRefCase()) {
-    case pb.ManagedProducerSessionTaskValOrRef.ValOrRefCase.VAL:
-      return {
-        type: 'value',
-        val: managedProducerSessionTaskFromPb(v.getVal()!)
-      };
-    case pb.ManagedProducerSessionTaskValOrRef.ValOrRefCase.REF:
-      return {
-        type: 'reference',
-        ref: v.getRef()
-      };
-    default:
-      throw new Error(`Unknown ManagedProducerSessionTaskValOrRef: ${v}`);
-  }
-}
-
-export function managedProducerSessionTaskValOrRefToPb(v: t.ManagedProducerSessionTaskValOrRef): pb.ManagedProducerSessionTaskValOrRef {
-  const idPb = new pb.ManagedProducerSessionTaskValOrRef();
-  switch (v.type) {
-    case 'value':
-      idPb.setVal(managedProducerSessionTaskToPb(v.val));
-      break;
-    case 'reference':
-      idPb.setRef(v.ref);
-      break;
-    default:
-      throw new Error(`Unknown ManagedProducerSessionTaskValOrRef: ${v}`);
-  }
-  return idPb;
-}
-
-
 export function managedProducerSessionConfigSpecFromPb(v: pb.ManagedProducerSessionConfigSpec): t.ManagedProducerSessionConfigSpec {
   return {
-    tasks: v.getTasksList().map(managedProducerSessionTaskValOrRefFromPb)
+    tasks: v.getTasksList().map(managedProducerSessionConfigTaskFromPb)
   };
 }
 
 export function managedProducerSessionConfigSpecToPb(v: t.ManagedProducerSessionConfigSpec): pb.ManagedProducerSessionConfigSpec {
   const specPb = new pb.ManagedProducerSessionConfigSpec();
 
-  specPb.setTasksList(v.tasks.map(managedProducerSessionTaskValOrRefToPb));
+  specPb.setTasksList(v.tasks.map(managedProducerSessionConfigTaskToPb));
 
   return specPb;
 }
@@ -1599,9 +1556,9 @@ export function managedProducerSessionToPb(v: t.ManagedProducerSessionConfig): p
   return configPb;
 }
 
-export function managedProducerSessionValOrRefFromPb(v: pb.ManagedProducerSessionConfigValOrRef): t.ManagedProducerSessionConfigValOrRef {
+export function managedProducerSessionConfigValOrRefFromPb(v: pb.ManagedProducerSessionConfigValOrRef): t.ManagedProducerSessionConfigValOrRef {
   switch (v.getValOrRefCase()) {
-    case pb.ManagedProducerSessionTaskValOrRef.ValOrRefCase.VAL:
+    case pb.ManagedProducerSessionConfigValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
         val: managedProducerSessionConfigFromPb(v.getVal()!)
@@ -1616,7 +1573,7 @@ export function managedProducerSessionValOrRefFromPb(v: pb.ManagedProducerSessio
   }
 }
 
-export function managedProducerSessionValOrRefToPb(v: t.ManagedProducerSessionConfigValOrRef): pb.ManagedProducerSessionConfigValOrRef {
+export function managedProducerSessionConfigValOrRefToPb(v: t.ManagedProducerSessionConfigValOrRef): pb.ManagedProducerSessionConfigValOrRef {
   const idPb = new pb.ManagedProducerSessionConfigValOrRef();
   switch (v.type) {
     case 'value':
@@ -1673,8 +1630,6 @@ export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
       return managedMessageGeneratorFromPb(v.getSpecMessageGenerator()!);
     case pb.ManagedItem.SpecCase.SPEC_PRODUCER_TASK:
       return managedProducerTaskFromPb(v.getSpecProducerTask()!);
-    case pb.ManagedItem.SpecCase.SPEC_PRODUCER_SESSION_TASK:
-      return managedProducerSessionTaskFromPb(v.getSpecProducerSessionTask()!);
     case pb.ManagedItem.SpecCase.SPEC_PRODUCER_SESSION_CONFIG:
       return managedProducerSessionConfigFromPb(v.getSpecProducerSessionConfig()!);
     default:
@@ -1763,10 +1718,6 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
     }
     case "producer-task": {
       itemPb.setSpecProducerTask(managedProducerTaskToPb(v as t.ManagedProducerTask));
-      break;
-    }
-    case "producer-session-task": {
-      itemPb.setSpecProducerSessionTask(managedProducerSessionTaskToPb(v as t.ManagedProducerSessionTask));
       break;
     }
     case "producer-session-config": {

@@ -17,7 +17,6 @@ import _root_.library.managed_items.{
     ManagedMessageGenerator,
     ManagedMessageId,
     ManagedProducerSessionConfig,
-    ManagedProducerSessionTask,
     ManagedProducerTask,
     ManagedRelativeDateTime,
     ManagedTopicSelector,
@@ -47,7 +46,6 @@ type ManagedItem =
     ManagedDeserializer |
     ManagedMessageGenerator |
     ManagedProducerTask |
-    ManagedProducerSessionTask |
     ManagedProducerSessionConfig
 
 object ManagedItem:
@@ -73,7 +71,6 @@ object ManagedItem:
             case it: pb.ManagedItem.Spec.SpecDeserializer                     => ManagedDeserializer.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecMessageGenerator                 => ManagedMessageGenerator.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecProducerTask                     => ManagedProducerTask.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecProducerSessionTask              => ManagedProducerSessionTask.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecProducerSessionConfig            => ManagedProducerSessionConfig.fromPb(it.value)
             case _                                                            => throw new IllegalArgumentException("Unknown ManagedItem type")
 
@@ -139,9 +136,6 @@ object ManagedItem:
             case it: ManagedProducerTask =>
                 val itPb = ManagedProducerTask.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecProducerTask(itPb))
-            case it: ManagedProducerSessionTask =>
-                val itPb = ManagedProducerSessionTask.toPb(it)
-                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecProducerSessionTask(itPb))
             case it: ManagedProducerSessionConfig =>
                 val itPb = ManagedProducerSessionConfig.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecProducerSessionConfig(itPb))

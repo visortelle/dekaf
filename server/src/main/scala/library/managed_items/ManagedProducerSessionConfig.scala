@@ -4,17 +4,17 @@ import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTra
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
 case class ManagedProducerSessionConfigSpec(
-    tasks: Vector[ManagedProducerSessionTaskValOrRef]
+    tasks: Vector[ManagedProducerSessionConfigTask]
 )
 
 object ManagedProducerSessionConfigSpec:
     def fromPb(v: pb.ManagedProducerSessionConfigSpec): ManagedProducerSessionConfigSpec =
         ManagedProducerSessionConfigSpec(
-            tasks = v.tasks.map(ManagedProducerSessionTaskValOrRef.fromPb).toVector
+            tasks = v.tasks.map(ManagedProducerSessionConfigTask.fromPb).toVector
         )
     def toPb(v: ManagedProducerSessionConfigSpec): pb.ManagedProducerSessionConfigSpec =
         pb.ManagedProducerSessionConfigSpec(
-            tasks = v.tasks.map(ManagedProducerSessionTaskValOrRef.toPb)
+            tasks = v.tasks.map(ManagedProducerSessionConfigTask.toPb)
         )
 
 case class ManagedProducerSessionConfig(
