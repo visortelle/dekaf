@@ -5,7 +5,9 @@ export type ProducerSessionProps = {};
 
 const ProducerSession: React.FC<ProducerSessionProps> = (props) => {
   return (
-    <div className={s.ProducerSession}></div>
+    <div className={s.ProducerSession}>
+
+    </div>
   );
 }
 

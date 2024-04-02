@@ -1,5 +1,6 @@
 package producer
 
+import zio.*
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, PulsarClient}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
@@ -31,6 +32,7 @@ type ProducerSessionId = String
 class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
     val logger: Logger = Logger(getClass.getName)
     var sessionRunners: Map[ProducerSessionId, ProducerSessionRunner] = Map.empty
+    private val runtime = Runtime.default
 
     override def createProducerSession(request: CreateProducerSessionRequest): Future[CreateProducerSessionResponse] =
         val pulsarClient = RequestContext.pulsarClient.get()
@@ -59,9 +61,13 @@ class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
         val sessionId = request.sessionId
         val sessionRunner = sessionRunners.get(sessionId)
 
+
         sessionRunner match
             case Some(runner) =>
-                runner.resume()
+                Unsafe.unsafe { implicit unsafe =>
+                    runtime.unsafe.run(runner.start()).getOrThrowFiberFailure()
+                }
+
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(ResumeProducerSessionResponse(status = Some(status)))
             case None =>

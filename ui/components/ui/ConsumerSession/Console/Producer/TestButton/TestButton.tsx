@@ -44,13 +44,49 @@ const TestButton: React.FC<TestButtonProps> = (props) => {
     producerConf.setMaxPendingMessages(new Int64Value().setValue(10));
 
     producerTask.setProducerConfig(producerConf);
-    producerTask.setNumMessages(new Int64Value().setValue(10_000));
+    producerTask.setNumMessages(new Int64Value().setValue(15));
     // producerTask.setIntervalNanos(new Int64Value().setValue(1000_000_000 * 3));
     producerTask.setIntervalNanos(new Int64Value().setValue(1));
 
     task.setTaskProducer(producerTask);
 
-    conf.setTasksList([task]);
+    // TASK 2 START
+    const task2 = new pb.ProducerSessionTask();
+
+    const producerTask2 = new pb.ProducerTask();
+    producerTask2.setTargetTopicFqn('persistent://public/default/abc');
+
+    const messageGenerator2 = new pb.MessageGenerator();
+    const valueGenerator2 = new pb.ValueGenerator();
+
+    const jsonGenerator2 = new pb.JsonGenerator();
+    // const fixedJsonGenerator = new pb.FixedJsonGenerator();
+    // fixedJsonGenerator.setJson('{"key": "value", "b": 2}');
+    // jsonGenerator.setGeneratorFixed(fixedJsonGenerator);
+
+    const jsJsonGenerator2 = new pb.JsJsonGenerator();
+    jsJsonGenerator2.setJsCode('() => ({ b: 2 })');
+    jsonGenerator2.setGeneratorJs(jsJsonGenerator2);
+
+    valueGenerator2.setGeneratorFromJson(jsonGenerator2);
+
+    messageGenerator2.setValueGenerator(valueGenerator2);
+
+    producerTask2.setMessageGenerator(messageGenerator2);
+
+    const producerConf2 = new pb.PulsarProducerConfig();
+    producerConf2.setAccessMode(pb.AccessMode.ACCESS_MODE_SHARED);
+    producerConf2.setMaxPendingMessages(new Int64Value().setValue(10));
+
+    producerTask2.setProducerConfig(producerConf2);
+    producerTask2.setNumMessages(new Int64Value().setValue(3));
+    producerTask2.setIntervalNanos(new Int64Value().setValue(1000_000_000 * 3));
+    // producerTask2.setIntervalNanos(new Int64Value().setValue(1));
+
+    task2.setTaskProducer(producerTask2);
+    // TASK 2 END
+
+    conf.setTasksList([task, task2]);
 
     req.setSessionConfig(conf);
 

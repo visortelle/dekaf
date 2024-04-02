@@ -104,7 +104,6 @@ message KeyGenerator {
 }
 
 message ValueFromTopicSchemaGenerator {
-  string topic_fqn = 1;
 }
 
 message ValueGenerator {
@@ -196,7 +195,7 @@ enum MessageRoutingMode {
 }
 
 message PulsarProducerConfig {
-  BatcherBuilder batcher_builder = 1;
+  BatcherBuilder batcher_builder = 1; // x
   map<string, string> properties = 2;
   google.protobuf.StringValue producer_name = 3;
   AccessMode access_mode = 4;

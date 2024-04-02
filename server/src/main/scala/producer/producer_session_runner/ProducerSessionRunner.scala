@@ -1,5 +1,6 @@
 package producer.producer_session_runner
 
+import zio.*
 import com.tools.teal.pulsar.ui.producer.v1.producer as producerPb
 import consumer.session_config.ConsumerSessionConfig
 import consumer.session_runner.{ConsumerSessionContext, ConsumerSessionContextPool}
@@ -16,18 +17,16 @@ case class ProducerSessionRunner(
     sessionConfig: ProducerSessionConfig,
     polyglotContext: Context,
     taskRunners: Vector[ProducerSessionTaskRunner] = Vector.empty,
-    var numMessageProduced: Long = 0,
-    var currentTaskIndex: Int = 0
+    var numMessageProduced: Long = 0
 ):
     def incrementNumMessageProduced(): Unit = numMessageProduced = numMessageProduced + 1
 
-    def resume(): Unit =
-        val currentTaskRunner = taskRunners(currentTaskIndex)
-        currentTaskRunner.resume()
+    def start(): Task[Unit] =
+        ZIO.foreach(taskRunners)(_.start()).unit
 
-    def pause(): Unit = ???
+    def pause(): Task[Unit] = ???
 
-    def stop(): Unit = ???
+    def stop(): Task[Unit] = ???
 
 object ProducerSessionRunner:
     def make(

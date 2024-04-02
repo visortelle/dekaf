@@ -3,6 +3,7 @@ import { FixedJsonGenerator, fixedJsonGeneratorFromPb, fixedJsonGeneratorToPb } 
 import { JsJsonGenerator, jsJsonGeneratorFromPb, jsJsonGeneratorToPb } from './js-json-generator';
 
 export type JsonGenerator = {
+  type: 'json-generator',
   generator: FixedJsonGenerator | JsJsonGenerator
 }
 
@@ -19,7 +20,7 @@ export function jsonGeneratorFromPb(v: pb.JsonGenerator): JsonGenerator {
       throw new Error(`Unknown json generator: ${v.getGeneratorCase()}`);
   }
 
-  return { generator };
+  return { type: 'json-generator', generator };
 }
 
 export function jsonGeneratorToPb(v: JsonGenerator): pb.JsonGenerator {

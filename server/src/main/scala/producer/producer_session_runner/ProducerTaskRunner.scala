@@ -21,32 +21,26 @@ case class ProducerTaskRunner(
     limitDurationNanos: Long,
     intervalNanos: Long
 ):
-    def stop(): Unit =
+    def stop(): Task[Unit] = ZIO.attempt {
         producer.close()
+    }
 
-    def sendNextMessage(): Unit =
+    def sendNextMessage(): Task[Unit] = ZIO.attempt {
+        println(s"Sending message to ${taskConfig.targetTopicFqn}")
         val messageBuilder = producer.newMessage()
         taskConfig.messageGenerator.generateMessageMut(messageBuilder, polyglotContext, schemaInfo)
         messageBuilder.sendAsync()
+    }
 
-    def resume(): Unit =
-        println(numMessages)
-        Unsafe.unsafe { implicit unsafe =>
-            ProducerTaskRunner.runtime.unsafe.runOrFork {
-                for {
-                    _ <- ZIO.attempt {
-                        sendNextMessage()
-                    }
-                        .repeat(Schedule.recurs(numMessages - 1) && Schedule.spaced(intervalNanos.nanos))
-                        .disconnect.timeout(Duration.fromNanos(limitDurationNanos))
-                        .ensuring(ZIO.succeed(stop()))
-                } yield ()
-            }
-        }
+    def start(): Task[Unit] =
+        for {
+            _ <- sendNextMessage()
+                .repeat(Schedule.recurs(numMessages - 1) && Schedule.spaced(intervalNanos.nanos))
+                .disconnect.timeout(Duration.fromNanos(limitDurationNanos))
+                .ensuring(ZIO.succeed(stop()))
+        } yield ()
 
 object ProducerTaskRunner:
-    private val runtime = Runtime.default
-
     def make(
         pulsarClient: PulsarClient,
         adminClient: PulsarAdmin,
@@ -99,7 +93,6 @@ object ProducerTaskRunner:
             producer = producer,
             schemaInfo = schemaInfo,
             polyglotContext = polyglotContext,
-
             numMessages = taskConfig.numMessages.getOrElse(1),
             limitDurationNanos = taskConfig.limitDurationNanos.getOrElse(1000_000_000L * 60 * 5),
             intervalNanos = taskConfig.intervalNanos.getOrElse(0)

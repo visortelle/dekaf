@@ -1,5 +1,6 @@
 package producer.producer_session_runner
 
+import zio.*
 import consumer.session_runner.{ConsumerSessionContext, ConsumerSessionContextPool}
 import _root_.producer.producer_session.producer_session_task.ProducerSessionTask
 import _root_.producer.producer_task.ProducerTask
@@ -15,11 +16,11 @@ case class ProducerSessionTaskRunner(
     polyglotContext: Context,
     taskRunner: ProducerTaskRunner
 ):
-    def resume(): Unit =
+    def start(): Task[Unit] =
         taskRunner match
-            case v: ProducerTaskRunner => v.resume()
+            case v: ProducerTaskRunner => v.start()
 
-    def stop(): Unit =
+    def stop(): Task[Unit] =
         taskRunner match
             case v: ProducerTaskRunner => v.stop()
 
