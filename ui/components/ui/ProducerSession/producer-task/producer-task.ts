@@ -2,12 +2,14 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/produ
 import { Int64Value } from 'google-protobuf/google/protobuf/wrappers_pb';
 import { MessageGenerator, messageGeneratorFromPb, messageGeneratorToPb } from './message-generator/message-generator';
 import { PulsarProducerConfig, pulsarProducerConfigFromPb, pulsarProducerConfigToPb } from './pulsar-producer-config/pulsar-producer-config';
+import { TopicSelector } from '../../ConsumerSession/topic-selector/topic-selector';
+import { topicSelectorFromPb, topicSelectorToPb } from '../../ConsumerSession/conversions/conversions';
 
 export type ProducerTask = {
   type: 'producer-task',
-  targetTopicFqn: string,
+  topicSelector: TopicSelector,
   messageGenerator: MessageGenerator,
-  producerConfig: PulsarProducerConfig,
+  producerConfig: PulsarProducerConfig | undefined,
   numMessages: number | undefined,
   limitDurationNanos: number | undefined,
   intervalNanos: number | undefined,
@@ -16,7 +18,7 @@ export type ProducerTask = {
 export function producerTaskFromPb(v: pb.ProducerTask): ProducerTask {
   return {
     type: 'producer-task',
-    targetTopicFqn: v.getTargetTopicFqn(),
+    topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
     messageGenerator: messageGeneratorFromPb(v.getMessageGenerator()!),
     producerConfig: pulsarProducerConfigFromPb(v.getProducerConfig()!),
     numMessages: v.getNumMessages()?.getValue(),
@@ -27,9 +29,13 @@ export function producerTaskFromPb(v: pb.ProducerTask): ProducerTask {
 
 export function producerTaskToPb(v: ProducerTask): pb.ProducerTask {
   const producerTaskPb = new pb.ProducerTask();
-  producerTaskPb.setTargetTopicFqn(v.targetTopicFqn);
+  producerTaskPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
   producerTaskPb.setMessageGenerator(messageGeneratorToPb(v.messageGenerator));
-  producerTaskPb.setProducerConfig(pulsarProducerConfigToPb(v.producerConfig));
+
+  if (v.producerConfig !== undefined) {
+    producerTaskPb.setProducerConfig(pulsarProducerConfigToPb(v.producerConfig));
+  }
+
   if (v.numMessages !== undefined) {
     producerTaskPb.setNumMessages(new Int64Value().setValue(v.numMessages));
   }

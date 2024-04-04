@@ -15,7 +15,7 @@ const JsJsonGeneratorInput: React.FC<JsJsonGeneratorInputProps> = (props) => {
         value={props.value.jsCode}
         onChange={(v) => props.onChange({ ...props.value, jsCode: v || '' })}
         language='javascript'
-        height={100}
+        height={200}
       />
     </div>
   );

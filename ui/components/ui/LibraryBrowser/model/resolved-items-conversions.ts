@@ -1,10 +1,14 @@
-import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedDeserializerValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef, ManagedValueProjectionListValOrRef, ManagedValueProjectionValOrRef } from "./user-managed-items";
+import { ManagedBasicMessageFilterTargetValOrRef, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedDeserializerValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageGeneratorValOrRef, ManagedMessageIdValOrRef, ManagedProducerSessionConfig, ManagedProducerSessionConfigValOrRef, ManagedProducerTaskValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef, ManagedValueProjectionListValOrRef, ManagedValueProjectionValOrRef } from "./user-managed-items";
 import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../ConsumerSession/types";
 import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/value-projections/value-projections";
 import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
 import { defaultNumDisplayItems } from "../../ConsumerSession/SessionConfiguration/SessionConfiguration";
+import { MessageGenerator } from "../../ProducerSession/producer-task/message-generator/message-generator";
+import { ProducerTask } from "../../ProducerSession/producer-task/producer-task";
+import { ProducerSessionConfig } from "../../ProducerSession/producer-session-config/producer-session-config";
+import { ProducerSessionTask } from "../../ProducerSession/producer-session-config/producer-session-task/producer-session-task";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -235,4 +239,53 @@ export function deserializerFromValOrRef(v: ManagedDeserializerValOrRef): Deseri
   const spec = v.val.spec;
 
   return spec.deserializer;
+}
+
+export function messageGeneratorFromValOrRef(v: ManagedMessageGeneratorValOrRef): MessageGenerator {
+  if (v.val === undefined) {
+    throw new Error('MessageGenerator reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return spec.generator;
+}
+
+export function producerTaskFromValOrRef(v: ManagedProducerTaskValOrRef, currentTopicFqn?: string): ProducerTask {
+  if (v.val === undefined) {
+    throw new Error('ProducerTask reference can\'t be converted to value');
+  }
+
+  return {
+    type: 'producer-task',
+    intervalNanos: v.val.spec.intervalNanos,
+    messageGenerator: messageGeneratorFromValOrRef(v.val.spec.messageGenerator),
+    limitDurationNanos: v.val.spec.limitDurationNanos,
+    numMessages: v.val.spec.numMessages,
+    producerConfig: v.val.spec.producerConfig,
+    topicSelector: topicSelectorFromValOrRef(v.val.spec.topicSelector, currentTopicFqn),
+  };
+}
+
+export function producerSessionConfigFromValOrRef(v: ManagedProducerSessionConfigValOrRef, currentTopicFqn?: string): ProducerSessionConfig {
+  if (v.val === undefined) {
+    throw new Error('ProducerSessionConfig reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    type: 'producer-session-config',
+    tasks: spec.tasks.map(v => {
+      const r: ProducerSessionTask = {
+        type: 'producer-session-task',
+        task: {
+          type: 'producer-task',
+          task: producerTaskFromValOrRef(v.task.task, currentTopicFqn)
+        }
+      };
+
+      return r;
+    })
+  }
 }

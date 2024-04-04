@@ -13,7 +13,18 @@ import _root_.schema.protobufnative
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import com.google.common.primitives
-import com.tools.teal.pulsar.ui.producer.v1.producer.{CreateProducerSessionRequest, CreateProducerSessionResponse, DeleteProducerSessionRequest, DeleteProducerSessionResponse, GetProducerSessionStatsRequest, GetProducerSessionStatsResponse, PauseProducerSessionRequest, PauseProducerSessionResponse, ResumeProducerSessionRequest, ResumeProducerSessionResponse}
+import com.tools.teal.pulsar.ui.producer.v1.producer.{
+    CreateProducerSessionRequest,
+    CreateProducerSessionResponse,
+    DeleteProducerSessionRequest,
+    DeleteProducerSessionResponse,
+    GetProducerSessionStatsRequest,
+    GetProducerSessionStatsResponse,
+    PauseProducerSessionRequest,
+    PauseProducerSessionResponse,
+    ResumeProducerSessionRequest,
+    ResumeProducerSessionResponse
+}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import io.circe.*
 import io.circe.parser.parse as parseJson
@@ -27,6 +38,8 @@ import scala.concurrent.Future
 import scala.util.boundary
 import boundary.break
 
+import org.apache.commons.lang3.time.StopWatch
+
 type ProducerSessionId = String
 
 class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
@@ -35,21 +48,33 @@ class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
     private val runtime = Runtime.default
 
     override def createProducerSession(request: CreateProducerSessionRequest): Future[CreateProducerSessionResponse] =
+        val _watch = new StopWatch()
+        _watch.start()
         val pulsarClient = RequestContext.pulsarClient.get()
         val adminClient = RequestContext.pulsarAdmin.get()
 
         val sessionId = request.sessionId
-        val sessionRunner = ProducerSessionRunner.make(
-            pulsarClient = pulsarClient,
-            adminClient = adminClient,
-            sessionId = request.sessionId,
-            sessionConfig = ProducerSessionConfig.fromPb(request.sessionConfig.get),
-        )
 
-        sessionRunners += sessionId -> sessionRunner
+        try {
+            val sessionRunner = ProducerSessionRunner.make(
+                pulsarClient = pulsarClient,
+                adminClient = adminClient,
+                sessionId = request.sessionId,
+                sessionConfig = ProducerSessionConfig.fromPb(request.sessionConfig.get)
+            )
 
-        val status: Status = Status(code = Code.OK.index)
-        Future.successful(CreateProducerSessionResponse(status = Some(status)))
+            sessionRunners += sessionId -> sessionRunner
+
+            _watch.stop()
+            java.lang.System.out.println(s"CREATE PRODUCER - ${_watch.getTime}")
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(CreateProducerSessionResponse(status = Some(status)))
+        } catch {
+            case e: PulsarAdminException =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = e.getMessage)
+                Future.successful(CreateProducerSessionResponse(status = Some(status)))
+        }
 
     override def deleteProducerSession(request: DeleteProducerSessionRequest): Future[DeleteProducerSessionResponse] = ???
 
@@ -61,15 +86,22 @@ class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
         val sessionId = request.sessionId
         val sessionRunner = sessionRunners.get(sessionId)
 
-
         sessionRunner match
             case Some(runner) =>
-                Unsafe.unsafe { implicit unsafe =>
-                    runtime.unsafe.run(runner.start()).getOrThrowFiberFailure()
+                try {
+                    val _watch = new StopWatch()
+                    _watch.start()
+                    Unsafe.unsafe(implicit unsafe => runtime.unsafe.run(runner.start()).getOrThrowFiberFailure())
+                    _watch.stop()
+                    java.lang.System.out.println(s"CREATE PRODUCER - ${_watch.getTime}")
+                    val status: Status = Status(code = Code.OK.index)
+                    Future.successful(ResumeProducerSessionResponse(status = Some(status)))
+                } catch {
+                    case e: Throwable =>
+                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = e.getMessage)
+                        Future.successful(ResumeProducerSessionResponse(status = Some(status)))
                 }
 
-                val status: Status = Status(code = Code.OK.index)
-                Future.successful(ResumeProducerSessionResponse(status = Some(status)))
             case None =>
                 val status: Status = Status(code = Code.NOT_FOUND.index)
                 Future.successful(ResumeProducerSessionResponse(status = Some(status)))
@@ -89,7 +121,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[Throwa
                 case Left(err) => Left(err)
         case SchemaType.PROTOBUF_NATIVE =>
             protobufnative.converters.fromJson(schemaInfo.getSchema, jsonAsBytes) match
-                case Right(v) => Right(v)
+                case Right(v)  => Right(v)
                 case Left(err) => Left(err)
         case SchemaType.JSON => Right(jsonAsBytes)
         case SchemaType.STRING =>

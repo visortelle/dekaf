@@ -6,6 +6,8 @@ import _root_.topic.{getTopicPartitioning, getTopicPartitions, TopicPartitioning
 import scala.util.{Failure, Success, Try}
 
 case class MultiTopicSelector(topicFqns: Vector[String]):
+    def getTopics: Vector[String] = topicFqns.distinct
+
     def getNonPartitionedTopics(adminClient: PulsarAdmin): Vector[String] =
         topicFqns.flatMap { topicFqn =>
             Try({ getTopicPartitioning(adminClient, topicFqn).`type` }) match

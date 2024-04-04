@@ -7,7 +7,7 @@ import _root_.topic.{getTopicPartitioning, getTopicPartitions, TopicPartitioning
 import org.apache.pulsar.common.naming.TopicDomain
 
 case class NamespacedRegexTopicSelector(namespaceFqn: String, pattern: String, regexSubscriptionMode: RegexSubscriptionMode):
-    def getNonPartitionedTopics(adminClient: PulsarAdmin): Vector[String] =
+    private def getMatchedTopics(adminClient: PulsarAdmin): Vector[String] =
         val namespaceTopicFqns = regexSubscriptionMode match
             case RegexSubscriptionMode.PersistentOnly =>
                 adminClient.topics().getList(namespaceFqn, TopicDomain.persistent).asScala.toVector
@@ -18,11 +18,18 @@ case class NamespacedRegexTopicSelector(namespaceFqn: String, pattern: String, r
                 val nonPersistentTopicFqns = adminClient.topics().getList(namespaceFqn, TopicDomain.non_persistent).asScala.toVector
                 persistentTopicFqns ++ nonPersistentTopicFqns
 
-        val matchedTopicFqns = namespaceTopicFqns.filter(topicFqn =>
+        namespaceTopicFqns.filter(topicFqn =>
             val Array(_, restFqn) = topicFqn.split("://")
             val Array(_, _, topic) = restFqn.split("/")
             topic.matches(pattern)
         )
+
+    def getTopics(adminClient: PulsarAdmin): Vector[String] =
+        val matchedTopicFqns = getMatchedTopics(adminClient)
+        matchedTopicFqns.distinct
+
+    def getNonPartitionedTopics(adminClient: PulsarAdmin): Vector[String] =
+        val matchedTopicFqns = getMatchedTopics(adminClient)
 
         matchedTopicFqns.flatMap { topicFqn =>
             getTopicPartitioning(adminClient, topicFqn).`type` match

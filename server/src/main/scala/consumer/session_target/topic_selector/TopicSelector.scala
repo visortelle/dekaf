@@ -4,6 +4,11 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import org.apache.pulsar.client.admin.PulsarAdmin
 
 case class TopicSelector(topicSelector: MultiTopicSelector | NamespacedRegexTopicSelector):
+    def getTopics(adminClient: PulsarAdmin): Vector[String] =
+        topicSelector match
+            case v: MultiTopicSelector => v.getTopics
+            case v: NamespacedRegexTopicSelector => v.getTopics(adminClient)
+
     def getNonPartitionedTopics(adminClient: PulsarAdmin): Vector[String] =
         topicSelector match
             case v: MultiTopicSelector           => v.getNonPartitionedTopics(adminClient)

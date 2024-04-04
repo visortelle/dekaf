@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import s from './ProducerSessionConfigInput.module.css'
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../../app/contexts/Notifications';
+import { v4 as uuid } from 'uuid';
 import { ManagedProducerSessionConfig, ManagedProducerSessionConfigSpec, ManagedProducerSessionConfigTask, ManagedProducerSessionConfigValOrRef, ManagedProducerTask, ManagedProducerTaskValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../LibraryBrowser/useManagedItemValue';
@@ -10,6 +14,10 @@ import { cloneDeep } from 'lodash';
 import AddButton from '../../../AddButton/AddButton';
 import { getDefaultManagedItem } from '../../../LibraryBrowser/default-library-items';
 import DeleteButton from '../../../DeleteButton/DeleteButton';
+import SmallButton from '../../../SmallButton/SmallButton';
+import { producerSessionConfigToPb } from '../producer-session-config';
+import { producerSessionConfigFromValOrRef } from '../../../LibraryBrowser/model/resolved-items-conversions';
+import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 
 export type ProducerSessionConfigInputProps = {
   value: ManagedProducerSessionConfigValOrRef,
@@ -22,6 +30,8 @@ export type ProducerSessionConfigInputProps = {
 const ProducerSessionConfigInput: React.FC<ProducerSessionConfigInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const ref = useRef<HTMLDivElement>(null);
+  const { producerServiceClient } = GrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
 
   const resolveResult = useManagedItemValue<ManagedProducerSessionConfig>(props.value);
 
@@ -73,6 +83,53 @@ const ProducerSessionConfigInput: React.FC<ProducerSessionConfigInputProps> = (p
           managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
           isReadOnly={props.isReadOnly}
           {...props.libraryBrowserPanel}
+        />
+
+        <SmallButton
+          text='Run'
+          onClick={async () => {
+            const createSessionReq = new pb.CreateProducerSessionRequest();
+
+            const sessionId = uuid();
+            createSessionReq.setSessionId(sessionId);
+
+            const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
+            const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
+
+            const conf = producerSessionConfigFromValOrRef(props.value, currentTopicFqn);
+            const confPb = producerSessionConfigToPb(conf);
+
+            createSessionReq.setSessionConfig(confPb);
+
+            const createSessionRes = await producerServiceClient.createProducerSession(createSessionReq, null).catch((err) => {
+              notifyError('Failed to create producer session', err);
+            });
+
+            if (createSessionRes === undefined) {
+              return;
+            }
+
+            if (createSessionRes.getStatus()?.getCode() !== Code.OK) {
+              notifyError('Failed to create producer session', createSessionRes.getStatus()?.getMessage());
+              return;
+            }
+
+            const resumeSessionReq = new pb.ResumeProducerSessionRequest();
+            resumeSessionReq.setSessionId(sessionId);
+
+            const resumeSessionRes = await producerServiceClient.resumeProducerSession(resumeSessionReq, null).catch((err) => {
+              notifyError('Failed to resume producer session', err);
+            });
+
+            if (resumeSessionRes === undefined) {
+              return;
+            }
+
+            if (resumeSessionRes.getStatus()?.getCode() !== Code.OK) {
+              notifyError('Failed to resume producer session', resumeSessionRes.getStatus()?.getMessage());
+              return;
+            }
+          }}
         />
       </div>
 

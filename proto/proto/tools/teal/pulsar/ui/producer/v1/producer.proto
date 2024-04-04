@@ -4,6 +4,7 @@ package tools.teal.pulsar.ui.producer.v1;
 
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
+import "tools/teal/pulsar/ui/api/v1/consumer.proto";
 
 message FixedJsonGenerator {
   string json = 1;
@@ -221,7 +222,7 @@ message PulsarProducerConfig {
 }
 
 message ProducerTask {
-  string target_topic_fqn = 1;
+  tools.teal.pulsar.ui.api.v1.TopicSelector topic_selector = 1;
   MessageGenerator message_generator = 2;
   PulsarProducerConfig producer_config = 3;
   google.protobuf.Int64Value num_messages = 10;

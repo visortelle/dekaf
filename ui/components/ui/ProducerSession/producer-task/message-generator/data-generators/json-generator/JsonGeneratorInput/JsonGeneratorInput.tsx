@@ -18,8 +18,8 @@ const JsonGeneratorInput: React.FC<JsonGeneratorInputProps> = (props) => {
         <Select<JsonGenerator['generator']['type']>
           size='small'
           list={[
-            { type: 'item', title: 'Fixed', value: 'fixed-json-generator' },
-            { type: 'item', title: 'JavaScript', value: 'js-json-generator' },
+            { type: 'item', title: 'Static', value: 'fixed-json-generator' },
+            { type: 'item', title: 'Dynamic with JavaScript', value: 'js-json-generator' },
           ]}
           value={props.value.generator.type}
           onChange={(v) => {

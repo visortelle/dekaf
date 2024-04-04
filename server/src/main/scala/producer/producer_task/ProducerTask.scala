@@ -3,11 +3,12 @@ package producer.producer_task
 import com.tools.teal.pulsar.ui.producer.v1.producer as pb
 import _root_.producer.message_generator.MessageGenerator
 import _root_.producer.pulsar_producer_config.PulsarProducerConfig
+import consumer.session_target.topic_selector.TopicSelector
 
 case class ProducerTask(
-    targetTopicFqn: String,
+    topicSelector: TopicSelector,
     messageGenerator: MessageGenerator,
-    producerConfig: PulsarProducerConfig,
+    producerConfig: Option[PulsarProducerConfig],
     numMessages: Option[Long],
     limitDurationNanos: Option[Long],
     intervalNanos: Option[Long]
@@ -16,9 +17,9 @@ case class ProducerTask(
 object ProducerTask:
     def fromPb(v: pb.ProducerTask): ProducerTask =
         ProducerTask(
-            targetTopicFqn = v.targetTopicFqn,
+            topicSelector = v.topicSelector.map(TopicSelector.fromPb).get,
             messageGenerator = v.messageGenerator.map(MessageGenerator.fromPb).get,
-            producerConfig = v.producerConfig.map(PulsarProducerConfig.fromPb).get,
+            producerConfig = v.producerConfig.map(PulsarProducerConfig.fromPb),
             numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos
@@ -26,9 +27,9 @@ object ProducerTask:
 
     def toPb(v: ProducerTask): pb.ProducerTask =
         pb.ProducerTask(
-            targetTopicFqn = v.targetTopicFqn,
+            topicSelector = Some(TopicSelector.toPb(v.topicSelector)),
             messageGenerator = Some(MessageGenerator.toPb(v.messageGenerator)),
-            producerConfig = Some(PulsarProducerConfig.toPb(v.producerConfig)),
+            producerConfig = v.producerConfig.map(PulsarProducerConfig.toPb),
             numMessages = v.numMessages,
             limitDurationNanos = v.limitDurationNanos,
             intervalNanos = v.intervalNanos

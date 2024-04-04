@@ -18,7 +18,7 @@ case class ProducerSessionTaskRunner(
 ):
     def start(): Task[Unit] =
         taskRunner match
-            case v: ProducerTaskRunner => v.start()
+            case v: ProducerTaskRunner => v.resume()
 
     def stop(): Task[Unit] =
         taskRunner match
