@@ -3,8 +3,8 @@ import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from 
 import { BasicMessageFilter, BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
 import { ConsumerSessionTargetConsumptionMode } from "../../ConsumerSession/consumption-mode/consumption-mode";
-import { MessageGenerator } from "../../ProducerSession/message-generator/message-generator";
-import { PulsarProducerConfig } from "../../ProducerSession/pulsar-producer-config/pulsar-producer-config";
+import { MessageGenerator } from "../../ProducerSession/producer-task/message-generator/message-generator";
+import { PulsarProducerConfig } from "../../ProducerSession/producer-task/pulsar-producer-config/pulsar-producer-config";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -309,7 +309,7 @@ export type ManagedMessageGeneratorValOrRef = ValOrRef<ManagedMessageGenerator>;
 export type ManagedProducerTaskSpec = {
   topicSelector: ManagedTopicSelectorValOrRef,
   messageGenerator: ManagedMessageGeneratorValOrRef,
-  producerConfig: PulsarProducerConfig,
+  producerConfig: PulsarProducerConfig | undefined,
   numMessages: number | undefined,
   limitDurationNanos: number | undefined,
   intervalNanos: number | undefined,

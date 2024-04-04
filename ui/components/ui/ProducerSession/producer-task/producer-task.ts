@@ -1,7 +1,7 @@
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/producer_pb';
 import { Int64Value } from 'google-protobuf/google/protobuf/wrappers_pb';
-import { MessageGenerator, messageGeneratorFromPb, messageGeneratorToPb } from '../message-generator/message-generator';
-import { PulsarProducerConfig, pulsarProducerConfigFromPb, pulsarProducerConfigToPb } from '../pulsar-producer-config/pulsar-producer-config';
+import { MessageGenerator, messageGeneratorFromPb, messageGeneratorToPb } from './message-generator/message-generator';
+import { PulsarProducerConfig, pulsarProducerConfigFromPb, pulsarProducerConfigToPb } from './pulsar-producer-config/pulsar-producer-config';
 
 export type ProducerTask = {
   type: 'producer-task',

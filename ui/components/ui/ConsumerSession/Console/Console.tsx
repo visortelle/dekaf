@@ -46,10 +46,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
 
         return (
           <Producer
-            preset={{
-              topic: props.currentTopic,
-              key: ''
-            }}
+            libraryContext={props.libraryContext}
           />
         )
       }

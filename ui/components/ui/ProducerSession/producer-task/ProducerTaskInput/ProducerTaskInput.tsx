@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import s from './ProducerTaskInput.module.css'
-import PulsarProducerConfigInput from '../../pulsar-producer-config/PulsarProducerConfigInput';
+import PulsarProducerConfigInput from '../pulsar-producer-config/PulsarProducerConfigInput';
 import { ManagedProducerTask, ManagedProducerTaskSpec, ManagedProducerTaskValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
 import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';

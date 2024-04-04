@@ -22,7 +22,6 @@ export function getReadableItemType(managedItemType: ManagedItemType): string {
     case "deserializer": return "Deserializer"
     case "message-generator": return "Message Generator";
     case "producer-task": return "Producer Task";
-    case "producer-session-task": return "Producer Session Task";
     case "producer-session-config": return "Producer Session";
   }
 }

@@ -1,7 +1,7 @@
 import { themeBackgroundColorName, themeForegroundColorName } from "../ConsumerSession/SessionConfiguration/ColoringRulesInput/ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette";
 import { LibraryItem } from "./model/library";
 import { LibraryContext, resourceMatcherFromContext } from "./model/library-context";
-import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDeserializer, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from "./model/user-managed-items";
+import { ManagedBasicMessageFilterTarget, ManagedColoringRule, ManagedColoringRuleChain, ManagedConsumerSessionConfig, ManagedConsumerSessionStartFrom, ManagedConsumerSessionTarget, ManagedDeserializer, ManagedItem, ManagedItemMetadata, ManagedItemType, ManagedMarkdownDocument, ManagedMessageFilterChain, ManagedMessageGenerator, ManagedProducerSessionConfig, ManagedProducerTask, ManagedTopicSelector, ManagedValueProjection, ManagedValueProjectionList } from "./model/user-managed-items";
 import { v4 as uuid } from 'uuid';
 
 export function getDefaultManagedItemMetadata(itemType: ManagedItemType): ManagedItemMetadata {
@@ -269,6 +269,76 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
           }
         }
       }
+
+      return v;
+    }
+
+    case "message-generator": {
+      const v: ManagedMessageGenerator = {
+        metadata,
+        spec: {
+          generator: {
+            type: 'message-generator',
+            deliverAfterGenerator: undefined,
+            deliverAtGenerator: undefined,
+            eventTimeGenerator: undefined,
+            keyGenerator: undefined,
+            orderingKeyGenerator: undefined,
+            propertiesGenerator: undefined,
+            sequenceIdGenerator: undefined,
+            valueGenerator: {
+              type: 'value-generator',
+              generator: {
+                type: 'value-from-topic-schema',
+                generator: {
+                  type: 'value-from-topic-schema'
+                }
+              }
+            }
+          }
+        }
+      };
+
+      return v;
+    }
+
+    case "producer-task": {
+      const v: ManagedProducerTask = {
+        metadata,
+        spec: {
+          numMessages: 1,
+          producerConfig: undefined,
+          topicSelector: {
+            type: 'value',
+            val: getDefaultManagedItem("topic-selector", libraryContext) as ManagedTopicSelector
+          },
+          intervalNanos: 1_000_000_000,
+          limitDurationNanos: 1_000_000_000 * 60,
+          messageGenerator: {
+            type: 'value',
+            val: getDefaultManagedItem("message-generator", libraryContext) as ManagedMessageGenerator
+          }
+        }
+      };
+
+      return v;
+    }
+
+    case "producer-session-config": {
+      const v: ManagedProducerSessionConfig = {
+        metadata,
+        spec: {
+          tasks: [{
+            task: {
+              type: 'producer-task',
+              task: {
+                type: 'value',
+                val: getDefaultManagedItem("producer-task", libraryContext) as ManagedProducerTask
+              }
+            }
+          }]
+        }
+      };
 
       return v;
     }

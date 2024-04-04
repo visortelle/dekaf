@@ -1,16 +1,138 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import s from './ProducerSessionConfigInput.module.css'
-import { ManagedProducerSessionConfigValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
+import { ManagedProducerSessionConfig, ManagedProducerSessionConfigSpec, ManagedProducerSessionConfigTask, ManagedProducerSessionConfigValOrRef, ManagedProducerTask, ManagedProducerTaskValOrRef } from '../../../LibraryBrowser/model/user-managed-items';
+import { useHover } from '../../../../app/hooks/use-hover';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../LibraryBrowser/useManagedItemValue';
+import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
+import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import ProducerTaskInput from '../../producer-task/ProducerTaskInput/ProducerTaskInput';
+import { cloneDeep } from 'lodash';
+import AddButton from '../../../AddButton/AddButton';
+import { getDefaultManagedItem } from '../../../LibraryBrowser/default-library-items';
+import DeleteButton from '../../../DeleteButton/DeleteButton';
 
 export type ProducerSessionConfigInputProps = {
   value: ManagedProducerSessionConfigValOrRef,
-  onChange: (v: ManagedProducerSessionConfigValOrRef) => void
+  onChange: (v: ManagedProducerSessionConfigValOrRef) => void,
+  libraryContext: LibraryContext;
+  isReadOnly?: boolean;
+  libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
 const ProducerSessionConfigInput: React.FC<ProducerSessionConfigInputProps> = (props) => {
-  return (
-    <div className={s.ProducerSessionConfigInput}>
+  const [hoverRef, isHovered] = useHover();
+  const ref = useRef<HTMLDivElement>(null);
 
+  const resolveResult = useManagedItemValue<ManagedProducerSessionConfig>(props.value);
+
+  useEffect(() => {
+    if (props.value.val === undefined && resolveResult.type === 'success') {
+      props.onChange({ ...props.value, val: resolveResult.value });
+    }
+  }, [resolveResult]);
+
+  if (resolveResult.type !== 'success') {
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
+  }
+
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
+
+  const onSpecChange = (spec: ManagedProducerSessionConfigSpec) => {
+    const newValue: ManagedProducerSessionConfigValOrRef = { ...props.value, val: { ...item, spec } };
+    props.onChange(newValue);
+  };
+
+  const onConvertToValue = () => {
+    const newValue: ManagedProducerSessionConfigValOrRef = { type: 'value', val: item };
+    props.onChange(newValue);
+  };
+
+  return (
+    <div ref={ref} className={s.ProducerSessionConfigInput}>
+      <div ref={hoverRef} className={s.Column}>
+        <LibraryBrowserPanel
+          itemType='producer-session-config'
+          value={item}
+          onPick={(item) => props.onChange({
+            type: 'value',
+            val: item as ManagedProducerSessionConfig
+          })}
+          onSave={(item) => props.onChange({
+            type: 'value',
+            val: item as ManagedProducerSessionConfig
+          })}
+          onChange={(item) => {
+            props.onChange({
+              ...props.value,
+              val: item as ManagedProducerSessionConfig
+            });
+          }}
+          isForceShowButtons={isHovered}
+          libraryContext={props.libraryContext}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          isReadOnly={props.isReadOnly}
+          {...props.libraryBrowserPanel}
+        />
+      </div>
+
+      {itemSpec.tasks.map((task, i) => {
+        const key = task.task.type === 'producer-task' ? task.task.task.val?.metadata.id : i;
+        return (
+          <div key={key} className={s.Column}>
+            <div className={s.TaskIndex}>Task {i + 1}</div>
+            <div className={s.DeleteButton}>
+              <DeleteButton
+                appearance='borderless-semitransparent'
+                onClick={() => {
+                  const newTasks = itemSpec.tasks.filter((_, j) => j !== i);
+                  onSpecChange({ ...itemSpec, tasks: newTasks });
+                }}
+                isHideText
+              />
+            </div>
+
+            {task.task.type === 'producer-task' && (
+              <div className={s.Task}>
+                <ProducerTaskInput
+                  value={task.task.task}
+                  onChange={(v) => {
+                    const newTasks = cloneDeep(itemSpec.tasks);
+                    newTasks[i].task.task = v;
+                    onSpecChange({ ...itemSpec, tasks: newTasks });
+                  }}
+                  libraryContext={props.libraryContext}
+                  isReadOnly={props.isReadOnly}
+                  libraryBrowserPanel={props.libraryBrowserPanel}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      <div className={s.LastColumn}>
+        <AddButton
+          text='Add Producer Task'
+          onClick={() => {
+            const newProducerTask: ManagedProducerTaskValOrRef = {
+              type: "value",
+              val: getDefaultManagedItem("producer-task", props.libraryContext) as ManagedProducerTask
+            };
+
+            const newTask: ManagedProducerSessionConfigTask = {
+              task: { type: 'producer-task', task: newProducerTask }
+            };
+
+            const newTasks = itemSpec.tasks.concat([newTask]);
+            onSpecChange({ ...itemSpec, tasks: newTasks });
+
+            setTimeout(() => {
+              ref.current?.scrollTo({ left: ref.current.scrollWidth, behavior: 'smooth' });
+            }, 100);
+          }}
+        />
+      </div>
     </div>
   );
 }

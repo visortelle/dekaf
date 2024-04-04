@@ -17,6 +17,7 @@ import { cloneDeep } from 'lodash';
 import LibraryItemName from './LibraryItemName/LibraryItemName';
 import DeleteButton from '../../DeleteButton/DeleteButton';
 import LibraryBrowserPickButton from './LibraryBrowserButtons/PickLibraryItemButton/PickLibraryItemButton';
+import { getReadableItemType } from '../get-readable-item-type';
 
 export type HidableElement = 'save-button';
 
@@ -56,19 +57,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <div style={{ display: 'flex', gap: '8rem' }}>
               {props.extraElements?.preItemType}
               <strong>
-                {props.itemType === 'consumer-session-config' && 'Consumer Session'}
-                {props.itemType === 'message-filter' && 'Filter'}
-                {props.itemType === 'message-filter-chain' && ' Filter Chain'}
-                {props.itemType === 'consumer-session-start-from' && 'Start From'}
-                {props.itemType === 'topic-selector' && 'Topic Selector'}
-                {props.itemType === 'consumer-session-target' && 'Consumer Target'}
-                {props.itemType === 'coloring-rule' && 'Coloring Rule'}
-                {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
-                {props.itemType === 'markdown-document' && 'Markdown Document'}
-                {props.itemType === 'basic-message-filter-target' && 'Target Field'}
-                {props.itemType === 'value-projection' && 'Projection'}
-                {props.itemType === 'value-projection-list' && 'Projection List'}
-                {props.itemType === 'deserializer' && 'Deserializer'}
+                {getReadableItemType(props.itemType)}
               </strong>
             </div>
           )}

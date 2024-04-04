@@ -37,8 +37,8 @@ import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageF
 import { Int32Value, Int64Value } from "google-protobuf/google/protobuf/wrappers_pb";
 import { deserializerFromPb, deserializerToPb } from "../../ConsumerSession/deserializer/deserializer";
 import { consumerSessionTargetConsumptionModeFromPb, consumerSessionTargetConsumptionModeToPb } from "../../ConsumerSession/consumption-mode/consumption-mode";
-import { messageGeneratorFromPb, messageGeneratorToPb } from "../../ProducerSession/message-generator/message-generator";
-import { pulsarProducerConfigFromPb, pulsarProducerConfigToPb } from "../../ProducerSession/pulsar-producer-config/pulsar-producer-config";
+import { messageGeneratorFromPb, messageGeneratorToPb } from "../../ProducerSession/producer-task/message-generator/message-generator";
+import { pulsarProducerConfigFromPb, pulsarProducerConfigToPb } from "../../ProducerSession/producer-task/pulsar-producer-config/pulsar-producer-config";
 
 export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType {
   switch (v) {
@@ -1436,7 +1436,10 @@ export function managedProducerTaskSpecToPb(v: t.ManagedProducerTaskSpec): pb.Ma
 
   specPb.setTopicSelector(managedTopicSelectorValOrRefToPb(v.topicSelector));
   specPb.setMessageGenerator(managedMessageGeneratorValOrRefToPb(v.messageGenerator));
-  specPb.setProducerConfig(pulsarProducerConfigToPb(v.producerConfig));
+
+  if (v.producerConfig !== undefined) {
+    specPb.setProducerConfig(pulsarProducerConfigToPb(v.producerConfig));
+  }
 
   if (v.numMessages !== undefined) {
     specPb.setNumMessages(new Int64Value().setValue(v.numMessages));
