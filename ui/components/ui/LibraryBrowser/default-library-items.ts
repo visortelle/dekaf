@@ -289,9 +289,13 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
             valueGenerator: {
               type: 'value-generator',
               generator: {
-                type: 'value-from-topic-schema',
+                type: 'from-json',
                 generator: {
-                  type: 'value-from-topic-schema'
+                  type: 'json-generator',
+                  generator: {
+                    type: 'fixed-json-generator',
+                    json: '{}'
+                  }
                 }
               }
             }

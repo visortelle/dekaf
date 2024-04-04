@@ -5,7 +5,6 @@ import Select from '../../../../../../Select/Select';
 import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
 import FixedJsonGeneratorInput from '../FixedJsonGeneratorInput/FixedJsonGeneratorInput';
 import JsJsonGeneratorInput from '../JsJsonGeneratorInput/JsJsonGeneratorInput';
-import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
 
 export type JsonGeneratorInputProps = {
   value: JsonGenerator,
@@ -16,7 +15,6 @@ const JsonGeneratorInput: React.FC<JsonGeneratorInputProps> = (props) => {
   return (
     <div className={s.JsonGeneratorInput}>
       <FormItem size='small'>
-        <FormLabel content="JSON Generator" />
         <Select<JsonGenerator['generator']['type']>
           size='small'
           list={[
@@ -40,7 +38,11 @@ const JsonGeneratorInput: React.FC<JsonGeneratorInputProps> = (props) => {
                   ...props.value,
                   generator: {
                     type: 'js-json-generator',
-                    jsCode: '',
+                    jsCode: `() => {
+// You can generate random data by using Faker.js, e.g. libs.faker.person.firstName()
+// Available functions: https://fakerjs.dev/api/
+  return {};
+}`,
                   }
                 });
                 break;

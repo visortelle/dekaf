@@ -6,6 +6,7 @@ import { LibraryContext } from '../../../LibraryBrowser/model/library-context';
 import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../../LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../LibraryBrowser/useManagedItemValue';
+import MessageGeneratorInput from '../message-generator/MessageGeneratorInput/MessageGeneratorInput';
 
 export type ProducerTaskInputProps = {
   value: ManagedProducerTaskValOrRef,
@@ -70,6 +71,12 @@ const ProducerTaskInput: React.FC<ProducerTaskInputProps> = (props) => {
           {...props.libraryBrowserPanel}
         />
       </div>
+
+      <MessageGeneratorInput
+        value={itemSpec.messageGenerator}
+        onChange={(v) => onSpecChange({ ...itemSpec, messageGenerator: v })}
+        libraryContext={props.libraryContext}
+      />
 
       <PulsarProducerConfigInput
         value={itemSpec.producerConfig}

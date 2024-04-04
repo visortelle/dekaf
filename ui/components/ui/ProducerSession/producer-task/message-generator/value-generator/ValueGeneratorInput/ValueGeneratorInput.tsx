@@ -5,6 +5,7 @@ import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import Select from '../../../../../Select/Select';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
 import Toggle from '../../../../../Toggle/Toggle';
+import JsonGeneratorInput from '../../data-generators/json-generator/JsonGeneratorInput/JsonGeneratorInput';
 
 export type ValueGeneratorInputProps = {
   value: ValueGenerator | undefined,
@@ -47,9 +48,9 @@ const ValueGeneratorInput: React.FC<ValueGeneratorInputProps> = (props) => {
             size='small'
             value={props.value.generator.type}
             list={[
-              { type: 'item', title: 'From Bytes', value: 'from-bytes' },
+              { type: 'item', title: 'Raw Bytes', value: 'from-bytes' },
               { type: 'item', title: 'From JSON', value: 'from-json' },
-              { type: 'item', title: 'Use Topic Schema', value: 'value-from-topic-schema' }
+              { type: 'item', title: 'Random Message', value: 'value-from-topic-schema' }
             ]}
             onChange={(v) => {
               if (props.value === undefined) {
@@ -105,7 +106,27 @@ const ValueGeneratorInput: React.FC<ValueGeneratorInputProps> = (props) => {
             }}
           />
         )}
+      </FormItem>
 
+      <FormItem size='small'>
+        {props.value?.generator?.type === 'from-json' && (
+          <JsonGeneratorInput
+            value={props.value.generator.generator}
+            onChange={(v) => {
+              if (props.value === undefined) {
+                return;
+              }
+
+              props.onChange({
+                ...props.value,
+                generator: {
+                  type: 'from-json',
+                  generator: v
+                }
+              });
+            }}
+          />
+        )}
       </FormItem>
     </div>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import s from './JsJsonGeneratorInput.module.css'
 import { JsJsonGenerator } from '../js-json-generator';
+import CodeEditor from '../../../../../../CodeEditor/CodeEditor';
 
 export type JsJsonGeneratorInputProps = {
   value: JsJsonGenerator,
@@ -10,7 +11,12 @@ export type JsJsonGeneratorInputProps = {
 const JsJsonGeneratorInput: React.FC<JsJsonGeneratorInputProps> = (props) => {
   return (
     <div className={s.JsJsonGeneratorInput}>
-      js json generator
+      <CodeEditor
+        value={props.value.jsCode}
+        onChange={(v) => props.onChange({ ...props.value, jsCode: v || '' })}
+        language='javascript'
+        height={100}
+      />
     </div>
   );
 }
