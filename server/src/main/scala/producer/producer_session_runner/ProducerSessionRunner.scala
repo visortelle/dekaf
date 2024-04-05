@@ -9,7 +9,6 @@ import org.apache.pulsar.client.api.PulsarClient
 import producer.producer_session.ProducerSessionConfig
 import producer.producer_session.producer_session_task.ProducerSessionTask
 import org.graalvm.polyglot.Context
-import org.apache.commons.lang3.time.StopWatch
 
 case class ProducerSessionRunner(
     pulsarClient: PulsarClient,
@@ -36,11 +35,7 @@ object ProducerSessionRunner:
         sessionId: String,
         sessionConfig: ProducerSessionConfig
     ): ProducerSessionRunner =
-        val _watch = new StopWatch()
-        _watch.start()
         val sessionContext = ConsumerSessionContextPool.getContext
-        _watch.stop()
-        java.lang.System.out.println(s"--------------- JS CONTEXT CREATION - ${_watch.getTime}")
 
         val taskRunners = sessionConfig.tasks.zipWithIndex.map((taskConfig, taskIndex) =>
             ProducerSessionTaskRunner.make(

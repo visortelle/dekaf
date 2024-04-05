@@ -38,8 +38,6 @@ import scala.concurrent.Future
 import scala.util.boundary
 import boundary.break
 
-import org.apache.commons.lang3.time.StopWatch
-
 type ProducerSessionId = String
 
 class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
@@ -48,8 +46,6 @@ class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
     private val runtime = Runtime.default
 
     override def createProducerSession(request: CreateProducerSessionRequest): Future[CreateProducerSessionResponse] =
-        val _watch = new StopWatch()
-        _watch.start()
         val pulsarClient = RequestContext.pulsarClient.get()
         val adminClient = RequestContext.pulsarAdmin.get()
 
@@ -64,9 +60,6 @@ class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
             )
 
             sessionRunners += sessionId -> sessionRunner
-
-            _watch.stop()
-            java.lang.System.out.println(s"CREATE PRODUCER - ${_watch.getTime}")
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(CreateProducerSessionResponse(status = Some(status)))
@@ -89,11 +82,8 @@ class ProducerServiceImpl extends pb.ProducerServiceGrpc.ProducerService:
         sessionRunner match
             case Some(runner) =>
                 try {
-                    val _watch = new StopWatch()
-                    _watch.start()
                     Unsafe.unsafe(implicit unsafe => runtime.unsafe.run(runner.start()).getOrThrowFiberFailure())
-                    _watch.stop()
-                    java.lang.System.out.println(s"CREATE PRODUCER - ${_watch.getTime}")
+
                     val status: Status = Status(code = Code.OK.index)
                     Future.successful(ResumeProducerSessionResponse(status = Some(status)))
                 } catch {
