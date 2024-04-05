@@ -18,7 +18,7 @@ type ConsumerSessionTargetIndex = Int
 case class ConsumerSessionRunner(
     sessionName: String,
     sessionConfig: ConsumerSessionConfig,
-    sessionContextPool: ConsumerSessionContextPool,
+    sessionContext: ConsumerSessionContext,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
@@ -121,7 +121,7 @@ object ConsumerSessionRunner:
         sessionName: String,
         sessionConfig: ConsumerSessionConfig
     ): ConsumerSessionRunner =
-        val sessionContextPool = ConsumerSessionContextPool()
+        val sessionContext = ConsumerSessionContextPool.getContext
 
         var targets = sessionConfig.targets
             .filter(_.isEnabled)
@@ -132,7 +132,7 @@ object ConsumerSessionRunner:
                     pulsarClient = pulsarClient,
                     adminClient = adminClient,
                     schemasByTopic = Map.empty,
-                    sessionContextPool = sessionContextPool,
+                    sessionContext = sessionContext,
                     targetConfig = targetConfig
                 )
             }.toMap
@@ -158,7 +158,7 @@ object ConsumerSessionRunner:
             sessionName = sessionName,
             sessionConfig = sessionConfig,
             schemasByTopic = schemasByTopic,
-            sessionContextPool = sessionContextPool,
+            sessionContext = sessionContext,
             targets = targets,
             grpcResponseObserver = None
         )

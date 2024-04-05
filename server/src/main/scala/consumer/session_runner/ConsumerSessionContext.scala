@@ -115,3 +115,5 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         if filterChain.isNegated then isOk = !isOk
 
         ChainTestResult(isOk = isOk, results = filterResults)
+
+    def close() = context.close(true)

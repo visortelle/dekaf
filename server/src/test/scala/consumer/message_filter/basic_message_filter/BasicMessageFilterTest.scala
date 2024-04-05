@@ -35,7 +35,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             ),
             filter = basicMessageFilter
         )
-        val sessionContext = sessionContextPool.getNextContext
+        val sessionContext = sessionContextPool.get
         sessionContext.setCurrentMessage(spec.messageJsonOmittingValue.toJson, Right(spec.messageValueAsJson.trim))
 
         val result = sessionContext.testMessageFilter(filter = filter).isOk
@@ -51,7 +51,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(BasicMessageFilter.getClass.toString) {
             assertTrue {
                 val sessionContextPool = ConsumerSessionContextPool()
-                val sessionContext = sessionContextPool.getNextContext
+                val sessionContext = sessionContextPool.get
 
                 val basicMessageFilter = BasicMessageFilter(
                     op = BasicMessageFilterOp(
@@ -80,7 +80,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(BasicMessageFilter.getClass.toString) {
             assertTrue {
                 val sessionContextPool = ConsumerSessionContextPool()
-                val sessionContext = sessionContextPool.getNextContext
+                val sessionContext = sessionContextPool.get
 
                 val basicMessageFilter = BasicMessageFilter(
                     op = BasicMessageFilterOp(

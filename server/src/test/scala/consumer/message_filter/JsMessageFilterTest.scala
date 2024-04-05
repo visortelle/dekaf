@@ -33,7 +33,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
             ),
             filter = jsMessageFilter
         )
-        val sessionContext = sessionContextPool.getNextContext
+        val sessionContext = sessionContextPool.get
         sessionContext.setCurrentMessage(spec.messageAsJsonOmittingValue, Right(spec.messageValueAsJson.trim))
 
         val result = sessionContext.testMessageFilter(filter = filter).isOk

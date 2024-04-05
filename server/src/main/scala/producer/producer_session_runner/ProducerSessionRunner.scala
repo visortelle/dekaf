@@ -38,8 +38,7 @@ object ProducerSessionRunner:
     ): ProducerSessionRunner =
         val _watch = new StopWatch()
         _watch.start()
-        val sessionContextPool = ConsumerSessionContextPool()
-        val sessionContext = sessionContextPool.getNextContext
+        val sessionContext = ConsumerSessionContextPool.getContext
         _watch.stop()
         java.lang.System.out.println(s"--------------- JS CONTEXT CREATION - ${_watch.getTime}")
 

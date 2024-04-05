@@ -24,7 +24,7 @@ case class ConsumerSessionTargetRunner(
     targetConfig: ConsumerSessionTarget,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
     schemasByTopic: SchemasByTopic,
-    sessionContextPool: ConsumerSessionContextPool,
+    sessionContext: ConsumerSessionContext,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
@@ -47,7 +47,6 @@ case class ConsumerSessionTargetRunner(
                 stats.messageProcessed += 1
                 incrementNumMessageProcessed()
 
-                val sessionContext = sessionContextPool.getNextContext
                 val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
                 val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
                 val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
@@ -137,7 +136,7 @@ object ConsumerSessionTargetRunner:
         sessionName: String,
         targetIndex: Int,
         targetConfig: ConsumerSessionTarget,
-        sessionContextPool: ConsumerSessionContextPool,
+        sessionContext: ConsumerSessionContext,
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
         pulsarClient: PulsarClient
@@ -166,7 +165,7 @@ object ConsumerSessionTargetRunner:
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
                 targetConfig = targetConfig,
-                sessionContextPool = sessionContextPool,
+                sessionContext = sessionContext,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
                 consumerListener = listener,

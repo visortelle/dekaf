@@ -86,6 +86,7 @@ const ProducerSessionConfigInput: React.FC<ProducerSessionConfigInputProps> = (p
         />
 
         <SmallButton
+          type='primary'
           text='Run'
           onClick={async () => {
             const createSessionReq = new pb.CreateProducerSessionRequest();
