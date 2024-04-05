@@ -14,20 +14,9 @@ val isDebug = false
 object ConsumerSessionContextPool:
     private val poolSize = 10
     private val contextPool: mutable.Queue[ConsumerSessionContext] = mutable.Queue.empty
+
     private val lock = new ReentrantLock()
-
     private val taskExecutor = new ScheduledThreadPoolExecutor(1)
-    private val task = new Runnable {
-        def run(): Unit =
-            if contextPool.size < poolSize && !lock.isLocked then
-                lock.lock()
-
-                val context: ConsumerSessionContext = createContext()
-                contextPool.enqueue(context)
-
-                lock.unlock()
-    }
-    taskExecutor.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS)
 
     private def createContext(): ConsumerSessionContext =
         val engine = Engine.newBuilder().build()
@@ -38,6 +27,19 @@ object ConsumerSessionContextPool:
                 engine = engine
             )
         )
+
+    def init(): Unit =
+        val task = new Runnable {
+            def run(): Unit =
+                if contextPool.size < poolSize && !lock.isLocked then
+                    lock.lock()
+
+                    val context: ConsumerSessionContext = createContext()
+                    contextPool.enqueue(context)
+
+                    lock.unlock()
+        }
+        taskExecutor.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS)
 
     def getContext: ConsumerSessionContext =
         Try(contextPool.dequeue) match

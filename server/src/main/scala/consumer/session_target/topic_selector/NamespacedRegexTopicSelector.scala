@@ -2,9 +2,12 @@ package consumer.session_target.topic_selector
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import org.apache.pulsar.client.admin.PulsarAdmin
+
 import scala.jdk.CollectionConverters.*
 import _root_.topic.{getTopicPartitioning, getTopicPartitions, TopicPartitioningType}
 import org.apache.pulsar.common.naming.TopicDomain
+
+import scala.util.Try
 
 case class NamespacedRegexTopicSelector(namespaceFqn: String, pattern: String, regexSubscriptionMode: RegexSubscriptionMode):
     private def getMatchedTopics(adminClient: PulsarAdmin): Vector[String] =
@@ -33,7 +36,14 @@ case class NamespacedRegexTopicSelector(namespaceFqn: String, pattern: String, r
 
         matchedTopicFqns.flatMap { topicFqn =>
             getTopicPartitioning(adminClient, topicFqn).`type` match
-                case TopicPartitioningType.Partitioned    => getTopicPartitions(adminClient, topicFqn)
+                case TopicPartitioningType.Partitioned =>
+                    /* XXX - Create missed partitions before returning the partitions list.
+                     * In case we start consume partitioned topic without active partitions,
+                     * and producer some messages to it, we'll don't see any messages.
+                     */
+                    Try(adminClient.topics().createMissedPartitions(topicFqn))
+
+                    getTopicPartitions(adminClient, topicFqn)
                 case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
         }.distinct
 

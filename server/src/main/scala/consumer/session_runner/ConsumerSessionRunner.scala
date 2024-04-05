@@ -112,6 +112,7 @@ case class ConsumerSessionRunner(
     def stop(): Unit =
         pause()
         targets.values.foreach(_.stop())
+        sessionContext.close()
 }
 
 object ConsumerSessionRunner:

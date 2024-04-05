@@ -13,6 +13,12 @@ case class MultiTopicSelector(topicFqns: Vector[String]):
             Try({ getTopicPartitioning(adminClient, topicFqn).`type` }) match
                 case Success(topicPartitioning) => topicPartitioning match
                         case TopicPartitioningType.Partitioned =>
+                            /* XXX - Create missed partitions before returning the partitions list.
+                            * In case we start consume partitioned topic without active partitions,
+                            * and producer some messages to it, we'll don't see any messages.
+                             */
+                            Try(adminClient.topics().createMissedPartitions(topicFqn))
+
                             val partitions = getTopicPartitions(adminClient, topicFqn)
                             partitions
                         case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
