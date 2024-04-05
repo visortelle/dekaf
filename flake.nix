@@ -67,7 +67,7 @@
               pkgs.nodejs-18_x
 
               pkgs.graalvm-ce
-              pkgs.dotty
+              pkgs.scala_3
               pkgs.scalafmt
               pkgs.scalafix
               pkgs.sbt

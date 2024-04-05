@@ -44,7 +44,7 @@ case class ConsumerSessionTargetRunner(
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             boundary:
-                stats.messageProcessed += 1
+                stats.messageProcessed = stats.messageProcessed + 1
                 incrementNumMessageProcessed()
 
                 val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
@@ -121,7 +121,7 @@ case class ConsumerSessionTargetRunner(
         consumers.foreach((_, consumer) => consumer.pause())
         consumerListener.stopAcceptingNewMessages()
 
-    def stop(): Unit =
+    def close(): Unit =
         consumers.foreach((_, consumer) =>
             Try {
                 consumer.unsubscribe()

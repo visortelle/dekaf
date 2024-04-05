@@ -7,28 +7,15 @@ import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    PauseRequest,
-    PauseResponse,
-    ResolveTopicSelectorRequest,
-    ResolveTopicSelectorResponse,
-    ResumeRequest,
-    ResumeResponse,
-    RunCodeRequest,
-    RunCodeResponse
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, PauseRequest, PauseResponse, ResolveTopicSelectorRequest, ResolveTopicSelectorResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse}
 import com.typesafe.scalalogging.Logger
 import _root_.consumer.session_target.topic_selector.TopicSelector
 import consumer.session_runner.ConsumerSessionRunner
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, ScheduledThreadPoolExecutor, TimeUnit}
 import scala.concurrent.Future
 import scala.jdk.OptionConverters.*
+import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
 type ConsumerSessionName = String
@@ -36,6 +23,32 @@ type ConsumerSessionName = String
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     private val logger: Logger = Logger(getClass.getName)
     private val consumerSessions: ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner] = new ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner]()
+
+    private val gcExecutor = new ScheduledThreadPoolExecutor(1)
+
+    def initGc(): Unit =
+        val task = new Runnable {
+            def run(): Unit =
+                val sessions = consumerSessions.entrySet().asScala
+                val idleSessions = sessions.filter(v => v.getValue.isIdle)
+
+                logger.info(s"Collecting idle ConsumerSessions. Total sessions: ${sessions.size}. Idle sessions: ${idleSessions.size}")
+                sessions.foreach(v => logger.info(s"ConsumerSession: ${v.getKey}. Idle: ${v.getValue.isIdle}"))
+
+                idleSessions.foreach(v => {
+                    val sessionName = v.getKey
+                    val session = v.getValue
+
+                    if session.isIdle then
+                        logger.info(s"Deleting idle ConsumerSession $sessionName")
+                        session.close()
+                        consumerSessions.remove(sessionName)
+                })
+        }
+        gcExecutor.scheduleAtFixedRate(task, 0, 3, TimeUnit.MINUTES)
+
+    initGc()
+
 
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val sessionName = request.consumerName
@@ -128,7 +141,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(DeleteConsumerResponse(status = Some(status)))
 
         try {
-            consumerSession.stop()
+            consumerSession.close()
             consumerSessions.remove(sessionName)
         } catch {
             case err: Throwable =>

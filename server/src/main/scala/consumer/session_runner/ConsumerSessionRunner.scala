@@ -22,16 +22,21 @@ case class ConsumerSessionRunner(
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
+    var lastTouched: Long, // For consumer session garbage collection
     var numMessageProcessed: Long = 0,
     var numMessageSent: Long = 0
-) {
+):
+    private def actualizeLastTouched(): Unit = lastTouched = System.currentTimeMillis()
+
     def incrementNumMessageProcessed(): Unit = numMessageProcessed = numMessageProcessed + 1
+    def isIdle: Boolean = System.currentTimeMillis() - lastTouched > 1000 * 60 * 10
 
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
         isDebug: Boolean
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
+        actualizeLastTouched()
 
         def onNext(
             messageFromTarget: Option[ConsumerSessionMessage],
@@ -40,6 +45,8 @@ case class ConsumerSessionRunner(
             errors: Vector[String]
         ): Unit = boundary:
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
+                actualizeLastTouched()
+
                 val allErrors = errors ++ additionalErrors
 
                 val status = allErrors.size match
@@ -107,13 +114,16 @@ case class ConsumerSessionRunner(
             isDebug = isDebug,
             incrementNumMessageProcessed = incrementNumMessageProcessed
         ))
+
     def pause(): Unit =
+        actualizeLastTouched()
         targets.values.foreach(_.pause())
-    def stop(): Unit =
+
+    def close(): Unit =
+        actualizeLastTouched()
         pause()
-        targets.values.foreach(_.stop())
+        targets.values.foreach(_.close())
         sessionContext.close()
-}
 
 object ConsumerSessionRunner:
     def make(
@@ -155,11 +165,15 @@ object ConsumerSessionRunner:
             nonPartitionedTopicFqns = nonPartitionedTopicFqns
         )
 
-        ConsumerSessionRunner(
+        val runner = ConsumerSessionRunner(
             sessionName = sessionName,
             sessionConfig = sessionConfig,
             schemasByTopic = schemasByTopic,
             sessionContext = sessionContext,
             targets = targets,
-            grpcResponseObserver = None
+            grpcResponseObserver = None,
+            lastTouched = 0
         )
+
+        runner.actualizeLastTouched()
+        runner
