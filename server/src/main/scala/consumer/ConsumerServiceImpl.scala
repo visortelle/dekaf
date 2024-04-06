@@ -54,6 +54,17 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val sessionName = request.consumerName
         logger.info(s"Resuming consumer session: $sessionName")
 
+        val serverCallStreamObserver = responseObserver.asInstanceOf[io.grpc.stub.ServerCallStreamObserver[ResumeResponse]]
+        serverCallStreamObserver.setOnCancelHandler(
+            () => {
+                logger.info(s"Consumer session $sessionName is cancelled")
+                Option(consumerSessions.get(sessionName)).map(consumerSession => {
+                    consumerSession.close()
+                    consumerSessions.remove(sessionName)
+                })
+            }
+        )
+
         val consumerSession = Option(consumerSessions.get(sessionName)) match
             case Some(consumerSession) => consumerSession
             case _ =>
