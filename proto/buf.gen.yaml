@@ -11,9 +11,11 @@ plugins:
     opt:
       - mode=grpcwebtext
       - import_style=typescript
-  - name: scala
+  - plugin: buf.build/community/scalapb-scala:v0.11.15
     out: ../server/src/main/scala/pb
     opt:
       - grpc
+      - no_lenses
+      - scala3_sources
   - name: java
     out: ../demoapp/src/main/java/
