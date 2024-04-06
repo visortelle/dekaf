@@ -73,7 +73,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
            |  const message = JSON.parse(messageAsJsonOmittingValue);
            |  message.value = JSON.parse(messageValueAsJson);
            |  message.state = $JsonStateVarName;
-           |  console.log(JSON.stringify(message, null, 4));
+           |
            |  $CurrentMessageVarName = message;
            |})
            |""".stripMargin
@@ -116,4 +116,4 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
 
         ChainTestResult(isOk = isOk, results = filterResults)
 
-    def close() = context.close(true)
+    def close(): Unit = context.close(true)
