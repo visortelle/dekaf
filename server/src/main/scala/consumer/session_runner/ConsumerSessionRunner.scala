@@ -8,6 +8,7 @@ import org.apache.pulsar.client.api.PulsarClient
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
 import consumer.value_projections.ValueProjectionResult
 
 import scala.util.boundary
@@ -22,21 +23,22 @@ case class ConsumerSessionRunner(
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
-    var lastTouched: Long, // For consumer session garbage collection
+    var touchedAt: Long, // For consumer session garbage collection
     var numMessageProcessed: Long = 0,
     var numMessageSent: Long = 0
 ):
-    private def actualizeLastTouched(): Unit = lastTouched = System.currentTimeMillis()
+    private def touch(): Unit = touchedAt = System.currentTimeMillis()
 
     def incrementNumMessageProcessed(): Unit = numMessageProcessed = numMessageProcessed + 1
-    def isIdle: Boolean = System.currentTimeMillis() - lastTouched > 1000 * 60 * 10
+
+    def isIdle: Boolean = System.currentTimeMillis() - touchedAt > 1000 * 60 * 60 * 24
 
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
         isDebug: Boolean
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
-        actualizeLastTouched()
+        touch()
 
         def onNext(
             messageFromTarget: Option[ConsumerSessionMessage],
@@ -44,8 +46,9 @@ case class ConsumerSessionRunner(
             stats: ConsumerSessionTargetStats,
             errors: Vector[String]
         ): Unit = boundary:
+
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
-                actualizeLastTouched()
+                touch()
 
                 val allErrors = errors ++ additionalErrors
 
@@ -57,7 +60,12 @@ case class ConsumerSessionRunner(
                     messages = messages,
                     status = Some(status)
                 )
-                grpcResponseObserver.onNext(response)
+
+                val serverCallStreamObserver = grpcResponseObserver.asInstanceOf[io.grpc.stub.ServerCallStreamObserver[consumerPb.ResumeResponse]]
+                if !serverCallStreamObserver.isCancelled then
+                    grpcResponseObserver.onNext(response)
+                else close()
+
                 boundary.break(())
 
             messageFromTarget match
@@ -116,11 +124,11 @@ case class ConsumerSessionRunner(
         ))
 
     def pause(): Unit =
-        actualizeLastTouched()
+        touch()
         targets.values.foreach(_.pause())
 
     def close(): Unit =
-        actualizeLastTouched()
+        touch()
         pause()
         targets.values.foreach(_.close())
         sessionContext.close()
@@ -130,7 +138,7 @@ object ConsumerSessionRunner:
         pulsarClient: PulsarClient,
         adminClient: PulsarAdmin,
         sessionName: String,
-        sessionConfig: ConsumerSessionConfig
+        sessionConfig: ConsumerSessionConfig,
     ): ConsumerSessionRunner =
         val sessionContext = ConsumerSessionContextPool.getContext
 
@@ -172,8 +180,7 @@ object ConsumerSessionRunner:
             sessionContext = sessionContext,
             targets = targets,
             grpcResponseObserver = None,
-            lastTouched = 0
+            touchedAt = System.currentTimeMillis(),
         )
 
-        runner.actualizeLastTouched()
         runner

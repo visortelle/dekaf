@@ -19,7 +19,7 @@ def buildConsumer(
 
     val consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(2000)
+        .receiverQueueSize(500)
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
