@@ -24,6 +24,32 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     private val logger: Logger = Logger(getClass.getName)
     private val consumerSessions: ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner] = new ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner]()
 
+    private val gcExecutor = new ScheduledThreadPoolExecutor(1)
+
+    def initGc(): Unit =
+        val task = new Runnable {
+            def run(): Unit =
+                val sessions = consumerSessions.entrySet().asScala
+                val idleSessions = sessions.filter(v => v.getValue.isIdle)
+
+                logger.info(s"Collecting idle ConsumerSessions. Total sessions: ${sessions.size}. Idle sessions: ${idleSessions.size}")
+                sessions.foreach(v => logger.info(s"ConsumerSession: ${v.getKey}. Idle: ${v.getValue.isIdle}"))
+
+                idleSessions.foreach(v => {
+                    val sessionName = v.getKey
+                    val session = v.getValue
+
+                    if session.isIdle then
+                        logger.info(s"Deleting idle ConsumerSession $sessionName")
+                        session.close()
+                        consumerSessions.remove(sessionName)
+                })
+        }
+        gcExecutor.scheduleAtFixedRate(task, 0, 3, TimeUnit.MINUTES)
+
+    initGc()
+
+
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val sessionName = request.consumerName
         logger.info(s"Resuming consumer session: $sessionName")
