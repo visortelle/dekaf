@@ -62,9 +62,9 @@ case class ConsumerSessionRunner(
                 )
 
                 val serverCallStreamObserver = grpcResponseObserver.asInstanceOf[io.grpc.stub.ServerCallStreamObserver[consumerPb.ResumeResponse]]
-                if !serverCallStreamObserver.isCancelled then
-                    grpcResponseObserver.onNext(response)
-                else close()
+                if serverCallStreamObserver.isCancelled
+                then close()
+                else grpcResponseObserver.onNext(response)
 
                 boundary.break(())
 
@@ -138,7 +138,7 @@ object ConsumerSessionRunner:
         pulsarClient: PulsarClient,
         adminClient: PulsarAdmin,
         sessionName: String,
-        sessionConfig: ConsumerSessionConfig,
+        sessionConfig: ConsumerSessionConfig
     ): ConsumerSessionRunner =
         val sessionContext = ConsumerSessionContextPool.getContext
 
@@ -180,7 +180,7 @@ object ConsumerSessionRunner:
             sessionContext = sessionContext,
             targets = targets,
             grpcResponseObserver = None,
-            touchedAt = System.currentTimeMillis(),
+            touchedAt = System.currentTimeMillis()
         )
 
         runner
