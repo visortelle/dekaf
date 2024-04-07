@@ -36,16 +36,16 @@ jobs:
       - name: Build UI and run quick tests
         if: "!(contains(github.ref, 'main') || github.ref == 'refs/heads/main')"
         shell: bash
-        run: nix-shell --run 'cd ./ui && make test && make build'
+        run: nix-shell --run 'cd ./ui && make build && make test'
 
       - name: Build UI and run all tests
         if: "contains(github.ref, 'main') || github.ref == 'refs/heads/main'"
         shell: bash
-        run: nix-shell --run 'cd ./ui && make test-all && make build'
+        run: nix-shell --run 'cd ./ui && make build && make test-all'
 
       - name: Build and test server
         shell: bash
-        run: nix-shell --run 'cd ./ui && make test && make build'
+        run: nix-shell --run 'cd ./ui && make build && make test'
 
   build-docker-images:
     needs: test
