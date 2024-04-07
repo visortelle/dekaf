@@ -12,6 +12,10 @@ import zio.test.*
 import zio.test.Assertion.*
 
 object JsMessageFilterTest extends ZIOSpecDefault:
+    // Creating a new session context take 2-3 sec.
+    // Running them sequentially with reused context is much faster.
+    private val sessionContext = ConsumerSessionContextPool.getContext
+
     case class TestSpec(
         targetField: BasicMessageFilterTargetTrait,
         targetJsonModifier: Option[JsonModifier] = None,
@@ -22,7 +26,6 @@ object JsMessageFilterTest extends ZIOSpecDefault:
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContextPool = ConsumerSessionContextPool()
         val jsMessageFilter = JsMessageFilter(jsCode = spec.jsCode)
         val filter = MessageFilter(
             isEnabled = true,
@@ -33,7 +36,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
             ),
             filter = jsMessageFilter
         )
-        val sessionContext = sessionContextPool.get
+
         sessionContext.setCurrentMessage(spec.messageAsJsonOmittingValue, Right(spec.messageValueAsJson.trim))
 
         val result = sessionContext.testMessageFilter(filter = filter).isOk
@@ -127,4 +130,4 @@ object JsMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         }
-    )
+    ) @@ TestAspect.sequential

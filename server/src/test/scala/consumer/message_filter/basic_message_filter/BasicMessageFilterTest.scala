@@ -14,6 +14,10 @@ import zio.test.*
 import zio.test.Assertion.*
 
 object BasicMessageFilterTest extends ZIOSpecDefault:
+    // Creating a new session context take 2-3 sec.
+    // Running them sequentially with reused context is much faster.
+    private val sessionContext = ConsumerSessionContextPool.getContext
+
     case class TestSpec(
         targetField: BasicMessageFilterTargetTrait,
         targetJsonModifier: Option[JsonModifier] = None,
@@ -24,7 +28,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContextPool = ConsumerSessionContextPool(isDebug = true)
         val basicMessageFilter = BasicMessageFilter(op = spec.op)
         val filter = MessageFilter(
             isEnabled = true,
@@ -35,7 +38,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             ),
             filter = basicMessageFilter
         )
-        val sessionContext = sessionContextPool.get
         sessionContext.setCurrentMessage(spec.messageJsonOmittingValue.toJson, Right(spec.messageValueAsJson.trim))
 
         val result = sessionContext.testMessageFilter(filter = filter).isOk
@@ -50,9 +52,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          */
         test(BasicMessageFilter.getClass.toString) {
             assertTrue {
-                val sessionContextPool = ConsumerSessionContextPool()
-                val sessionContext = sessionContextPool.get
-
                 val basicMessageFilter = BasicMessageFilter(
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
@@ -79,9 +78,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(BasicMessageFilter.getClass.toString) {
             assertTrue {
-                val sessionContextPool = ConsumerSessionContextPool()
-                val sessionContext = sessionContextPool.get
-
                 val basicMessageFilter = BasicMessageFilter(
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
@@ -2680,4 +2676,4 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 )
             )))
         }
-    )
+    ) @@ TestAspect.sequential
