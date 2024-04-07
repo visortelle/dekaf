@@ -5,6 +5,8 @@ services:
     image: apachepulsar/pulsar-all:3.1.2
     command: /entrypoint.sh topic-level-policies-enabled
     restart: always
+    environment:
+      PULSAR_STANDALONE_USE_ZOOKEEPER: 1
     ports:
       - 6650:6650
       - 8080:8080
@@ -12,3 +14,8 @@ services:
     volumes:
       - $PWD/cases:/cases
       - $PWD/entrypoint.sh:/entrypoint.sh
+      - pulsar-data:/pulsar/data
+
+volumes:
+  pulsar-data:
+

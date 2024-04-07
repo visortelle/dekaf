@@ -2,9 +2,11 @@ version: '2.4'
 
 services:
   pulsar:
-    image: apachepulsar/pulsar:3.2.1
+    image: apachepulsar/pulsar:3.2.2
     restart: always
     entrypoint: /bin/bash -c "bin/pulsar standalone"
+    environment:
+      PULSAR_STANDALONE_USE_ZOOKEEPER: 1
     volumes:
       - pulsar-data:/pulsar/data
     ports:

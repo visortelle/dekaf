@@ -1,7 +1,9 @@
 package generators
 
 import _root_.client.adminClient
+import org.apache.pulsar.common.policies.data.RetentionPolicies
 import zio.*
+
 import scala.util.{Failure, Success, Try}
 import scala.jdk.CollectionConverters.*
 
@@ -94,7 +96,12 @@ object NamespacePlanExecutor:
                 case Success(isExists) => isExists
                 case Failure(_) => false
 
-            if !isNamespaceExists then adminClient.namespaces.createNamespace(namespaceFqn)
+            if !isNamespaceExists then
+              adminClient.namespaces.createNamespace(namespaceFqn)
+
+              // Infinite retention for tests
+//              val retention = new RetentionPolicies(-1, -1)
+//              adminClient.namespaces.setRetention(namespaceFqn, retention)
         }
         _ <- ZIO.foreachDiscard(namespacePlan.topics.values)(TopicPlanExecutor.allocateResources)
         _ <- ZIO.attempt(namespacePlan.afterAllocation())
