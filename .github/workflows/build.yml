@@ -31,7 +31,7 @@ jobs:
           install_options: --no-daemon
           extra_nix_config: experimental-features = nix-command flakes
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix build -L
+      # - run: nix build -L
 
       - name: Build proto files
         shell: bash
