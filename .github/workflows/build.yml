@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and test server
         shell: bash
-        run: nix-shell --run 'cd ./ui && make build && make test'
+        run: nix-shell --run 'cd ./server && make build && make test'
 
   build-docker-images:
     needs: test
