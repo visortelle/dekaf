@@ -4,6 +4,7 @@ import { MessageDescriptor, PartialMessageDescriptor } from "../../../../../type
 import { MessageFieldsConfig } from "../../types";
 import { takeMessageFields, splitMessagesToChunks, encodeBigArrayAsJsonBytes } from "./lib";
 import sizeof from "object-sizeof";
+import { longRunningTest } from "../../../../../../../../testing/long-running-test";
 
 describe("takeMessageFields", () => {
   it("should take only fields marked as 'active'", () => {
@@ -39,7 +40,7 @@ describe("encodeBigArrayAsJsonBytes", () => {
     expect(new TextDecoder().decode(got)).toBe('[{"name":"John","age":42},{"name":"Jane","age":42}]');
   });
 
-  it("handle big arrays", () => {
+  longRunningTest("handle big arrays", () => {
     const bytesInKb = 1024;
     const megabytesCount = 256;
 

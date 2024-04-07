@@ -1,3 +1,4 @@
+import { longRunningTest } from "../../../../../../../testing/long-running-test";
 import { genMessageDescriptor } from "../../../../testing";
 import { MessageDescriptor } from "../../../../types";
 import { genExportConfig } from "../testing";
@@ -5,7 +6,7 @@ import { ExportConfig } from "../types";
 import { genFiles } from "./file-per-raw-value";
 
 describe("genFiles", () => {
-  it("test1", async () => {
+  longRunningTest("test1", async () => {
     const messageRawValue = Uint8Array.from(Array.from({ length: 1024 * 100 }).map((_, i) => i));
 
     const messages = Array.from({ length: 10 }).map((_, i) => genMessageDescriptor({ displayIndex: i, rawValue: messageRawValue }));

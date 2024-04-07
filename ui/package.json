@@ -7,7 +7,8 @@
     "dev-prod-build": "node ./build.js --watch",
     "build": "npm run check-ts && node ./build.js",
     "check-ts": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest --verbose",
+    "test-all": "LONG_RUNNING_TESTS=true jest --verbose"
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.2.3",
