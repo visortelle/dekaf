@@ -6,8 +6,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: x64
-            arch: x64
+          - runner: arm64
+            arch: arm64
+          # - runner: x64
+          #   arch: x64
 
     runs-on: [self-hosted, "${{ matrix.runner }}"]
 
