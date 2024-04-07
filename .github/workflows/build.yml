@@ -25,9 +25,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
           extra_nix_config: experimental-features = nix-command flakes
-
-      - name: Build Nix dependencies
-        run: nix build -L
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build -L
 
       - name: Build proto files
         shell: bash
@@ -78,9 +77,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
           extra_nix_config: experimental-features = nix-command flakes
-
-      - name: Build Nix dependencies
-        run: nix build -L
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build -L
 
       - name: Build Docker images
         shell: bash
@@ -108,9 +106,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
           extra_nix_config: experimental-features = nix-command flakes
-
-      - name: Build Nix dependencies
-        run: nix build -L
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build -L
 
       - name: Create multiarch Docker manifest
         shell: bash
