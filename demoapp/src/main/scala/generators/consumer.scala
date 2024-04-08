@@ -12,7 +12,7 @@ case class ConsumerPlan(
 object ConsumerPlan:
     def make: Task[ConsumerPlan] = ZIO.succeed(
         ConsumerPlan(
-            name = "dekaf_default_consumer"
+            name = "demoapp-consumer"
         )
     )
 
@@ -28,7 +28,7 @@ case class ConsumerPlanGenerator(
 
 object ConsumerPlanGenerator:
     def make(
-        mkName: ConsumerIndex => String = i => s"consumer-$i"
+        mkName: ConsumerIndex => String = i => s"demoapp-$i"
     ): Task[ConsumerPlanGenerator] =
         val consumerPlanGenerator = ConsumerPlanGenerator(
             mkName = mkName

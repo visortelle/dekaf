@@ -48,7 +48,7 @@ object CatalogNamespace:
 
         val producerCommandsPlanGenerators = List(
             ProducerPlanGenerator.make(
-                mkName = i => s"CreateCatalog",
+                mkName = i => s"create-catalog",
                 mkMessage = _ =>
                     _ =>
                         val createCatalog = model.Message.random[CreateCatalog]
@@ -77,7 +77,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ActivateCatalog",
+                mkName = i => s"activate-catalog",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -101,7 +101,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"AddCatalogItem",
+                mkName = i => s"add-catalog-item",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -151,7 +151,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ChangeCatalogDescription",
+                mkName = i => s"change-catalog-description",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -179,7 +179,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ChangeCatalogTitle",
+                mkName = i => s"change-catalog-title",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -207,7 +207,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"DeactivateCatalog",
+                mkName = i => s"deactivate-catalog",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -231,7 +231,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"DeleteCatalog",
+                mkName = i => s"delete-catalog",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -255,7 +255,7 @@ object CatalogNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"RemoveCatalogItem",
+                mkName = i => s"remove-catalog-item",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogCommandsSchema](
@@ -286,7 +286,7 @@ object CatalogNamespace:
 
         val producerEventsPlanGenerators = List(
             ProducerPlanGenerator.make(
-                mkName = i => s"CatalogItemIncreased",
+                mkName = i => s"catalog-item-increased",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.CatalogEventsSchema](
@@ -365,13 +365,13 @@ object CatalogNamespace:
 
         val processorPlanGenerator =
             ProcessorPlanGenerator.make[pb.CatalogCommandsSchema, pb.CatalogEventsSchema](
-                mkName = _ => "CatalogProcessor",
+                mkName = _ => "catalog-processor",
                 mkConsumingTopicPlan = _ => mkTopicPlan(catalogCommandsTopicPlanGenerator, 0),
                 mkProducingTopicPlan = _ => mkTopicPlan(catalogEventsTopicPlanGenerator, 0),
-                mkSubscriptionPlan = _ => mkSubscriptionPlan("CatalogProcessorSubscription"),
+                mkSubscriptionPlan = _ => mkSubscriptionPlan("catalog-processor-subscription"),
                 mkWorkerCount = _ => DemoAppTopicConfig.workersAmount,
-                mkWorkerConsumerName = _ => i => s"CatalogProcessor-$i",
-                mkWorkerProducerName = _ => i => s"CatalogProcessor-$i",
+                mkWorkerConsumerName = _ => i => s"catalog-processor-$i",
+                mkWorkerProducerName = _ => i => s"catalog-processor-$i",
                 mkMessageListenerBuilder = _ => mkMessageListener
             )
 

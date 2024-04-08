@@ -134,7 +134,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.OK.index, message = err.getMessage)
                 Future.successful(HealthCheckResponse(status = Some(status), isOk = false))
         }
 

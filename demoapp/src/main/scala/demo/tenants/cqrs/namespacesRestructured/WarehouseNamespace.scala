@@ -44,7 +44,7 @@ object WarehouseNamespace:
 
         val producerCommandsPlanGenerators = List(
             ProducerPlanGenerator.make(
-                mkName = i => s"CreateInventory",
+                mkName = i => s"create-inventory",
                 mkMessage = _ =>
                     _ =>
                         val createInventory = model.Message.random[CreateInventory]
@@ -72,7 +72,7 @@ object WarehouseNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ReceiveInventoryItem",
+                mkName = i => s"receive-inventory-item",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseCommandsSchema](
@@ -111,7 +111,7 @@ object WarehouseNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"IncreaseInventoryAdjust",
+                mkName = i => s"increase-inventory-adjust",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseCommandsSchema](
@@ -145,7 +145,7 @@ object WarehouseNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"DecreaseInventoryAdjust",
+                mkName = i => s"decrease-inventory-adjust",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseCommandsSchema](
@@ -179,7 +179,7 @@ object WarehouseNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ReserveInventoryItem",
+                mkName = i => s"reserve-inventory-item",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseCommandsSchema](
@@ -226,7 +226,7 @@ object WarehouseNamespace:
 
         val producerEventsPlanGenerators = List(
             ProducerPlanGenerator.make(
-                mkName = i => s"InventoryAdjustmentNotDecreased",
+                mkName = i => s"inventory-adjustment-not-decreased",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](
@@ -257,7 +257,7 @@ object WarehouseNamespace:
                         ),
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"StockDepleted",
+                mkName = i => s"stock-depleted",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](
@@ -294,7 +294,7 @@ object WarehouseNamespace:
                         ),
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"InventoryItemNotReserved",
+                mkName = i => s"inventory-item-not-reserved",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](
@@ -324,7 +324,7 @@ object WarehouseNamespace:
                         ),
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"InventoryItemIncreased",
+                mkName = i => s"inventory-item-increased",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](
@@ -352,7 +352,7 @@ object WarehouseNamespace:
                         ),
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"InventoryItemDecreased",
+                mkName = i => s"inventory-item-decreased",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.WarehouseEventsSchema](
@@ -424,13 +424,13 @@ object WarehouseNamespace:
 
         val processorPlanGenerator =
             ProcessorPlanGenerator.make[pb.WarehouseCommandsSchema, pb.WarehouseEventsSchema](
-                mkName = _ => "WarehouseProcessor",
+                mkName = _ => "warehouse-processor",
                 mkConsumingTopicPlan = _ => mkTopicPlan(warehouseCommandsTopicPlanGenerator, 0),
                 mkProducingTopicPlan = _ => mkTopicPlan(warehouseEventsTopicPlanGenerator, 0),
-                mkSubscriptionPlan = _ => mkSubscriptionPlan("WarehouseProcessorSubscription"),
+                mkSubscriptionPlan = _ => mkSubscriptionPlan("warehouse-processor-subscription"),
                 mkWorkerCount = _ => DemoAppTopicConfig.workersAmount,
-                mkWorkerConsumerName = _ => i => s"WarehouseProcessor-$i",
-                mkWorkerProducerName = _ => i => s"WarehouseProcessor-$i",
+                mkWorkerConsumerName = _ => i => s"warehouse-processor-$i",
+                mkWorkerProducerName = _ => i => s"warehouse-processor-$i",
                 mkMessageListenerBuilder = _ => mkMessageListener
             )
 

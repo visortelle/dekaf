@@ -41,4 +41,4 @@ WORKDIR /workdir
 
 COPY --from=builder --chown=dekaf:dekaf /demoapp .
 
-ENTRYPOINT [ "/workdir/bin/demoapp" ]
+ENTRYPOINT [ "/workdir/bin/dekaf-demoapp" ]

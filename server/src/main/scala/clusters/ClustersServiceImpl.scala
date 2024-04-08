@@ -6,6 +6,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import _root_.licensing.{Licensing, ProductCode}
 import com.typesafe.scalalogging.Logger
+import licensing.ProductCode.DekafForTeams
 
 import scala.util.{Failure, Success, Try}
 import pulsar_auth.RequestContext
@@ -25,10 +26,18 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
             // PRODUCT PLAN LIMITATION START
             Try(adminClient.brokers.getActiveBrokers) match
                 case Success(brokers) =>
-                    val isFreePlan = Licensing.productCode == ProductCode.DekafDesktopFree || Licensing.productCode == ProductCode.DekafFree
-                    val isLimitExceeded = brokers.size > 3 || clusters.size > 1
-                    if isFreePlan && isLimitExceeded then
-                        logger.error("The number of brokers exceeds the limit of the free version. Please visit https://dekaf.io for more information.")
+                    val brokerLimit = Licensing.productCode match
+                        case ProductCode.DekafEnterprise => Int.MaxValue
+                        case ProductCode.DekafForTeams => 9
+                        case _ => 3
+
+                    val clusterLimit = Licensing.productCode match
+                        case ProductCode.DekafEnterprise => Int.MaxValue
+                        case _ => 1
+
+                    val isLimitExceeded = brokers.size > brokerLimit || clusters.size > clusterLimit
+                    if isLimitExceeded then
+                        logger.error("The number of brokers or clusters exceeds the product plan limit. Please visit https://dekaf.io for more information.")
                         sys.exit(1)
                 case Failure(_) => // DO NOTHING
             // PRODUCT PLAN LIMITATION END
