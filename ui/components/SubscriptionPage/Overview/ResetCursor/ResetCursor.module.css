@@ -1,0 +1,26 @@
+.ConfirmationDialogContentWrapper {
+    width: 450rem;
+    display: flex;
+    flex-direction: column;
+    gap: 16rem;
+}
+
+.ResetCursorWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10rem;
+}
+
+.ToggleWrapper {
+    width: fit-content;
+}
+
+.Timestamp, .MessageId {
+    display: flex;
+    flex-direction: column;
+    gap: 6rem;
+}
+
+.Info {
+    margin-bottom: 12rem;
+}

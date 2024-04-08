@@ -25,6 +25,7 @@ import { Code } from "../../grpc-web/google/rpc/code_pb";
 import useSwr from 'swr';
 import { swrKeys } from "../swrKeys";
 import CreateSubscription from "./Subscriptions/CreateSubscription/CreateSubscription";
+import ExpireAllSubscriptions from "./Subscriptions/ExpireAllMessages/ExpireAllSubscriptions";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -243,10 +244,36 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           topicPersistency: props.topicPersistency,
         }),
         text: "Create Subscription",
-        onClick: () => { },
+        onClick: () => {
+        },
         type: "primary",
         position: 'right'
       },
+    ]);
+  }
+
+  if(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
+    buttons = buttons.concat([
+      {
+        text: "Expire Messages",
+        type: "primary",
+        position: 'right',
+        testId: "expire-topic-messages-button",
+        onClick: () =>
+          modals.push({
+            id: "expire-messages-all-subscriptions",
+            title: `Expire Messages`,
+            content: (
+              <ExpireAllSubscriptions
+                tenant={props.tenant}
+                namespace={props.namespace}
+                topic={props.topic}
+                topicPersistency={props.topicPersistency}
+              />
+            ),
+            styleMode: "no-content-padding",
+          }),
+      }
     ]);
   }
 

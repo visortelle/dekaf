@@ -1,0 +1,26 @@
+.Overview {
+    display: flex;
+    overflow: hidden;
+}
+
+.LeftPanel {
+    flex: 1 0 50%;
+    padding: 24rem 12rem 0 12rem;
+    overflow: auto;
+}
+
+.RightPanel {
+    flex: 1 0 50%;
+    padding: 24rem 12rem 0 12rem;
+    overflow: auto;
+}
+
+.Section {
+    margin-bottom: 24rem;
+}
+
+.ControlButtons {
+    display: flex;
+    gap: 8rem;
+    flex-direction: row;
+}

@@ -284,12 +284,12 @@ message TopicProperties {
   map<string, string> properties = 1;
 }
 
-message GetTopicPropertiesRequest {
+message GetTopicsPropertiesRequest {
   repeated string topics = 1;
 }
-message GetTopicPropertiesResponse {
+message GetTopicsPropertiesResponse {
   google.rpc.Status status = 1;
-  map<string, TopicProperties> topic_properties = 2;
+  map<string, TopicProperties> topics_properties = 2;
 }
 message SetTopicPropertiesRequest {
   string topic = 1;
@@ -451,13 +451,38 @@ message ResetCursorResponse {
   google.rpc.Status status = 1;
 }
 
-message UpdateSubscriptionPropertiesRequest {
+message GetSubscriptionStatsRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  bool is_partitioned_topic = 3;
+  bool is_get_precise_backlog = 4;
+  bool is_subscription_backlog_size = 5;
+  bool is_earliest_time_in_backlog = 6;
+}
+
+message GetSubscriptionStatsResponse {
+  google.rpc.Status status = 1;
+  SubscriptionStats subscription_stats = 2;
+}
+
+message GetSubscriptionPropertiesRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+}
+
+message GetSubscriptionPropertiesResponse {
+  google.rpc.Status status = 1;
+  map<string, string> properties = 2;
+}
+
+
+message SetSubscriptionPropertiesRequest {
   string topic_fqn = 1;
   string subscription_name = 2;
   map<string, string> properties = 3;
 }
 
-message UpdateSubscriptionPropertiesResponse {
+message SetSubscriptionPropertiesResponse {
   google.rpc.Status status = 1;
 }
 
@@ -468,7 +493,7 @@ service TopicService {
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
   rpc ListPartitionedTopics(ListPartitionedTopicsRequest) returns (ListPartitionedTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
-  rpc GetTopicProperties(GetTopicPropertiesRequest) returns (GetTopicPropertiesResponse);
+  rpc GetTopicsProperties(GetTopicsPropertiesRequest) returns (GetTopicsPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
   rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
@@ -483,5 +508,7 @@ service TopicService {
   rpc ExpireMessages(ExpireMessagesRequest) returns (ExpireMessagesResponse);
   rpc SkipSubscriptionMessages(SkipSubscriptionMessagesRequest) returns (SkipSubscriptionMessagesResponse);
   rpc ResetCursor(ResetCursorRequest) returns (ResetCursorResponse);
-  rpc UpdateSubscriptionProperties(UpdateSubscriptionPropertiesRequest) returns (UpdateSubscriptionPropertiesResponse);
+  rpc GetSubscriptionStats(GetSubscriptionStatsRequest) returns (GetSubscriptionStatsResponse);
+  rpc GetSubscriptionProperties(GetSubscriptionPropertiesRequest) returns (GetSubscriptionPropertiesResponse);
+  rpc SetSubscriptionProperties(SetSubscriptionPropertiesRequest) returns (SetSubscriptionPropertiesResponse);
 }

@@ -54,11 +54,15 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
     switch (topicStats?.getStatsCase()) {
       case TopicInternalStats.StatsCase.TOPIC_STATS: {
         const managedLedgerInternalStats = topicStats.getTopicStats()?.getManagedLedgerInternalStats();
+
+        let topicCursorStats: TopicCursorStats;
+
         if (managedLedgerInternalStats === undefined) {
-          const topicCursorStats: TopicCursorStats = { topicType: 'not-found', topic };
-          return topicCursorStats;
+          topicCursorStats = { topicType: 'not-found', topic };
+        } else {
+          topicCursorStats = { topicType: 'non-partitioned', topic, subscriptions: getSubscriptions(managedLedgerInternalStats, topic) };
         }
-        const topicCursorStats: TopicCursorStats = { topicType: 'non-partitioned', topic, subscriptions: getSubscriptions(managedLedgerInternalStats, topic) };
+
         return topicCursorStats;
       };
 

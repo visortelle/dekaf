@@ -17,6 +17,9 @@ import * as GrpcClient from "../app/contexts/GrpcClient/GrpcClient";
 import DeleteSubscriptionDialog from "./DeleteSubscriptionDialog/DeleteSubscriptionDialog";
 import {useNavigate} from "react-router";
 import Overview from "./Overview/Overview";
+import ExpireMessages from "./Overview/ExpireMessages/ExpireMessages";
+import SkipMessages from "./Overview/SkipMessages/SkipMessages";
+import ResetCursor from "./Overview/ResetCursor/ResetCursor";
 
 export type SubscriptionPageView = { "type": "overview" } | { type: "consumers" };
 
@@ -149,6 +152,71 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = (props) => {
         }),
     },
   ];
+
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.overview._.path, pathname)) {
+    buttons = buttons.concat([
+      {
+        text: "Expire Messages",
+        type: "primary",
+        position: 'right',
+        testId: "expire-subscription-messages-button",
+        onClick: () =>
+          modals.push({
+            id: 'expire-messages',
+            title: 'Expire Messages',
+            styleMode: 'no-content-padding',
+            content:
+              <ExpireMessages
+                tenant={props.tenant}
+                namespace={props.namespace}
+                topic={props.topic}
+                topicPersistency={props.topicPersistency}
+                subscription={props.subscription}
+              />,
+          })
+      },
+      {
+        text: "Skip Messages",
+        type: "primary",
+        position: 'right',
+        testId: "skip-subscription-messages-button",
+        onClick: () =>
+          modals.push({
+            id: 'skip-messages',
+            title: 'Skip Messages',
+            styleMode: 'no-content-padding',
+            content:
+              <SkipMessages
+                tenant={props.tenant}
+                namespace={props.namespace}
+                topic={props.topic}
+                topicPersistency={props.topicPersistency}
+                subscription={props.subscription}
+              />,
+          })
+      },
+      {
+        text: "Reset Cursor",
+        type: "primary",
+        position: 'right',
+        testId: "reset-subscription-cursor-button",
+        onClick: () =>
+          modals.push({
+            id: 'reset-cursor',
+            title: 'Reset Cursor',
+            styleMode: 'no-content-padding',
+            content:
+              <ResetCursor
+                tenant={props.tenant}
+                namespace={props.namespace}
+                topic={props.topic}
+                topicPersistency={props.topicPersistency}
+                subscription={props.subscription}
+              />,
+          })
+      }
+    ]);
+  }
 
   return (
     <div className={s.Page}>

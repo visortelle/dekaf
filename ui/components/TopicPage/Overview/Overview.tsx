@@ -16,7 +16,7 @@ import InternalStatistics from './InternalStatistics/InternalStatistics';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
-import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
+import TopicPropertiesEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
 import { PartitioningWithActivePartitions } from '../TopicPage';
 import UpdatePartitionedTopicButton from './UpdatePartitionedTopicButton/UpdatePartitionedTopicButton';
 import CreateMissedPartitionsButton from './CreateMissedPartitionsButton/CreateMissedPartitionsButton';
@@ -154,7 +154,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
         {(props.topicPersistency !== 'non-persistent') && (partitioning === 'partitioned' || partitioning === 'non-partitioned') && (
           <div style={{ marginBottom: '24rem' }}>
-            <TopicMetadataEditor
+            <TopicPropertiesEditor
               tenant={props.tenant}
               namespace={props.namespace}
               topic={props.topic}

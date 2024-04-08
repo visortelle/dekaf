@@ -1,14 +1,14 @@
 import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { mutate, useSWRConfig } from 'swr';
 
 import * as Notifications from '../../app/contexts/Notifications';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Modals from '../../app/contexts/Modals/Modals';
-import { DeleteTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import {
+  DeleteSubscriptionRequest
+} from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import ConfirmationDialog from '../../ui/ConfirmationDialog/ConfirmationDialog';
-import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
@@ -23,36 +23,31 @@ export type DeleteSubscriptionProps = {
 
 const DeleteSubscriptionDialog: React.FC<DeleteSubscriptionProps> = (props) => {
   const modals = Modals.useContext();
-  const { mutate } = useSWRConfig()
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const deleteTopic = async () => {
+  const deleteSubscription = async () => {
     try {
-      const req = new DeleteTopicRequest();
-      req.setTopicName(topicFqn);
-      req.setForce(forceDelete);
+      const req = new DeleteSubscriptionRequest();
+      req.setTopicFqn(topicFqn);
+      req.setSubscriptionName(props.subscription);
+      req.setIsForce(forceDelete);
 
-      const res = await topicServiceClient.deleteTopic(req, {});
+      const res = await topicServiceClient.deleteSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to delete topic: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to delete subscription: ${res.getStatus()?.getMessage()}`);
         return;
       }
 
-      notifySuccess(`${props.topicPersistency === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully deleted.`);
+      notifySuccess(`Subscription ${props.subscription} has been successfully deleted.`);
 
-      const mutatePartitionedTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: props.tenant, namespace: props.namespace }));
-      const mutateNonPartitionedTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: props.tenant, namespace: props.namespace }));
-
-      await Promise.all([mutatePartitionedTopics, mutateNonPartitionedTopics]);
-
-      props.navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
+      props.navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({ tenant: props.tenant, namespace: props.namespace, topicPersistency: props.topicPersistency, topic: props.topic }));
       modals.pop();
     } catch (err) {
-      notifyError(`Unable to delete topic: ${topicFqn}. ${err}`)
+      notifyError(`Unable to delete subscription: ${topicFqn}. ${err}`)
     }
   };
 
@@ -66,14 +61,14 @@ const DeleteSubscriptionDialog: React.FC<DeleteSubscriptionProps> = (props) => {
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the <strong>{props.topic}</strong> topic and close all producers, consumers, replicators.</div>
+          <div>It will permanently delete the <strong>{props.subscription}</strong> subscription. If the force flag set, it will also close all active consumers.</div>
         </div>
       }
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
-      onConfirm={deleteTopic}
+      onConfirm={deleteSubscription}
       onCancel={modals.pop}
-      forceDeleteInfo="Close all producer/consumer/replicator and delete topic forcefully."
+      forceDeleteInfo="Close all active consumer and delete subscription forcefully."
       guard={topicFqn}
       type='danger'
     />

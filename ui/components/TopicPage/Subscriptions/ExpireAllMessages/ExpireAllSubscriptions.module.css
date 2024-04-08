@@ -1,0 +1,16 @@
+.ConfirmationDialogContentWrapper {
+    width: 450rem;
+    display: flex;
+    flex-direction: column;
+    gap: 16rem;
+}
+
+.TimeInSeconds {
+    display: flex;
+    flex-direction: column;
+    gap: 6rem;
+}
+
+.Info {
+    margin-bottom: 12rem;
+}
