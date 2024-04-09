@@ -5,8 +5,6 @@ import zio.test.*
 import zio.test.Assertion.*
 import testing.{TestDekaf, TestEnv, TestPulsarContainer}
 
-val testEnv = TestEnv.make()
-
 object ConsumerSessionTest extends ZIOSpecDefault:
     def spec = suite(this.getClass.getName)(
         test("hello world") {
@@ -18,5 +16,6 @@ object ConsumerSessionTest extends ZIOSpecDefault:
         }
     ).provideSomeShared(
         TestPulsarContainer.live,
-        TestDekaf.live
+        TestDekaf.live,
+        TestEnv.live
     )

@@ -2,13 +2,12 @@ package testing
 
 import main.Main
 import zio.*
-import zio.process.Command
 import zio.test.TestSystem
 import sttp.client4.quick.*
-import sttp.client4.Response
 
 case class TestDekaf(
-    stop: UIO[Unit]
+    stop: UIO[Unit],
+    publicBaseUrl: String
 )
 
 object TestDekaf:
@@ -18,6 +17,7 @@ object TestDekaf:
                 for {
                     port <- ZIO.succeed(getFreePort)
                     _ <- TestSystem.putEnv("DEKAF_PORT", port.toString)
+
                     program <- Main.app.forkScoped.interruptible
                     _ <- ZIO.succeed {
                         scala.util.Try {
@@ -25,11 +25,11 @@ object TestDekaf:
                                 .get(uri"http://127.0.0.1:$port/health")
                                 .send()
                         }
-                    }
-                        .repeatUntil(_.isSuccess)
+                    }.repeatUntil(_.isSuccess)
                     _ <- ZIO.logInfo("Dekaf is up and running")
                 } yield TestDekaf(
-                    stop = program.interrupt *> ZIO.logInfo("Dekaf stopped")
+                    stop = program.interrupt *> ZIO.logInfo("Dekaf stopped"),
+                    publicBaseUrl = s"http://127.0.0.1:$port/"
                 )
             )(dekaf => dekaf.stop)
 
