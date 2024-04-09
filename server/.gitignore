@@ -8,3 +8,5 @@ target
 /data/library/*.json
 /data/library/*.binpb
 /data/pgdata
+
+/tmp/**/*

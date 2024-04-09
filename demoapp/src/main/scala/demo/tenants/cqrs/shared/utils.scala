@@ -32,7 +32,7 @@ def mkConfigurableTopicPlanGenerator[T <: MessageDto](
         mkProducersCount = i => 1,
         mkProducerGenerator = _ =>
             ProducerPlanGenerator.make(
-                mkName = i => s"${mkName(i)}Producer-$i",
+                mkName = i => s"${mkName(i)}-producer-$i",
                 mkMessage = _ => _ => Message(Serde.toJsonBytes(MessageDto.random[T])),
                 mkSchedule = i =>
                     Schedule.fixed(
@@ -72,7 +72,7 @@ def mkConfigurableTopicPlanGenerator[T <: MessageDto](
                 ,
                 mkConsumerGenerator = _ =>
                     ConsumerPlanGenerator.make(
-                        mkName = i => s"${mkName(i)}Consumer-$i"
+                        mkName = i => s"${mkName(i)}-consumer-$i"
                     )
             )
     )

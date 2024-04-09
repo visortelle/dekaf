@@ -37,7 +37,7 @@ object AccountNamespace:
         // These are "main" events, meaning that they are dictating a latter event
         val producerCommandsPlanGenerators = List(
             ProducerPlanGenerator.make(
-                mkName = i => s"CreateAccount",
+                mkName = i => s"create-account",
                 mkMessage = _ =>
                     _ =>
                         val createAccount = model.Message.random[CreateAccount]
@@ -68,7 +68,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"AddShippingAddress",
+                mkName = i => s"add-shipping-address",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -108,7 +108,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"AddBillingAddress",
+                mkName = i => s"add-billing-address",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -148,7 +148,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"DeleteAccount",
+                mkName = i => s"delete-account",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -178,7 +178,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"DeleteShippingAddress",
+                mkName = i => s"delete-shipping-address",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -209,7 +209,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"DeleteBillingAddress",
+                mkName = i => s"delete-billing-address",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -240,7 +240,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"PreferShippingAddress",
+                mkName = i => s"prefer-shipping-address",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -271,7 +271,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"PreferBillingAddress",
+                mkName = i => s"prefer-billing-address",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -302,7 +302,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ActivateAccount",
+                mkName = i => s"activate-account",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap[pb.AccountCommandsSchema](
@@ -336,7 +336,7 @@ object AccountNamespace:
         // These are "independent" events, meaning that they are not related to any command
         val producerEventsPlanGenerators = List(
             ProducerPlanGenerator.make(
-                mkName = i => s"AccountDeactivated",
+                mkName = i => s"account-deactivated",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap(
@@ -368,7 +368,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"ShippingAddressRestored",
+                mkName = i => s"shipping-address-restored",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap(
@@ -400,7 +400,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"BillingAddressRestored",
+                mkName = i => s"billing-address-restored",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap(
@@ -432,7 +432,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"PrimaryBillingAddressRemoved",
+                mkName = i => s"primary-billing-address-removed",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap(
@@ -464,7 +464,7 @@ object AccountNamespace:
                     )
             ),
             ProducerPlanGenerator.make(
-                mkName = i => s"PrimaryShippingAddressRemoved",
+                mkName = i => s"primary-shipping-address-removed",
                 mkMessage = _ =>
                     _ =>
                         mkMessageWithRandomKeyFromMap(
@@ -539,13 +539,13 @@ object AccountNamespace:
 
         val processorPlanGenerator =
             ProcessorPlanGenerator.make[pb.AccountCommandsSchema, pb.AccountEventsSchema](
-                mkName = _ => "AccountProcessor",
+                mkName = _ => "account-processor",
                 mkConsumingTopicPlan = _ => mkTopicPlan(accountCommandsTopicPlanGenerator, 0),
                 mkProducingTopicPlan = _ => mkTopicPlan(accountEventsTopicPlanGenerator, 0),
-                mkSubscriptionPlan = _ => mkSubscriptionPlan("AccountProcessorSubscription"),
+                mkSubscriptionPlan = _ => mkSubscriptionPlan("account-processor-subscription"),
                 mkWorkerCount = _ => DemoAppTopicConfig.workersAmount,
-                mkWorkerConsumerName = _ => i => s"AccountProcessor-$i",
-                mkWorkerProducerName = _ => i => s"AccountProcessor-$i",
+                mkWorkerConsumerName = _ => i => s"account-processor-$i",
+                mkWorkerProducerName = _ => i => s"account-processor-$i",
                 mkMessageListenerBuilder = _ => mkMessageListener
             )
 

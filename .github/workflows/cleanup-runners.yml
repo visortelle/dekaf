@@ -12,7 +12,8 @@ jobs:
             arch: arm64
           - runner: x64
             arch: x64
-    runs-on: ubuntu-latest
+
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
     steps:
       - name: Installing Nix
         uses: cachix/install-nix-action@v22
