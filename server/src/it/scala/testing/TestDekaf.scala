@@ -11,12 +11,16 @@ case class TestDekaf(
 )
 
 object TestDekaf:
-    val live: ULayer[TestDekaf] =
+    val live: URLayer[TestPulsar, TestDekaf] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 for {
                     port <- ZIO.succeed(getFreePort)
                     _ <- TestSystem.putEnv("DEKAF_PORT", port.toString)
+
+                    pulsar <- ZIO.service[TestPulsar]
+                    _ <- TestSystem.putEnv("DEKAF_WEB_URL", pulsar.pulsarWebUrl)
+                    _ <- TestSystem.putEnv("DEKAF_BROKER_URL", pulsar.pulsarBrokerUrl)
 
                     program <- Main.app.forkScoped.interruptible
                     _ <- ZIO.succeed {
