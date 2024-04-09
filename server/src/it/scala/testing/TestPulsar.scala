@@ -13,12 +13,12 @@ case class TestPulsar(
     container: PulsarContainer,
     pulsarWebUrl: String,
     pulsarBrokerUrl: String,
-    getAdminClient: Task[PulsarAdmin],
-    getPulsarClient: Task[PulsarClient],
-    getNewTenant: Task[String],
-    getNewNamespace: Task[String],
-    getNewTopic: Task[String],
-    getNewPartitionedTopic: (numPartitions: Int) => Task[String]
+    createAdminClient: Task[PulsarAdmin],
+    createPulsarClient: Task[PulsarClient],
+    createTenant: Task[String],
+    createNamespace: Task[String],
+    createTopic: Task[String],
+    createPartitionedTopic: (numPartitions: Int) => Task[String]
 )
 
 object TestPulsar:
@@ -32,11 +32,11 @@ object TestPulsar:
                         .withStartupTimeout(java.time.Duration.ofSeconds(120))
                     container.start()
 
-                    def getAdminClient = ZIO.succeed(PulsarAdmin.builder().serviceHttpUrl(container.getHttpServiceUrl).build())
-                    def getPulsarClient = ZIO.succeed(PulsarClient.builder().serviceUrl(container.getPulsarBrokerUrl).build())
+                    def createAdminClient = ZIO.succeed(PulsarAdmin.builder().serviceHttpUrl(container.getHttpServiceUrl).build())
+                    def createPulsarClient = ZIO.succeed(PulsarClient.builder().serviceUrl(container.getPulsarBrokerUrl).build())
 
-                    def getNewTenant: Task[String] = for {
-                        pulsarAdmin <- getAdminClient
+                    def createNewTenant: Task[String] = for {
+                        pulsarAdmin <- createAdminClient
                         tenantFqn <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
                             val allowedClusters = new java.util.HashSet[String]()
@@ -49,9 +49,9 @@ object TestPulsar:
                         }
                     } yield tenantFqn
 
-                    def getNewNamespace: Task[String] = for {
-                        pulsarAdmin <- getAdminClient
-                        tenantName <- getNewTenant
+                    def createNamespace: Task[String] = for {
+                        pulsarAdmin <- createAdminClient
+                        tenantName <- createNewTenant
                         namespaceFqn <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
                             val namespaceFqn = s"$tenantName/$name"
@@ -60,9 +60,9 @@ object TestPulsar:
                         }
                     } yield namespaceFqn
 
-                    def getNewTopic: Task[String] = for {
-                        pulsarAdmin <- getAdminClient
-                        namespaceFqn <- getNewNamespace
+                    def createTopic: Task[String] = for {
+                        pulsarAdmin <- createAdminClient
+                        namespaceFqn <- createNamespace
                         topicFqn <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
                             val topicFqn = s"persistent://$namespaceFqn/$name"
@@ -71,9 +71,9 @@ object TestPulsar:
                         }
                     } yield topicFqn
 
-                    def getNewPartitionedTopic(numPartitions: Int): Task[String] = for {
-                        pulsarAdmin <- getAdminClient
-                        namespaceFqn <- getNewNamespace
+                    def createPartitionedTopic(numPartitions: Int): Task[String] = for {
+                        pulsarAdmin <- createAdminClient
+                        namespaceFqn <- createNamespace
                         topicFqn <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
                             val topicFqn = s"persistent://$namespaceFqn/$name"
@@ -86,12 +86,12 @@ object TestPulsar:
                         container = container,
                         pulsarWebUrl = container.getHttpServiceUrl,
                         pulsarBrokerUrl = container.getPulsarBrokerUrl,
-                        getAdminClient = getAdminClient,
-                        getPulsarClient = getPulsarClient,
-                        getNewTenant = getNewTenant,
-                        getNewNamespace = getNewNamespace,
-                        getNewTopic = getNewTopic,
-                        getNewPartitionedTopic = getNewPartitionedTopic
+                        createAdminClient = createAdminClient,
+                        createPulsarClient = createPulsarClient,
+                        createTenant = createNewTenant,
+                        createNamespace = createNamespace,
+                        createTopic = createTopic,
+                        createPartitionedTopic = createPartitionedTopic
                     )
                 }.orDie
             )(testPulsar => ZIO.attempt(testPulsar.container.stop()).ignoreLogged)

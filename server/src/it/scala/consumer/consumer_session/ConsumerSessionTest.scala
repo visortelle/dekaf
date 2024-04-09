@@ -31,15 +31,15 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             for {
                 pulsar <- ZIO.service[TestPulsar]
-                pulsarAdmin <- pulsar.getAdminClient
-                pulsarClient <- pulsar.getPulsarClient
-                topicFqn <- pulsar.getNewTopic
+                pulsarAdmin <- pulsar.createAdminClient
+                pulsarClient <- pulsar.createPulsarClient
+                topicFqn <- pulsar.createTopic
                 producer <- ZIO.attempt(pulsarClient.newProducer(Schema.INT64).topic(topicFqn).create())
-                _ <- ZIO.attempt({
+                _ <- ZIO.attempt {
                     for (i <- 0 until numMessages)
                         producer.sendAsync(startValue + i)
-                })
-                consumer <- ZIO.attempt{
+                }
+                consumer <- ZIO.attempt {
                     pulsarClient.newConsumer(Schema.INT64)
                         .topic(topicFqn)
                         .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
