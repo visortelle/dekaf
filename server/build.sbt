@@ -4,6 +4,7 @@ val pulsarVersion = "3.2.2"
 val circeVersion = "0.14.6"
 val zioVersion = "2.0.21"
 val zioConfigVersion = "3.0.7"
+val testcontainersScalaVersion = "0.41.3"
 
 maintainer := "kiryl_valkovich@teal.tools"
 
@@ -50,9 +51,11 @@ lazy val root = project
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
     .enablePlugins(GitVersioning)
+    .configs(IntegrationTest)
     .in(file("."))
     .settings(
         name := "dekaf",
+        Defaults.itSettings,
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,
@@ -76,7 +79,7 @@ lazy val root = project
 
             // ZIO
             "dev.zio" %% "zio" % zioVersion,
-            "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
+            "dev.zio" %% "zio-test-sbt" % zioVersion % "Test,it",
             "dev.zio" %% "zio-config" % zioConfigVersion,
             "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
             "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
@@ -95,6 +98,12 @@ lazy val root = project
             "io.javalin" % "javalin-rendering" % "5.3.2",
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
+
+            // Testing
+            "net.datafaker" % "datafaker" % "2.1.0",
+            "com.microsoft.playwright" % "playwright" % "1.42.0" % "it",
+            "org.testcontainers" % "testcontainers" % "1.19.7" % "it",
+            "org.testcontainers" % "pulsar" % "1.19.7" % "it",
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.14.0",
