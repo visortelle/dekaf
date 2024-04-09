@@ -15,10 +15,10 @@ case class TestPulsar(
     pulsarBrokerUrl: String,
     createAdminClient: Task[PulsarAdmin],
     createPulsarClient: Task[PulsarClient],
-    createTenant: Task[String],
-    createNamespace: Task[String],
-    createTopic: Task[String],
-    createPartitionedTopic: (numPartitions: Int) => Task[String]
+    createTenant: Task[PulsarResources.Tenant],
+    createNamespace: Task[PulsarResources.Namespace],
+    createTopic: Task[PulsarResources.Topic],
+    createPartitionedTopic: (numPartitions: Int) => Task[PulsarResources.Topic]
 )
 
 object TestPulsar:
@@ -35,9 +35,9 @@ object TestPulsar:
                     def createAdminClient = ZIO.succeed(PulsarAdmin.builder().serviceHttpUrl(container.getHttpServiceUrl).build())
                     def createPulsarClient = ZIO.succeed(PulsarClient.builder().serviceUrl(container.getPulsarBrokerUrl).build())
 
-                    def createNewTenant: Task[String] = for {
+                    def createTenant: Task[PulsarResources.Tenant] = for {
                         pulsarAdmin <- createAdminClient
-                        tenantFqn <- ZIO.attempt {
+                        tenant <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
                             val allowedClusters = new java.util.HashSet[String]()
                             allowedClusters.add("standalone")
@@ -45,42 +45,54 @@ object TestPulsar:
                             val config = org.apache.pulsar.common.policies.data.TenantInfo.builder()
                                 .allowedClusters(allowedClusters).build()
                             pulsarAdmin.tenants.createTenant(name, config)
-                            name
-                        }
-                    } yield tenantFqn
 
-                    def createNamespace: Task[String] = for {
+                            PulsarResources.Tenant(name = name)
+                        }
+                    } yield tenant
+
+                    def createNamespace: Task[PulsarResources.Namespace] = for {
                         pulsarAdmin <- createAdminClient
-                        tenantName <- createNewTenant
-                        namespaceFqn <- ZIO.attempt {
+                        tenant <- createTenant
+                        namespace <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
-                            val namespaceFqn = s"$tenantName/$name"
+                            val namespaceFqn = s"${tenant.fqn}/$name"
                             pulsarAdmin.namespaces.createNamespace(namespaceFqn)
-                            namespaceFqn
-                        }
-                    } yield namespaceFqn
 
-                    def createTopic: Task[String] = for {
+                            PulsarResources.Namespace(tenant = tenant, name = name)
+                        }
+                    } yield namespace
+
+                    def createTopic: Task[PulsarResources.Topic] = for {
                         pulsarAdmin <- createAdminClient
-                        namespaceFqn <- createNamespace
-                        topicFqn <- ZIO.attempt {
+                        namespace <- createNamespace
+                        topic <- ZIO.attempt {
                             val name = java.util.UUID.randomUUID().toString
-                            val topicFqn = s"persistent://$namespaceFqn/$name"
+                            val topicFqn = s"persistent://${namespace.fqn}/$name"
                             pulsarAdmin.topics.createNonPartitionedTopic(topicFqn)
-                            topicFqn
-                        }
-                    } yield topicFqn
 
-                    def createPartitionedTopic(numPartitions: Int): Task[String] = for {
-                        pulsarAdmin <- createAdminClient
-                        namespaceFqn <- createNamespace
-                        topicFqn <- ZIO.attempt {
-                            val name = java.util.UUID.randomUUID().toString
-                            val topicFqn = s"persistent://$namespaceFqn/$name"
-                            pulsarAdmin.topics.createPartitionedTopic(topicFqn, numPartitions)
-                            topicFqn
+                            PulsarResources.Topic(
+                                persistency = PulsarResources.TopicPersistency.Persistent,
+                                namespace = namespace,
+                                name = name
+                            )
                         }
-                    } yield topicFqn
+                    } yield topic
+
+                    def createPartitionedTopic(numPartitions: Int): Task[PulsarResources.Topic] = for {
+                        pulsarAdmin <- createAdminClient
+                        namespace <- createNamespace
+                        topic <- ZIO.attempt {
+                            val name = java.util.UUID.randomUUID().toString
+                            val topicFqn = s"persistent://${namespace.fqn}/$name"
+                            pulsarAdmin.topics.createPartitionedTopic(topicFqn, numPartitions)
+                            
+                            PulsarResources.Topic(
+                                persistency = PulsarResources.TopicPersistency.Persistent,
+                                namespace = namespace,
+                                name = name
+                            )
+                        }
+                    } yield topic
 
                     TestPulsar(
                         container = container,
@@ -88,7 +100,7 @@ object TestPulsar:
                         pulsarBrokerUrl = container.getPulsarBrokerUrl,
                         createAdminClient = createAdminClient,
                         createPulsarClient = createPulsarClient,
-                        createTenant = createNewTenant,
+                        createTenant = createTenant,
                         createNamespace = createNamespace,
                         createTopic = createTopic,
                         createPartitionedTopic = createPartitionedTopic

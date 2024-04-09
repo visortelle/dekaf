@@ -11,7 +11,7 @@ import com.microsoft.playwright.options.ViewportSize
 case class TestDekaf(
     stop: UIO[Unit],
     publicBaseUrl: String,
-    getRootPage: () => Page
+    openRootPage: Task[Page]
 )
 
 val isDebug = !sys.env.get("CI").contains("true")
@@ -45,7 +45,7 @@ object TestDekaf:
                 } yield TestDekaf(
                     stop = program.interrupt *> ZIO.logInfo("Dekaf stopped"),
                     publicBaseUrl = publicBaseUrl,
-                    getRootPage = () => browser.newPage(new NewPageOptions().setViewportSize(new ViewportSize(1280, 800)).setBaseURL(publicBaseUrl))
+                    openRootPage = ZIO.attempt(browser.newPage(new NewPageOptions().setViewportSize(new ViewportSize(1280, 800)).setBaseURL(publicBaseUrl)))
                 )
             )(dekaf => dekaf.stop)
 
