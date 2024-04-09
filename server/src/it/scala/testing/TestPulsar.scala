@@ -6,25 +6,27 @@ import zio.*
 import org.testcontainers.containers.PulsarContainer
 import org.testcontainers.utility.DockerImageName
 
-case class TestPulsarContainer(
+val PulsarVersion = "3.2.2"
+
+case class TestPulsar(
     container: PulsarContainer,
-    getAdminClient: () => PulsarAdmin,
-    getPulsarClient: () => PulsarClient
+    getAdminClient: Task[PulsarAdmin],
+    getPulsarClient: Task[PulsarClient]
 )
 
-object TestPulsarContainer:
-    val live: ULayer[TestPulsarContainer] =
+object TestPulsar:
+    val live: ULayer[TestPulsar] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 ZIO.attempt {
-                    val container = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:3.2.2"))
+                    val container = new PulsarContainer(DockerImageName.parse(s"apachepulsar/pulsar:$PulsarVersion"))
                         .withStartupTimeout(java.time.Duration.ofSeconds(120))
                     container.start()
 
-                    TestPulsarContainer(
+                    TestPulsar(
                         container = container,
-                        getAdminClient = () => PulsarAdmin.builder().serviceHttpUrl(container.getHttpServiceUrl).build(),
-                        getPulsarClient = () => PulsarClient.builder().serviceUrl(container.getPulsarBrokerUrl).build()
+                        getAdminClient = ZIO.succeed(PulsarAdmin.builder().serviceHttpUrl(container.getHttpServiceUrl).build()),
+                        getPulsarClient = ZIO.succeed(PulsarClient.builder().serviceUrl(container.getPulsarBrokerUrl).build())
                     )
                 }.orDie
             )(testPulsarContainer =>
