@@ -18,20 +18,20 @@ val isDebug = !sys.env.get("CI").contains("true")
 
 object TestDekaf:
     lazy private val playwright = Playwright.create
-    lazy private val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(isDebug))
+    lazy private val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
 
     val live: URLayer[TestPulsar, TestDekaf] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 for {
                     port <- ZIO.succeed(getFreePort)
+                    publicBaseUrl <- ZIO.succeed(s"http://127.0.0.1:$port/")
                     _ <- TestSystem.putEnv("DEKAF_PORT", port.toString)
+                    _ <- TestSystem.putEnv("DEKAF_PUBLIC_BASE_URL", publicBaseUrl)
 
                     pulsar <- ZIO.service[TestPulsar]
-                    _ <- TestSystem.putEnv("DEKAF_WEB_URL", pulsar.pulsarWebUrl)
-                    _ <- TestSystem.putEnv("DEKAF_BROKER_URL", pulsar.pulsarBrokerUrl)
-
-                    publicBaseUrl <- ZIO.succeed(s"http://127.0.0.1:$port/")
+                    _ <- TestSystem.putEnv("DEKAF_PULSAR_WEB_URL", pulsar.pulsarWebUrl)
+                    _ <- TestSystem.putEnv("DEKAF_PULSAR_BROKER_URL", pulsar.pulsarBrokerUrl)
 
                     program <- Main.app.forkScoped.interruptible
                     _ <- ZIO.succeed {

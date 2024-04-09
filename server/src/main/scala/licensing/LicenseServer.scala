@@ -56,6 +56,10 @@ object LicenseServer:
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
+        _ <- ZIO.attempt {
+           println(s"Pulsar HTTP service URL: ${config.pulsarWebUrl.get}")
+           println(s"Pulsar broker service URL: ${config.pulsarBrokerUrl.get}")
+        }
         licenseId <- ZIO.attempt(config.licenseId.getOrElse(freeLicenseId))
         licenseToken <- ZIO.attempt(config.licenseToken.getOrElse(freeLicenseToken))
         _ <- ZIO.attempt {

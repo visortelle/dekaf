@@ -42,7 +42,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 dekaf <- ZIO.service[TestDekaf]
                 page <- dekaf.openRootPage
                 _ <- ZIO.attempt {
-                    page.navigate("/")
+                    page.navigate(s"/tenants/${topic.namespace.tenant.name}/namespaces/${topic.namespace.name}/topics/persistent/${topic.name}/consumer-session")
                 }
             } yield assertTrue(2 == 2)
         }

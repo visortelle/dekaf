@@ -109,7 +109,13 @@ val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_${toUpperSnak
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort
 
-def readConfig =
+var memoizedConfig = Option.empty[Config]
+
+def readConfig = memoizedConfig match
+    case Some(config) => ZIO.succeed(config)
+    case None         => readConfigFromSources
+
+def readConfigFromSources =
     for
         yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
         envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
@@ -125,6 +131,7 @@ def readConfig =
             val mergedConfig = mergeConfigs(defaultConfig, appConfig)
             normalizeConfig(mergedConfig)
         }
+        _ <- ZIO.succeed { memoizedConfig = Some(config) }
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))
