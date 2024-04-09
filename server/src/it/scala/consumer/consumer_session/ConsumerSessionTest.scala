@@ -3,7 +3,7 @@ package consumer.consumer_session
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
-import testing.{TestDekaf, TestDekafPage, TestPulsar}
+import testing.{TestDekaf, TestPulsar}
 import org.apache.pulsar.client.api.{MessageListener, Schema, SubscriptionInitialPosition}
 
 object ConsumerSessionTest extends ZIOSpecDefault:
@@ -55,6 +55,5 @@ object ConsumerSessionTest extends ZIOSpecDefault:
         }
     ).provideSomeShared(
         TestPulsar.live,
-        TestDekaf.live,
-        TestDekafPage.live
+        TestDekaf.live
     )

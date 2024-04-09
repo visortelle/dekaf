@@ -4,13 +4,22 @@ import main.Main
 import zio.*
 import zio.test.TestSystem
 import sttp.client4.quick.*
+import com.microsoft.playwright.{BrowserType, Page, Playwright}
+import com.microsoft.playwright.Browser.NewPageOptions
+import com.microsoft.playwright.options.ViewportSize
 
 case class TestDekaf(
     stop: UIO[Unit],
-    publicBaseUrl: String
+    publicBaseUrl: String,
+    getRootPage: () => Page
 )
 
+val isDebug = !sys.env.get("CI").contains("true")
+
 object TestDekaf:
+    lazy private val playwright = Playwright.create
+    lazy private val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(isDebug))
+
     val live: URLayer[TestPulsar, TestDekaf] =
         ZLayer.scoped:
             ZIO.acquireRelease(
@@ -21,6 +30,8 @@ object TestDekaf:
                     pulsar <- ZIO.service[TestPulsar]
                     _ <- TestSystem.putEnv("DEKAF_WEB_URL", pulsar.pulsarWebUrl)
                     _ <- TestSystem.putEnv("DEKAF_BROKER_URL", pulsar.pulsarBrokerUrl)
+
+                    publicBaseUrl <- ZIO.succeed(s"http://127.0.0.1:$port/")
 
                     program <- Main.app.forkScoped.interruptible
                     _ <- ZIO.succeed {
@@ -33,7 +44,8 @@ object TestDekaf:
                     _ <- ZIO.logInfo("Dekaf is up and running")
                 } yield TestDekaf(
                     stop = program.interrupt *> ZIO.logInfo("Dekaf stopped"),
-                    publicBaseUrl = s"http://127.0.0.1:$port/"
+                    publicBaseUrl = publicBaseUrl,
+                    getRootPage = () => browser.newPage(new NewPageOptions().setViewportSize(new ViewportSize(1280, 800)).setBaseURL(publicBaseUrl))
                 )
             )(dekaf => dekaf.stop)
 
