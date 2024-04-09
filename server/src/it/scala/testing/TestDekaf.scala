@@ -1,5 +1,6 @@
 package testing
 
+import main.Main
 import zio.*
 import zio.process.Command
 import zio.test.TestSystem
@@ -11,19 +12,13 @@ case class TestDekaf(
 )
 
 object TestDekaf:
-    val live: TaskLayer[TestDekaf] =
+    val live: ULayer[TestDekaf] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 for {
                     port <- ZIO.succeed(getFreePort)
-                    // we should make Main app configurable and testable without running it as a child process
-                    process <- Command("sbt", "run")
-                        .env(Map("DEKAF_PORT" -> port.toString))
-                        .inheritIO
-                        .successfulExitCode
-                        .forkScoped
-                        .interruptible
-
+                    _ <- TestSystem.putEnv("DEKAF_PORT", port.toString)
+                    program <- Main.app.forkScoped.interruptible
                     _ <- ZIO.succeed {
                         scala.util.Try {
                             quickRequest
@@ -34,7 +29,7 @@ object TestDekaf:
                         .repeatUntil(_.isSuccess)
                     _ <- ZIO.logInfo("Dekaf is up and running")
                 } yield TestDekaf(
-                    stop = process.interrupt.unit
+                    stop = program.interrupt *> ZIO.logInfo("Dekaf stopped")
                 )
             )(dekaf => dekaf.stop)
 
