@@ -85,7 +85,7 @@ object TestPulsar:
                             val name = java.util.UUID.randomUUID().toString
                             val topicFqn = s"persistent://${namespace.fqn}/$name"
                             pulsarAdmin.topics.createPartitionedTopic(topicFqn, numPartitions)
-                            
+
                             PulsarResources.Topic(
                                 persistency = PulsarResources.TopicPersistency.Persistent,
                                 namespace = namespace,

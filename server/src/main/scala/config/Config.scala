@@ -106,9 +106,6 @@ case class Config(
 val yamlConfigDescriptor = descriptor[Config]
 val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_${toUpperSnakeCase(key)}")
 
-val internalHttpPort = getFreePort
-val internalGrpcPort = getFreePort
-
 var memoizedConfig = Option.empty[Config]
 
 def readConfig = memoizedConfig match
@@ -121,7 +118,10 @@ def readConfigFromSources =
         envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
         maybeYamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).either
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
-        defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
+        defaultConfig <- ZIO.succeed(Config(
+            internalHttpPort = Some(envConfig.internalHttpPort.getOrElse(getFreePort)),
+            internalGrpcPort = Some(envConfig.internalGrpcPort.getOrElse(getFreePort))
+        ))
 
         config <- ZIO.succeed {
             val appConfig = maybeYamlConfig match

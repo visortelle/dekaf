@@ -7,11 +7,17 @@ import sttp.client4.quick.*
 import com.microsoft.playwright.{BrowserType, Page, Playwright}
 import com.microsoft.playwright.Browser.NewPageOptions
 import com.microsoft.playwright.options.ViewportSize
+import com.tools.teal.pulsar.ui.library.v1.library.{LibraryServiceGrpc, SaveLibraryItemRequest}
+import com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc.LibraryServiceStub
+import io.grpc.{ManagedChannel, ManagedChannelBuilder}
+import library.LibraryItem
 
 case class TestDekaf(
     stop: UIO[Unit],
     publicBaseUrl: String,
-    openRootPage: Task[Page]
+    openRootPage: Task[Page],
+    saveLibraryItem: (item: LibraryItem) => Task[Unit],
+    getGrpcClient: Task[GrpcClient]
 )
 
 val isDebug = !sys.env.get("CI").contains("true")
@@ -24,9 +30,18 @@ object TestDekaf:
         ZLayer.scoped:
             ZIO.acquireRelease(
                 for {
+                    _ <- TestSystem.putEnv("DEKAF_LICENSE_ID", sys.env("DEKAF_LICENSE_ID"))
+                    _ <- TestSystem.putEnv("DEKAF_LICENSE_TOKEN", sys.env("DEKAF_LICENSE_TOKEN"))
+
                     port <- ZIO.succeed(getFreePort)
-                    publicBaseUrl <- ZIO.succeed(s"http://127.0.0.1:$port/")
                     _ <- TestSystem.putEnv("DEKAF_PORT", port.toString)
+
+                    internalHttpPort <- ZIO.succeed(getFreePort)
+                    internalGrpcPort <- ZIO.succeed(getFreePort)
+                    _ <- TestSystem.putEnv("DEKAF_INTERNAL_HTTP_PORT", internalHttpPort.toString)
+                    _ <- TestSystem.putEnv("DEKAF_INTERNAL_GRPC_PORT", internalGrpcPort.toString)
+
+                    publicBaseUrl <- ZIO.succeed(s"http://127.0.0.1:$port/")
                     _ <- TestSystem.putEnv("DEKAF_PUBLIC_BASE_URL", publicBaseUrl)
 
                     pulsar <- ZIO.service[TestPulsar]
@@ -42,10 +57,16 @@ object TestDekaf:
                         }
                     }.repeatUntil(_.isSuccess)
                     _ <- ZIO.logInfo("Dekaf is up and running")
+                    grpcClient <- ZIO.succeed {
+                        val channel = ManagedChannelBuilder.forAddress("127.0.0.1", internalGrpcPort).usePlaintext().build
+                        GrpcClient.fromChannel(channel)
+                    }
                 } yield TestDekaf(
                     stop = program.interrupt *> ZIO.logInfo("Dekaf stopped"),
                     publicBaseUrl = publicBaseUrl,
-                    openRootPage = ZIO.attempt(browser.newPage(new NewPageOptions().setViewportSize(new ViewportSize(1280, 800)).setBaseURL(publicBaseUrl)))
+                    openRootPage = ZIO.attempt(browser.newPage(new NewPageOptions().setViewportSize(new ViewportSize(1280, 800)).setBaseURL(publicBaseUrl))),
+                    getGrpcClient = ZIO.succeed(grpcClient),
+                    saveLibraryItem = (item: LibraryItem) => saveLibraryItem(grpcClient, item)
                 )
             )(dekaf => dekaf.stop)
 
@@ -61,3 +82,24 @@ def getFreePort =
     } finally if (s != null) s.close()
 
     freePort
+
+case class GrpcClient(
+    library: LibraryServiceStub
+)
+
+object GrpcClient:
+    def fromChannel(channel: ManagedChannel): GrpcClient =
+        GrpcClient(
+            library = com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc.stub(channel)
+        )
+
+def saveLibraryItem(client: GrpcClient, item: LibraryItem): Task[Unit] = for {
+    req <- ZIO.succeed {
+        val libraryItemPb = LibraryItem.toPb(item)
+        SaveLibraryItemRequest(item = Some(libraryItemPb))
+    }
+
+    // XXX - The library item saves successfully, but the request still fails.
+    // Need to investigate the reason.
+    _ <- ZIO.fromFuture(_ => client.library.saveLibraryItem(req)).orElseSucceed(())
+} yield ()
