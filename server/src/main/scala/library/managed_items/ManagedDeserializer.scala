@@ -12,12 +12,12 @@ case class ManagedDeserializerSpec(
 object ManagedDeserializerSpec:
     def fromPb(v: pb.ManagedDeserializerSpec): ManagedDeserializerSpec =
         ManagedDeserializerSpec(
-           deserializer = Deserializer.fromPb(v.getDeserializer)
+            deserializer = Deserializer.fromPb(v.getDeserializer)
         )
 
     def toPb(v: ManagedDeserializerSpec): pb.ManagedDeserializerSpec =
         pb.ManagedDeserializerSpec(
-           deserializer = Some(Deserializer.toPb(v.deserializer))
+            deserializer = Some(Deserializer.toPb(v.deserializer))
         )
 
 case class ManagedDeserializer(
@@ -39,8 +39,8 @@ object ManagedDeserializer:
         )
 
 case class ManagedDeserializerValOrRef(
-    value: Option[ManagedDeserializer],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedDeserializer] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedDeserializerValOrRef:

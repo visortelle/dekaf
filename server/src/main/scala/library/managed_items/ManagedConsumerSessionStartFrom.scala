@@ -80,8 +80,8 @@ object ManagedConsumerSessionStartFrom:
         )
 
 case class ManagedConsumerSessionStartFromValOrRef(
-    value: Option[ManagedConsumerSessionStartFrom],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedConsumerSessionStartFrom] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedConsumerSessionStartFromValOrRef:

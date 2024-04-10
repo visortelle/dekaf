@@ -55,8 +55,8 @@ object ManagedConsumerSessionTarget:
         )
 
 case class ManagedConsumerSessionTargetValOrRef(
-    value: Option[ManagedConsumerSessionTarget],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedConsumerSessionTarget] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedConsumerSessionTargetValOrRef:

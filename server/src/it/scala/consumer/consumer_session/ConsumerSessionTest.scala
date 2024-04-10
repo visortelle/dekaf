@@ -1,10 +1,14 @@
 package consumer.consumer_session
 
+import library.LibraryItemGen
+import library.managed_items.{ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigSpecGen, ManagedConsumerSessionConfigValOrRef}
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
 import testing.{TestDekaf, TestPulsar}
 import org.apache.pulsar.client.api.{MessageListener, Schema, SubscriptionInitialPosition}
+
+import java.util.UUID
 
 object ConsumerSessionTest extends ZIOSpecDefault:
     def spec = suite(this.getClass.getName)(
@@ -28,6 +32,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             val startValue = 100L
             val numMessages = 100_000
+            val sessionSpec = ManagedConsumerSessionConfigSpecGen.empty
 
             for {
                 pulsar <- ZIO.service[TestPulsar]
@@ -42,7 +47,9 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 dekaf <- ZIO.service[TestDekaf]
                 page <- dekaf.openRootPage
                 _ <- ZIO.attempt {
-                    page.navigate(s"/tenants/${topic.namespace.tenant.name}/namespaces/${topic.namespace.name}/topics/persistent/${topic.name}/consumer-session")
+                    page.navigate(
+                        s"/tenants/${topic.namespace.tenant.name}/namespaces/${topic.namespace.name}/topics/persistent/${topic.name}/consumer-session"
+                    )
                 }
             } yield assertTrue(2 == 2)
         }

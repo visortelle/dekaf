@@ -46,8 +46,8 @@ object ManagedMessageFilterChain:
         )
 
 case class ManagedMessageFilterChainValOrRef(
-    value: Option[ManagedMessageFilterChain],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedMessageFilterChain] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedMessageFilterChainValOrRef:

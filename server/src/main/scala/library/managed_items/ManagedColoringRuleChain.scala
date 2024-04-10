@@ -39,8 +39,8 @@ object ManagedColoringRuleChain:
         )
 
 case class ManagedColoringRuleChainValOrRef(
-    value: Option[ManagedColoringRuleChain],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedColoringRuleChain] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedColoringRuleChainValOrRef:
