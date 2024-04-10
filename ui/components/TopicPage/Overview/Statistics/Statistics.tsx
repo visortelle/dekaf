@@ -144,7 +144,7 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
             <td className={st.HighlightedCell}>Last Compaction Succeed Timestamp</td>
             <Td>{i18n.withVoidDefault(
               topicStats?.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined,
-              (v) => `${i18n.formatLongNumber(v)} (${i18n.formatDateTime(new Date(v))})`
+              (v) => i18n.formatDateTime(new Date(v))
             )}
             </Td>
           </tr>
@@ -160,7 +160,7 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
             <td className={st.HighlightedCell}>Last Compaction Failed Timestamp</td>
             <Td>{i18n.withVoidDefault(
               topicStats?.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined,
-              (v) => `${i18n.formatLongNumber(v)} (${i18n.formatDateTime(new Date(v))})`
+              (v) => i18n.formatDateTime(new Date(v))
             )}</Td>
           </tr>
           <tr className={st.Row}>

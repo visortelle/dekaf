@@ -24,3 +24,24 @@
     gap: 8rem;
     flex-direction: row;
 }
+
+.MainStatistics {
+    margin-bottom: 12rem;
+}
+
+.ActionsWrapper {
+    display: flex;
+    gap: 8rem;
+    flex-direction: column;
+    margin-bottom: 24rem;
+}
+
+.SubscriptionPropertiesWrapper {
+    margin-bottom: 24rem;
+}
+
+.ActionButtons {
+    display: flex;
+    gap: 8rem;
+    flex-direction: row;
+}

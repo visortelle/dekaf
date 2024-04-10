@@ -13,6 +13,10 @@ import {messageIdFromString, messageIdToPb} from "../../../ui/ConsumerSession/co
 import {Int64Value} from "google-protobuf/google/protobuf/wrappers_pb";
 import s from "./ExpireMessages.module.css";
 import A from "../../../ui/A/A";
+import FormItem from "../../../ui/ConfigurationTable/FormItem/FormItem";
+import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
+import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
+import ViewTopicPartitionsButton from "../../../TopicPage/Overview/ViewTopicPartitionsButton/ViewTopicPartitionsButton";
 
 export type ExpireMessagesProps = {
   tenant: string;
@@ -20,6 +24,7 @@ export type ExpireMessagesProps = {
   topic: string;
   topicPersistency: PulsarTopicPersistency;
   subscription: string;
+  isPartitionedTopic: boolean;
 }
 
 type ExpireByMessageId = {
@@ -97,7 +102,7 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
     {
       type: 'item',
       value: 'expire-by-message-id',
-      title: "Expire by Message ID"
+      title: "Expire messages before message ID"
     },
     {
       type: 'item',
@@ -110,19 +115,19 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
     <ConfirmationDialog
       content={
         <div className={s.ConfirmationDialogContentWrapper}>
-          <div>
-            <div>Select expiration target:</div>
+          <FormItem>
+            <FormLabel content={"Select expiration target:"} />
             <Select<ExpirationTarget>
               value={expirationTarget}
               onChange={setExpirationTarget}
               list={list}
             />
-          </div>
+          </FormItem>
 
-          {expirationTarget === 'expire-by-message-id' &&
+          {expirationTarget === 'expire-by-message-id' && !props.isPartitionedTopic &&
             <div className={s.ExpireByMessageIdWrapper}>
-              <div className={s.MessageId}>
-                <span>Message ID</span>
+              <FormItem>
+                <FormLabel content={"Message ID:"} />
                 <Input
                   placeholder={"0867100018003000"}
                   value={expireByMessageId.messageId}
@@ -134,11 +139,11 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
                   })}
                   isError={isMessageIdError}
                 />
-              </div>
+              </FormItem>
               <div className={s.ToggleWrapper}>
                 <Toggle
                   label={"Is Excluded"}
-                  help={"Will message at passed in position also be expired."}
+                  help={"Will the message with specified message ID not be expired."}
                   value={expireByMessageId.isExcluded}
                   onChange={() => setExpireByMessageId(value => {
                       return {
@@ -151,17 +156,24 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
               </div>
             </div>
           }
-          {expirationTarget === 'expire-time-in-seconds' &&
-            <div className={s.TimeInSeconds}>
-              <span>Time in seconds</span>
-              <Input
-                type={'number'}
-                placeholder={"0"}
-                value={expireTimeInSeconds.toString()}
-                onChange={(timeInSeconds) => setExpireTimeInSeconds(parseInt(timeInSeconds))}
-                focusOnMount
-              />
+          {expirationTarget === 'expire-by-message-id' && props.isPartitionedTopic &&
+            <div className={s.Info}>
+              Expire by message ID is not supported for partitioned topics. But you can expire messages by message ID on
+              one of the topic's partitions.
+              <br/>
+              Click to display the topic partitions:&nbsp;
+              <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic}
+                                         topicPersistency={props.topicPersistency}/>
             </div>
+          }
+          {expirationTarget === 'expire-time-in-seconds' &&
+            <FormItem>
+              <FormLabel content={"Time (rounded to seconds):"} />
+              <DurationInput
+                initialValue={expireTimeInSeconds}
+                onChange={(timeInSeconds) => setExpireTimeInSeconds(timeInSeconds)}
+              />
+            </FormItem>
           }
           <div className={s.Info}>
             You can use this function to manually expire messages from the backlog of a subscription (if Time-To-Live (TTL) setting is insufficient or not set).
@@ -178,7 +190,11 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
       }
       onConfirm={expireMessages}
       onCancel={modals.pop}
-      guard={"CONFIRM"}
+      guard={expirationTarget === 'expire-by-message-id' && props.isPartitionedTopic ? undefined : "CONFIRM"}
+      isConfirmDisabled={expirationTarget === 'expire-by-message-id' && isMessageIdError ||
+        expirationTarget === 'expire-time-in-seconds' && expireTimeInSeconds <= 0 ||
+        expirationTarget === 'expire-by-message-id' && props.isPartitionedTopic
+      }
       type='danger'
     />
   );

@@ -90,6 +90,7 @@ const ExpireAllSubscriptions: React.FC<ExpireAllMessagesProps> = (props) => {
       onConfirm={expireAllSubscriptions}
       onCancel={modals.pop}
       guard={"CONFIRM"}
+      isConfirmDisabled={expireTimeInSeconds <= 0}
       type='danger'
     />
   );

@@ -9,10 +9,13 @@ import Select, {List} from "../../../ui/Select/Select";
 import {PulsarTopicPersistency} from "../../../pulsar/pulsar-resources";
 import Toggle from "../../../ui/Toggle/Toggle";
 import Input from "../../../ui/Input/Input";
-import * as I18n from "../../../app/contexts/I18n/I18n";
 import {messageIdFromString, messageIdToPb} from "../../../ui/ConsumerSession/conversions/conversions";
 import {Int64Value} from "google-protobuf/google/protobuf/wrappers_pb";
 import s from "./ResetCursor.module.css";
+import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
+import FormItem from "../../../ui/ConfigurationTable/FormItem/FormItem";
+import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
+import ViewTopicPartitionsButton from "../../../TopicPage/Overview/ViewTopicPartitionsButton/ViewTopicPartitionsButton";
 
 export type ResetCursorProps = {
   tenant: string;
@@ -20,6 +23,7 @@ export type ResetCursorProps = {
   topic: string;
   topicPersistency: PulsarTopicPersistency;
   subscription: string;
+  isPartitionedTopic: boolean;
 }
 
 type ResetCursorByMessageId = {
@@ -92,12 +96,12 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
     {
       type: 'item',
       value: 'reset-cursor-by-message-id',
-      title: "Reset Cursor by Message ID"
+      title: "Set cursor at message with ID"
     },
     {
       type: 'item',
       value: 'reset-cursor-to-timestamp',
-      title: "Reset Cursor to Timestamp"
+      title: "Set cursor at timestamp"
     },
   ]
 
@@ -105,20 +109,19 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
     <ConfirmationDialog
       content={
         <div className={s.ConfirmationDialogContentWrapper}>
-          <div>
-            <div>Select reset subscription target:</div>
+          <FormItem>
+            <FormLabel content={"Select reset subscription target:"} />
             <Select<ResetCursorTarget>
               value={resetCursorTarget}
               onChange={setResetCursorTarget}
               list={list}
             />
+          </FormItem>
 
-          </div>
-
-          {resetCursorTarget === 'reset-cursor-by-message-id' &&
+          {resetCursorTarget === 'reset-cursor-by-message-id' && !props.isPartitionedTopic &&
             <div className={s.ResetCursorWrapper}>
-              <div className={s.MessageId}>
-                <span>Message ID</span>
+              <FormItem>
+                <FormLabel content={"Message ID:"} />
                 <Input
                   placeholder={"0867100018003000"}
                   value={resetCursorByMessageId.messageId}
@@ -130,11 +133,11 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
                   })}
                   isError={isMessageIdError}
                 />
-              </div>
+              </FormItem>
               <div className={s.ToggleWrapper}>
                 <Toggle
                   label={"Is Excluded"}
-                  help={"Is the message with Message ID specified going to be excluded after cursor reset."}
+                  help={"Is the cursor will be set after the message with specified message ID."}
                   value={resetCursorByMessageId.isExcluded}
                   onChange={() => setResetCursorByMessageId(value => {
                       return {
@@ -147,9 +150,19 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
               </div>
             </div>
           }
+          {resetCursorTarget === 'reset-cursor-by-message-id' && props.isPartitionedTopic &&
+            <div className={s.Info}>
+              This option is not available for partitioned topics. But you could reset cursor by message ID on one of
+              topic partitions.
+              <br/>
+              Click to display the topic partitions:&nbsp;
+              <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic}
+                                         topicPersistency={props.topicPersistency}/>
+            </div>
+          }
           {resetCursorTarget === 'reset-cursor-to-timestamp' &&
-            <div className={s.Timestamp}>
-              <span>Timestamp</span>
+            <FormItem>
+              <FormLabel content={"Timestamp:"} />
               <Input
                 type={'number'}
                 placeholder={"0"}
@@ -157,7 +170,7 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
                 onChange={(timestamp) => setTimestamp(parseInt(timestamp))}
                 focusOnMount
               />
-            </div>
+            </FormItem>
           }
           <div className={s.Info}>
             You can use this function to manually reset subscription cursor to a specific message ID or timestamp.
@@ -166,7 +179,8 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
       }
       onConfirm={resetCursor}
       onCancel={modals.pop}
-      guard={"CONFIRM"}
+      guard={resetCursorTarget === 'reset-cursor-by-message-id' && props.isPartitionedTopic ? undefined : "CONFIRM"}
+      isConfirmDisabled={resetCursorTarget === 'reset-cursor-by-message-id' && props.isPartitionedTopic}
       type='danger'
     />
   );

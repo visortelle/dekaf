@@ -2,9 +2,8 @@
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
-  margin-bottom: 24rem;
 }
 
 .ConsumersAfterMarkDeletePositionWrapper {
-  margin: 12rem 0;
+  margin: 24rem 0;
 }

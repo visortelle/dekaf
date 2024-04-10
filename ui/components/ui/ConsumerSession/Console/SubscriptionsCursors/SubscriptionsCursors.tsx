@@ -64,7 +64,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
         }
 
         return topicCursorStats;
-      };
+      }
 
       case TopicInternalStats.StatsCase.PARTITIONED_TOPIC_STATS: {
         const partitionedTopicStats = topicStats.getPartitionedTopicStats();

@@ -8,9 +8,11 @@ import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialo
 import Select, {List} from "../../../ui/Select/Select";
 import {PulsarTopicPersistency} from "../../../pulsar/pulsar-resources";
 import Input from "../../../ui/Input/Input";
-import * as I18n from "../../../app/contexts/I18n/I18n";
 import {Int64Value} from "google-protobuf/google/protobuf/wrappers_pb";
 import s from "./SkipMessages.module.css";
+import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
+import FormItem from "../../../ui/ConfigurationTable/FormItem/FormItem";
+import ViewTopicPartitionsButton from "../../../TopicPage/Overview/ViewTopicPartitionsButton/ViewTopicPartitionsButton";
 
 export type SkipMessagesProps = {
   tenant: string;
@@ -18,6 +20,7 @@ export type SkipMessagesProps = {
   topic: string;
   topicPersistency: PulsarTopicPersistency;
   subscription: string;
+  isPartitionedTopic: boolean;
 }
 
 type SkipMessagesTarget = 'skip-all-messages' | 'skip-exact-number-of-messages'
@@ -84,18 +87,18 @@ const SkipMessages: React.FC<SkipMessagesProps> = (props) => {
     <ConfirmationDialog
       content={
         <div className={s.ConfirmationDialogContentWrapper}>
-          <div>
-            <div>Select skip target:</div>
+          <FormItem>
+            <FormLabel content={"Select skip target:"} />
             <Select<SkipMessagesTarget>
               value={skipMessagesTarget}
               onChange={setSkipMessagesTarget}
               list={list}
             />
-          </div>
+          </FormItem>
 
-          {skipMessagesTarget === 'skip-exact-number-of-messages' &&
-            <div className={s.NumberOfMessages}>
-              <span>Number of messages</span>
+          {skipMessagesTarget === 'skip-exact-number-of-messages' && !props.isPartitionedTopic &&
+            <FormItem>
+              <FormLabel content={"Number of messages:"} />
               <Input
                 type={'number'}
                 placeholder={"0"}
@@ -103,6 +106,16 @@ const SkipMessages: React.FC<SkipMessagesProps> = (props) => {
                 onChange={(numberOfMessages) => setSkipNumberOfMessages(parseInt(numberOfMessages))}
                 focusOnMount
               />
+            </FormItem>
+          }
+          {skipMessagesTarget === 'skip-exact-number-of-messages' && props.isPartitionedTopic &&
+            <div className={s.Info}>
+              You can't skip specific number of messages for partitioned topics. You can either skip all messages or
+              skip specific number of messages on one of topic's partitions.
+              <br/>
+              Click to display the topic partitions:&nbsp;
+              <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic}
+                                         topicPersistency={props.topicPersistency}/>
             </div>
           }
           <div className={s.Info}>
@@ -112,7 +125,10 @@ const SkipMessages: React.FC<SkipMessagesProps> = (props) => {
       }
       onConfirm={skipMessages}
       onCancel={modals.pop}
-      guard={"CONFIRM"}
+      guard={skipMessagesTarget === 'skip-exact-number-of-messages' && props.isPartitionedTopic ? undefined : "CONFIRM"}
+      isConfirmDisabled={(skipMessagesTarget === 'skip-exact-number-of-messages' && skipNumberOfMessages <= 0) ||
+        (skipMessagesTarget === 'skip-exact-number-of-messages' && props.isPartitionedTopic)
+      }
       type='danger'
     />
   );
