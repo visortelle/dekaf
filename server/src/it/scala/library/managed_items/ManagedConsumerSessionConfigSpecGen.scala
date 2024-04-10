@@ -1,13 +1,14 @@
 package library.managed_items
 
+import consumer.start_from.LatestMessage
 import library.ManagedItemGen
 
 object ManagedConsumerSessionConfigSpecGen:
-    def empty: ManagedConsumerSessionConfigSpec =
+    def currentTopic: ManagedConsumerSessionConfigSpec =
         ManagedConsumerSessionConfigSpec(
             startFrom = ManagedConsumerSessionStartFromValOrRef(
                 value = Some(
-                    ManagedItemGen.fromSpec(ManagedConsumerSessionStartFromSpecGen.latestMessage).asInstanceOf[ManagedConsumerSessionStartFrom]
+                    ManagedItemGen.fromSpec(ManagedConsumerSessionStartFromSpecGen.fromVariant(LatestMessage())).asInstanceOf[ManagedConsumerSessionStartFrom]
                 )
             ),
             targets = Vector(

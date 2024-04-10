@@ -3,6 +3,7 @@ package library.managed_items
 import consumer.start_from.LatestMessage
 
 object ManagedConsumerSessionStartFromSpecGen:
-    def latestMessage: ManagedConsumerSessionStartFromSpec = ManagedConsumerSessionStartFromSpec(
-      startFrom = LatestMessage()
+    def fromVariant(variant: StartFromVariant): ManagedConsumerSessionStartFromSpec = ManagedConsumerSessionStartFromSpec(
+      startFrom = variant
     )
+

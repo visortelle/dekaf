@@ -104,6 +104,8 @@ lazy val root = project
             "com.microsoft.playwright" % "playwright" % "1.42.0" % "it",
             "org.testcontainers" % "testcontainers" % "1.19.7" % "it",
             "org.testcontainers" % "pulsar" % "1.19.7" % "it",
+            "dev.optics" %% "monocle-core"  % "3.1.0" % "it",
+            "dev.optics" %% "monocle-macro" % "3.1.0" % "it",
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.14.0",

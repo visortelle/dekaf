@@ -5,9 +5,11 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 import _root_.consumer.start_from.{EarliestMessage, LatestMessage, NthMessageAfterEarliest, NthMessageBeforeLatest}
 
+type StartFromVariant = EarliestMessage | LatestMessage | ManagedConsumerSessionStartFromValOrRef | ManagedMessageIdValOrRef | ManagedDateTimeValOrRef |
+    ManagedRelativeDateTimeValOrRef | NthMessageBeforeLatest | NthMessageAfterEarliest
+
 case class ManagedConsumerSessionStartFromSpec(
-    startFrom: EarliestMessage | LatestMessage | ManagedConsumerSessionStartFromValOrRef | ManagedMessageIdValOrRef | ManagedDateTimeValOrRef |
-        ManagedRelativeDateTimeValOrRef | NthMessageBeforeLatest | NthMessageAfterEarliest
+    startFrom: StartFromVariant
 )
 
 object ManagedConsumerSessionStartFromSpec:

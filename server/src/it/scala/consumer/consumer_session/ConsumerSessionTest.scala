@@ -1,12 +1,21 @@
 package consumer.consumer_session
 
-import library.LibraryItemGen
-import library.managed_items.{ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigSpecGen, ManagedConsumerSessionConfigValOrRef}
+import consumer.start_from.EarliestMessage
+import library.{LibraryItemGen, ManagedItemGen}
+import library.managed_items.{
+    ManagedConsumerSessionConfig,
+    ManagedConsumerSessionConfigSpec,
+    ManagedConsumerSessionConfigSpecGen,
+    ManagedConsumerSessionConfigValOrRef,
+    ManagedConsumerSessionStartFrom,
+    ManagedConsumerSessionStartFromSpecGen
+}
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
 import testing.{TestDekaf, TestPulsar}
 import org.apache.pulsar.client.api.{MessageListener, Schema, SubscriptionInitialPosition}
+import monocle.syntax.all.*
 
 import java.util.UUID
 
@@ -32,7 +41,15 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             val startValue = 100L
             val numMessages = 100_000
-            val sessionSpec = ManagedConsumerSessionConfigSpecGen.empty
+
+            var sessionSpec = ManagedConsumerSessionConfigSpecGen.currentTopic
+            sessionSpec = sessionSpec
+                .focus(_.startFrom.value)
+                .replace(Some(
+                    ManagedItemGen.fromSpec(ManagedConsumerSessionStartFromSpecGen.fromVariant(
+                        EarliestMessage()
+                    )).asInstanceOf[ManagedConsumerSessionStartFrom]
+                ))
 
             for {
                 pulsar <- ZIO.service[TestPulsar]
