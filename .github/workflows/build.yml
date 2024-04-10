@@ -48,6 +48,10 @@ jobs:
         shell: bash
         run: nix-shell --run 'cd ./server && make build && make test'
 
+      - name: Run integration tests
+        shell: bash
+        run: nix-shell --run 'cd ./server && make integration-test'
+
   build-docker-images:
     needs: test
 
