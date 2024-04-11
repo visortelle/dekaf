@@ -10,7 +10,6 @@ import scala.jdk.CollectionConverters.*
 val PulsarVersion = "3.2.2"
 
 case class TestPulsar(
-    container: PulsarContainer,
     pulsarWebUrl: String,
     pulsarBrokerUrl: String,
     createAdminClient: Task[PulsarAdmin],
@@ -18,22 +17,32 @@ case class TestPulsar(
     createTenant: Task[PulsarResources.Tenant],
     createNamespace: Task[PulsarResources.Namespace],
     createTopic: Task[PulsarResources.Topic],
-    createPartitionedTopic: (numPartitions: Int) => Task[PulsarResources.Topic]
+    createPartitionedTopic: (numPartitions: Int) => Task[PulsarResources.Topic],
+    stop: Task[Unit]
 )
 
 object TestPulsar:
-    val live: ULayer[TestPulsar] =
+    def live(isUseExisting: Boolean = false): ULayer[TestPulsar] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 ZIO.attempt {
-                    val env: Map[String, String] = Map("PULSAR_STANDALONE_USE_ZOOKEEPER" -> "1")
-                    val container = new PulsarContainer(DockerImageName.parse(s"apachepulsar/pulsar:$PulsarVersion"))
-                        .withEnv(env.asJava)
-                        .withStartupTimeout(java.time.Duration.ofSeconds(120))
-                    container.start()
+                    var httpServiceUrl: String = "http://localhost:8080"
+                    var brokerServiceUrl: String = "pulsar://localhost:6650"
+                    var stop: Task[Unit] = ZIO.unit
 
-                    def createAdminClient = ZIO.succeed(PulsarAdmin.builder().serviceHttpUrl(container.getHttpServiceUrl).build())
-                    def createPulsarClient = ZIO.succeed(PulsarClient.builder().serviceUrl(container.getPulsarBrokerUrl).build())
+                    if !isUseExisting then
+                        val env: Map[String, String] = Map("PULSAR_STANDALONE_USE_ZOOKEEPER" -> "1")
+                        val container = new PulsarContainer(DockerImageName.parse(s"apachepulsar/pulsar:$PulsarVersion"))
+                            .withEnv(env.asJava)
+                            .withStartupTimeout(java.time.Duration.ofSeconds(120))
+                        container.start()
+
+                        httpServiceUrl = container.getHttpServiceUrl
+                        brokerServiceUrl = container.getPulsarBrokerUrl
+                        stop = ZIO.attempt(container.stop())
+
+                    def createAdminClient = ZIO.succeed(PulsarAdmin.builder().serviceHttpUrl(httpServiceUrl).build())
+                    def createPulsarClient = ZIO.succeed(PulsarClient.builder().serviceUrl(brokerServiceUrl).build())
 
                     def createTenant: Task[PulsarResources.Tenant] = for {
                         pulsarAdmin <- createAdminClient
@@ -95,15 +104,15 @@ object TestPulsar:
                     } yield topic
 
                     TestPulsar(
-                        container = container,
-                        pulsarWebUrl = container.getHttpServiceUrl,
-                        pulsarBrokerUrl = container.getPulsarBrokerUrl,
+                        pulsarWebUrl = httpServiceUrl,
+                        pulsarBrokerUrl = brokerServiceUrl,
                         createAdminClient = createAdminClient,
                         createPulsarClient = createPulsarClient,
                         createTenant = createTenant,
                         createNamespace = createNamespace,
                         createTopic = createTopic,
-                        createPartitionedTopic = createPartitionedTopic
+                        createPartitionedTopic = createPartitionedTopic,
+                        stop = stop
                     )
                 }.orDie
-            )(testPulsar => ZIO.attempt(testPulsar.container.stop()).ignoreLogged)
+            )(testPulsar => testPulsar.stop.ignoreLogged)

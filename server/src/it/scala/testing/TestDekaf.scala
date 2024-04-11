@@ -20,13 +20,11 @@ case class TestDekaf(
     getGrpcClient: Task[GrpcClient]
 )
 
-val isDebug = !sys.env.get("CI").contains("true")
-
 object TestDekaf:
     lazy private val playwright = Playwright.create
     lazy private val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
 
-    val live: URLayer[TestPulsar, TestDekaf] =
+    def live: URLayer[TestPulsar, TestDekaf] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 for {
