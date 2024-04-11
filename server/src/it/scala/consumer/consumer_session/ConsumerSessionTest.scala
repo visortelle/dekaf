@@ -39,7 +39,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
             val startValue = 100L
             val numMessages = 100_000
 
-            // Construct a ConsumerSession that we'll use to reproduce the issue
+            // Prepare a ConsumerSession config
             var sessionSpec = ManagedConsumerSessionConfigSpecGen.currentTopic
             sessionSpec = sessionSpec
                 .focus(_.startFrom.value)
@@ -107,7 +107,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             val numMessages = 100_000
 
-            // Construct a ConsumerSession that we'll use to reproduce the issue
+            // Prepare a ConsumerSession config
             var sessionSpec = ManagedConsumerSessionConfigSpecGen.currentTopic
             sessionSpec = sessionSpec
                 .focus(_.startFrom.value)
@@ -146,6 +146,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
                 consumerSessionPage <- ZIO.attempt(ConsumerSessionPageHtml(page))
 
+                // Run consumer session
                 _ <- ZIO.attempt(consumerSessionPage.startButton.click())
                 _ <- ZIO.attempt(adminClient.topics.getSubscriptions(topic.fqn).asScala.size)
                     .debug(s"Subscription count after starting the consumer session")
@@ -155,6 +156,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
                 _ <- ZIO.attempt(consumerSessionPage.messagesProcessed).repeatUntil(v => v > (numMessages * 0.15).floor.toLong)
 
+                // Close the browser page
                 _ <- ZIO.attempt(page.close(CloseOptions().setRunBeforeUnload(isRunBeforeUnload)))
                 _ <- ZIO.attempt(adminClient.topics.getSubscriptions(topic.fqn).asScala.size)
                     .debug(s"Subscription count after ${if isRunBeforeUnload then "gracefully" else "non-gracefully"} stopping the consumer session")
@@ -166,7 +168,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
             for {
                 _ <- runTest(isRunBeforeUnload = true)
                 _ <- runTest(isRunBeforeUnload = false)
-            } yield assertTrue(true)
+            } yield assertCompletes
         } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(3)
     ).provideSomeShared(
         TestPulsar.live(isUseExisting = isDebug),
