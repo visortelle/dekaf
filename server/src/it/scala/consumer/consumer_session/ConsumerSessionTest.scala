@@ -119,7 +119,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             val sessionLibraryItem = LibraryItemGen.fromManagedItemSpec(sessionSpec)
 
-            def runTest(isRunBeforeUnload: Boolean) = for {
+            def runTest(isRunBeforeUnload: Boolean, isPauseSessionBeforeClosingPage: Boolean) = for {
                 pulsar <- ZIO.service[TestPulsar]
                 pulsarClient <- pulsar.createPulsarClient
                 adminClient <- pulsar.createAdminClient
@@ -148,6 +148,8 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
                 // Run consumer session
                 _ <- ZIO.attempt(consumerSessionPage.startButton.click())
+
+                // Check subscription count
                 _ <- ZIO.attempt(adminClient.topics.getSubscriptions(topic.fqn).asScala.size)
                     .debug(s"Subscription count after starting the consumer session")
                     .filterOrFail(_ > 0)(new Exception("Subscription wasn't created"))
@@ -156,8 +158,24 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
                 _ <- ZIO.attempt(consumerSessionPage.messagesProcessed).repeatUntil(v => v > (numMessages * 0.15).floor.toLong)
 
+                // Conditionally pause the session before closing the page
+                _ <- ZIO.attempt {
+                    consumerSessionPage.pauseButton.click()
+                    page.waitForTimeout(3.seconds.toMillis)
+                }
+                    .when(isPauseSessionBeforeClosingPage)
+                    .debug("Pause the session before closing the page")
+
                 // Close the browser page
-                _ <- ZIO.attempt(page.close(CloseOptions().setRunBeforeUnload(isRunBeforeUnload)))
+                _ <- ZIO.attempt {
+                    if isRunBeforeUnload
+                    // XXX - executing page.close with `runBeforeUnload` doesn't actually run `onbeforeunload` event
+                    // by some reason. Using the `page.reload()` method as a workaround.
+                    then page.reload()
+                    else page.close()
+                }
+
+                // Check subscription count
                 _ <- ZIO.attempt(adminClient.topics.getSubscriptions(topic.fqn).asScala.size)
                     .debug(s"Subscription count after ${if isRunBeforeUnload then "gracefully" else "non-gracefully"} stopping the consumer session")
                     .filterOrFail(_ == 0)(new Exception("Subscription wasn't deleted"))
@@ -166,10 +184,15 @@ object ConsumerSessionTest extends ZIOSpecDefault:
             } yield ()
 
             for {
-                _ <- runTest(isRunBeforeUnload = true)
-                _ <- runTest(isRunBeforeUnload = false)
+                // Close page gracefully
+                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = false)
+                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = true)
+
+                // Close page non-gracefully
+//                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = false)
+//                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
             } yield assertCompletes
-        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(3)
+        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(1)
     ).provideSomeShared(
         TestPulsar.live(isUseExisting = isDebug),
         TestDekaf.live

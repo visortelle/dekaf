@@ -62,7 +62,15 @@ object TestDekaf:
                 } yield TestDekaf(
                     stop = program.interrupt *> ZIO.logInfo("Dekaf stopped"),
                     publicBaseUrl = publicBaseUrl,
-                    openRootPage = ZIO.attempt(browser.newPage(new NewPageOptions().setViewportSize(new ViewportSize(1280, 800)).setBaseURL(publicBaseUrl))),
+                    openRootPage = ZIO.attempt {
+                        val options = new NewPageOptions()
+                            .setViewportSize(new ViewportSize(1280, 800))
+                            .setBaseURL(publicBaseUrl)
+                        val page = browser.newPage(options)
+                        page.onConsoleMessage((msg) => println(s"Message from browser console: ${msg.`type`} ${msg.text}"))
+
+                        page
+                    },
                     getGrpcClient = ZIO.succeed(grpcClient),
                     saveLibraryItem = (item: LibraryItem) => saveLibraryItem(grpcClient, item)
                 )
