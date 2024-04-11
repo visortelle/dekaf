@@ -119,7 +119,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             val sessionLibraryItem = LibraryItemGen.fromManagedItemSpec(sessionSpec)
 
-            for {
+            def runTest(isRunBeforeUnload: Boolean) = for {
                 pulsar <- ZIO.service[TestPulsar]
                 pulsarClient <- pulsar.createPulsarClient
                 adminClient <- pulsar.createAdminClient
@@ -155,15 +155,19 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
                 _ <- ZIO.attempt(consumerSessionPage.messagesProcessed).repeatUntil(v => v > (numMessages * 0.15).floor.toLong)
 
-                // Gracefully killing the page
-                _ <- ZIO.attempt(page.close(CloseOptions().setRunBeforeUnload(true)))
+                _ <- ZIO.attempt(page.close(CloseOptions().setRunBeforeUnload(isRunBeforeUnload)))
                 _ <- ZIO.attempt(adminClient.topics.getSubscriptions(topic.fqn).asScala.size)
-                    .debug(s"Subscription count after gracefully stopping the consumer session")
+                    .debug(s"Subscription count after ${if isRunBeforeUnload then "gracefully" else "non-gracefully"} stopping the consumer session")
                     .filterOrFail(_ == 0)(new Exception("Subscription wasn't deleted"))
                     .retry(Schedule.spaced(250.millis))
                     .timeoutFail(new Exception("Subscription wasn't deleted in time"))(10.seconds)
+            } yield ()
+
+            for {
+                _ <- runTest(isRunBeforeUnload = true)
+                _ <- runTest(isRunBeforeUnload = false)
             } yield assertTrue(true)
-        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(5)
+        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(3)
     ).provideSomeShared(
         TestPulsar.live(isUseExisting = isDebug),
         TestDekaf.live
