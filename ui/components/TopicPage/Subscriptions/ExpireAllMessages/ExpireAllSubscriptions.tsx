@@ -10,6 +10,9 @@ import Input from "../../../ui/Input/Input";
 import {Int64Value} from "google-protobuf/google/protobuf/wrappers_pb";
 import s from "./ExpireAllSubscriptions.module.css";
 import A from "../../../ui/A/A";
+import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
+import FormItem from "../../../ui/ConfigurationTable/FormItem/FormItem";
+import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
 
 export type ExpireAllMessagesProps = {
   tenant: string;
@@ -32,7 +35,7 @@ const ExpireAllSubscriptions: React.FC<ExpireAllMessagesProps> = (props) => {
     req.setTopicFqn(topicFqn);
 
     const expireAllMessages = new pb.ExpireMessagesForAllSubscriptions();
-    expireAllMessages.setTimeInSeconds(new Int64Value().setValue(expireTimeInSeconds));
+    expireAllMessages.setTimeInSeconds(new Int64Value().setValue(Math.round(expireTimeInSeconds)));
 
     req.setExpireAllSubscriptions(expireAllMessages);
 
@@ -59,16 +62,13 @@ const ExpireAllSubscriptions: React.FC<ExpireAllMessagesProps> = (props) => {
     <ConfirmationDialog
       content={
         <div className={s.ConfirmationDialogContentWrapper}>
-          <div className={s.TimeInSeconds}>
-            <span>Expiration Time (Seconds)</span>
-            <Input
-              type={'number'}
-              placeholder={"0"}
-              value={expireTimeInSeconds.toString()}
-              onChange={(timeInSeconds) => setExpireTimeInSeconds(parseInt(timeInSeconds))}
-              focusOnMount
+          <FormItem>
+            <FormLabel content={"Expiration Time (rounded to seconds):"} />
+            <DurationInput
+              initialValue={expireTimeInSeconds}
+              onChange={(timeInSeconds) => setExpireTimeInSeconds(timeInSeconds)}
             />
-          </div>
+          </FormItem>
 
           <div className={s.Info}>
             You can use this function to manually expire messages from the backlog of <strong>all

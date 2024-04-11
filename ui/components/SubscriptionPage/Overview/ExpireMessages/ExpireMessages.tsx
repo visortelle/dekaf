@@ -73,9 +73,8 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
     }
 
     if (expirationTarget === 'expire-time-in-seconds') {
-      expireMessageBySubscriptionPb.setTimeInSeconds(new Int64Value().setValue(expireTimeInSeconds));
+      expireMessageBySubscriptionPb.setTimeInSeconds(new Int64Value().setValue(Math.round(expireTimeInSeconds)));
     }
-
 
     req.setExpireSubscription(expireMessageBySubscriptionPb);
 
@@ -168,7 +167,7 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
           }
           {expirationTarget === 'expire-time-in-seconds' &&
             <FormItem>
-              <FormLabel content={"Time (rounded to seconds):"} />
+              <FormLabel content={"Expiration Time (rounded to seconds):"} />
               <DurationInput
                 initialValue={expireTimeInSeconds}
                 onChange={(timeInSeconds) => setExpireTimeInSeconds(timeInSeconds)}

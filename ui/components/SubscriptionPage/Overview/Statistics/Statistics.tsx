@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {ReactNode} from 'react';
 import * as s from './Statistics.module.css'
 import * as st from '../../../ui/SimpleTable/SimpleTable.module.css';
 import Td from '../../../ui/SimpleTable/Td';
@@ -8,6 +8,7 @@ import {PulsarTopicPersistency} from '../../../pulsar/pulsar-resources';
 import KeyValueEditor, {recordToIndexedKv} from "../../../ui/KeyValueEditor/KeyValueEditor";
 import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
 import * as pbUtils from "../../../../proto-utils/proto-utils";
+import NoData from "../../../ui/NoData/NoData";
 
 export type StatisticsProps = {
   tenant: string;
@@ -20,6 +21,18 @@ export type StatisticsProps = {
 
 const Statistics: React.FC<StatisticsProps> = (props) => {
   const i18n = I18n.useContext();
+
+  function renderTimestamp(timestamp: number | undefined): ReactNode | undefined {
+    if (timestamp === 0) {
+      return <NoData />;
+    }
+
+    if (timestamp === undefined) {
+      return;
+    }
+
+    return i18n.withVoidDefault(new Date(timestamp), i18n.formatDateTime);
+  }
 
   return (
     <div className={s.Statistics}>
@@ -51,51 +64,23 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
         </tr>
         <tr className={st.Row}>
           <td className={st.HighlightedCell}>Last Expire Timestamp</td>
-          <Td>{
-
-            i18n.withVoidDefault(props.subscriptionStats.getLastExpireTimestamp()?.getValue() === undefined ?
-                undefined :
-                new Date(props.subscriptionStats.getLastExpireTimestamp()?.getValue()!)
-              ,
-              i18n.formatDateTime
-            )
-          }</Td>
+          <Td>{renderTimestamp(props.subscriptionStats.getLastExpireTimestamp()?.getValue())}</Td>
         </tr>
         <tr className={st.Row}>
           <td className={st.HighlightedCell}>Last Consumed Timestamp</td>
-          <Td>{i18n.withVoidDefault(props.subscriptionStats.getLastConsumedTimestamp()?.getValue() === undefined ?
-              undefined :
-              new Date(props.subscriptionStats.getLastConsumedTimestamp()?.getValue()!)
-            ,
-            i18n.formatDateTime
-          )}</Td>
+          <Td>{renderTimestamp(props.subscriptionStats.getLastConsumedTimestamp()?.getValue())}</Td>
         </tr>
         <tr className={st.Row}>
           <td className={st.HighlightedCell}>Last Consumed Flow Timestamp</td>
-          <Td>{i18n.withVoidDefault(props.subscriptionStats.getLastConsumedFlowTimestamp()?.getValue() === undefined ?
-              undefined :
-              new Date(props.subscriptionStats.getLastConsumedFlowTimestamp()?.getValue()!)
-            ,
-            i18n.formatDateTime
-          )}</Td>
+          <Td>{renderTimestamp(props.subscriptionStats.getLastConsumedFlowTimestamp()?.getValue())}</Td>
         </tr>
         <tr className={st.Row}>
           <td className={st.HighlightedCell}>Last Acked Timestamp</td>
-          <Td>{i18n.withVoidDefault(props.subscriptionStats.getLastAckedTimestamp()?.getValue() === undefined ?
-              undefined :
-              new Date(props.subscriptionStats.getLastAckedTimestamp()?.getValue()!)
-            ,
-            i18n.formatDateTime
-          )}</Td>
+          <Td>{renderTimestamp(props.subscriptionStats.getLastAckedTimestamp()?.getValue())}</Td>
         </tr>
         <tr className={st.Row}>
           <td className={st.HighlightedCell}>Last Mark Delete Advanced Timestamp</td>
-          <Td>{i18n.withVoidDefault(props.subscriptionStats.getLastMarkDeleteAdvancedTimestamp()?.getValue() === undefined ?
-              undefined :
-              new Date(props.subscriptionStats.getLastMarkDeleteAdvancedTimestamp()?.getValue()!)
-            ,
-            i18n.formatDateTime
-          )}</Td>
+          <Td>{renderTimestamp(props.subscriptionStats.getLastMarkDeleteAdvancedTimestamp()?.getValue())}</Td>
         </tr>
         <tr className={st.Row}>
           <td className={st.HighlightedCell}>Msg Throughput Out</td>
