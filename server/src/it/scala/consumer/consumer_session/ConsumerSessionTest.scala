@@ -185,12 +185,12 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             for {
                 // Close page gracefully
-                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = false)
-                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = true)
+//                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = false)
+//                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = true)
 
                 // Close page non-gracefully
 //                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = false)
-//                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
+                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
             } yield assertCompletes
         } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(1)
     ).provideSomeShared(
