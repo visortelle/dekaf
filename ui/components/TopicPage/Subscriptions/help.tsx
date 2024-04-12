@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { ColumnKey } from "./Subscriptions";
+import A from "../../ui/A/A";
 
 export const help: Record<ColumnKey, ReactNode> = {
   activeConsumerName: "The name of the consumer that is active for single active consumer subscriptions (such as failover or exclusive).",
@@ -17,7 +18,7 @@ export const help: Record<ColumnKey, ReactNode> = {
   isAllowOutOfOrderDelivery: "Whether out of order delivery is allowed on the Key_Shared subscription.",
   isBlockedSubscriptionOnUnackedMsgs: "Flag to verify if subscription is blocked due to reaching threshold of unacked messages.",
   isDurable: "Tells whether this subscription is durable or ephemeral (eg.: from a reader).",
-  isReplicated: "Mark that the subscription state is kept in sync across different regions.",
+  isReplicated: "Mark that the subscription state is kept in sync across different regions, allowing consumers to resume at the last failure point across clusters during failover",
   keySharedMode: <div>Whether the Key_Shared subscription mode is <code>AUTO_SPLIT</code> or <code>STICKY</code>.</div>,
   lastAckedTimestamp: "Last acked message timestamp.",
   lastConsumedFlowTimestamp: "Last received consume flow command timestamp.",

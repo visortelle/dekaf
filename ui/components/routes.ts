@@ -162,10 +162,22 @@ export const routes = {
                     }) =>
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions`,
                   },
+                  createSubscription: {
+                    _ : {
+                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/create-subscription",
+                      get: (props: {
+                        tenant: string;
+                        namespace: string;
+                        topicPersistency: PulsarTopicPersistency;
+                        topic: string;
+                      }) =>
+                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/create-subscription`,
+                    }
+                  },
                   subscription: {
                     overview: {
                       _: {
-                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/subscriptions/:subscription",
+                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/subscriptions/:subscription/overview",
                         get: (props: {
                           tenant: string;
                           namespace: string;
@@ -173,7 +185,7 @@ export const routes = {
                           topic: string;
                           subscription: string;
                         }) =>
-                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions/${props.subscription}`,
+                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions/${props.subscription}/overview`,
                       },
                     },
                     consumers: {

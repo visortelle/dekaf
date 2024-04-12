@@ -5,6 +5,7 @@ package tools.teal.pulsar.ui.topic.v1;
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
 import "tools/teal/pulsar/ui/api/v1/long_running_process_status.proto";
+import "tools/teal/pulsar/ui/api/v1/consumer.proto";
 
 enum TopicDomain {
   TOPIC_DOMAIN_UNSPECIFIED = 0;
@@ -283,12 +284,12 @@ message TopicProperties {
   map<string, string> properties = 1;
 }
 
-message GetTopicPropertiesRequest {
+message GetTopicsPropertiesRequest {
   repeated string topics = 1;
 }
-message GetTopicPropertiesResponse {
+message GetTopicsPropertiesResponse {
   google.rpc.Status status = 1;
-  map<string, TopicProperties> topic_properties = 2;
+  map<string, TopicProperties> topics_properties = 2;
 }
 message SetTopicPropertiesRequest {
   string topic = 1;
@@ -368,6 +369,123 @@ message DeleteSubscriptionResponse {
   google.rpc.Status status = 1;
 }
 
+message CreateSubscriptionRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  oneof initial_cursor_position {
+    tools.teal.pulsar.ui.api.v1.MessageId message_id = 3;
+    tools.teal.pulsar.ui.api.v1.EarliestMessage earliest_message = 4;
+    tools.teal.pulsar.ui.api.v1.LatestMessage latest_message = 5;
+  };
+  map<string, string> properties = 6;
+  bool is_replicated = 7;
+}
+
+message CreateSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
+message ExpireMessagesSubscription {
+  message ExpireByMessageId {
+    tools.teal.pulsar.ui.api.v1.MessageId message_id = 1;
+    bool is_excluded = 2;
+  }
+
+  string subscription_name = 1;
+  oneof expiration_target {
+    ExpireByMessageId expire_by_message_id = 2;
+    google.protobuf.Int64Value time_in_seconds = 3;
+  }
+}
+
+message ExpireMessagesForAllSubscriptions {
+  google.protobuf.Int64Value time_in_seconds = 1;
+}
+
+message ExpireMessagesRequest {
+  string topic_fqn = 1;
+  oneof expiration_target {
+    ExpireMessagesSubscription expire_subscription = 2;
+    ExpireMessagesForAllSubscriptions expire_all_subscriptions = 3;
+  }
+}
+
+message ExpireMessagesResponse {
+  google.rpc.Status status = 1;
+}
+
+message SkipExactNumberMessages {
+  google.protobuf.Int64Value number_of_messages = 1;
+}
+
+message SkipAllMessages {}
+
+message SkipSubscriptionMessagesRequest {
+  string topic_fqn = 1;
+  oneof skip_target {
+    SkipExactNumberMessages skip_exact_number_messages = 2;
+    SkipAllMessages skip_all_messages = 3;
+  }
+  string subscription_name = 4;
+}
+
+message SkipSubscriptionMessagesResponse {
+  google.rpc.Status status = 1;
+}
+
+message ResetCursorByMessageId {
+  tools.teal.pulsar.ui.api.v1.MessageId message_id = 1;
+  bool is_excluded = 2;
+}
+
+message ResetCursorRequest {
+  string topic_fqn = 1;
+  oneof reset_cursor_target {
+    ResetCursorByMessageId reset_by_message_id = 2;
+    google.protobuf.Int64Value timestamp = 3;
+  }
+  string subscription_name = 4;
+}
+
+message ResetCursorResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSubscriptionStatsRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  bool is_partitioned_topic = 3;
+  bool is_get_precise_backlog = 4;
+  bool is_subscription_backlog_size = 5;
+  bool is_earliest_time_in_backlog = 6;
+}
+
+message GetSubscriptionStatsResponse {
+  google.rpc.Status status = 1;
+  SubscriptionStats subscription_stats = 2;
+}
+
+message GetSubscriptionPropertiesRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+}
+
+message GetSubscriptionPropertiesResponse {
+  google.rpc.Status status = 1;
+  map<string, string> properties = 2;
+}
+
+
+message SetSubscriptionPropertiesRequest {
+  string topic_fqn = 1;
+  string subscription_name = 2;
+  map<string, string> properties = 3;
+}
+
+message SetSubscriptionPropertiesResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -375,7 +493,7 @@ service TopicService {
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
   rpc ListPartitionedTopics(ListPartitionedTopicsRequest) returns (ListPartitionedTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
-  rpc GetTopicProperties(GetTopicPropertiesRequest) returns (GetTopicPropertiesResponse);
+  rpc GetTopicsProperties(GetTopicsPropertiesRequest) returns (GetTopicsPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
   rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
@@ -385,5 +503,12 @@ service TopicService {
   rpc GetCompactionStatus(GetCompactionStatusRequest) returns (GetCompactionStatusResponse);
   rpc TriggerCompaction(TriggerCompactionRequest) returns (TriggerCompactionResponse);
 
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse);
   rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse);
+  rpc ExpireMessages(ExpireMessagesRequest) returns (ExpireMessagesResponse);
+  rpc SkipSubscriptionMessages(SkipSubscriptionMessagesRequest) returns (SkipSubscriptionMessagesResponse);
+  rpc ResetCursor(ResetCursorRequest) returns (ResetCursorResponse);
+  rpc GetSubscriptionStats(GetSubscriptionStatsRequest) returns (GetSubscriptionStatsResponse);
+  rpc GetSubscriptionProperties(GetSubscriptionPropertiesRequest) returns (GetSubscriptionPropertiesResponse);
+  rpc SetSubscriptionProperties(SetSubscriptionPropertiesRequest) returns (SetSubscriptionPropertiesResponse);
 }

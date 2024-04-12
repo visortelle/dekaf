@@ -25,6 +25,8 @@ object Envoy:
 
             _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $configPath")
             _ <- ZIO.logInfo(s"Listening port: ${envoyConfigProps.listenPort}")
+
             _ <- Command(envoyBinPath, "--config-path", configPath, "--log-level", "error").inheritIO.successfulExitCode
+
             _ <- ZIO.never
         yield ()

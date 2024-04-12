@@ -74,6 +74,14 @@ export const swrKeys = {
             stringify(topics),
           ],
         },
+        subscriptionStats: {
+          _: (subscription: string) => [
+            "customApi",
+            "metrics",
+            "subscriptionStats",
+            subscription,
+          ],
+        },
         topicsInternalStats: {
           _: (topics: string[]) => [
             "customApi",

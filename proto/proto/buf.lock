@@ -4,10 +4,10 @@ deps:
   - remote: buf.build
     owner: googleapis
     repository: googleapis
-    commit: 7e6f6e774e29406da95bd61cdcdbc8bc
-    digest: shake256:fe43dd2265ea0c07d76bd925eeba612667cf4c948d2ce53d6e367e1b4b3cb5fa69a51e6acb1a6a50d32f894f054a35e6c0406f6808a483f2752e10c866ffbf73
+    commit: ee48893a270147348e3edc6c1a03de0e
+    digest: shake256:a35b0576a2b55dad72747e786af05c03539c2b96be236c9de39fe10d551931ac252eb68445c0cef6bbd27fa20e8c26eee5b8a9fe9c2fde6f63a03e18f8cf980d
   - remote: buf.build
     owner: grpc
     repository: grpc
-    commit: 2839ffc44e6d44ddbdc1e9f91c93c59f
-    digest: shake256:f7f72fd47d851ef6e41c47bd22febfddbd2b17282bd73e7387d96fb7ae3c961f46b6edb7c6da6aa54653dee67e67c6753ae2abb40966635325a0dd2ef06037c1
+    commit: 5967f8ae08c74d6381f4aa72169dfc09
+    digest: shake256:66364f669c4a46ecb438ad2445329321f00cf8c77f7850a9f3066c945e8d8608fa874e3544ec2f905eeb7278160c056d02aa5f3d56d62efbabbcf25395c08899

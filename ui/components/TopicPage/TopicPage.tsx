@@ -9,7 +9,7 @@ import ConsumerSession from "../ui/ConsumerSession/ConsumerSession";
 import Schema from "./Schema/Schema";
 import TopicDetails from "./TopicDetails/TopicDetails";
 import Subscriptions from './Subscriptions/Subscriptions';
-import DeleteDialog from "./DeleteDialog/DeleteDialog";
+import DeleteTopicDialog from "./DeleteTopicDialog/DeleteTopicDialog";
 import { routes } from "../routes";
 import { useNavigate } from "react-router";
 import Producers from "./Producers/Producers";
@@ -24,6 +24,8 @@ import { ManagedConsumerSessionConfig } from "../ui/LibraryBrowser/model/user-ma
 import { Code } from "../../grpc-web/google/rpc/code_pb";
 import useSwr from 'swr';
 import { swrKeys } from "../swrKeys";
+import CreateSubscription from "./Subscriptions/CreateSubscription/CreateSubscription";
+import ExpireAllSubscriptions from "./Subscriptions/ExpireAllMessages/ExpireAllSubscriptions";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -34,6 +36,7 @@ export type TopicPageView =
   | { type: "schema-view"; schemaVersion: number }
   | { type: "details" }
   | { type: "subscriptions" }
+  | { type: "create-subscription" }
   | { type: "producers" };
 export type TopicPageProps = {
   view: TopicPageView;
@@ -203,7 +206,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicPersistency: props.topicPersistency,
       }),
       text: "Schema",
-      onClick: () => { },
+      onClick: () => {},
       type: "regular",
       position: 'left',
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
@@ -218,7 +221,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           id: "delete-topic",
           title: `Delete Topic`,
           content: (
-            <DeleteDialog
+            <DeleteTopicDialog
               tenant={props.tenant}
               namespace={props.namespace}
               topic={props.topic}
@@ -228,7 +231,19 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           ),
           styleMode: "no-content-padding",
         }),
-    }
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.createSubscription._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Create Subscription",
+      onClick: () => {},
+      type: "primary",
+      position: 'right'
+    },
   ]);
 
   const libraryContext: LibraryContext = {
@@ -325,6 +340,9 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       )}
       {props.view.type === "subscriptions" && (
         <Subscriptions key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
+      )}
+      {props.view.type === "create-subscription" && (
+        <CreateSubscription key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
       )}
     </div>
   );

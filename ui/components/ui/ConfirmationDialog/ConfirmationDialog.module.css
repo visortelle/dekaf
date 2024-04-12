@@ -6,7 +6,7 @@
 .ActionCheckbox {
   margin: 12rem 0rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12rem;
 }
 

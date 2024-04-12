@@ -16,62 +16,64 @@ import {PulsarTopicPersistency} from "../../../pulsar/pulsar-resources";
 
 const policy = 'topic-metadata';
 
-export type TopicPropertiesEditorProps = {
-  persistency: PulsarTopicPersistency;
+export type SubscriptionPropertiesEditorProps = {
   tenant: string;
   namespace: string;
   topic: string;
+  topicPersistency: PulsarTopicPersistency;
+  subscription: string;
 }
 
 type Properties = {
   [key: string]: string
 }
 
-export const TopicPropertiesEditor: FC<TopicPropertiesEditorProps> = (props) => {
+export const SubscriptionPropertiesEditor: FC<SubscriptionPropertiesEditorProps> = (props) => {
   const { topicServiceClient } = GrpcClient.useContext();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
-  const topicFqn = `${props.persistency}://${props.tenant}/${props.namespace}/${props.topic}`;
+
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: initialValue, error: initialValueError } = useSWR(
+  const { data: initialProperties, error: initialPropertiesError } = useSWR(
     swrKey,
     async () => {
-      const req = new pb.GetTopicsPropertiesRequest();
-      req.setTopicsList([topicFqn]);
+      const req = new pb.GetSubscriptionPropertiesRequest();
+      req.setTopicFqn(topicFqn);
+      req.setSubscriptionName(props.subscription);
 
-      const res = await topicServiceClient.getTopicsProperties(req, {});
+      const res = await topicServiceClient.getSubscriptionProperties(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        throw new Error(`Unable to get properties. ${res.getStatus()?.getMessage()}`);
+        throw new Error(`Unable to get subscription properties. ${res.getStatus()?.getMessage()}`);
       }
 
-      const propertiesPb = mapToObject(res.getTopicsPropertiesMap())[topicFqn];
-
-      return mapToObject(propertiesPb.getPropertiesMap());
+      return mapToObject(res.getPropertiesMap());
     }
   );
 
-  if (initialValueError) {
-    notifyError(`Unable to get properties. ${initialValueError}`);
+  if (initialPropertiesError) {
+    notifyError(`Unable to get properties. ${initialPropertiesError}`);
   }
 
-  if (initialValue === undefined) {
+  if (initialProperties === undefined) {
     return null;
   }
 
   const onSave = async (properties: Properties) => {
-    const req = new pb.SetTopicPropertiesRequest();
-    req.setTopic(topicFqn);
+    const req = new pb.SetSubscriptionPropertiesRequest();
+    req.setTopicFqn(topicFqn);
+    req.setSubscriptionName(props.subscription);
 
     Object.entries(properties).map(([key, value]) => {
-      req.getTopicPropertiesMap().set(key, value)
+      req.getPropertiesMap().set(key, value)
     })
-    const res = await topicServiceClient.setTopicProperties(req, null);
+    const res = await topicServiceClient.setSubscriptionProperties(req, null);
 
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to set properties. ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to set subscription properties. ${res.getStatus()?.getMessage()}`);
     }
 
     await mutate(swrKey);
@@ -80,8 +82,8 @@ export const TopicPropertiesEditor: FC<TopicPropertiesEditorProps> = (props) => 
 
   return (
     <WithUpdateConfirmation<Properties>
-      key={stringify(initialValue)}
-      initialValue={initialValue}
+      key={stringify(initialProperties)}
+      initialValue={initialProperties}
       onConfirm={onSave}
     >
       {({ value, onChange }) => (
@@ -91,9 +93,9 @@ export const TopicPropertiesEditor: FC<TopicPropertiesEditorProps> = (props) => 
               content="Properties"
               help={(
                 <div>
-                  Custom metadata associated with the topic.
+                  Custom metadata associated with the subscription.
                   <br />
-                  They serve as annotations or labels that provide additional information about the topic, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and automation tasks.
+                  It serves as annotations or labels that provide additional information about the subscription. <br /> They are useful for organization, tracking, and automation tasks.
                 </div>
               )}
             />
@@ -114,4 +116,4 @@ export const TopicPropertiesEditor: FC<TopicPropertiesEditorProps> = (props) => 
   )
 }
 
-export default TopicPropertiesEditor;
+export default SubscriptionPropertiesEditor;
