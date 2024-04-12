@@ -11,7 +11,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import SmallButton, { SmallButtonProps } from '../SmallButton/SmallButton';
 
 export type ActionButtonProps = {
-  action: { type: 'predefined', action: 'edit' | 'close' | 'view' | 'refresh' }
+  action: { type: 'predefined', action: 'edit' | 'close' | 'view' | 'refresh' | 'without-icon' };
   onClick: () => void;
   linkTo?: string;
   testId?: string;
@@ -26,6 +26,7 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
     case 'close': svgIcon = closeIcon; break;
     case 'view': svgIcon = viewIcon; break;
     case 'refresh': svgIcon = refreshIcon; break;
+    case 'without-icon': svgIcon = undefined; break;
   }
 
   let tooltipHtml: undefined | string | ReactElement;

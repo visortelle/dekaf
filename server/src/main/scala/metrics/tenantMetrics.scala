@@ -3,8 +3,6 @@ package metrics
 import com.tools.teal.pulsar.ui.metrics.v1.metrics as pb
 import com.typesafe.scalalogging.Logger
 
-val logger: Logger = Logger(getClass.getName)
-
 case class TenantMetrics(
     inRate: Double,
     inTpRate: Double,
@@ -71,3 +69,6 @@ case class TenantMetrics(
 //            )
 //            pb.OptionalTenantMetrics(metrics = Some(namespaceMetrics))
 //        case None => pb.OptionalTenantMetrics(metrics = None)
+
+object TenantMetrics:
+    val logger: Logger = Logger(getClass.getName)

@@ -185,26 +185,25 @@ const Topics: React.FC<TopicsProps> = (props) => {
       return {};
     }
 
-    const topicPropertiesRequest = new pb.GetTopicPropertiesRequest();
+    const topicPropertiesRequest = new pb.GetTopicsPropertiesRequest();
     topicPropertiesRequest.setTopicsList(
       entries
         .filter(t => t.persistency === 'persistent' && t.partitioning !== 'partition')
         .map(value => value.fqn)
     );
 
-    const topicPropertiesResponse = await topicServiceClient.getTopicProperties(topicPropertiesRequest, null)
+    const topicPropertiesResponse = await topicServiceClient.getTopicsProperties(topicPropertiesRequest, null)
       .catch((err) => notifyError(`Unable to get topics properties: ${err}`));
 
     if (topicPropertiesResponse === undefined) {
       return {};
     }
 
-    if (topicPropertiesResponse.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to get topics properties: ${topicPropertiesResponse.getStatus()?.getMessage()}`);
-      return {};
-    }
+    const nonPartitionedStats = pbUtils.mapToObject(topicStatsResponse.getTopicStatsMap());
+    const partitionedStats = pbUtils.mapToObject(topicStatsResponse.getPartitionedTopicStatsMap());
+    const properties = pbUtils.mapToObject(topicPropertiesResponse.getTopicsPropertiesMap())
 
-    return statsToLazyData(topicStatsResponse, topicPropertiesResponse);
+    return statsToLazyData(nonPartitionedStats, partitionedStats, properties);
   }
 
   return (
@@ -310,7 +309,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
                       return true
-                    };
+                    }
 
                     let result = true;
                     switch (filterValue.value) {
@@ -339,7 +338,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
                       return true
-                    };
+                    }
 
                     let result = true;
                     switch (filterValue.value) {
@@ -637,16 +636,15 @@ function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): DataEntry[
 type PartitionedTopicsStatsWithProperties = Record<string, { stats: PartitionedTopicStats, properties: TopicProperties }>;
 type NonPartitionedTopicsStatsWithProperties = Record<string, { stats: TopicStats, properties: TopicProperties }>;
 
-function statsToLazyData(statsResponse: pb.GetTopicsStatsResponse, propertiesResponse: pb.GetTopicPropertiesResponse): Record<string, LazyDataEntry> {
+function statsToLazyData(
+  nonPartitionedStats: Record<string, pb.TopicStats>,
+  partitionedStats: Record<string, pb.PartitionedTopicStats>,
+  properties: Record<string, pb.TopicProperties>,
+): Record<string, LazyDataEntry> {
   let result: Record<string, LazyDataEntry> = {};
-
-  const properties = pbUtils.mapToObject(propertiesResponse.getTopicPropertiesMap());
-  const nonPartitionedStats = pbUtils.mapToObject(statsResponse.getTopicStatsMap());
-  const partitionedStats = pbUtils.mapToObject(statsResponse.getPartitionedTopicStatsMap());
 
   let combinedNonPartitionedStats: NonPartitionedTopicsStatsWithProperties = {};
   let combinedPartitionedStats: PartitionedTopicsStatsWithProperties = {};
-
 
   for (let nonPartitionedTopicFqn in nonPartitionedStats) {
     combinedNonPartitionedStats[nonPartitionedTopicFqn] = {

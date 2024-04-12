@@ -1,0 +1,9 @@
+.Statistics {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.ConsumersAfterMarkDeletePositionWrapper {
+  margin: 24rem 0;
+}

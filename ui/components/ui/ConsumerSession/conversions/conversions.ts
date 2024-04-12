@@ -511,6 +511,12 @@ export function messageIdToPb(v: MessageId): pb.MessageId {
   return messageIdPb;
 }
 
+export function messageIdFromString(v: string): MessageId {
+  return {
+    messageId: hexStringToByteArray(v),
+  };
+}
+
 export function consumerSessionEventMessagesProcessedFromPb(v: pb.ConsumerSessionEventMessagesProcessed): ConsumerSessionEventMessagesProcessed {
   return {
     type: 'messages-processed',

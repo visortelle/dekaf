@@ -34,7 +34,7 @@ def getTopicPartitioning(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicParti
     var activePartitionsCount: Option[Int] = None
 
     val isPartitioned =
-        try
+        Try:
             val topicMetadata = pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn)
             partitionsCount = Some(topicMetadata.partitions)
             val isPartitioned = topicMetadata.partitions > 0
@@ -58,9 +58,9 @@ def getTopicPartitioning(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicParti
                 activePartitionsCount = Some(activePartitions.size)
 
             isPartitioned
-        catch {
-            case _: Throwable => false
-        }
+        match
+            case Success(isPartitioned) => isPartitioned
+            case Failure(_) => false
 
     if isPartitioned then
         return TopicPartitioning(

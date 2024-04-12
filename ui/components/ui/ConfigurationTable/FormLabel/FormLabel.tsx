@@ -7,7 +7,7 @@ export type FormLabelProps = {
   help?: React.ReactElement | string;
   isRequired?: boolean;
   size?: 'regular' | 'small'
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const FormLabel: React.FC<FormLabelProps> = (props) => {
   return (

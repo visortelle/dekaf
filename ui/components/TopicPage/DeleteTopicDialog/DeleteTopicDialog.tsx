@@ -20,7 +20,7 @@ export type DeleteTopicProps = {
   navigate: NavigateFunction,
 };
 
-const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
+const DeleteTopicDialog: React.FC<DeleteTopicProps> = (props) => {
   const modals = Modals.useContext();
   const { mutate } = useSWRConfig()
   const { notifyError, notifySuccess } = Notifications.useContext();
@@ -79,4 +79,4 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
   );
 }
 
-export default DeleteDialog;
+export default DeleteTopicDialog;

@@ -142,7 +142,11 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Last Compaction Succeed Timestamp</td>
-            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v)))}</Td>
+            <Td>{i18n.withVoidDefault(
+              topicStats?.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined,
+              (v) => i18n.formatDateTime(new Date(v))
+            )}
+            </Td>
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Last Compaction Duration Time</td>
@@ -150,11 +154,14 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Last Compaction Removed Event Count</td>
-            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), v => v)}</Td>
+            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), i18n.formatCount)}</Td>
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Last Compaction Failed Timestamp</td>
-            <Td>{i18n.withVoidDefault(topicStats?.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v)))}</Td>
+            <Td>{i18n.withVoidDefault(
+              topicStats?.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined,
+              (v) => i18n.formatDateTime(new Date(v))
+            )}</Td>
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Owner Broker</td>

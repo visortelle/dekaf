@@ -16,11 +16,17 @@ import InternalStatistics from './InternalStatistics/InternalStatistics';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 import LibrarySidebar from '../../ui/LibrarySidebar/LibrarySidebar';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
-import TopicMetadataEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
+import TopicPropertiesEditor from './TopicPropertiesEditor/TopicPropertiesEditor';
 import { PartitioningWithActivePartitions } from '../TopicPage';
 import UpdatePartitionedTopicButton from './UpdatePartitionedTopicButton/UpdatePartitionedTopicButton';
 import CreateMissedPartitionsButton from './CreateMissedPartitionsButton/CreateMissedPartitionsButton';
 import ViewTopicPartitionsButton from './ViewTopicPartitionsButton/ViewTopicPartitionsButton';
+import ActionButton from "../../ui/ActionButton/ActionButton";
+import ExpireMessagesModal from "../../SubscriptionPage/Overview/ExpireMessages/ExpireMessages";
+import SkipMessagesModal from "../../SubscriptionPage/Overview/SkipMessages/SkipMessages";
+import ResetCursorModal from "../../SubscriptionPage/Overview/ResetCursor/ResetCursor";
+import ExpireAllSubscriptions from "../Subscriptions/ExpireAllMessages/ExpireAllSubscriptions";
+import * as Modals from "../../app/contexts/Modals/Modals";
 
 export type OverviewProps = {
   tenant: string;
@@ -36,6 +42,7 @@ type TabKey = 'stats' | 'stats-internal';
 type Partitioning = 'partitioned' | 'non-partitioned' | 'partition';
 
 const Overview: React.FC<OverviewProps> = (props) => {
+  const modals = Modals.useContext();
   const { notifyError } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
   const i18n = I18n.useContext();
@@ -99,62 +106,100 @@ const Overview: React.FC<OverviewProps> = (props) => {
   return (
     <div className={s.Overview}>
       <div className={s.LeftPanel}>
-        <div className={s.Section}>
-          <table className={st.Table} style={{ width: '100%' }}>
+        <div className={s.MainStatistics}>
+          <table className={st.Table} style={{width: '100%'}}>
             <tbody>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell} style={{ width: '120rem' }}>Topic Name</td>
-                <Td>{props.topic}</Td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic FQN</td>
-                <Td>{topicFqn}</Td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Persistency</td>
-                <Td>{props.topicPersistency}</Td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Partitioning</td>
-                <Td>
-                  {partitioning}
-                  {partitioning === 'partitioned' && partitionsCount !== undefined && activePartitionsCount !== undefined && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', marginTop: '4rem', padding: '4rem 0' }}>
-                      <div>
-                        {partitionsCount === activePartitionsCount && <span><strong>{partitionsCount}</strong> partition{partitionsCount === 1 ? <></> : <span>s</span>}</span>}
-                        {partitionsCount > activePartitionsCount && <span><strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions</span>}
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '8rem' }}>
-                        <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
-                        <UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount} />
-
-                        {partitionsCount > activePartitionsCount && (
-                          <CreateMissedPartitionsButton topicFqn={topicFqn} />
-                        )}
-                      </div>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell} style={{width: '100rem'}}>Topic Name</td>
+              <Td>{props.topic}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Topic FQN</td>
+              <Td>{topicFqn}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Persistency</td>
+              <Td>{props.topicPersistency}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Partitioning</td>
+              <Td>
+                {partitioning}
+                {partitioning === 'partitioned' && partitionsCount !== undefined && activePartitionsCount !== undefined && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4rem',
+                    marginTop: '4rem',
+                    padding: '4rem 0'
+                  }}>
+                    <div>
+                      {partitionsCount === activePartitionsCount &&
+                        <span><strong>{partitionsCount}</strong> partition{partitionsCount === 1 ? <></> :
+                          <span>s</span>}</span>}
+                      {partitionsCount > activePartitionsCount &&
+                        <span><strong>{activePartitionsCount}</strong> active of <strong>{partitionsCount}</strong> total partitions</span>}
                     </div>
-                  )}
+
+                    <div style={{display: 'flex', gap: '8rem'}}>
+                      <ViewTopicPartitionsButton tenant={props.tenant} namespace={props.namespace} topic={props.topic}
+                                                 topicPersistency={props.topicPersistency}/>
+                      <UpdatePartitionedTopicButton topicFqn={topicFqn} currentNumPartitions={partitionsCount}/>
+
+                      {partitionsCount > activePartitionsCount && (
+                        <CreateMissedPartitionsButton topicFqn={topicFqn}/>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Td>
+            </tr>
+            {partitioning === 'partitioned' && (
+              <tr>
+                <td className={st.HighlightedCell}>Deleted</td>
+                <Td>
+                  {(() => {
+                    const deleted = partitionedTopicMetadata?.getDeleted()?.getValue();
+                    return <div>{deleted === undefined ? undefined : i18n.formatBoolean(deleted)}</div>
+                  })()}
                 </Td>
               </tr>
-              {partitioning === 'partitioned' && (
-                <tr>
-                  <td className={st.HighlightedCell}>Deleted</td>
-                  <Td>
-                    {(() => {
-                      const deleted = partitionedTopicMetadata?.getDeleted()?.getValue();
-                      return <div>{deleted === undefined ? undefined : i18n.formatBoolean(deleted)}</div>
-                    })()}
-                  </Td>
-                </tr>
-              )}
+            )}
             </tbody>
           </table>
         </div>
 
+        <div className={s.ActionsWrapper}>
+          <div className={s.ActionButtons}>
+            <ActionButton
+              buttonProps={{
+                text: 'Expire Messages',
+              }}
+              title={'Expire Messages'}
+              testId={'expire-topic-messages-button'}
+              onClick={() =>
+                modals.push({
+                  id: "expire-messages-all-subscriptions",
+                  title: `Expire Messages`,
+                  content: (
+                    <ExpireAllSubscriptions
+                      tenant={props.tenant}
+                      namespace={props.namespace}
+                      topic={props.topic}
+                      topicPersistency={props.topicPersistency}
+                    />
+                  ),
+                  styleMode: "no-content-padding",
+                })}
+              action={{type: 'predefined', action: 'without-icon'}}
+            />
+          </div>
+        </div>
+
+
         {(props.topicPersistency !== 'non-persistent') && (partitioning === 'partitioned' || partitioning === 'non-partitioned') && (
-          <div style={{ marginBottom: '24rem' }}>
-            <TopicMetadataEditor
+          <div style={{marginBottom: '24rem'}}>
+            <TopicPropertiesEditor
               tenant={props.tenant}
               namespace={props.namespace}
               topic={props.topic}
@@ -204,7 +249,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
       </div>
       <div className={s.RightPanel}>
-        <LibrarySidebar libraryContext={props.libraryContext} />
+        <LibrarySidebar libraryContext={props.libraryContext}/>
       </div>
     </div>
   );

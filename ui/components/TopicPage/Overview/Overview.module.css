@@ -20,6 +20,10 @@
   margin-bottom: 24rem;
 }
 
+.MainStatistics {
+  margin-bottom: 12rem;
+}
+
 .SectionTitle {
   margin-bottom: 12rem;
 }
@@ -47,4 +51,17 @@
   background-color: var(--surface-color);
   border-left: none;
   padding-left: 12rem;
+}
+
+.ActionsWrapper {
+  display: flex;
+  gap: 8rem;
+  flex-direction: column;
+  margin-bottom: 24rem;
+}
+
+.ActionButtons {
+  display: flex;
+  gap: 8rem;
+  flex-direction: row;
 }
