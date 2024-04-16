@@ -31,7 +31,7 @@ case class ConsumerSessionRunner(
 
     def incrementNumMessageProcessed(): Unit = numMessageProcessed = numMessageProcessed + 1
 
-    def isIdle: Boolean = System.currentTimeMillis() - touchedAt > 1000 * 60 * 60 * 24
+    def isIdle: Boolean = System.currentTimeMillis() - touchedAt > 1000 * 60 * 60 * 12
 
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
@@ -61,11 +61,7 @@ case class ConsumerSessionRunner(
                     status = Some(status)
                 )
 
-                val serverCallStreamObserver = grpcResponseObserver.asInstanceOf[io.grpc.stub.ServerCallStreamObserver[consumerPb.ResumeResponse]]
-                if serverCallStreamObserver.isCancelled
-                then close()
-                else grpcResponseObserver.onNext(response)
-
+                grpcResponseObserver.onNext(response)
                 boundary.break(())
 
             messageFromTarget match

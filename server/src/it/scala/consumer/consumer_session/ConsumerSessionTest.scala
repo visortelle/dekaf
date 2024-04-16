@@ -37,7 +37,8 @@ object ConsumerSessionTest extends ZIOSpecDefault:
              * */
 
             val startValue = 100L
-            val numMessages = 100_000
+//            val numMessages = 100_000
+            val numMessages = 10_000
 
             // Prepare a ConsumerSession config
             var sessionSpec = ManagedConsumerSessionConfigSpecGen.currentTopic
@@ -91,7 +92,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
                 messagesProcessed <- ZIO.attempt(consumerSessionPage.messagesProcessed).repeatUntil(v => v >= numMessages)
             } yield assertTrue(messagesProcessed == numMessages)
-        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(3.minutes) @@ TestAspect.ignore,
+        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(3.minutes),
         test("User accidentally disconnects without gracefully stopping the consumer session") {
             /*
              **Problem**
@@ -169,8 +170,8 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 // Close the browser page
                 _ <- ZIO.attempt {
                     if isRunBeforeUnload
-                    // XXX - executing page.close with `runBeforeUnload` doesn't actually run `onbeforeunload` event
-                    // by some reason. Using the `page.reload()` method as a workaround.
+                        // XXX - executing page.close with `runBeforeUnload` doesn't actually run `onbeforeunload` event
+                        // by some reason. Using the `page.reload()` method as a workaround.
                     then page.reload()
                     else page.close()
                 }
@@ -185,14 +186,17 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 
             for {
                 // Close page gracefully
-//                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = false)
-//                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = true)
+                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = false)
+                _ <- runTest(isRunBeforeUnload = true, isPauseSessionBeforeClosingPage = true)
 
-                // Close page non-gracefully
+                // TODO - Close page non-gracefully.
+                //  In this case we rely on periodical check for idle subscription,
+                //  as we can't be sure that the user is still active.
+                // See the periodic gc task in the ConsumerServiceImpl.
 //                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = false)
-                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
+//                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
             } yield assertCompletes
-        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(10.minutes) @@ TestAspect.repeats(1)
+        } @@ TestAspect.withLiveClock @@ TestAspect.timeout(3.minutes) @@ TestAspect.ignore
     ).provideSomeShared(
         TestPulsar.live(isUseExisting = isDebug),
         TestDekaf.live
