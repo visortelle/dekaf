@@ -227,12 +227,8 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 _ <- runTest(runBeforeUnload = true, pauseSessionBeforeClosingPage = false)
                 _ <- runTest(runBeforeUnload = true, pauseSessionBeforeClosingPage = true)
 
-                // TODO - Close page non-gracefully.
-                //  In this case we rely on periodical check for idle subscription,
-                //  as we can't be sure that the user is still active.
-                // See the periodic gc task in the ConsumerServiceImpl.
-//                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = false)
-//                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
+                _ <- runTest(runBeforeUnload = false, pauseSessionBeforeClosingPage = false)
+                _ <- runTest(runBeforeUnload = false, pauseSessionBeforeClosingPage = true)
             } yield assertCompletes
         } @@ withLiveClock @@ nonFlaky @@ repeats(1),
     ).provideSomeShared(

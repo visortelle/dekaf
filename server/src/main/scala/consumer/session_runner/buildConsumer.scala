@@ -19,8 +19,7 @@ def buildConsumer(
 
     val consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(500)
-        .autoUpdatePartitions(true)
+        .receiverQueueSize(1000)
         .messageListener(listener)
         .startMessageIdInclusive()
         .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)

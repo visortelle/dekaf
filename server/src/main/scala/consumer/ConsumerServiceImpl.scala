@@ -7,24 +7,10 @@ import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    PauseRequest,
-    PauseResponse,
-    ResolveTopicSelectorRequest,
-    ResolveTopicSelectorResponse,
-    ResumeRequest,
-    ResumeResponse,
-    RunCodeRequest,
-    RunCodeResponse
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, PauseRequest, PauseResponse, ResolveTopicSelectorRequest, ResolveTopicSelectorResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse}
 import com.typesafe.scalalogging.Logger
 import _root_.consumer.session_target.topic_selector.TopicSelector
-import consumer.session_runner.ConsumerSessionRunner
+import consumer.session_runner.{ConsumerSessionRunner, ConsumerSessionRunnerState}
 
 import java.util.concurrent.{ConcurrentHashMap, ScheduledThreadPoolExecutor, TimeUnit}
 import scala.concurrent.Future
@@ -72,6 +58,22 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val sessionName = request.consumerName
         logger.info(s"Resuming consumer session: $sessionName")
+
+        val serverCallStreamObserver = responseObserver.asInstanceOf[io.grpc.stub.ServerCallStreamObserver[ResumeResponse]]
+        serverCallStreamObserver.setOnCancelHandler(() =>
+            logger.info(s"Consumer session $sessionName is cancelled. Closing...")
+
+            Option(consumerSessions.get(sessionName)) match
+                case Some(consumerSession) =>
+                    val isUngracefullyCanceled = consumerSession.state != ConsumerSessionRunnerState.Starting
+                    if isUngracefullyCanceled then
+                        logger.info(s"Consumer session $sessionName is cancelled ungracefully. Closing...")
+                        consumerSession.close()
+                        consumerSessions.remove(sessionName)
+                case _ =>
+                    val msg = s"No such consumer consumer session: $sessionName"
+                    logger.warn(msg)
+        )
 
         val consumerSession = Option(consumerSessions.get(sessionName)) match
             case Some(consumerSession) => consumerSession

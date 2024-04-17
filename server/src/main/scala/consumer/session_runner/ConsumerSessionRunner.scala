@@ -16,6 +16,9 @@ import boundary.break
 
 type ConsumerSessionTargetIndex = Int
 
+enum ConsumerSessionRunnerState:
+    case New, Starting, Running, Pausing, Paused, Closing, Closed
+
 case class ConsumerSessionRunner(
     sessionName: String,
     sessionConfig: ConsumerSessionConfig,
@@ -24,6 +27,7 @@ case class ConsumerSessionRunner(
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
     var touchedAt: Long, // For consumer session garbage collection
+    var state: ConsumerSessionRunnerState = ConsumerSessionRunnerState.New,
     var numMessageProcessed: Long = 0,
     var numMessageSent: Long = 0
 ):
@@ -37,6 +41,7 @@ case class ConsumerSessionRunner(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
         isDebug: Boolean
     ): Unit =
+        state = ConsumerSessionRunnerState.Starting
         this.grpcResponseObserver = Some(grpcResponseObserver)
         touch()
 
@@ -118,16 +123,25 @@ case class ConsumerSessionRunner(
             isDebug = isDebug,
             incrementNumMessageProcessed = incrementNumMessageProcessed
         ))
+        state = ConsumerSessionRunnerState.Running
 
     def pause(): Unit =
+        state = ConsumerSessionRunnerState.Pausing
+
         touch()
         targets.values.foreach(_.pause())
 
+        state = ConsumerSessionRunnerState.Paused
+
     def close(): Unit =
+        state = ConsumerSessionRunnerState.Closing
+
         touch()
         pause()
         targets.values.foreach(_.close())
         sessionContext.close()
+
+        state = ConsumerSessionRunnerState.Closed
 
 object ConsumerSessionRunner:
     def make(
