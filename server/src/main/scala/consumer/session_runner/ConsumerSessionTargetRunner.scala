@@ -116,8 +116,8 @@ case class ConsumerSessionTargetRunner(
         consumers.foreach((_, consumer) => consumer.resume())
 
     def pause(): Unit =
-        consumers.foreach((_, consumer) => consumer.pause())
         consumerListener.stopAcceptingNewMessages()
+        consumers.foreach((_, consumer) => consumer.pause())
 
     def close(): Unit =
         consumers.foreach((_, consumer) =>
@@ -131,7 +131,7 @@ case class ConsumerSessionTargetRunner(
 
 object ConsumerSessionTargetRunner:
     val logger: Logger = Logger(getClass.getName)
-    
+
     def make(
         sessionName: String,
         targetIndex: Int,

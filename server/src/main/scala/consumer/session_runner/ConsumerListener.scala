@@ -10,18 +10,16 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
     private var isAcceptingNewMessages: Boolean = true
 
     def stopAcceptingNewMessages(): Unit =
-        this.isAcceptingNewMessages = false
+        isAcceptingNewMessages = false
 
     def startAcceptingNewMessages(): Unit =
-        this.isAcceptingNewMessages = true
+        isAcceptingNewMessages = true
 
     override def received(consumer: org.apache.pulsar.client.api.Consumer[Array[Byte]], msg: org.apache.pulsar.client.api.Message[Array[Byte]]): Unit =
-        if !isAcceptingNewMessages then
+        if consumer.isConnected && isAcceptingNewMessages then
+            logger.debug(s"Listener received a message. Consumer: ${consumer.getConsumerName}")
+            targetMessageHandler.onNext(msg)
+            consumer.acknowledge(msg)
+        else
             consumer.negativeAcknowledge(msg)
-            return;
-
-        logger.debug(s"Listener received a message. Consumer: ${consumer.getConsumerName}")
-        targetMessageHandler.onNext(msg)
-
-        if consumer.isConnected then consumer.acknowledgeAsync(msg)
 }
