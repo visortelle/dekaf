@@ -31,7 +31,7 @@ def buildConsumer(
         .startPaused(true)
         .subscriptionName(consumerName)
         .subscriptionMode(SubscriptionMode.NonDurable)
-        .subscriptionType(SubscriptionType.Exclusive)
+        .subscriptionType(SubscriptionType.Failover)
         .priorityLevel(1000)
         .readCompacted(isReadCompacted)
         .topics(topicsToConsume.asJava)

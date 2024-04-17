@@ -85,11 +85,11 @@ case class ConsumerSessionTargetRunner(
                 else
                     None
 
-                val errors: Vector[String] =
+                var errors: Vector[String] =
                     if isDebug then
                         val serializationErrors = messageValueToJsonResult match
                             case Left(err) => Vector(err.getMessage)
-                            case _         => Vector.empty
+                            case _ => Vector.empty
                         val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
                         serializationErrors ++ messageFilterChainErrors ++ coloringRuleChainErrors
                     else Vector.empty
@@ -112,11 +112,11 @@ case class ConsumerSessionTargetRunner(
                     errors = errors
                 )
 
-        listener.startAcceptingNewMessages()
+        listener.resume()
         consumers.foreach((_, consumer) => consumer.resume())
 
     def pause(): Unit =
-        consumerListener.stopAcceptingNewMessages()
+        consumerListener.pause()
         consumers.foreach((_, consumer) => consumer.pause())
 
     def close(): Unit =
