@@ -6,7 +6,7 @@ import org.apache.pulsar.client.api.MessageListener
 import scala.collection.mutable
 import scala.util.control.Breaks.{break, breakable}
 
-class ConsumerListener(targetMessageHandler: ConsumerSessionTargetMessageHandler) extends MessageListener[Array[Byte]]:
+class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHandler) extends MessageListener[Array[Byte]]:
     private val logger: Logger = Logger(getClass.getName)
     private val redeliveryQueue = new mutable.Queue[org.apache.pulsar.client.api.Message[Array[Byte]]]()
     private var isPaused: Boolean = true
