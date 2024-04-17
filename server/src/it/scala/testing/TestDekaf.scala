@@ -21,9 +21,6 @@ case class TestDekaf(
 )
 
 object TestDekaf:
-    lazy private val playwright = Playwright.create
-    lazy private val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
-
     def live: URLayer[TestPulsar, TestDekaf] =
         ZLayer.scoped:
             ZIO.acquireRelease(
@@ -63,11 +60,14 @@ object TestDekaf:
                     stop = program.interrupt *> ZIO.logInfo("Dekaf stopped"),
                     publicBaseUrl = publicBaseUrl,
                     openRootPage = ZIO.attempt {
-                        val options = new NewPageOptions()
+                        val playwright = Playwright.create
+                        val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
+
+                        val pageOptions = new NewPageOptions()
                             .setViewportSize(new ViewportSize(1280, 800))
                             .setBaseURL(publicBaseUrl)
-                        val page = browser.newPage(options)
-                        page.onConsoleMessage((msg) => println(s"Message from browser console: ${msg.`type`} ${msg.text}"))
+                        val page = browser.newPage(pageOptions)
+                        page.onConsoleMessage(msg => println(s"Message from browser console: ${msg.`type`} ${msg.text}"))
 
                         page
                     },

@@ -4,12 +4,19 @@ import com.microsoft.playwright.Page.CloseOptions
 import consumer.consumer_session.page.ConsumerSessionPageHtml
 import consumer.start_from.EarliestMessage
 import library.{LibraryItem, LibraryItemGen, ManagedItemGen}
-import library.managed_items.{ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigSpecGen, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpecGen}
+import library.managed_items.{
+    ManagedConsumerSessionConfig,
+    ManagedConsumerSessionConfigSpec,
+    ManagedConsumerSessionConfigSpecGen,
+    ManagedConsumerSessionConfigValOrRef,
+    ManagedConsumerSessionStartFrom,
+    ManagedConsumerSessionStartFromSpecGen
+}
 import zio.*
 import zio.test.*
 import zio.test.TestAspect.*
 import zio.test.Assertion.*
-import testing.{TestDekaf, TestPulsar, isDebug}
+import testing.{isDebug, TestDekaf, TestPulsar}
 import org.apache.pulsar.client.api.{MessageListener, Schema, SubscriptionInitialPosition}
 import monocle.syntax.all.*
 
@@ -65,7 +72,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 // Check the number of messages in the topic.
                 // There is not much need doing this as the producer code above is very straightforward,
                 // but for this specific test it may make sense.
-                _ <- ZIO.attempt{
+                _ <- ZIO.attempt {
                     var checkNumMessages: Int = 0
                     val consumer = pulsarClient.newConsumer(Schema.INT64)
                         .topic(topic.fqn)
@@ -79,10 +86,10 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                             checkNumMessages += 1
                             consumer.acknowledge(msg.getMessageId)
 
-                    println(s"Ensure that the number of messages in topic is correct. Expected: ${numMessages} Actual: $checkNumMessages")
+                    println(s"Ensure that the number of messages in topic is correct. Expected: $numMessages Actual: $checkNumMessages")
                     consumer.close()
                     if numMessages != checkNumMessages
-                        then throw new Exception(s"Number of messages in topic is incorrect. Expected: ${numMessages} Actual: $checkNumMessages")
+                    then throw new Exception(s"Number of messages in topic is incorrect. Expected: $numMessages Actual: $checkNumMessages")
                 }
 
                 dekaf <- ZIO.service[TestDekaf]
@@ -223,7 +230,6 @@ object ConsumerSessionTest extends ZIOSpecDefault:
             } yield ()
 
             for {
-                // Close page gracefully
                 _ <- runTest(runBeforeUnload = true, pauseSessionBeforeClosingPage = false)
                 _ <- runTest(runBeforeUnload = true, pauseSessionBeforeClosingPage = true)
 

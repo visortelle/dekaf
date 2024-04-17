@@ -101,11 +101,11 @@ lazy val root = project
 
             // Testing
             "net.datafaker" % "datafaker" % "2.1.0",
-            "com.microsoft.playwright" % "playwright" % "1.42.0" % "it",
+            "com.microsoft.playwright" % "playwright" % "1.43.0" % "it",
             "org.testcontainers" % "testcontainers" % "1.19.7" % "it",
             "org.testcontainers" % "pulsar" % "1.19.7" % "it",
-            "dev.optics" %% "monocle-core"  % "3.1.0" % "it",
-            "dev.optics" %% "monocle-macro" % "3.1.0" % "it",
+            "dev.optics" %% "monocle-core"  % "3.2.0" % "it",
+            "dev.optics" %% "monocle-macro" % "3.2.0" % "it",
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.14.0",
@@ -115,7 +115,7 @@ lazy val root = project
             "com.lihaoyi" %% "os-lib" % "0.9.3",
             "com.lihaoyi" %% "pprint" % "0.8.1", // Useful during development
             "io.netty" % "netty-all" % "4.1.105.Final",
-            "com.fasterxml.uuid" % "java-uuid-generator" % "4.2.0"
+            "com.fasterxml.uuid" % "java-uuid-generator" % "5.0.0"
         )
     )
 
