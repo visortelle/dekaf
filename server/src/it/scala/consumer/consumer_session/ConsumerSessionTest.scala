@@ -122,14 +122,13 @@ object ConsumerSessionTest extends ZIOSpecDefault:
             } yield TestResult(numMessagesProcessed, numMessages)
 
             for {
-//                r1 <- runTest(withSessionPauses = false)
+                r1 <- runTest(withSessionPauses = false)
                 r2 <- runTest(withSessionPauses = true)
             } yield assertTrue(
-//                    r1.numMessagesProcessed == r1.numMessages,
+                r1.numMessagesProcessed == r1.numMessages,
                 r2.numMessagesProcessed == r2.numMessages
             )
-        } @@ withLiveClock,
-//            @@ nonFlaky @@ repeats(10),
+        } @@ withLiveClock @@ nonFlaky @@ repeats(1),
         test("User accidentally disconnects without gracefully stopping the consumer session") {
             /*
              **Problem**
@@ -235,7 +234,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
 //                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = false)
 //                _ <- runTest(isRunBeforeUnload = false, isPauseSessionBeforeClosingPage = true)
             } yield assertCompletes
-        } @@ withLiveClock @@ ignore
+        } @@ withLiveClock @@ nonFlaky @@ repeats(1),
     ).provideSomeShared(
         TestPulsar.live(isUseExisting = isDebug),
         TestDekaf.live
