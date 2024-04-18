@@ -2,7 +2,7 @@ val scala3Version = "3.4.1"
 val graalvmVersion = "22.3.3"
 val pulsarVersion = "3.2.2"
 val circeVersion = "0.14.6"
-val zioVersion = "2.0.21"
+val zioVersion = "2.0.22"
 val zioConfigVersion = "3.0.7"
 val testcontainersScalaVersion = "0.41.3"
 
@@ -79,6 +79,7 @@ lazy val root = project
 
             // ZIO
             "dev.zio" %% "zio" % zioVersion,
+            "dev.zio" %% "zio-test" % zioVersion % "Test,it",
             "dev.zio" %% "zio-test-sbt" % zioVersion % "Test,it",
             "dev.zio" %% "zio-config" % zioConfigVersion,
             "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
