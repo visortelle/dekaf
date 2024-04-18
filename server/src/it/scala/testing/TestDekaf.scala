@@ -61,7 +61,10 @@ object TestDekaf:
                     publicBaseUrl = publicBaseUrl,
                     openRootPage = ZIO.attempt {
                         val playwright = Playwright.create
-                        val browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
+                        val browserOptions = new BrowserType.LaunchOptions()
+                            .setHeadless(!TestRuntime.isOpenBrowser)
+
+                        val browser = playwright.chromium.launch(browserOptions)
 
                         val pageOptions = new NewPageOptions()
                             .setViewportSize(new ViewportSize(1280, 800))

@@ -6,6 +6,7 @@ import zio.*
 import org.testcontainers.containers.PulsarContainer
 import org.testcontainers.utility.DockerImageName
 import scala.jdk.CollectionConverters.*
+import _root_.testing.TestRuntime
 
 val PulsarVersion = "3.2.2"
 
@@ -22,7 +23,7 @@ case class TestPulsar(
 )
 
 object TestPulsar:
-    def live(isUseExisting: Boolean = false): ULayer[TestPulsar] =
+    def live: ULayer[TestPulsar] =
         ZLayer.scoped:
             ZIO.acquireRelease(
                 ZIO.attempt {
@@ -30,7 +31,7 @@ object TestPulsar:
                     var brokerServiceUrl: String = "pulsar://localhost:6650"
                     var stop: Task[Unit] = ZIO.unit
 
-                    if !isUseExisting then
+                    if !TestRuntime.isUseExistingPulsar then
                         val env: Map[String, String] = Map("PULSAR_STANDALONE_USE_ZOOKEEPER" -> "1")
                         val container = new PulsarContainer(DockerImageName.parse(s"apachepulsar/pulsar:$PulsarVersion"))
                             .withEnv(env.asJava)

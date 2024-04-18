@@ -14,6 +14,9 @@ export DEKAF_LICENSE_TOKEN="activ-b8240503c17c1c70508dad0444ffc014v3"
 # export DEKAF_PUBLIC_BASE_URL="http://localhost:8090/demo"
 # export DEKAF_BASE_PATH="/demo"
 
+export TEST_IS_USE_EXISTING_PULSAR=true
+export TEST_IS_OPEN_BROWSER=true
+
 function add_binary_dependencies_to_path() {
   set -e
   bin_dir=$( $this_dir/bin/get-bin-dir.js )

@@ -16,7 +16,7 @@ import zio.*
 import zio.test.*
 import zio.test.TestAspect.*
 import zio.test.Assertion.*
-import testing.{isDebug, TestDekaf, TestPulsar}
+import testing.{TestDekaf, TestPulsar}
 import org.apache.pulsar.client.api.{MessageListener, Schema, SubscriptionInitialPosition}
 import monocle.syntax.all.*
 
@@ -236,8 +236,8 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 _ <- runTest(runBeforeUnload = false, pauseSessionBeforeClosingPage = false)
                 _ <- runTest(runBeforeUnload = false, pauseSessionBeforeClosingPage = true)
             } yield assertCompletes
-        } @@ withLiveClock @@ nonFlaky @@ repeats(1),
+        } @@ withLiveClock
     ).provideSomeShared(
-        TestPulsar.live(isUseExisting = isDebug),
+        TestPulsar.live,
         TestDekaf.live
     )
