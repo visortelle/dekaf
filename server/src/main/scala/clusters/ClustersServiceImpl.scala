@@ -28,12 +28,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
                 case Success(brokers) =>
                     val brokerLimit = Licensing.productCode match
                         case ProductCode.DekafEnterprise => Int.MaxValue
-                        case ProductCode.DekafForTeams => 9
-                        case _ => 3
+                        case _ => 9
 
                     val clusterLimit = Licensing.productCode match
                         case ProductCode.DekafEnterprise => Int.MaxValue
-                        case _ => 1
+                        case _ => 3
 
                     val isLimitExceeded = brokers.size > brokerLimit || clusters.size > clusterLimit
                     if isLimitExceeded then
