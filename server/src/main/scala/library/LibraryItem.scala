@@ -5,7 +5,7 @@ import com.tools.teal.pulsar.ui.library.v1.library as pb
 
 case class LibraryItem(
     metadata: LibraryItemMetadata,
-    spec: ManagedItem
+    spec: ManagedItemTrait
 )
 
 object LibraryItem:

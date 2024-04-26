@@ -23,3 +23,8 @@ dev-prod-build:
 .PHONY: test
 test:
 	npm run test
+
+.PHONY: test-all
+test-all:
+	npm run test-all
+

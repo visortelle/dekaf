@@ -73,7 +73,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
            |  const message = JSON.parse(messageAsJsonOmittingValue);
            |  message.value = JSON.parse(messageValueAsJson);
            |  message.state = $JsonStateVarName;
-           |  console.log(JSON.stringify(message, null, 4));
+           |
            |  $CurrentMessageVarName = message;
            |})
            |""".stripMargin
@@ -115,3 +115,5 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         if filterChain.isNegated then isOk = !isOk
 
         ChainTestResult(isOk = isOk, results = filterResults)
+
+    def close(): Unit = context.close(true)

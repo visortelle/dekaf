@@ -14,12 +14,14 @@ export function getReadableItemType(managedItemType: ManagedItemType): string {
     case "message-filter": return "Message Filter";
     case "message-filter-chain": return "Message Filter Chain";
     case "message-id": return "Message ID";
-    case "producer-session-config": return "Producer Session";
     case "relative-date-time": return "Relative Date Time";
     case "topic-selector": return "Topic Selector";
     case "basic-message-filter-target": return "Target Field";
     case "value-projection": return "Projection";
     case "value-projection-list": return "Projection List";
     case "deserializer": return "Deserializer"
+    case "message-generator": return "Message Generator";
+    case "producer-task": return "Producer Task";
+    case "producer-session-config": return "Producer Session";
   }
 }

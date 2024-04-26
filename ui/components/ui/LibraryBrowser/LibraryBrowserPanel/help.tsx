@@ -134,5 +134,32 @@ export const help: Partial<Record<ManagedItemType, ReactElement>> = {
       <br />
       Choose an another deserializer in case if the topic doesn't have schema or you use a custom serialization that isn't supported by Pulsar out of the box.
     </div>
-  )
+  ),
+  "message-generator": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("message-generator")}</strong> allows you to generate messages.
+      </p>
+      <p>
+        You can generate messages from a fixed JSON, a random JSON, or generate it dynamically using JavaScript.
+      </p>
+    </div>
+  ),
+  "producer-task": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("producer-task")}</strong> allows you to define a task for the producer.
+      </p>
+      <p>
+        It includes the topic selector, message generator, Pulsar producer configuration, and other settings.
+      </p>
+    </div>
+  ),
+  "producer-session-config": (
+    <div>
+      <p>
+        <strong>{getReadableItemType("producer-session-config")}</strong> allows you to define one or multiple producer tasks.
+      </p>
+    </div>
+  ),
 } as const;

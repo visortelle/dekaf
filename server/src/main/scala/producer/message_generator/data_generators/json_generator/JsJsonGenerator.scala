@@ -1,0 +1,32 @@
+package producer.message_generator.data_generators.json_generator
+
+import com.tools.teal.pulsar.ui.producer.v1.producer as pb
+import org.graalvm.polyglot.Context
+
+case class JsJsonGenerator(
+    jsCode: String
+):
+    def generate(polyglotContext: Context): String =
+        val codeToEval = s"""
+            |(function() {
+            |   return JSON.stringify((${jsCode})());
+            |})();
+            |""".stripMargin
+
+        try
+            polyglotContext.eval("js", codeToEval).asString()
+        catch
+            case e: Exception =>
+                e.printStackTrace()
+                throw e
+
+object JsJsonGenerator:
+    def fromPb(v: pb.JsJsonGenerator): JsJsonGenerator =
+        JsJsonGenerator(
+            jsCode = v.jsCode
+        )
+
+    def toPb(v: JsJsonGenerator): pb.JsJsonGenerator =
+        pb.JsJsonGenerator(
+            jsCode = v.jsCode
+        )

@@ -3,6 +3,8 @@ import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from 
 import { BasicMessageFilter, BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
 import { ConsumerSessionTargetConsumptionMode } from "../../ConsumerSession/consumption-mode/consumption-mode";
+import { MessageGenerator } from "../../ProducerSession/producer-task/message-generator/message-generator";
+import { PulsarProducerConfig } from "../../ProducerSession/producer-task/pulsar-producer-config/pulsar-producer-config";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -37,7 +39,10 @@ export type ManagedItemType =
   "basic-message-filter-target" |
   "value-projection" |
   "value-projection-list" |
-  "deserializer";
+  "deserializer" |
+  "message-generator" |
+  "producer-task" |
+  "producer-session-config";
 
 export type ManagedItemMetadata = {
   type: ManagedItemType,
@@ -290,6 +295,51 @@ export type ManagedDeserializer = {
 
 export type ManagedDeserializerValOrRef = ValOrRef<ManagedDeserializer>;
 
+export type ManagedMessageGeneratorSpec = {
+  generator: MessageGenerator,
+};
+
+export type ManagedMessageGenerator = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageGeneratorSpec,
+};
+
+export type ManagedMessageGeneratorValOrRef = ValOrRef<ManagedMessageGenerator>;
+
+export type ManagedProducerTaskSpec = {
+  topicSelector: ManagedTopicSelectorValOrRef,
+  messageGenerator: ManagedMessageGeneratorValOrRef,
+  producerConfig: PulsarProducerConfig | undefined,
+  numMessages: number | undefined,
+  limitDurationNanos: number | undefined,
+  intervalNanos: number | undefined,
+};
+
+export type ManagedProducerTask = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedProducerTaskSpec,
+};
+
+export type ManagedProducerTaskValOrRef = ValOrRef<ManagedProducerTask>;
+
+export type ManagedProducerSessionConfigTask = {
+  task: {
+    type: "producer-task",
+    task: ManagedProducerTaskValOrRef
+  },
+};
+
+export type ManagedProducerSessionConfigSpec = {
+  tasks: ManagedProducerSessionConfigTask[]
+};
+
+export type ManagedProducerSessionConfig = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedProducerSessionConfigSpec,
+};
+
+export type ManagedProducerSessionConfigValOrRef = ValOrRef<ManagedProducerSessionConfig>;
+
 export type ManagedItem = ManagedMessageFilter |
   ManagedMessageFilterChain |
   ManagedConsumerSessionStartFrom |
@@ -309,4 +359,7 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedBasicMessageFilterTarget |
   ManagedValueProjection |
   ManagedValueProjectionList |
-  ManagedDeserializer;
+  ManagedDeserializer |
+  ManagedMessageGenerator |
+  ManagedProducerTask |
+  ManagedProducerSessionConfig;

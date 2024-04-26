@@ -38,8 +38,8 @@ object ManagedValueProjectionList:
         )
 
 case class ManagedValueProjectionListValOrRef(
-    value: Option[ManagedValueProjectionList],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedValueProjectionList] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedValueProjectionListValOrRef:

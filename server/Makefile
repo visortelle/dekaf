@@ -9,6 +9,10 @@ clean:
 test:
 	sbt test
 
+.PHONY: integration-test
+integration-test:
+	sbt IntegrationTest/test
+
 .PHONY: build-any
 build-any:
 	cd ./data/js && npm install && npm run build

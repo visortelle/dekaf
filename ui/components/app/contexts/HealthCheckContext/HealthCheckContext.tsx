@@ -126,8 +126,6 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     document.body
   ) : null;
 
-  console.log('overlay', isShowOverlay);
-
   return (
     <Context.Provider
       value={{

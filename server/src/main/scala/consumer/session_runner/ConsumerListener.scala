@@ -3,25 +3,36 @@ package consumer.session_runner
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.MessageListener
 
-class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHandler) extends MessageListener[Array[Byte]] {
-    val logger: Logger = Logger(getClass.getName)
+import scala.collection.mutable
+import scala.util.control.Breaks.{break, breakable}
 
-    // https://levelup.gitconnected.com/graceful-shutdown-of-pulsar-queue-consumers-in-java-and-spring-boot-f93645a92b2b
-    private var isAcceptingNewMessages: Boolean = true
+class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHandler) extends MessageListener[Array[Byte]]:
+    private val logger: Logger = Logger(getClass.getName)
+    private val redeliveryQueue = new mutable.Queue[org.apache.pulsar.client.api.Message[Array[Byte]]]()
+    private var isPaused: Boolean = true
 
-    def stopAcceptingNewMessages(): Unit =
-        this.isAcceptingNewMessages = false
+    def resume(): Unit =
+        isPaused = false
 
-    def startAcceptingNewMessages(): Unit =
-        this.isAcceptingNewMessages = true
+        breakable {
+            while redeliveryQueue.nonEmpty do
+                if isPaused then
+                    break
 
-    override def received(consumer: org.apache.pulsar.client.api.Consumer[Array[Byte]], msg: org.apache.pulsar.client.api.Message[Array[Byte]]): Unit =
-        if !isAcceptingNewMessages then
-            consumer.negativeAcknowledge(msg)
-            return;
+                targetMessageHandler.onNext(redeliveryQueue.dequeue())
+        }
 
+    def pause(): Unit =
+        isPaused = true
+
+    override def received(
+        consumer: org.apache.pulsar.client.api.Consumer[Array[Byte]],
+        msg: org.apache.pulsar.client.api.Message[Array[Byte]]
+    ): Unit =
         logger.debug(s"Listener received a message. Consumer: ${consumer.getConsumerName}")
-        targetMessageHandler.onNext(msg)
 
-        if consumer.isConnected then consumer.acknowledgeAsync(msg)
-}
+        if consumer.isConnected && !isPaused then
+            targetMessageHandler.onNext(msg)
+            consumer.acknowledge(msg)
+        else
+            redeliveryQueue.enqueue(msg)

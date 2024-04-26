@@ -1,0 +1,35 @@
+.ProducerSessionConfigInput {
+  display: flex;
+  overflow: auto;
+  flex: 1;
+}
+
+.Column {
+  flex: 0 0 480rem;
+  overflow-y: scroll;
+  padding: 28rem 12rem 24rem;
+  position: relative;
+}
+
+.LastColumn {
+  flex: 0 0 240rem;
+  padding: 28rem 12rem 24rem;
+  position: relative;
+}
+
+
+
+.TaskIndex {
+  font-weight: var(--font-weight-bold);
+  opacity: .6;
+  font-size: 12rem;
+  position: absolute;
+  top: 8rem;
+  left: 12rem;
+}
+
+.DeleteButton {
+  position: absolute;
+  top: 8rem;
+  right: 12rem;
+}

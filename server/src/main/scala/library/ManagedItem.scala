@@ -14,7 +14,10 @@ import _root_.library.managed_items.{
     ManagedMarkdownDocument,
     ManagedMessageFilter,
     ManagedMessageFilterChain,
+    ManagedMessageGenerator,
     ManagedMessageId,
+    ManagedProducerSessionConfig,
+    ManagedProducerTask,
     ManagedRelativeDateTime,
     ManagedTopicSelector,
     ManagedValueProjection,
@@ -22,28 +25,8 @@ import _root_.library.managed_items.{
 }
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 
-type ManagedItem =
-    ManagedColoringRule |
-    ManagedColoringRuleChain |
-    ManagedConsumerSessionConfig |
-    ManagedConsumerSessionEvent |
-    ManagedConsumerSessionPauseTriggerChain |
-    ManagedConsumerSessionStartFrom |
-    ManagedConsumerSessionTarget |
-    ManagedDateTime |
-    ManagedMessageFilter |
-    ManagedMessageFilterChain |
-    ManagedMessageId |
-    ManagedRelativeDateTime |
-    ManagedTopicSelector |
-    ManagedMarkdownDocument |
-    ManagedBasicMessageFilterTarget |
-    ManagedValueProjection |
-    ManagedValueProjectionList |
-    ManagedDeserializer
-
 object ManagedItem:
-    def fromPb(v: pb.ManagedItem): ManagedItem =
+    def fromPb(v: pb.ManagedItem): ManagedItemTrait =
         v.spec match
             case it: pb.ManagedItem.Spec.SpecColoringRule                     => ManagedColoringRule.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecColoringRuleChain                => ManagedColoringRuleChain.fromPb(it.value)
@@ -63,9 +46,12 @@ object ManagedItem:
             case it: pb.ManagedItem.Spec.SpecValueProjection                  => ManagedValueProjection.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecValueProjectionList              => ManagedValueProjectionList.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecDeserializer                     => ManagedDeserializer.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecMessageGenerator                 => ManagedMessageGenerator.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecProducerTask                     => ManagedProducerTask.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecProducerSessionConfig            => ManagedProducerSessionConfig.fromPb(it.value)
             case _                                                            => throw new IllegalArgumentException("Unknown ManagedItem type")
 
-    def toPb(v: ManagedItem): pb.ManagedItem =
+    def toPb(v: ManagedItemTrait): pb.ManagedItem =
         v match
             case it: ManagedColoringRule =>
                 val itPb = ManagedColoringRule.toPb(it)
@@ -121,4 +107,12 @@ object ManagedItem:
             case it: ManagedDeserializer =>
                 val itPb = ManagedDeserializer.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecDeserializer(itPb))
-
+            case it: ManagedMessageGenerator =>
+                val itPb = ManagedMessageGenerator.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecMessageGenerator(itPb))
+            case it: ManagedProducerTask =>
+                val itPb = ManagedProducerTask.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecProducerTask(itPb))
+            case it: ManagedProducerSessionConfig =>
+                val itPb = ManagedProducerSessionConfig.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecProducerSessionConfig(itPb))

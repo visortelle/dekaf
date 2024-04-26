@@ -38,7 +38,7 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
     val library: Library = Library.createAndRefreshDb(libraryRoot)
 
     override def saveLibraryItem(request: SaveLibraryItemRequest): Future[SaveLibraryItemResponse] =
-        logger.debug(s"Updating library item: ${request.item}")
+        logger.info(s"Saving library item: ${request.getItem.getSpec.getMetadata.id}")
 
         // PRODUCT PLAN LIMITATION START
         if Vector(ProductCode.DekafFree, ProductCode.DekafDesktopFree).contains(Licensing.productCode) then
@@ -56,13 +56,18 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
         // PRODUCT PLAN LIMITATION END
 
         try {
-            if request.item.isEmpty then throw new Exception("Library item is empty")
+            if request.item.isEmpty then
+                val status: Status = Status(
+                    code = Code.INVALID_ARGUMENT.index,
+                    message = s"Library item shouldn't be empty"
+                )
+                Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
+            else
+                val libraryItem = LibraryItem.fromPb(request.item.get)
+                library.writeItem(libraryItem)
 
-            val libraryItem = LibraryItem.fromPb(request.item.get)
-            library.writeItem(libraryItem)
-
-            val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
         } catch {
             case err: Exception =>
                 logger.warn(s"Failed to save library item: ${err.getMessage}")
@@ -71,7 +76,7 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
         }
 
     override def deleteLibraryItem(request: DeleteLibraryItemRequest): Future[DeleteLibraryItemResponse] =
-        logger.debug(s"Deleting library item: ${request.id}")
+        logger.info(s"Deleting library item: ${request.id}")
 
         try {
             if request.id.isEmpty then throw new Exception("Library item id is empty")

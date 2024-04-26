@@ -42,8 +42,8 @@ object ManagedConsumerSessionPauseTriggerChain:
 
 
 case class ManagedConsumerSessionPauseTriggerChainValOrRef(
-    value: Option[ManagedConsumerSessionPauseTriggerChain],
-    reference: Option[ManagedItemReference]
+    value: Option[ManagedConsumerSessionPauseTriggerChain] = None,
+    reference: Option[ManagedItemReference] = None
 )
 
 object ManagedConsumerSessionPauseTriggerChainValOrRef:

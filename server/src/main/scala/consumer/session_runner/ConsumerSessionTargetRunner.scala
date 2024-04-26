@@ -22,7 +22,7 @@ case class ConsumerSessionTargetRunner(
     targetConfig: ConsumerSessionTarget,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
     schemasByTopic: SchemasByTopic,
-    sessionContextPool: ConsumerSessionContextPool,
+    sessionContext: ConsumerSessionContext,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
@@ -42,10 +42,9 @@ case class ConsumerSessionTargetRunner(
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             boundary:
-                stats.messageProcessed += 1
+                stats.messageProcessed = stats.messageProcessed + 1
                 incrementNumMessageProcessed()
 
-                val sessionContext = sessionContextPool.getNextContext
                 val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
                 val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
                 val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
@@ -86,11 +85,11 @@ case class ConsumerSessionTargetRunner(
                 else
                     None
 
-                val errors: Vector[String] =
+                var errors: Vector[String] =
                     if isDebug then
                         val serializationErrors = messageValueToJsonResult match
                             case Left(err) => Vector(err.getMessage)
-                            case _         => Vector.empty
+                            case _ => Vector.empty
                         val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
                         serializationErrors ++ messageFilterChainErrors ++ coloringRuleChainErrors
                     else Vector.empty
@@ -113,14 +112,14 @@ case class ConsumerSessionTargetRunner(
                     errors = errors
                 )
 
-        listener.startAcceptingNewMessages()
+        listener.resume()
         consumers.foreach((_, consumer) => consumer.resume())
 
     def pause(): Unit =
+        consumerListener.pause()
         consumers.foreach((_, consumer) => consumer.pause())
-        consumerListener.stopAcceptingNewMessages()
 
-    def stop(): Unit =
+    def close(): Unit =
         consumers.foreach((_, consumer) =>
             Try {
                 consumer.unsubscribe()
@@ -132,12 +131,12 @@ case class ConsumerSessionTargetRunner(
 
 object ConsumerSessionTargetRunner:
     val logger: Logger = Logger(getClass.getName)
-    
+
     def make(
         sessionName: String,
         targetIndex: Int,
         targetConfig: ConsumerSessionTarget,
-        sessionContextPool: ConsumerSessionContextPool,
+        sessionContext: ConsumerSessionContext,
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
         pulsarClient: PulsarClient
@@ -166,7 +165,7 @@ object ConsumerSessionTargetRunner:
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
                 targetConfig = targetConfig,
-                sessionContextPool = sessionContextPool,
+                sessionContext = sessionContext,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
                 consumerListener = listener,

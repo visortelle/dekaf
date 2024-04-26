@@ -106,16 +106,22 @@ case class Config(
 val yamlConfigDescriptor = descriptor[Config]
 val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_${toUpperSnakeCase(key)}")
 
-val internalHttpPort = getFreePort
-val internalGrpcPort = getFreePort
+var memoizedConfig = Option.empty[Config]
 
-def readConfig =
+def readConfig = memoizedConfig match
+    case Some(config) => ZIO.succeed(config)
+    case None         => readConfigFromSources
+
+def readConfigFromSources =
     for
         yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
         envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
         maybeYamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).either
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
-        defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
+        defaultConfig <- ZIO.succeed(Config(
+            internalHttpPort = Some(envConfig.internalHttpPort.getOrElse(getFreePort)),
+            internalGrpcPort = Some(envConfig.internalGrpcPort.getOrElse(getFreePort))
+        ))
 
         config <- ZIO.succeed {
             val appConfig = maybeYamlConfig match
@@ -125,6 +131,7 @@ def readConfig =
             val mergedConfig = mergeConfigs(defaultConfig, appConfig)
             normalizeConfig(mergedConfig)
         }
+        _ <- ZIO.succeed { memoizedConfig = Some(config) }
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))

@@ -7,39 +7,73 @@ import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    PauseRequest,
-    PauseResponse,
-    ResolveTopicSelectorRequest,
-    ResolveTopicSelectorResponse,
-    ResumeRequest,
-    ResumeResponse,
-    RunCodeRequest,
-    RunCodeResponse
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, PauseRequest, PauseResponse, ResolveTopicSelectorRequest, ResolveTopicSelectorResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse}
 import com.typesafe.scalalogging.Logger
 import _root_.consumer.session_target.topic_selector.TopicSelector
-import consumer.session_runner.ConsumerSessionRunner
+import consumer.session_runner.{ConsumerSessionRunner, ConsumerSessionRunnerState}
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, ScheduledThreadPoolExecutor, TimeUnit}
 import scala.concurrent.Future
 import scala.jdk.OptionConverters.*
+import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
 type ConsumerSessionName = String
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     private val logger: Logger = Logger(getClass.getName)
-    private val consumerSessions: ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner] = new ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner]()
+    private val consumerSessions: ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner] =
+        new ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner]()
+
+    private val gcExecutor = new ScheduledThreadPoolExecutor(1)
+
+    private def initGc(): Unit =
+        val task = new Runnable {
+            def run(): Unit =
+                val sessions = consumerSessions.entrySet().asScala
+                val idleSessions = sessions.filter(v => v.getValue.isIdle)
+
+                logger.info(s"Collecting idle ConsumerSessions. Total sessions: ${sessions.size}. Idle sessions: ${idleSessions.size}")
+                sessions.foreach { v =>
+                    val lastTouchedIso = java.time.Instant
+                        .ofEpochMilli(v.getValue.touchedAt).atZone(java.time.ZoneOffset.UTC).toLocalDateTime
+                        .format(java.time.format.DateTimeFormatter.ISO_DATE_TIME)
+                    logger.info(s"ConsumerSession: ${v.getKey}. Last touched at: ${lastTouchedIso} Idle: ${v.getValue.isIdle}")
+                }
+
+                idleSessions.foreach { v =>
+                    val sessionName = v.getKey
+                    val session = v.getValue
+
+                    if session.isIdle then
+                        logger.info(s"ConsumerSession $sessionName is idle. Closing...")
+                        session.close()
+                        consumerSessions.remove(sessionName)
+                }
+        }
+        gcExecutor.scheduleAtFixedRate(task, 0, 60, TimeUnit.MINUTES)
+
+    initGc()
 
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val sessionName = request.consumerName
         logger.info(s"Resuming consumer session: $sessionName")
+
+        val serverCallStreamObserver = responseObserver.asInstanceOf[io.grpc.stub.ServerCallStreamObserver[ResumeResponse]]
+        serverCallStreamObserver.setOnCancelHandler(() =>
+            logger.info(s"Consumer session $sessionName is cancelled. Closing...")
+
+            Option(consumerSessions.get(sessionName)) match
+                case Some(consumerSession) =>
+                    val isUngracefullyCanceled = consumerSession.state != ConsumerSessionRunnerState.Starting
+                    if isUngracefullyCanceled then
+                        logger.info(s"Consumer session $sessionName is cancelled ungracefully. Closing...")
+                        consumerSession.close()
+                        consumerSessions.remove(sessionName)
+                case _ =>
+                    val msg = s"No such consumer consumer session: $sessionName"
+                    logger.warn(msg)
+        )
 
         val consumerSession = Option(consumerSessions.get(sessionName)) match
             case Some(consumerSession) => consumerSession
@@ -53,9 +87,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 responseObserver.onCompleted()
                 return
 
-        try {
+        try
             consumerSession.resume(grpcResponseObserver = responseObserver, isDebug = request.isDebug)
-        } catch {
+        catch {
             case err: Throwable =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 val res = ResumeResponse(status = Some(status))
@@ -80,9 +114,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
-        try {
+        try
             consumerSession.pause()
-        } catch {
+        catch {
             case err: Throwable =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 return Future.successful(PauseResponse(status = Some(status)))
@@ -128,7 +162,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(DeleteConsumerResponse(status = Some(status)))
 
         try {
-            consumerSession.stop()
+            consumerSession.close()
             consumerSessions.remove(sessionName)
         } catch {
             case err: Throwable =>
@@ -146,7 +180,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Consumer isn't found: ${request.consumerName}")
                 return Future.successful(RunCodeResponse(status = Some(status)))
 
-        val result = consumerSession.sessionContextPool.getContext(0).runCode(request.code)
+        val result = consumerSession.sessionContext.runCode(request.code)
 
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))

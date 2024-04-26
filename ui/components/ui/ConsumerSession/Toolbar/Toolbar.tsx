@@ -48,13 +48,14 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       <div className={s.ToolbarLeft}>
         <div className={s.Control}>
           <SmallButton
-            title={props.sessionState ? "Start or Resume" : "Pause"}
+            title={playButtonState === 'play' ? "Start or Resume" : "Pause"}
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
             disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
             isPremiumFeature={props.isProductPlanLimitReached && props.sessionState === 'paused'}
             premiumFeatureTitle={<PremiumTitle />}
+            testId={playButtonState === 'play' ? 'start-consumer-session-button' : 'pause-consumer-session-button'}
           />
         </div>
 
@@ -65,6 +66,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             onClick={() => props.onStopSession()}
             type={'danger'}
             disabled={props.sessionState === 'new'}
+            testId='stop-consumer-session-button'
           />
         </div>
 
@@ -102,7 +104,12 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       <div className={s.ToolbarRight}>
         <div className={s.MessagesLoadedStats}>
           <div className={s.MessagesLoadedStat}>
-            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesProcessed)}</strong>
+            <strong
+              className={s.MessagesLoadedStatValue}
+              data-testid='messages-processed'
+            >
+              {i18n.formatLongNumber(props.messagesProcessed)}
+            </strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp;processed</span>
           </div>
           <div className={s.MessagesLoadedStat}>

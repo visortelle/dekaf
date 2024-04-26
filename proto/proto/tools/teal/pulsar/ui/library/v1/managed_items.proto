@@ -5,12 +5,12 @@ package tools.teal.pulsar.ui.library.v1;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "tools/teal/pulsar/ui/api/v1/consumer.proto";
+import "tools/teal/pulsar/ui/producer/v1/producer.proto";
 
 enum ManagedItemType {
   MANAGED_ITEM_TYPE_UNSPECIFIED = 0;
 
   MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
-  MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
   MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
   MANAGED_ITEM_TYPE_MESSAGE_FILTER = 4;
   MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
@@ -27,6 +27,9 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_VALUE_PROJECTION = 16;
   MANAGED_ITEM_TYPE_VALUE_PROJECTION_LIST = 17;
   MANAGED_ITEM_TYPE_DESERIALIZER = 18;
+  MANAGED_ITEM_TYPE_MESSAGE_GENERATOR = 19;
+  MANAGED_ITEM_TYPE_PRODUCER_TASK = 20;
+  MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
 }
 
 message ManagedItemMetadata {
@@ -382,6 +385,65 @@ message ManagedMarkdownDocumentValOrRef {
   }
 }
 
+message ManagedMessageGeneratorSpec {
+  tools.teal.pulsar.ui.producer.v1.MessageGenerator generator = 1;
+}
+
+message ManagedMessageGenerator {
+  ManagedItemMetadata metadata = 1;
+  ManagedMessageGeneratorSpec spec = 2;
+}
+
+message ManagedMessageGeneratorValOrRef {
+  oneof val_or_ref {
+    ManagedMessageGenerator val = 1;
+    string ref = 2;
+  }
+}
+
+message ManagedProducerTaskSpec {
+  ManagedTopicSelectorValOrRef topic_selector = 1;
+  ManagedMessageGeneratorValOrRef message_generator = 2;
+  tools.teal.pulsar.ui.producer.v1.PulsarProducerConfig producer_config = 3;
+  google.protobuf.Int64Value num_messages = 10;
+  google.protobuf.Int64Value limit_duration_nanos = 11;
+  google.protobuf.Int64Value interval_nanos = 12;
+}
+
+message ManagedProducerTask {
+  ManagedItemMetadata metadata = 1;
+  ManagedProducerTaskSpec spec = 2;
+}
+
+message ManagedProducerTaskValOrRef {
+  oneof val_or_ref {
+    ManagedProducerTask val = 1;
+    string ref = 2;
+  }
+}
+
+message ManagedProducerSessionConfigTask {
+  oneof task {
+    ManagedProducerTaskValOrRef task_producer = 1;
+  }
+}
+
+message ManagedProducerSessionConfigSpec {
+  repeated ManagedProducerSessionConfigTask tasks = 1;
+}
+
+message ManagedProducerSessionConfig {
+  ManagedItemMetadata metadata = 1;
+  ManagedProducerSessionConfigSpec spec = 2;
+}
+
+message ManagedProducerSessionConfigValOrRef {
+  oneof val_or_ref {
+    ManagedProducerSessionConfig val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedItem {
   ManagedItemMetadata metadata = 1;
   ManagedItemType item_type = 2;
@@ -404,6 +466,9 @@ message ManagedItem {
     ManagedValueProjection spec_value_projection = 18;
     ManagedValueProjectionList spec_value_projection_list = 19;
     ManagedDeserializer spec_deserializer = 20;
+    ManagedMessageGenerator spec_message_generator = 21;
+    ManagedProducerTask spec_producer_task = 22;
+    ManagedProducerSessionConfig spec_producer_session_config = 23;
   }
 }
 

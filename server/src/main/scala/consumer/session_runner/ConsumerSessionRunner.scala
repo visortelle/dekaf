@@ -8,6 +8,7 @@ import org.apache.pulsar.client.api.PulsarClient
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
 import consumer.value_projections.ValueProjectionResult
 
 import scala.util.boundary
@@ -15,23 +16,34 @@ import boundary.break
 
 type ConsumerSessionTargetIndex = Int
 
+enum ConsumerSessionRunnerState:
+    case New, Starting, Running, Pausing, Paused, Closing, Closed
+
 case class ConsumerSessionRunner(
     sessionName: String,
     sessionConfig: ConsumerSessionConfig,
-    sessionContextPool: ConsumerSessionContextPool,
+    sessionContext: ConsumerSessionContext,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
     var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner],
+    var touchedAt: Long, // For consumer session garbage collection
+    var state: ConsumerSessionRunnerState = ConsumerSessionRunnerState.New,
     var numMessageProcessed: Long = 0,
     var numMessageSent: Long = 0
-) {
+):
+    private def touch(): Unit = touchedAt = System.currentTimeMillis()
+
     def incrementNumMessageProcessed(): Unit = numMessageProcessed = numMessageProcessed + 1
+
+    def isIdle: Boolean = System.currentTimeMillis() - touchedAt > 1000 * 60 * 60 * 12
 
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse],
         isDebug: Boolean
     ): Unit =
+        state = ConsumerSessionRunnerState.Starting
         this.grpcResponseObserver = Some(grpcResponseObserver)
+        touch()
 
         def onNext(
             messageFromTarget: Option[ConsumerSessionMessage],
@@ -39,7 +51,10 @@ case class ConsumerSessionRunner(
             stats: ConsumerSessionTargetStats,
             errors: Vector[String]
         ): Unit = boundary:
+
             def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
+                touch()
+
                 val allErrors = errors ++ additionalErrors
 
                 val status = allErrors.size match
@@ -50,6 +65,7 @@ case class ConsumerSessionRunner(
                     messages = messages,
                     status = Some(status)
                 )
+
                 grpcResponseObserver.onNext(response)
                 boundary.break(())
 
@@ -107,12 +123,25 @@ case class ConsumerSessionRunner(
             isDebug = isDebug,
             incrementNumMessageProcessed = incrementNumMessageProcessed
         ))
+        state = ConsumerSessionRunnerState.Running
+
     def pause(): Unit =
+        state = ConsumerSessionRunnerState.Pausing
+
+        touch()
         targets.values.foreach(_.pause())
-    def stop(): Unit =
+
+        state = ConsumerSessionRunnerState.Paused
+
+    def close(): Unit =
+        state = ConsumerSessionRunnerState.Closing
+
+        touch()
         pause()
-        targets.values.foreach(_.stop())
-}
+        targets.values.foreach(_.close())
+        sessionContext.close()
+
+        state = ConsumerSessionRunnerState.Closed
 
 object ConsumerSessionRunner:
     def make(
@@ -121,7 +150,7 @@ object ConsumerSessionRunner:
         sessionName: String,
         sessionConfig: ConsumerSessionConfig
     ): ConsumerSessionRunner =
-        val sessionContextPool = ConsumerSessionContextPool()
+        val sessionContext = ConsumerSessionContextPool.getContext
 
         var targets = sessionConfig.targets
             .filter(_.isEnabled)
@@ -132,7 +161,7 @@ object ConsumerSessionRunner:
                     pulsarClient = pulsarClient,
                     adminClient = adminClient,
                     schemasByTopic = Map.empty,
-                    sessionContextPool = sessionContextPool,
+                    sessionContext = sessionContext,
                     targetConfig = targetConfig
                 )
             }.toMap
@@ -154,11 +183,14 @@ object ConsumerSessionRunner:
             nonPartitionedTopicFqns = nonPartitionedTopicFqns
         )
 
-        ConsumerSessionRunner(
+        val runner = ConsumerSessionRunner(
             sessionName = sessionName,
             sessionConfig = sessionConfig,
             schemasByTopic = schemasByTopic,
-            sessionContextPool = sessionContextPool,
+            sessionContext = sessionContext,
             targets = targets,
-            grpcResponseObserver = None
+            grpcResponseObserver = None,
+            touchedAt = System.currentTimeMillis()
         )
+
+        runner

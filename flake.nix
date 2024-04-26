@@ -37,7 +37,6 @@
           };
 
           protoc-gen-grpc-web = pkgs.callPackage ./nix/protoc-gen-grpc-web.nix { };
-          protoc-gen-scala = pkgs.callPackage ./nix/protoc-gen-scala.nix { };
 
           missingSysPkgs =
             if pkgs.stdenv.isDarwin then
@@ -67,24 +66,22 @@
               pkgs.nodejs-18_x
 
               pkgs.graalvm-ce
-              pkgs.dotty
+              pkgs.scala_3
               pkgs.scalafmt
               pkgs.scalafix
               pkgs.sbt
               pkgs.maven
 
-              pkgs.protobuf3_20
+              pkgs.protobuf_25
+              pkgs.protoc-gen-js
               pkgs.buf
               protoc-gen-grpc-web
-              protoc-gen-scala
 
               pkgs.pulumi-bin
               pkgs.kubectl
               pkgs.kubernetes-helm
               # pkgs.awscli2 # Temporary disable due to failing Nix build
               pkgs.aws-iam-authenticator
-
-              # pkgs.docker-slim
 
               pkgs.git
               pkgs.git-lfs

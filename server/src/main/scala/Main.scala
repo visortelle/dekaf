@@ -5,11 +5,14 @@ import _root_.envoy.Envoy
 import _root_.licensing.LicenseServer
 import _root_.server.grpc.GrpcServer
 import _root_.server.http.HttpServer
+import _root_.consumer.session_runner.ConsumerSessionContextPool
 import zio.*
 
 object Main extends ZIOAppDefault:
     def app = for {
         licenseServerInitResult <- LicenseServer.init
+
+        _ <- ZIO.attempt(ConsumerSessionContextPool.init())
 
         _ <- ZIO.raceFirst(
             ZIO.never,

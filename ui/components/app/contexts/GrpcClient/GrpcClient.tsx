@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 
 import * as _pulsarAuthServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/Pulsar_authServiceClientPb';
-import * as _producerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ProducerServiceClientPb';
+import * as _producerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/producer/v1/ProducerServiceClientPb';
 import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ConsumerServiceClientPb';
 import * as _topicServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/TopicServiceClientPb';
 import * as _schemaServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/SchemaServiceClientPb';

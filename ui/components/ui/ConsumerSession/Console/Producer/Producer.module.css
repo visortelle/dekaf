@@ -1,52 +1,5 @@
 .Producer {
   display: flex;
-  flex-direction: column;
   flex: 1;
   overflow: hidden;
-  position: relative;
-}
-
-.Content {
-  display: flex;
-  flex: 1 1 auto;
-  padding-bottom: 42rem;
-  overflow: hidden;
-}
-
-.Config {
-  overflow: auto;
-  display: flex;
-  flex: 1;
-}
-
-.ConfigLeft, .ConfigRight {
-  padding: 12rem 12rem;
- }
-
-.FormControl {
-  display: flex;
-  flex-direction: column;
-  width: 480rem;
-  margin-bottom: 12rem;
-}
-
-.Value {
-  padding: 12rem;
-}
-
-.Toolbar {
-  padding: 0 12rem;
-  height: 38rem;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: #fff;
-}
-
-.ToolbarControl {
-  margin-right: 12rem;
 }

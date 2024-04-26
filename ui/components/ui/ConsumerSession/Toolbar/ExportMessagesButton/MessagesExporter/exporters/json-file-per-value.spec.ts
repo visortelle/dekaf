@@ -1,3 +1,4 @@
+import { longRunningTest } from "../../../../../../../testing/long-running-test";
 import { genMessageDescriptor } from "../../../../testing";
 import { MessageDescriptor } from "../../../../types";
 import { genExportConfig } from "../testing";
@@ -5,7 +6,7 @@ import { ExportConfig } from "../types";
 import { genFiles } from "./json-file-per-value";
 
 describe("genFiles", () => {
-  it("generates .json files", async () => {
+  longRunningTest("generates .json files", async () => {
     const messageValue = JSON.stringify(Array.from({ length: 1024 * 10 }).map((_, i) => i));
     const messages = Array.from({ length: 100 }).map((_, i) => genMessageDescriptor({ displayIndex: i, value: messageValue }));
 
