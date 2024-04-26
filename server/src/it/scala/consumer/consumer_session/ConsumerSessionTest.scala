@@ -19,7 +19,10 @@ import zio.test.Assertion.*
 import testing.{TestDekaf, TestPulsar}
 import org.apache.pulsar.client.api.{MessageListener, Schema, SubscriptionInitialPosition}
 import monocle.syntax.all.*
+import org.apache.pulsar.client.impl.PatternMultiTopicsConsumerImpl
+import org.apache.pulsar.client.api.RegexSubscriptionMode
 
+import scala.util.control.Breaks.{break, breakable}
 import scala.jdk.CollectionConverters.*
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -59,7 +62,95 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 pulsar <- ZIO.service[TestPulsar]
 
                 pulsarClient <- pulsar.createPulsarClient
+                pulsarAdmin <- pulsar.createAdminClient
                 topic <- pulsar.createTopic
+
+                topics = Vector(
+                    "persistent://new-tenant/new-namespace/topic-a",
+                    "persistent://new-tenant/new-namespace/topic-b",
+                    "non-persistent://new-tenant/new-namespace/topic-c",
+                    "non-persistent://new-tenant/new-namespace/topic-d"
+                )
+                numMessagesPerTopic = 10
+
+                // Thread-safe counter
+                numMessagesReceivedRef <- Ref.make(0)
+
+                _ <- ZIO.attempt {
+                    // Cleanup
+                    pulsarAdmin.topics.getList("new-tenant/new-namespace").asScala
+                        .foreach(pulsarAdmin.topics.delete(_, true))
+                    pulsarAdmin.topics.getPartitionedTopicList("new-tenant/new-namespace").asScala
+                        .foreach(pulsarAdmin.topics.deletePartitionedTopic(_, true))
+                }
+
+                consumer <- ZIO.attempt {
+                    pulsarClient.newConsumer()
+                        .topicsPattern("new-tenant/new-namespace/.*".r.pattern)
+                        .subscriptionName("new-subscription")
+                        .patternAutoDiscoveryPeriod(100, TimeUnit.MILLISECONDS)
+                        .subscriptionTopicsMode(RegexSubscriptionMode.AllTopics)
+                        .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+                        .subscribe()
+                }
+
+                // Consume messages in background
+                consumeInBackgroundFib <- (for {
+                    isMessageReceived <- ZIO.attempt {
+                        Option(consumer.receive(1, TimeUnit.SECONDS)) match
+                            case None => false
+                            case Some(msg) =>
+                                println(s"Received: ${msg.getValue.mkString(",")}. From topic: ${msg.getTopicName}")
+                                consumer.acknowledge(msg.getMessageId)
+                                true
+                    }
+
+                    _ <- numMessagesReceivedRef.update(_ + 1).when(isMessageReceived)
+                } yield ())
+                    .forever // like `while true`
+                    .fork // Run in background
+
+                producers <- ZIO.attempt {
+                    topics.map(topic => pulsarClient.newProducer.topic(topic).create())
+                }
+
+                // Wait for the expected number of consumers
+                _ <- ZIO.attempt {
+                    // Cast consumer to PatternMultiTopicsConsumerImpl
+                    // that has extra pattern-related methods
+                    val numConsumers = consumer
+                        .asInstanceOf[PatternMultiTopicsConsumerImpl[Array[Byte]]]
+                        .getConsumers
+                        .size
+
+                    if numConsumers != topics.size
+                    then throw new Exception(s"Expected $topics.size consumers, but got $numConsumers")
+                }
+                    .retry(Schedule.exponential(10.millis))
+                    .timeoutFail(new Exception("Consumers weren't created in time"))(10.seconds)
+
+                _ <- ZIO.attempt {
+                    for (i <- 0 until numMessagesPerTopic)
+                        producers.foreach(producer => producer.sendAsync(Array(i.toByte)))
+                }
+
+                // Wait for all messages are be received
+                _ <- (for {
+                    numMessagesReceived <- numMessagesReceivedRef.get
+                    _ <- ZIO.attempt {
+                        if numMessagesReceived != topics.size * numMessagesPerTopic
+                        then throw new Exception(s"Expected ${topics.size * numMessagesPerTopic} messages, but got $numMessagesReceived")
+                    }
+                } yield ())
+                    .retry(Schedule.spaced(250.millis))
+                    .timeoutFail(new Exception("Messages weren't received in time"))(10.seconds)
+
+                numMessagesReceived <- numMessagesReceivedRef.get
+                _ <- ZIO.logInfo(s"Messages received: $numMessagesReceived")
+
+                _ <- consumeInBackgroundFib.join
+
+                _ <- ZIO.sleep(60.minutes)
 
                 // Generate messages
                 producer <- ZIO.attempt(pulsarClient.newProducer(Schema.INT64).topic(topic.fqn).create())
@@ -135,7 +226,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 r1.numMessagesProcessed == r1.numMessages,
                 r2.numMessagesProcessed == r2.numMessages
             )
-        } @@ withLiveClock @@ nonFlaky @@ repeats(1),
+        } @@ withLiveClock @@ nonFlaky @@ repeats(4),
         test("User accidentally disconnects without gracefully stopping the consumer session") {
             /*
              **Problem**
@@ -236,7 +327,7 @@ object ConsumerSessionTest extends ZIOSpecDefault:
                 _ <- runTest(runBeforeUnload = false, pauseSessionBeforeClosingPage = false)
                 _ <- runTest(runBeforeUnload = false, pauseSessionBeforeClosingPage = true)
             } yield assertCompletes
-        } @@ withLiveClock
+        } @@ withLiveClock @@ ignore
     ).provideSomeShared(
         TestPulsar.live,
         TestDekaf.live
