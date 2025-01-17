@@ -1,11 +1,11 @@
-# Teal Tool for Apache Pulsar
+# Dekaf for Apache Pulsar
 
 ## TODO
 
 - [ ] Remove all billing-related stuff
 - [ ] Change license to Apache 2.0
 
-**Teal Tool for Apache Pulsar** helps developers and system administrators to manage and debug Apache Pulsar instances.
+**Dekaf for Apache Pulsar** helps developers and system administrators to manage and debug Apache Pulsar instances.
 
 ## License
 
