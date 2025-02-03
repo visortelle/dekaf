@@ -2,6 +2,7 @@ package config
 
 def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
     Config(
+        bindAddress = highPriority.bindAddress.orElse(lowPriority.bindAddress),
         port = highPriority.port.orElse(lowPriority.port),
         publicBaseUrl = highPriority.publicBaseUrl.orElse(lowPriority.publicBaseUrl),
         basePath = highPriority.basePath.orElse(lowPriority.basePath),

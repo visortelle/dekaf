@@ -12,6 +12,7 @@ object Envoy:
                 EnvoyConfigProps(
                     httpServerPort = c.internalHttpPort.get,
                     grpcServerPort = c.internalGrpcPort.get,
+                    bindAddress = c.bindAddress.get,
                     listenPort = c.port.get,
                     basePath = c.basePath.get,
                     protocol = c.protocol.get,

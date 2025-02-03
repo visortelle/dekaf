@@ -50,8 +50,8 @@ object GrpcServer:
 
     private val pulsarAuthInterceptor = new PulsarAuthInterceptor()
 
-    private def createGrpcServer(host: String, port: Int) = NettyServerBuilder
-        .forAddress(new InetSocketAddress(host, port))
+    private def createGrpcServer(bindAddress: String, port: Int) = NettyServerBuilder
+        .forAddress(new InetSocketAddress(bindAddress, port))
 
         .addService(PulsarAuthServiceGrpc.bindService(PulsarAuthServiceImpl(), ExecutionContext.global))
         .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
@@ -75,11 +75,11 @@ object GrpcServer:
 
     def run: ZIO[Any, Throwable, Unit] = for
         config <- readConfig
-        host = "127.0.0.1"
+        bindAddress <- ZIO.attempt(config.bindAddress.get)
         port <- ZIO.attempt(config.internalGrpcPort.get)
 
-        _ <- ZIO.logInfo(s"gRPC server listening port: $port")
-        server <- ZIO.attempt(createGrpcServer(host, port))
+        _ <- ZIO.logInfo(s"gRPC server listening on ${bindAddress}:${port}")
+        server <- ZIO.attempt(createGrpcServer(bindAddress, port))
         _ <- ZIO.attempt(server.start)
         _ <- ZIO.attempt({ isRunning = true })
         _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination())
