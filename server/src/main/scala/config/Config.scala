@@ -9,7 +9,10 @@ import _root_.envoy
 
 import java.nio.file.Path
 
+// XXX - don't forget to make changes in mergeConfigs.scala after modifying this case class
 case class Config(
+    @describe("The address the server listens on.")
+    bindAddress: Option[String] = Some("0.0.0.0"),
     @describe("The port the server listens on.")
     port: Option[Int] = Some(8090),
     @describe(

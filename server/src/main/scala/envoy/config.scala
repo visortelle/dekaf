@@ -6,6 +6,7 @@ import java.nio.file.Paths
 case class EnvoyConfigProps(
     httpServerPort: Int,
     grpcServerPort: Int,
+    bindAddress: String,
     listenPort: Int,
     basePath: String,
     protocol: String,
@@ -15,7 +16,7 @@ case class EnvoyConfigProps(
 
 def renderEnvoyConfig(config: EnvoyConfigProps): String =
     val isDesktopBuild = buildinfo.ExtraBuildInfo.isDesktopBuild
-    val address = if isDesktopBuild then "127.0.0.1" else "0.0.0.0"
+    val address = config.bindAddress
 
     s"""
 static_resources:
@@ -23,7 +24,7 @@ static_resources:
     - name: listener_0
       address:
         socket_address:
-          address: $address
+          address: "${address}"
           port_value: ${config.listenPort}
       filter_chains:
         - filters:
@@ -96,7 +97,7 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: 127.0.0.1
+                    address: "${address}"
                     port_value: ${config.grpcServerPort}
     - name: pulsar_ui_http
       connect_timeout: 0.25s
@@ -109,7 +110,7 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: 127.0.0.1
+                    address: "${address}"
                     port_value: ${config.httpServerPort}
                   """.stripMargin
 
