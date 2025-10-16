@@ -5,7 +5,6 @@ import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './SmallButton.module.css';
 import { tooltipId } from '../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
-import premiumIcon from './premium.svg';
 
 export type SmallButtonProps = {
   onClick: MouseEventHandler<HTMLButtonElement>,
@@ -18,8 +17,6 @@ export type SmallButtonProps = {
   style?: React.CSSProperties,
   className?: string,
   testId?: string,
-  isPremiumFeature?: boolean,
-  premiumFeatureTitle?: ReactElement | string
 }
 
 const SmallButton = (props: SmallButtonProps) => {
@@ -30,7 +27,7 @@ const SmallButton = (props: SmallButtonProps) => {
     case 'danger': typeClassName = s.Danger; break;
   }
 
-  const isDisabled = props.disabled || props.isPremiumFeature;
+  const isDisabled = props.disabled;
 
   return (
     <button
@@ -49,11 +46,10 @@ const SmallButton = (props: SmallButtonProps) => {
       disabled={isDisabled}
       data-testid={props.testId}
       data-tooltip-id={tooltipId}
-      data-tooltip-html={renderToStaticMarkup(<>{props.isPremiumFeature ? props.premiumFeatureTitle : props.title}</>)}
+      data-tooltip-html={renderToStaticMarkup(<>{props.title}</>)}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text && <span className={s.Text}>{props.text}</span>}
-      {props.isPremiumFeature && <div className={s.PremiumFeature}><SvgIcon svg={premiumIcon} /></div>}
     </button>
   );
 }

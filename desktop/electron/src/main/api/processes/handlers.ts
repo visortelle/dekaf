@@ -432,14 +432,6 @@ export async function runDekaf(connection: DekafToPulsarConnection, event: Elect
     "PATH": process.platform === 'win32' ? `${nodeProcess.env['PATH']};${paths.binDir}` : `${nodeProcess.env['PATH']}:${paths.binDir}`
   };
 
-  if (connection.dekafLicenseId.length) {
-    env["DEKAF_LICENSE_ID"] = connection.dekafLicenseId;
-  }
-
-  if (connection.dekafLicenseToken.length) {
-    env["DEKAF_LICENSE_TOKEN"] = connection.dekafLicenseToken;
-  }
-
   if (connection.type === "local-pulsar-instance") {
     const instanceConfig = await getInstanceConfig(connection.instanceId);
 

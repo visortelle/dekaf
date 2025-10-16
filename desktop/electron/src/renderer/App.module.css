@@ -18,12 +18,6 @@
   width: auto;
 }
 
-.LicenseButton {
-  position: absolute;
-  bottom: 8rem;
-  right: 8rem;
-}
-
 .ConnectionList {
   overflow: hidden;
   border-right: 1px solid var(--border-color);

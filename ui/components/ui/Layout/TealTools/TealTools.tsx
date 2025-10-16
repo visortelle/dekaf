@@ -16,9 +16,6 @@ const TealTools: React.FC = () => {
           Report a problem
         </a>
         <a href="#" target="__blank" className={`A ${s.Link}`}>
-          Register license
-        </a>
-        <a href="#" target="__blank" className={`A ${s.Link}`}>
           Get help
         </a>
       </div>

@@ -4,9 +4,7 @@ import com.tools.teal.pulsar.ui.clusters.v1.clusters as pb
 import com.tools.teal.pulsar.ui.clusters.v1.clusters.{ClustersServiceGrpc, CreateClusterRequest, CreateClusterResponse, CreateFailureDomainRequest, CreateFailureDomainResponse, CreateNamespaceIsolationPolicyRequest, CreateNamespaceIsolationPolicyResponse, DeleteClusterRequest, DeleteClusterResponse, DeleteFailureDomainRequest, DeleteFailureDomainResponse, DeleteNamespaceIsolationPolicyRequest, DeleteNamespaceIsolationPolicyResponse, GetBrokersWithNamespaceIsolationPolicyRequest, GetBrokersWithNamespaceIsolationPolicyResponse, GetClusterRequest, GetClusterResponse, GetClustersRequest, GetClustersResponse, GetFailureDomainsRequest, GetFailureDomainsResponse, GetNamespaceIsolationPolicyRequest, GetNamespaceIsolationPolicyResponse, UpdateFailureDomainRequest, UpdateFailureDomainResponse, UpdateNamespaceIsolationPolicyRequest, UpdateNamespaceIsolationPolicyResponse}
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import _root_.licensing.{Licensing, ProductCode}
 import com.typesafe.scalalogging.Logger
-import licensing.ProductCode.DekafForTeams
 
 import scala.util.{Failure, Success, Try}
 import pulsar_auth.RequestContext
@@ -22,24 +20,6 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
         try
             val clusters = adminClient.clusters.getClusters
-
-            // PRODUCT PLAN LIMITATION START
-            Try(adminClient.brokers.getActiveBrokers) match
-                case Success(brokers) =>
-                    val brokerLimit = Licensing.productCode match
-                        case ProductCode.DekafEnterprise => Int.MaxValue
-                        case _ => 9
-
-                    val clusterLimit = Licensing.productCode match
-                        case ProductCode.DekafEnterprise => Int.MaxValue
-                        case _ => 3
-
-                    val isLimitExceeded = brokers.size > brokerLimit || clusters.size > clusterLimit
-                    if isLimitExceeded then
-                        logger.error("The number of brokers or clusters exceeds the product plan limit. Please visit https://dekaf.io for more information.")
-                        sys.exit(1)
-                case Failure(_) => // DO NOTHING
-            // PRODUCT PLAN LIMITATION END
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(GetClustersResponse(status = Some(status), clusters = clusters.asScala.toList))

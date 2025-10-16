@@ -28,9 +28,6 @@ export type KillProcess = {
 };
 
 export type DekafToPulsarConnection = {
-  dekafLicenseId: string,
-  dekafLicenseToken: string
-} & ({
   type: "local-pulsar-instance",
   instanceId: string
 } | {

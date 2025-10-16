@@ -15,7 +15,6 @@ import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
 import _root_.server.grpc.GrpcServer
 
 import scala.jdk.CollectionConverters.*
-import _root_.licensing.Licensing
 import _root_.pulsar_auth
 import _root_.pulsar_auth.{PulsarAuth, credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName}
 import io.circe.parser.decode as decodeJson
@@ -50,10 +49,7 @@ object HttpServer:
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
                             "pulsarWebUrl" -> appConfig.pulsarWebUrl.get,
                             "pulsarName" -> appConfig.pulsarName.get,
-                            "pulsarColor" -> appConfig.pulsarColor.get,
-                            "productCode" -> Licensing.licenseInfo.productCode.ordinal,
-                            "productName" -> Licensing.licenseInfo.productName,
-                            "licenseId" -> appConfig.licenseId.getOrElse("undefined"),
+                            "pulsarColor" -> appConfig.pulsarColor.get
                         ).asJava
 
                         val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))

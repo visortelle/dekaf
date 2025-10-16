@@ -26,8 +26,6 @@ services:
     environment:
       DEKAF_PULSAR_WEB_URL: "http://pulsar:8080"
       DEKAF_PULSAR_BROKER_URL: "pulsar://pulsar:6650"
-      # DEKAF_LICENSE_ID: ""
-      # DEKAF_LICENSE_TOKEN: ""
     volumes:
       - dekaf-library:/dekaf/data/library
     ports:

@@ -2,7 +2,7 @@
 dev-local: ## Start development using docker-compose with Pulsar running locally
 	docker ps -a -q | xargs -I {} docker container rm -f {}
 	docker volume ls -q | xargs -I {} docker volume rm {}
-	docker-compose -f ./docker-compose-local.yaml up -d
+	docker compose -f ./docker-compose-local.yaml up -d
 
 .PHONY: clean
 clean: ## Uninstall Helm release and delete namesapace.

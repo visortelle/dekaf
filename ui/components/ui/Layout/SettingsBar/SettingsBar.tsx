@@ -15,4 +15,3 @@ const SettingsBar: React.FC<SettingsBarProps> = (props) => {
 }
 
 export default SettingsBar;
-

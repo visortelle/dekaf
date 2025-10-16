@@ -13,14 +13,6 @@ const DekafInfo: React.FC = () => {
       <table className={sts.Table}>
         <tbody>
           <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Product</td>
-            <td className={sts.Cell}>{config?.productName}</td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>License ID</td>
-            <td className={sts.Cell}>{config?.licenseId}</td>
-          </tr>
-          <tr className={sts.Row}>
             <td className={sts.HighlightedCell}>Version</td>
             <td className={sts.Cell}>{config?.buildInfo.version}</td>
           </tr>

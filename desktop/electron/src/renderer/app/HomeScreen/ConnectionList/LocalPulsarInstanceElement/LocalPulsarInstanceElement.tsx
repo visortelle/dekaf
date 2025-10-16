@@ -49,8 +49,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
   const [dekafDemoappProcessId, setDekafDemoappProcessId] = useState<string | undefined>(undefined);
   const [dekafDemoappProcessStatus, setDekafDemoappProcessStatus] = useState<ProcessStatus | undefined>(undefined);
   const prevDekafDemoappProcessStatus = usePrevious(dekafDemoappProcessStatus);
-  const [dekafLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
-  const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
   const [isMissingPulsarDistribution, setIsMissingPulsarDistribution] = useState<boolean | undefined>(undefined);
   const [isOpenInBrowser] = useLocalStorage<boolean>(localStorageKeys.isOpenInBrowser, { defaultValue: false });
 
@@ -64,8 +62,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         connection: {
           type: "local-pulsar-instance",
           instanceId: props.pulsarInstance.metadata.id,
-          dekafLicenseId,
-          dekafLicenseToken
         }
       },
       processId: uuid()
@@ -83,8 +79,6 @@ const LocalPulsarInstanceElement: React.FC<LocalPulsarInstanceElementProps> = (p
         connection: {
           type: "local-pulsar-instance",
           instanceId: props.pulsarInstance.metadata.id,
-          dekafLicenseId,
-          dekafLicenseToken,
         }
       },
       processId: uuid()
