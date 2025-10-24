@@ -10,7 +10,7 @@ Long story short, initially Dekaf was developed as proprietary software, but aft
 Some time ago I switched to another project and decided to make Dekaf open source so that it could be useful to someone else.
 
 - ⭐ If you like this work, please push the star button on GitHub
-- 🤝 Contact me to hire: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
+- 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
 
 [📚 Documentation](./docs/README.md)
 
