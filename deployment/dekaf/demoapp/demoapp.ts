@@ -69,7 +69,7 @@ export const createResources = () => {
           spec: {
             containers: [{
               name: appFqn,
-              image: `tealtools/dekaf-demoapp:${gitBranch}`,
+              image: `visortelle/dekaf-demoapp:${gitBranch}`,
               imagePullPolicy: "Always",
               volumeMounts: [{
                 name: demoappConfig.metadata.name,

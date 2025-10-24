@@ -6,8 +6,9 @@ Long story short, initially Dekaf was developed as proprietary software, but aft
 Some time ago I switched to another project and decided to make Dekaf open source so that it could be useful to someone else.
 
 - ⭐ If you like this work, please push the star button on GitHub
-
 - 🤝 Contact me to hire: <mailto:kiryl.valkovich@proton.me>
+
+[📚 Documentation](./docs/README.md)
 
 ## Features
 
@@ -22,3 +23,4 @@ Some time ago I switched to another project and decided to make Dekaf open sourc
 - The codebase has some dead code and requires a little cleanup, but it's not in priority at this moment.
 - New features will be added if some company decide to sponsor the project.
 - PRs are welcome!
+- Tell me if you need a desktop version for MacOS and Linux. The Electron app is ready, and if there is any significant demand, I'll release it.

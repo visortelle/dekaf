@@ -28,7 +28,7 @@ export const createResources = () => {
   );
 
   const helmRelease = new k8s.helm.v3.Release(`${project}-${app}-${stack}`, {
-    chart: "oci://docker.io/tealtools/dekaf-helm-dev",
+    chart: "oci://docker.io/visortelle/dekaf-helm-dev",
     version: `0.0.0-${gitRev}`,
     namespace: namespace.metadata.name,
     skipAwait: true,
@@ -42,7 +42,7 @@ export const createResources = () => {
       imagePullSecrets: [{ name: "image-pull-secret" }],
       dekaf: {
         image: {
-          repository: "tealtools/dekaf-dev",
+          repository: "visortelle/dekaf-dev",
           pullPolicy: "Always",
           tag: gitBranch,
         },
