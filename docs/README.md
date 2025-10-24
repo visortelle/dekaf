@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Quick Start
 
 - Please make sure that you have [Docker](https://docs.docker.com/get-docker/)

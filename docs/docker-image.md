@@ -1,7 +1,3 @@
----
-sidebar_position: 99
----
-
 # Docker Image
 
 Dekaf runs as a single [Docker container](https://docs.docker.com/guides/walkthroughs/what-is-a-container/).
