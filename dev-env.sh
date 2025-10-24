@@ -1,10 +1,5 @@
 this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-export DEKAF_LICENSE_ID="db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6"
-export DEKAF_LICENSE_TOKEN="activ-b8240503c17c1c70508dad0444ffc014v3"
-# dekaf-for-teams-dev activ-b8240503c17c1c70508dad0444ffc014v3
-# dekaf-desktop-dev activ-36faa778fa03d3aa0eae4953458d32cev3
-
 # export DEKAF_PULSAR_BROKER_URL="pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651"
 # export DEKAF_PULSAR_WEB_URL="https://cluster-f.o-xy6ek.snio.cloud"
 

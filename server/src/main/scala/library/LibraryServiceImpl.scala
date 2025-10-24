@@ -28,7 +28,6 @@ import scala.jdk.CollectionConverters.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.{Duration, SECONDS}
-import _root_.licensing.{Licensing, ProductCode}
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val libraryRoot = s"${config.dataDir.get}/library"
@@ -39,21 +38,6 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
     override def saveLibraryItem(request: SaveLibraryItemRequest): Future[SaveLibraryItemResponse] =
         logger.debug(s"Updating library item: ${request.item}")
-
-        // PRODUCT PLAN LIMITATION START
-        if Vector(ProductCode.DekafFree, ProductCode.DekafDesktopFree).contains(Licensing.productCode) then
-            val itemsLimit = Licensing.productCode match
-                case ProductCode.DekafDesktopFree => 100
-                case ProductCode.DekafFree => 100
-                case _ => throw new Exception("Something went wrong")
-
-            if library.size > itemsLimit then
-                val status: Status = Status(
-                    code = Code.PERMISSION_DENIED.index,
-                    message = s"Limit of library items in your plan has been reached. Please upgrade your plan at https://dekaf.io"
-                )
-                return Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
-        // PRODUCT PLAN LIMITATION END
 
         try {
             if request.item.isEmpty then throw new Exception("Library item is empty")

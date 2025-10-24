@@ -22,7 +22,7 @@ sequenceDiagram
   UI->>Envoy proxy : HTTP request
   rect rgb(255, 255, 127)
 
-  note right of Envoy proxy : XRay server <br />internal communication
+  note right of Envoy proxy : Dekaf server <br />internal communication
 
   Envoy proxy ->>HTTP server: HTTP request
   HTTP server-->>Envoy proxy : HTTP response
@@ -39,11 +39,3 @@ sequenceDiagram
   gRPC server->>Pulsar broker: 6650 - service request
   Pulsar broker-->>gRPC server: 6650 - service response
 ```
-
-## Security checklist
-
-- [ ] Envoy <-> User Browser :: TLS
-- [ ] GrpcServer <-> Envoy :: mutual TLS
-- [ ] HttpServer <-> Envoy :: mutual TLS
-- [ ] Embedded Postgres <-> Dekaf Server :: Postgres SSL authentication
-- [ ] Pulsar <-> Dekaf Server :: Pulsar TLS authentication

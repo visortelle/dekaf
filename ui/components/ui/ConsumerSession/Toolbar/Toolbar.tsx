@@ -8,7 +8,6 @@ import * as I18n from '../../../app/contexts/I18n/I18n';
 import { SessionState, ConsumerSessionConfig, MessageDescriptor } from '../types';
 import SmallButton from '../../SmallButton/SmallButton';
 import Input from '../../Input/Input';
-import PremiumTitle from '../PremiumTitle';
 import ExportMessagesButton from './ExportMessagesButton/ExportMessagesButton';
 import { tooltipId } from '../../Tooltip/Tooltip';
 
@@ -23,7 +22,6 @@ export type ToolbarProps = {
   messagesLoadedPerSecond: { prev: number, now: number };
   messagesProcessedPerSecond: { prev: number, now: number };
   onToggleConsoleClick: () => void;
-  isProductPlanLimitReached: boolean,
   searchInResults: string,
   onSearchInResultsChange: (v: string) => void,
   numFoundInResults: number,
@@ -53,8 +51,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             onClick={playButtonOnClick}
             type={'primary'}
             disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
-            isPremiumFeature={props.isProductPlanLimitReached && props.sessionState === 'paused'}
-            premiumFeatureTitle={<PremiumTitle />}
           />
         </div>
 

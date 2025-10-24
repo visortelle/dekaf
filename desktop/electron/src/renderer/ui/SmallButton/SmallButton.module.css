@@ -135,17 +135,3 @@
   cursor: default;
   opacity: 1;
 }
-
-.PremiumFeature {
-  position: absolute;
-  top: -7rem;
-  right: -7rem;
-}
-
-.PremiumFeature svg {
-  width: 18rem;
-  height: 18rem;
-  fill: var(--accent-color-yellow);
-  stroke: #555;
-  stroke-width: 1px;
-}

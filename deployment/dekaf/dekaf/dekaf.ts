@@ -28,7 +28,7 @@ export const createResources = () => {
   );
 
   const helmRelease = new k8s.helm.v3.Release(`${project}-${app}-${stack}`, {
-    chart: "oci://docker.io/tealtools/dekaf-helm-dev",
+    chart: "oci://docker.io/visortelle/dekaf-helm-dev",
     version: `0.0.0-${gitRev}`,
     namespace: namespace.metadata.name,
     skipAwait: true,
@@ -42,7 +42,7 @@ export const createResources = () => {
       imagePullSecrets: [{ name: "image-pull-secret" }],
       dekaf: {
         image: {
-          repository: "tealtools/dekaf-dev",
+          repository: "visortelle/dekaf-dev",
           pullPolicy: "Always",
           tag: gitBranch,
         },
@@ -63,8 +63,6 @@ export const createResources = () => {
           pulsarWebUrl: "https://cluster-f.o-xy6ek.snio.cloud",
         },
         env: [
-          { name: "DEKAF_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },
-          { name: "DEKAF_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },
           { name: "DEKAF_DEFAULT_PULSAR_AUTH", value: `{ "type": "oauth2", "issuerUrl": "https://auth.streamnative.cloud/", "privateKey": "data:application/json;base64,eyJ0eXBlIjoic25fc2VydmljZV9hY2NvdW50IiwiY2xpZW50X2lkIjoiYm5XT1M0STZ5dkRvSG93NEFjbU12UWpFUUdvTzRvQ1kiLCJjbGllbnRfc2VjcmV0IjoiaW1WekhvMERLSkdqejZBcWJCV0FZZ3ZlY0YxUEV0WmYtcUh4THhpQXBpMWxWVEhBVkh1MzRIZnBDNjlZc292aiIsImNsaWVudF9lbWFpbCI6ImFkbWluQG8teHk2ZWsuYXV0aC5zdHJlYW1uYXRpdmUuY2xvdWQiLCJpc3N1ZXJfdXJsIjoiaHR0cHM6Ly9hdXRoLnN0cmVhbW5hdGl2ZS5jbG91ZC8ifQ==", "audience": "urn:sn:pulsar:o-xy6ek:instance-f" }` },
         ]
       },

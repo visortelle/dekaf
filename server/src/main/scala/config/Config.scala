@@ -4,7 +4,6 @@ import zio.{Config, *}
 import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
-import licensing.{AvailableLicenses, LicenseInfo, ProductCode}
 import _root_.envoy
 
 import java.nio.file.Path
@@ -34,11 +33,6 @@ case class Config(
     //
     @describe("Path to the persistent data directory.")
     dataDir: Option[String] = Some(s"${java.nio.file.Paths.get(".").toAbsolutePath}/data"),
-    //
-    @describe("License id.")
-    licenseId: Option[String] = None,
-    @describe("License token.")
-    licenseToken: Option[String] = None,
     //
     @describe("Pulsar instance name")
     pulsarName: Option[String] = Some("default"),

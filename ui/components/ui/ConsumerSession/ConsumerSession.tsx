@@ -34,15 +34,12 @@ import { LibraryContext } from '../LibraryBrowser/model/library-context';
 import { getColoring } from './coloring';
 import { getValueProjectionThs } from './value-projections/value-projections-utils';
 import { Th } from './Th';
-import { ProductCode } from '../../app/licensing/ProductCode';
-import PremiumTitle from './PremiumTitle';
 import MessageDetails from './Message/MessageDetails/MessageDetails';
 import ActionButton from '../ActionButton/ActionButton';
 import { handleKeyDown } from './keyboard';
 import { useDebounce } from 'use-debounce';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);" as const;
-const productPlanMessagesLimit = 50_000 as const;
 
 export type SessionProps = {
   sessionKey: number;
@@ -82,7 +79,6 @@ const Session: React.FC<SessionProps> = (props) => {
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
   const [_searchInResults, setSearchInResults] = useState<string>('');
   const [searchInResults] = useDebounce(_searchInResults, 1000);
-  const [isProductPlanLimitReached, setIsProductPlanLimitReached] = useState<boolean>(false);
 
   const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
   const currentTopicFqn: string | undefined = useMemo(() => currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`, [currentTopic]);
@@ -146,18 +142,6 @@ const Session: React.FC<SessionProps> = (props) => {
       notifyError(`${res.getStatus()?.getMessage()}`);
     }
   }, []);
-
-  // PRODUCT PLAN LIMITATION START
-  useEffect(() => {
-    if (appContext.config.productCode === ProductCode.DekafDesktopFree || appContext.config.productCode === ProductCode.DekafFree) {
-      if (messagesProcessed.current > productPlanMessagesLimit) {
-        setSessionState('pausing');
-        setIsProductPlanLimitReached(true);
-        notifyInfo(<PremiumTitle />);
-      }
-    }
-  }, [messagesProcessed.current]);
-  // PRODUCT PLAN LIMITATION END
 
   useEffect(() => {
     streamRef.current = stream;
@@ -394,7 +378,6 @@ const Session: React.FC<SessionProps> = (props) => {
         messagesProcessedPerSecond={messagesProcessedPerSecond}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
-        isProductPlanLimitReached={isProductPlanLimitReached}
         searchInResults={_searchInResults}
         onSearchInResultsChange={setSearchInResults}
         numFoundInResults={messagesToShow.length}

@@ -14,7 +14,7 @@ dekaf:
   env: []
 
   image:
-    repository: tealtools/dekaf
+    repository: visortelle/dekaf
     pullPolicy: IfNotPresent
     tag: "latest"
 

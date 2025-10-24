@@ -5,6 +5,13 @@ build-desktop-app:
 	cd ./ui && make test
 	cd ./server && make test
 
+.PHONY: build
+build:
+	cd ./proto && make build
+	cd ./ui && make build
+	cd ./server && make build
+	cd ./server && make test
+
 .PHONY: build-docker-images
 build-docker-images:
 	cd ./docker/dekaf && make build

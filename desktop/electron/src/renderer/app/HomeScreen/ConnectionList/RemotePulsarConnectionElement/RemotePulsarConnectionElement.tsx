@@ -26,8 +26,6 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
   const i18n = I18n.useContext();
   const [dekafProcessId, setDekafProcessId] = useState<string | undefined>(undefined);
   const [dekafProcessStatus, setDekafProcessStatus] = useState<ProcessStatus | undefined>(undefined);
-  const [dekafLicenseId] = useLocalStorage<string>(localStorageKeys.dekafLicenseId, { defaultValue: '' });
-  const [dekafLicenseToken] = useLocalStorage<string>(localStorageKeys.dekafLicenseToken, { defaultValue: '' });
   const [isOpenInBrowser] = useLocalStorage<boolean>(localStorageKeys.isOpenInBrowser, { defaultValue: false });
 
   const killAll = () => {
@@ -123,8 +121,6 @@ const RemotePulsarConnectionElement: React.FC<RemotePulsarConnectionElementProps
                 connection: {
                   type: "remote-pulsar-connection",
                   connectionId: props.connection.metadata.id,
-                  dekafLicenseId,
-                  dekafLicenseToken
                 }
               },
               processId: uuid()
