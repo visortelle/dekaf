@@ -12,7 +12,8 @@ Some time ago I switched to another project and decided to make Dekaf open sourc
 - ⭐ If you like this work, please push the star button on GitHub
 - 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
 
-[📚 Documentation](./docs/README.md)
+- [📚 Documentation](./docs/README.md)
+- [📚 Consumer session tutorial](https://github.com/visortelle/dekaf/blob/open-source/docs/consume/consumer-session-tutorial.md)
 
 ## Features
 
