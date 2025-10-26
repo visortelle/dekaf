@@ -1,4 +1,4 @@
-FROM nixos/nix:2.11.1 as builder
+FROM nixos/nix:2.32.1 as builder
 
 WORKDIR /workdir
 
