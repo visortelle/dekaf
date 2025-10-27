@@ -11,6 +11,7 @@ Some time ago I switched to another project and decided to make Dekaf open sourc
 If the ASF would like accept this project, I'm ready donate it.
 
 - ⭐ If you like this work, please push the star button on GitHub
+- 📚 Checkout useful Pulsar resource at the [awesome Apache Pulsar](https://github.com/visortelle/awesome-apache-pulsar) list.
 - 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
 
 - [📚 Quick-start](#Quick-Start)
