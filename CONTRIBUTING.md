@@ -1,6 +1,15 @@
 # Contributing
 
+The project backend is written in very straightforward Scala without tricky FP and types acrobatics.
+If you are an experienced Java developer but don't know Scala, I believe Scala should not become a big barrier.
+
+Frontend is written in TypeScript and React.
+
+For describing backend <----> frontend communication contract (API), we use [Protobuf](https://protobuf.dev/programming-guides/proto3/).
+
 ## Development environment
+
+We use Nix to install all tools and other dependencies required for development. You don't need to install JVM, Node, Protobuf compiler separately.
 
 - [Install Nix](https://nixos.org/download.html)
 - Install [git-lfs](https://git-lfs.github.com/)

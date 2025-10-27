@@ -35,11 +35,11 @@ There are missing features like multi-user support or message replay. See the [M
 
 ```
 wget https://raw.githubusercontent.com/tealtools/dekaf/main/docker-compose.yaml
-docker compose pull && docker compose up
 ```
 
+- Run `docker compose up`
+- Wait a few seconds until Pulsar and Dekaf are ready
 - Open <http://localhost:8090>
-- Wait until Pulsar is ready
 - Enjoy ☕️
 
 ### Demo application
@@ -63,7 +63,8 @@ If you want to disable the demo application, remove it from the `docker-compose.
 
 - Reported critical bugs are planned to be fixed in a short time after the open-source release.
 - The codebase has some dead code and requires a little cleanup, but it's not in priority at this moment.
-- New features will be added in my free time or some company decide to sponsor the project. PRs are welcome!
+- Small features may be added in my spare time. If some company decide to sponsor complex features, it would be an ideal scenario.
+- PRs are welcome! See the [contributing guide](./CONTRIBUTING.md).
 - Tell me if you need a desktop version for MacOS and Linux. The Electron app is ready, and if there is any visible demand, I'll release it.
 
 Thank you.

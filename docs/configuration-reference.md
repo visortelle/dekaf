@@ -5,8 +5,8 @@ By default, Dekaf reads the `config.yaml` file in the current working directory.
 You can use `DEKAF_` environment variable prefix, following by the configuration field name in the screaming snake case:
 
 ```sh
-DEKAF_LICENSE_ID="33a8cc38-5062-4f30-91d6-31b0797ebfg0"
-DEKAF_LICENSE_TOKEN="prod-f6339ce7067c062724ca5e2bb2d36690b3637aed1c5f93e"
+DEKAF_WEB_URL="http://my-pulsar:8080"
+DEKAF_BROKER_URL="pulsar://my-pulsar:6650`"
 ```
 
 The `config.yaml` have priority over environment variables.
