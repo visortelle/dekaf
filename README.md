@@ -14,6 +14,8 @@ If the ASF would like accept this project, I'm ready donate it.
 - 📚 Checkout useful Pulsar resource at the [awesome Apache Pulsar](https://github.com/visortelle/awesome-apache-pulsar) list.
 - 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
 
+## Documentation
+
 - [📚 Quick-start](#Quick-Start)
 - [📚 Consumer session tutorial](./docs/consume/consumer-session-tutorial.md)
 - [📚 Configuration reference](./docs/configuration-reference.md)
