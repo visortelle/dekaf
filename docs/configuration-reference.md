@@ -18,13 +18,6 @@ The `config.yaml` have priority over environment variables.
 |port                               |`8090`                         | The port the server listens on.
 |dataDir                            |`./data`                         | Path to the persistent data directory.
 
-### Licensing
-
-|Field                           |Example                       |Description                                                                                                                                                                                                                                                                                                                                                               |
-|---                                |---                          |---                                                                                                                                                                                                                                                                                                                                                                       |
-|licenseId                          |`33a8cc38-5062-4f30-91d6-31b0797ebfg0`                    | License ID.                                                                                                                                                                                                                                                                                                    |
-|licenseToken                       |`prod-f6339ce7067c062724ca5e2bb2d36690b3637aed1c5f93e`                    | License token.                                                                                                                                                                                                                                                                                                 |
-
 ### Pulsar Instance
 
 |Field                           |Example                       |Description                                                                                                                                                                                                                                                                                                                                                               |
