@@ -5,8 +5,8 @@ By default, Dekaf reads the `config.yaml` file in the current working directory.
 You can use `DEKAF_` environment variable prefix, following by the configuration field name in the screaming snake case:
 
 ```sh
-DEKAF_WEB_URL="http://my-pulsar:8080"
-DEKAF_BROKER_URL="pulsar://my-pulsar:6650`"
+DEKAF_PULSAR_WEB_URL="http://my-pulsar:8080"
+DEKAF_PULSAR_BROKER_URL="pulsar://my-pulsar:6650`"
 ```
 
 The `config.yaml` have priority over environment variables.

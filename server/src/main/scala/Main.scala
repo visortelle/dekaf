@@ -33,7 +33,6 @@ def printStartupInfo: Task[Unit] =
                 s"https://github.com/visortelle/dekaf ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).atZone(ZoneOffset.UTC).getYear}"
             )
             println(s"Built at: ${java.time.Instant.ofEpochMilli(buildinfo.BuildInfo.builtAtMillis).toString}")
-            println(s"More info: https://dekaf.io")
         }
         _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
     } yield ()
