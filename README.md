@@ -37,7 +37,7 @@ There are missing features like multi-user support or message replay. See the [M
 - Download the `docker-compose.yaml` file and start it:
 
 ```
-wget https://raw.githubusercontent.com/tealtools/dekaf/main/docker-compose.yaml
+wget https://raw.githubusercontent.com/visortelle/dekaf/refs/heads/main/docker/compose/docker-compose.yaml
 ```
 
 - Run `docker compose up`
