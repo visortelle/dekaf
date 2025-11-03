@@ -16,7 +16,8 @@ If the ASF would like accept this project, I'm ready donate it.
 
 ## Documentation
 
-- [📚 Quick-start](#Quick-Start)
+- [📚 Quick-start](#Quick-start)
+- [📚 Helm chart](#Helm-chart)
 - [📚 Consumer session tutorial](./docs/consume/consumer-session-tutorial.md)
 - [📚 Configuration reference](./docs/configuration-reference.md)
 
@@ -61,6 +62,10 @@ If you want to disable the demo application, remove it from the `docker-compose.
    - Run `docker volume ls | grep pulsar-data` to find the proper `<volume_name>`
    - Run `docker volume rm <volume_name>` to delete the volume
    - Restart containers by running `docker-compose up`
+
+## Helm chart
+
+Dekaf is a part of the official [apache/pulsar-helm-chart](https://github.com/apache/pulsar-helm-chart?tab=readme-ov-file#dekaf-ui).
 
 ## Maintenance policy
 
