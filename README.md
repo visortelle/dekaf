@@ -6,12 +6,8 @@
 
 **Dekaf** is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache.org/), licensed under [Apache 2.0](./LICENSE.md).
 
-Long story short, initially Dekaf was developed as proprietary software, but after 2+ years of development I didn't found a good way to monetize it.
-Some time ago I switched to another project and decided to make Dekaf open source so that it could be useful for others.
-If the ASF would like accept this project, I'm ready donate it.
-
 - ⭐ If you like this work, please push the star button on GitHub
-- 📚 Checkout useful Pulsar resource at the [awesome Apache Pulsar](https://github.com/visortelle/awesome-apache-pulsar) list.
+- 📚 Checkout useful Pulsar resources at the [awesome Apache Pulsar](https://github.com/visortelle/awesome-apache-pulsar) list.
 - 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
 
 ## Documentation
