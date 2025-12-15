@@ -15,7 +15,7 @@ The `config.yaml` have priority over environment variables.
 
 |Field                           |Example                       |Description                                                                                                                                                                                                                                                                                                                                                               |
 |---                                |---                          |---                                                                                                                                                                                                                                                                                                                                                                       |
-|port                               |`8090`                         | The port the server listens on.
+|port                               |`8090`                         | The port the server listens on. ⚠️ In some cases, you also need to set `publicBaseUrl`. See [#323](https://github.com/visortelle/dekaf/issues/323)
 |dataDir                            |`./data`                         | Path to the persistent data directory.
 
 ### Pulsar Instance
