@@ -26,6 +26,7 @@ import useSwr from 'swr';
 import { swrKeys } from "../swrKeys";
 import CreateSubscription from "./Subscriptions/CreateSubscription/CreateSubscription";
 import ExpireAllSubscriptions from "./Subscriptions/ExpireAllMessages/ExpireAllSubscriptions";
+import UnloadTopicDialog from "./UnloadTopicDialog/UnloadTopicDialog";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }
@@ -210,6 +211,26 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       type: "regular",
       position: 'left',
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
+    },
+    {
+      text: "Unload",
+      type: "regular",
+      position: 'left',
+      testId: "topic-page-unload-button",
+      onClick: () =>
+          modals.push({
+            id: "unload-topic",
+            title: `Unload Topic`,
+            content: (
+                <UnloadTopicDialog
+                    tenant={props.tenant}
+                    namespace={props.namespace}
+                    topic={props.topic}
+                    topicPersistency={props.topicPersistency}
+                />
+            ),
+            styleMode: "no-content-padding",
+          }),
     },
     {
       text: "Delete",

@@ -135,6 +135,14 @@ message DeleteTopicResponse {
   google.rpc.Status status = 1;
 }
 
+message UnloadTopicRequest {
+  string topic_name = 1;
+}
+
+message UnloadTopicResponse {
+  google.rpc.Status status = 1;
+}
+
 // Stats
 
 enum ProducerAccessMode {
@@ -493,6 +501,7 @@ service TopicService {
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
   rpc ListPartitionedTopics(ListPartitionedTopicsRequest) returns (ListPartitionedTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
+  rpc UnloadTopic(UnloadTopicRequest) returns (UnloadTopicResponse);
   rpc GetTopicsProperties(GetTopicsPropertiesRequest) returns (GetTopicsPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
