@@ -32,7 +32,7 @@ const UnloadTopicDialog: React.FC<UnloadTopicDialogProps> = (props) => {
           notifyError(`Unable to unload topic: ${res.getStatus()?.getMessage()}`);
           return;
         }
-        notifySuccess(`${props.topicPersistency === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully unload.`);
+        notifySuccess(`${props.topicPersistency === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully unloaded.`);
 
         modals.pop()
       } catch (err) {
