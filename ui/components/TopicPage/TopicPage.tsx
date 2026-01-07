@@ -213,26 +213,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
     },
     {
-      text: "Unload",
-      type: "regular",
-      position: 'left',
-      testId: "topic-page-unload-button",
-      onClick: () =>
-          modals.push({
-            id: "unload-topic",
-            title: `Unload Topic`,
-            content: (
-                <UnloadTopicDialog
-                    tenant={props.tenant}
-                    namespace={props.namespace}
-                    topic={props.topic}
-                    topicPersistency={props.topicPersistency}
-                />
-            ),
-            styleMode: "no-content-padding",
-          }),
-    },
-    {
       text: "Delete",
       type: "danger",
       position: 'left',
