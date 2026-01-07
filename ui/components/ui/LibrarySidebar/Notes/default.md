@@ -4,7 +4,7 @@ Markdown is a user-friendly 🙂 markup language that allows to:
 
 - Create lists
 - **format** *text*
-- [insert links](https://dekaf.io)
+- [insert links](https://github.com/visortelle/dekaf)
 - Insert charts using [Mermaid.js](https://mermaid.js.org/ ):
 
 ```mermaid

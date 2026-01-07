@@ -115,7 +115,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
               If the problem persists, contact your administrator.
             </li>
             <li>
-              <a target="_blank" href='https://dekaf.io/support'>🛟 Get Dekaf support</a> if you are an administrator and not sure how to fix the problem.
+              <a target="_blank" href='https://github.com/visortelle/dekaf/issues'>🛟 Get community support</a> if you are an administrator and not sure how to fix the problem.
             </li>
           </ul>
         </div>

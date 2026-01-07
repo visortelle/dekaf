@@ -110,27 +110,13 @@ export default class MenuBuilder {
         {
           label: 'Learn More',
           click() {
-            shell.openExternal('https://dekaf.io');
-          },
-        },
-        {
-          label: 'Documentation',
-          click() {
-            shell.openExternal(
-              'https://dekaf.io/docs',
-            );
+            shell.openExternal('https://github.com/visortelle/dekaf');
           },
         },
         {
           label: 'Support',
           click() {
-            shell.openExternal('https://dekaf.io/support');
-          },
-        },
-        {
-          label: '⭐️ Upgrade',
-          click() {
-            shell.openExternal('https://dekaf.io/pricing');
+            shell.openExternal('https://github.com/visortelle/dekaf/issues');
           },
         }
       ],

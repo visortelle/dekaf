@@ -7,7 +7,7 @@ export type SettingsBarProps = {};
 const SettingsBar: React.FC<SettingsBarProps> = (props) => {
   return (
     <div className={s.SettingsBar}>
-      <a className={s.ProductLogo} href='https://dekaf.io' target='_blank'>
+      <a className={s.ProductLogo} href='https://github.com/visortelle/dekaf' target='_blank'>
         <ProductLogo />
       </a>
     </div>

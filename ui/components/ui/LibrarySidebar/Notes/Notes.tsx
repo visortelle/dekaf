@@ -242,7 +242,7 @@ const Notes: React.FC<NotesProps> = (props) => {
                           svgIcon={backIcon}
                         />
                       </div>
-                      <iframe key={refreshIframeKey} src="https://dekaf.io/blog?isCropPage=true" className={s.ExternalContentIframe} />
+                      <iframe key={refreshIframeKey} src="https://github.com/visortelle/dekaf" className={s.ExternalContentIframe} />
                     </div>
                   )}
                   {selectedNote && selectedNoteId !== blogNote.metadata.id && (
