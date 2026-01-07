@@ -26,6 +26,7 @@ import useSwr from 'swr';
 import { swrKeys } from "../swrKeys";
 import CreateSubscription from "./Subscriptions/CreateSubscription/CreateSubscription";
 import ExpireAllSubscriptions from "./Subscriptions/ExpireAllMessages/ExpireAllSubscriptions";
+import UnloadTopicDialog from "./UnloadTopicDialog/UnloadTopicDialog";
 
 export type TopicPageView =
   | { type: "consumer-session", managedConsumerSessionId?: string }

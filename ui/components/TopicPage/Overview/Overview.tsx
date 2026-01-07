@@ -27,6 +27,7 @@ import SkipMessagesModal from "../../SubscriptionPage/Overview/SkipMessages/Skip
 import ResetCursorModal from "../../SubscriptionPage/Overview/ResetCursor/ResetCursor";
 import ExpireAllSubscriptions from "../Subscriptions/ExpireAllMessages/ExpireAllSubscriptions";
 import * as Modals from "../../app/contexts/Modals/Modals";
+import UnloadTopicDialog from "../UnloadTopicDialog/UnloadTopicDialog";
 
 export type OverviewProps = {
   tenant: string;
@@ -183,6 +184,28 @@ const Overview: React.FC<OverviewProps> = (props) => {
                   title: `Expire Messages`,
                   content: (
                     <ExpireAllSubscriptions
+                      tenant={props.tenant}
+                      namespace={props.namespace}
+                      topic={props.topic}
+                      topicPersistency={props.topicPersistency}
+                    />
+                  ),
+                  styleMode: "no-content-padding",
+                })}
+              action={{type: 'predefined', action: 'without-icon'}}
+            />
+            <ActionButton
+              buttonProps={{
+                text: 'Unload Topic',
+              }}
+              title={'Unload Topic'}
+              testId={'topic-page-unload-button'}
+              onClick={() =>
+                modals.push({
+                  id: "unload-topic",
+                  title: `Unload Topic`,
+                  content: (
+                    <UnloadTopicDialog
                       tenant={props.tenant}
                       namespace={props.namespace}
                       topic={props.topic}

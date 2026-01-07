@@ -148,6 +148,18 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                             case Failure(err) => handleFailure(err)
                     case Failure(err) => handleFailure(err)
 
+    override def unloadTopic(request: pb.UnloadTopicRequest): Future[pb.UnloadTopicResponse] =
+        logger.info(s"Unloading topic: ${request.topicName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        Try(adminClient.topics.unload(request.topicName)) match
+            case Success(_) =>
+                val status = Status(code = Code.OK.index)
+                Future.successful(pb.UnloadTopicResponse(status = Some(status)))
+            case Failure(err) =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.UnloadTopicResponse(status = Some(status)))
+
     override def getTopicsStats(request: pb.GetTopicsStatsRequest): Future[pb.GetTopicsStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
 
