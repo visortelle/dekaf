@@ -4,6 +4,8 @@
   <img src="./dekaf.png" />
 </p>
 
+![Docker Pulls](https://img.shields.io/docker/pulls/visortelle/dekaf)
+
 **Dekaf** is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache.org/), licensed under [Apache 2.0](./LICENSE.md).
 
 - ⭐ If you like this work, please push the star button on GitHub
