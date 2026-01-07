@@ -1,16 +1,16 @@
 # Dekaf
 
-<p align="center">
-  <img src="./dekaf.png" />
-</p>
-
-[![Docker Pulls](https://img.shields.io/docker/pulls/visortelle/dekaf)](https://hub.docker.com/r/visortelle/dekaf)
-
-**Dekaf** is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache.org/), licensed under [Apache 2.0](./LICENSE.md).
+Dekaf is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache.org/), licensed under [Apache 2.0](./LICENSE.md).
 
 - ⭐ If you like this work, please push the star button on GitHub
 - 📚 Checkout useful Pulsar resources at the [awesome Apache Pulsar](https://github.com/visortelle/awesome-apache-pulsar) list.
 - 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/visortelle/dekaf)](https://hub.docker.com/r/visortelle/dekaf)
+
+<p align="center">
+  <img src="./dekaf.png" />
+</p>
 
 ## Documentation
 
