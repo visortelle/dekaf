@@ -30,9 +30,6 @@ There are missing features like multi-user support or message replay. See the [M
 
 ## Quick-start
 
-- Please make sure that you have [Docker](https://docs.docker.com/get-docker/) installed
-- Open your terminal
-- Create a new directory: `mkdir dekaf && cd ./dekaf`
 - Download the `docker-compose.yaml` file and start it:
 
 ```
@@ -40,8 +37,7 @@ wget https://raw.githubusercontent.com/visortelle/dekaf/refs/heads/main/docker/c
 ```
 
 - Run `docker compose up`
-- Wait a few seconds until Pulsar and Dekaf are ready
-- Open <http://localhost:8090>
+- Wait a few seconds until Pulsar and Dekaf are ready and open <http://localhost:8090>
 - Enjoy ☕️
 
 ### Demo application
