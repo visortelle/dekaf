@@ -5,6 +5,7 @@ Dekaf is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache
 - ⭐ If you like this work, please push the star button on GitHub
 - 📚 Checkout useful Pulsar resources at the [awesome Apache Pulsar](https://github.com/visortelle/awesome-apache-pulsar) list.
 - 🤝 Hire me: [kiryl.valkovich@proton.me](mailto:kiryl.valkovich@proton.me)
+- 👋 Share your feedback here: https://github.com/visortelle/dekaf/discussions/329
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/visortelle/dekaf)](https://hub.docker.com/r/visortelle/dekaf)
 
