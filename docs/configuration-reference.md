@@ -27,7 +27,7 @@ The `config.yaml` have priority over environment variables.
 |pulsarWebUrl                          |`http://localhost:8080`                    | Pulsar web service URL.                                                                                                                                                                                                                                                                                                    |
 |pulsarBrokerUrl                          |`pulsar://localhost:6650`                    | Pulsar service URL.                                                                                                                                                                                                                                                                                                    |
 |pulsarListenerName                     |`external`                                     | [Advertised listener](https://pulsar.apache.org/docs/next/concepts-multiple-advertised-listeners/) name. |
-|defaultPulsarAuth||Default authentication credentials for all users serialized as JSON. Not recommended to use it in multi-user production environments.|
+|defaultPulsarAuth||Default authentication credentials for all users serialized as JSON. Not recommended to use it in multi-user production environments. [See more details in the section below](#default-pulsar-auth) |
 
 ### Dekaf &lt;-&gt; Pulsar Instance TLS
 
@@ -72,10 +72,27 @@ Also set the appropriate cookie settings.
 |tlsKeyFilePath               |Path to the TLS key file.                                                                                                                                                                                                                                                                                      |
 |tlsCertificateFilePath       |Path to the TLS certificate file.                                                                                                                                                                                                                                                                              |
 
-
 ### Cookies
 
 |Field                           |Description                                                                                                                                                                                                                                                                                                                                                               |
 |---                                |---                                                                                                                                                                                                                                                                                                                                                                       |
 |cookieSecure                       | `true` or `false`. Set it to `true` if you use the `https` protocol.                                                                                                                                                                                                                                                                                                                                                      |
 |cookieSameSite               | `true` or `false`. Set it to `true` if you use the `https` protocol.                                                                                                                                                                                                                                                                                      |
+
+### Default Pulsar Auth
+
+You can specify default Dekaf <---> Pulsar authentication. 
+It will be stored as a browser cookie for all Dekaf users.
+
+Example of specifying default Pulsar auth using environment variable:
+
+`DEKAF_DEFAULT_PULSAR_AUTH: '{"type":"jwt","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30"}'`
+
+Supported authentication methods:
+
+- [EmptyCredentials](https://github.com/visortelle/dekaf/blob/31723122e2c4221fe7d67d52015253980846c169/server/src/main/scala/pulsar_auth/PulsarAuth.scala#L31) - for Pulsar instances with disabled authentication.
+- [OAuth2Credentials](https://github.com/visortelle/dekaf/blob/31723122e2c4221fe7d67d52015253980846c169/server/src/main/scala/pulsar_auth/PulsarAuth.scala#L35)
+- [JwtCredentials](https://github.com/visortelle/dekaf/blob/31723122e2c4221fe7d67d52015253980846c169/server/src/main/scala/pulsar_auth/PulsarAuth.scala#L43C12-L43C26)
+- [AuthParamsStringCredentials](https://github.com/visortelle/dekaf/blob/31723122e2c4221fe7d67d52015253980846c169/server/src/main/scala/pulsar_auth/PulsarAuth.scala#L48) - Allows to specify `authPluginClassName` and arbitrary `authParams`. Please search for `authParams` in the Pulsar documentation.
+
+The `type` field values for each authentication method can be found here: https://github.com/visortelle/dekaf/blob/31723122e2c4221fe7d67d52015253980846c169/server/src/main/scala/pulsar_auth/PulsarAuth.scala#L20
