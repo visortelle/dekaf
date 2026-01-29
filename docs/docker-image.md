@@ -10,7 +10,7 @@ The upcoming features like monitoring, horizontal scaling, and enterprise-grade 
 
 Run `docker pull visortelle/dekaf:latest` to get the latest Dekaf image.
 
-Visit the [OCI repository](https://hub.docker.com/repository/docker/visortelle/dekaf) to get the available tags.
+Visit the [OCI repository](https://hub.docker.com/r/visortelle/dekaf) to see the available tags.
 
 **Image details:**
 
@@ -41,7 +41,7 @@ You can configure Dekaf by mounting the YAML configuration file to the `/dekaf/c
 
 Configuring application using environment variable is also supported.
 
-See the [Configuration Reference](./configuration-reference) page for more details.
+See the [Configuration Reference](./configuration-reference.md) page for more details.
 
 ## Data Directory
 
