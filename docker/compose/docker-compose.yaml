@@ -24,7 +24,7 @@ services:
       DEKAF_PULSAR_BROKER_URL: "pulsar://pulsar:6650"
 
       # In case you're unable to observe the UI on the http://localhost:8090, probably your localhost resolves to IPv6 ::1 address. 
-      # Try to uncomment the line below and open http://127.0.0.1 in your browser.
+      # Try to uncomment the line below and open http://127.0.0.1:8090 in your browser.
       # DEKAF_PUBLIC_BASE_URL: "http://127.0.0.1:8090"
     volumes:
       - dekaf-library:/dekaf/data/library
