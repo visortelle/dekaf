@@ -13,6 +13,13 @@ Dekaf is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache
   <img src="./dekaf.png" />
 </p>
 
+## Companies that use Dekaf
+
+- [Splio](https://splio.com) - SaaS CRM Marketing platform
+- [StreamX](https://www.streamx.dev) - Digital Experience Mesh for AEM
+
+Please submit a PR to add your company to this list.
+
 ## Documentation
 
 - [📚 Quick-start](#Quick-start)
@@ -28,13 +35,6 @@ Dekaf is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache
 - View messages in a topic or multiple topics at once. Filter messages, colorize them. Save and reuse browse sessions.
 
 There are missing features like multi-user support or message replay. See the [Maintenance policy](#Maintenance-policy) section for details.
-
-## Companies that use Dekaf
-
-- [Splio](https://splio.com) - SaaS CRM Marketing platform
-- [StreamX](https://www.streamx.dev) - Digital Experience Mesh for AEM
-
-Please submit a PR to add your company to this list.
 
 ## Quick-start
 
