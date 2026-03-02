@@ -15,8 +15,9 @@ Dekaf is a feature-rich open-source UI for [Apache Pulsar](https://pulsar.apache
 
 ## Companies that use Dekaf
 
-- [Splio](https://splio.com) - SaaS CRM Marketing platform
-- [StreamX](https://www.streamx.dev) - Digital Experience Mesh for AEM
+- [CrowdStrike](https://crowdstrike.com) - Cybersecurity technology company based in Austin, Texas.
+- [Splio](https://splio.com) - SaaS CRM Marketing platform.
+- [StreamX](https://www.streamx.dev) - Digital Experience Mesh for AEM.
 
 Please submit a PR to add your company to this list.
 
