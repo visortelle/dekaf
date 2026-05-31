@@ -126,6 +126,7 @@ def getDefaultCredentialsFromConfig: Map[CredentialsName, Credentials] =
         case Some(jsonValue: String) =>
             decode[OAuth2Credentials](jsonValue)
                 .orElse(decode[JwtCredentials](jsonValue))
+                .orElse(decode[AuthParamsStringCredentials](jsonValue))
                 .getOrElse(EmptyCredentials(`type` = "empty"))
         case _ => EmptyCredentials(`type` = "empty")
 
