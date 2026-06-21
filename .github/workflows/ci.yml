@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Git LFS Pull
-        run: git lfs pull
+        run: nix-shell --run 'git lfs pull'
 
       - name: Build + server tests
         shell: bash
