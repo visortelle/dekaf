@@ -5,20 +5,22 @@ set -ueo pipefail
 this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_dir=${this_dir}/../..
 
-image_version_tag=$("${this_dir}/get-version-tag.sh")
-image_branch_tag=$("${this_dir}/get-branch-tag.sh")
-
 echo $DOCKER_PASS | docker login --password-stdin --username $DOCKER_USER
 
-tag_1="${image_branch_tag}"
-tag_2="${image_version_tag}"
+# When DEKAF_IMAGE_TAG is set (by .github/workflows/release.yml) push that single
+# explicit release/preview tag. Otherwise fall back to the default branch tag +
+# git-described version tag (see get-branch-tag.sh / get-version-tag.sh).
+if [ -n "${DEKAF_IMAGE_TAG:-}" ]; then
+  tags=(-t "${DEKAF_IMAGE_TAG}")
+else
+  tags=(-t "$("${this_dir}/get-branch-tag.sh")" -t "$("${this_dir}/get-version-tag.sh")")
+fi
 
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --pull \
   --progress plain \
-  -t $tag_1 \
-  -t $tag_2 \
+  "${tags[@]}" \
   --push \
   -f "${this_dir}/Dockerfile" \
   "${repo_dir}"
