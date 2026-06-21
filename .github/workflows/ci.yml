@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, x64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git LFS Pull
+        run: nix-shell --run 'git lfs install --local && git lfs pull'
+
+      - name: Build + server tests
+        shell: bash
+        run: nix-shell --run 'make build'
+
+      - name: UI unit tests
+        shell: bash
+        run: nix-shell --run 'cd ui && make test'

@@ -1,0 +1,136 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to build the release from
+        type: string
+        default: main
+      bump:
+        description: Version bump
+        type: choice
+        default: preview-patch
+        options:
+          - patch
+          - minor
+          - major
+          - preview-patch
+          - preview-minor
+          - preview-major
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: [self-hosted, x64]
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Git LFS Pull
+        run: nix-shell --run 'git lfs install --local && git lfs pull'
+
+      - name: Compute version and image tags
+        id: ver
+        env:
+          BUMP: ${{ inputs.bump }}
+          BRANCH: ${{ inputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(git tag --list 'v[0-9]*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"
+          latest="${latest:-v0.0.0}"
+          IFS=. read -r MA MI PA <<< "${latest#v}"
+          sha="g$(git rev-parse --short HEAD)"
+          case "$BUMP" in
+            patch)         VER="$MA.$MI.$((PA+1))";              channel=release ;;
+            minor)         VER="$MA.$((MI+1)).0";                channel=release ;;
+            major)         VER="$((MA+1)).0.0";                  channel=release ;;
+            preview-patch) VER="$MA.$MI.$((PA+1))-preview.$sha"; channel=dev ;;
+            preview-minor) VER="$MA.$((MI+1)).0-preview.$sha";   channel=dev ;;
+            preview-major) VER="$((MA+1)).0.0-preview.$sha";     channel=dev ;;
+            *) echo "Unknown bump: $BUMP" >&2; exit 1 ;;
+          esac
+          if [ "$channel" = release ]; then
+            dekaf="visortelle/dekaf:$VER";     demoapp="visortelle/dekaf-demoapp:$VER"
+          else
+            dekaf="visortelle/dekaf-dev:$VER"; demoapp="visortelle/dekaf-demoapp-dev:$VER"
+          fi
+          {
+            echo "version=$VER"
+            echo "channel=$channel"
+            echo "dekaf_tag=$dekaf"
+            echo "demoapp_tag=$demoapp"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### Release \`$VER\` ($channel) from \`$BRANCH\`"
+            echo "- $dekaf"
+            echo "- $demoapp"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check release tag is free
+        if: ${{ !startsWith(inputs.bump, 'preview') }}
+        env:
+          VER: ${{ steps.ver.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v${VER}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists" >&2; exit 1
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          name: dekaf-release
+
+      - name: Build and push images
+        shell: bash
+        env:
+          DEKAF_IMAGE_TAG: ${{ steps.ver.outputs.dekaf_tag }}
+          DEKAF_DEMOAPP_IMAGE_TAG: ${{ steps.ver.outputs.demoapp_tag }}
+        run: nix-shell --run 'make build-docker-images'
+
+      - name: Bump compose pins, commit, and tag
+        if: ${{ !startsWith(inputs.bump, 'preview') }}
+        env:
+          VER: ${{ steps.ver.outputs.version }}
+          BRANCH: ${{ inputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v${VER}"
+
+          compose="docker/compose/docker-compose.yaml"
+          sed -i -E \
+            -e "s|(visortelle/dekaf):[^[:space:]]+|\1:${VER}|" \
+            -e "s|(visortelle/dekaf-demoapp):[^[:space:]]+|\1:${VER}|" \
+            "$compose"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$compose"
+          if git diff --cached --quiet; then
+            echo "compose already at ${VER}; tagging without a bump commit"
+          else
+            git commit -m "Release ${tag}"
+          fi
+          git tag -a "$tag" -m "Release ${tag}"
+
+          git push origin "HEAD:${BRANCH}"
+          git push origin "$tag"
