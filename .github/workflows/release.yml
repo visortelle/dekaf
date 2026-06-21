@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
 
       - name: Git LFS Pull
-        run: nix-shell --run 'git lfs pull'
+        run: nix-shell --run 'git lfs install --local && git lfs pull'
 
       - name: Compute version and image tags
         id: ver
