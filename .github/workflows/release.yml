@@ -1,14 +1,5 @@
 name: Release
 
-# Manually-triggered release / preview publisher. This is the ONLY workflow that
-# builds and pushes Docker images (ci.yml just builds + tests on PRs).
-#
-#   patch / minor / major          -> bump compose pins, commit, tag vX.Y.Z, push PUBLIC visortelle/dekaf:X.Y.Z (+ demoapp)
-#   preview-patch/-minor/-major     -> push DEV visortelle/dekaf-dev:X.Y.Z-preview.g<sha> (no tag)
-#
-# Images are built multi-arch (linux/amd64 + linux/arm64) on the self-hosted x64
-# runner via buildx; the version is forced through DEKAF_IMAGE_TAG /
-# DEKAF_DEMOAPP_IMAGE_TAG, which docker/*/build.sh honor.
 on:
   workflow_dispatch:
     inputs:
@@ -29,7 +20,7 @@ on:
           - preview-major
 
 permissions:
-  contents: write # push the vX.Y.Z tag for real releases
+  contents: write
 
 concurrency:
   group: release
@@ -45,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
-          fetch-depth: 0 # full history + tags for version math
+          fetch-depth: 0
 
       - name: Git LFS Pull
         run: git lfs pull
@@ -54,10 +45,10 @@ jobs:
         id: ver
         env:
           BUMP: ${{ inputs.bump }}
+          BRANCH: ${{ inputs.branch }}
         shell: bash
         run: |
           set -euo pipefail
-          # Highest clean release tag reachable (ignores prereleases like v1.0.0-beta.1).
           latest="$(git tag --list 'v[0-9]*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"
           latest="${latest:-v0.0.0}"
           IFS=. read -r MA MI PA <<< "${latest#v}"
@@ -83,55 +74,30 @@ jobs:
             echo "demoapp_tag=$demoapp"
           } >> "$GITHUB_OUTPUT"
           {
-            echo "### Release \`$VER\` ($channel) from \`${{ inputs.branch }}\`"
+            echo "### Release \`$VER\` ($channel) from \`$BRANCH\`"
             echo "- $dekaf"
             echo "- $demoapp"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Real releases only: pin the quick-start compose images to the new version,
-      # commit that bump, tag it, and push branch + tag. Previews skip this entirely.
-      - name: Bump compose pins, commit, and tag
+      - name: Check release tag is free
         if: ${{ !startsWith(inputs.bump, 'preview') }}
+        env:
+          VER: ${{ steps.ver.outputs.version }}
         shell: bash
         run: |
           set -euo pipefail
-          ver="${{ steps.ver.outputs.version }}"
-          tag="v${ver}"
+          tag="v${VER}"
           if git rev-parse "$tag" >/dev/null 2>&1; then
             echo "Tag $tag already exists" >&2; exit 1
           fi
 
-          # Repin both images in the quick-start compose (README's `wget` target).
-          compose="docker/compose/docker-compose.yaml"
-          sed -i -E \
-            -e "s|(visortelle/dekaf):[^[:space:]]+|\1:${ver}|" \
-            -e "s|(visortelle/dekaf-demoapp):[^[:space:]]+|\1:${ver}|" \
-            "$compose"
-
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$compose"
-          if git diff --cached --quiet; then
-            echo "compose already at ${ver}; tagging without a bump commit"
-          else
-            git commit -m "Release ${tag}"
-          fi
-          git tag -a "$tag" -m "Release ${tag}"
-
-          # NOTE: pushing the commit to ${{ inputs.branch }} requires that branch to
-          # allow direct pushes from this workflow (see release docs re: protected main).
-          git push origin "HEAD:${{ inputs.branch }}"
-          git push origin "$tag"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Installing Nix
-        uses: cachix/install-nix-action@v22
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          install_options: --no-daemon
-          extra_nix_config: experimental-features = nix-command flakes
+          name: dekaf-release
 
       - name: Build and push images
         shell: bash
@@ -139,3 +105,32 @@ jobs:
           DEKAF_IMAGE_TAG: ${{ steps.ver.outputs.dekaf_tag }}
           DEKAF_DEMOAPP_IMAGE_TAG: ${{ steps.ver.outputs.demoapp_tag }}
         run: nix-shell --run 'make build-docker-images'
+
+      - name: Bump compose pins, commit, and tag
+        if: ${{ !startsWith(inputs.bump, 'preview') }}
+        env:
+          VER: ${{ steps.ver.outputs.version }}
+          BRANCH: ${{ inputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v${VER}"
+
+          compose="docker/compose/docker-compose.yaml"
+          sed -i -E \
+            -e "s|(visortelle/dekaf):[^[:space:]]+|\1:${VER}|" \
+            -e "s|(visortelle/dekaf-demoapp):[^[:space:]]+|\1:${VER}|" \
+            "$compose"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$compose"
+          if git diff --cached --quiet; then
+            echo "compose already at ${VER}; tagging without a bump commit"
+          else
+            git commit -m "Release ${tag}"
+          fi
+          git tag -a "$tag" -m "Release ${tag}"
+
+          git push origin "HEAD:${BRANCH}"
+          git push origin "$tag"
