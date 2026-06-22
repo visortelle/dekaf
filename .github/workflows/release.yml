@@ -1,5 +1,7 @@
 name: Release
 
+run-name: Release ${{ inputs.bump }} from ${{ inputs.branch }}
+
 on:
   workflow_dispatch:
     inputs:
