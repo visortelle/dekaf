@@ -11,6 +11,7 @@ build:
 .PHONY: clean
 clean:
 	rm -rf ./node_modules
+	rm -f ./tsconfig.tsbuildinfo
 
 .PHONY: dev
 dev:

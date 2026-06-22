@@ -12,6 +12,12 @@ build:
 	cd ./server && make build
 	cd ./server && make test
 
+.PHONY: clean
+clean:
+	cd ./proto && make clean
+	cd ./ui && make clean
+	cd ./server && make clean
+
 .PHONY: build-docker-images
 build-docker-images:
 	cd ./docker/dekaf && make build
