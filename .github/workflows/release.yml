@@ -37,7 +37,8 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
-          lfs: true
+
+      - uses: ./.github/actions/git-lfs-pull
 
       - name: Compute version and image tags
         id: ver

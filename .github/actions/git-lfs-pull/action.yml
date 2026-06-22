@@ -1,0 +1,12 @@
+name: Git LFS pull
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        nix-shell --run '
+          git lfs install --local
+          git lfs pull; rc=$?
+          git lfs uninstall --local
+          exit $rc
+        '
