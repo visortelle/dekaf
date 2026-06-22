@@ -21,6 +21,14 @@ COPY ./server/build.sbt ./server/
 COPY ./server/project/* ./server/project/
 RUN cd ./server && sbt update
 
+# npm resilience for the slow/flaky build network
+ENV npm_config_maxsockets=3 \
+    npm_config_fetch_retries=5 \
+    npm_config_fetch_retry_factor=2 \
+    npm_config_fetch_retry_mintimeout=20000 \
+    npm_config_fetch_retry_maxtimeout=120000 \
+    npm_config_fetch_timeout=600000
+
 # Cache ui dependencies
 COPY ui/package.json ./ui/
 COPY ui/package-lock.json ./ui/
