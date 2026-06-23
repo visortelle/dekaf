@@ -13,13 +13,31 @@ Releases and previews are published by the **Release** GitHub Actions workflow
 | `patch` / `minor` / `major` | `X.Y.(Z+1)` / `X.(Y+1).0` / `(X+1).0.0` | public `visortelle/dekaf` (+ `dekaf-demoapp`) | `vX.Y.Z` |
 | `preview-patch` / `-minor` / `-major` | as above, plus `-preview.g<sha>` | dev `visortelle/dekaf-dev` (+ `dekaf-demoapp-dev`) | none |
 
-For a real release (`patch`/`minor`/`major`) the workflow also repins the images
-in `docker/compose/docker-compose.yaml` to the new version, commits that as
-`Release vX.Y.Z`, tags it, and pushes the branch and tag, then builds and pushes
-the multi-arch images. Previews (`preview-*`) publish a dev image only — no
-commit, no tag — for trying out an upcoming version.
+The workflow runs as three jobs: **prepare** (computes the version), **build**
+(a matrix that builds each architecture **natively** on its own runner and pushes
+by digest only — no tag yet), and **merge** (stitches the per-arch digests into
+the final `:X.Y.Z` multi-arch tags). The tag is published only after **both**
+architectures build successfully. For a real release the **merge** job also repins
+the images in `docker/compose/docker-compose.yaml`, commits that as `Release
+vX.Y.Z`, tags it, and pushes the branch and tag. Previews (`preview-*`) publish dev
+images only — no commit, no tag.
 
 > The previous `release/release.js` script is superseded by this workflow.
+
+## Build runners
+
+Images are built **natively per architecture** (no QEMU emulation — emulated
+`node`/JVM builds deadlock), so two self-hosted runners are required:
+
+| Arch | Runner labels | Host needs |
+| --- | --- | --- |
+| `linux/amd64` | `self-hosted, x64` | Nix (already required by CI) + Docker/Buildx; LFS via the repo's Nix `git-lfs` |
+| `linux/arm64` | `self-hosted, arm64` | A native arm64 host with Docker/Buildx + `git`/`git-lfs` on PATH |
+
+The `prepare` and `merge` jobs run on the `x64` runner. Register a native arm64
+runner with the label `arm64`; if it's offline the `build` matrix waits for it.
+`docker/dekaf/build.sh` (multi-arch `buildx`) is now only for local builds — the
+release workflow builds per-arch inline.
 
 ## Make published artifacts publicly accessible
 

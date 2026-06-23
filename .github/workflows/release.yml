@@ -29,20 +29,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  prepare:
     runs-on: [self-hosted, x64]
-    env:
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      channel: ${{ steps.ver.outputs.channel }}
+      dekaf_image: ${{ steps.ver.outputs.dekaf_image }}
+      demoapp_image: ${{ steps.ver.outputs.demoapp_image }}
+      sha: ${{ steps.ver.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
 
-      - uses: ./.github/actions/git-lfs-pull
-
-      - name: Compute version and image tags
+      - name: Compute version and image names
         id: ver
         env:
           BUMP: ${{ inputs.bump }}
@@ -53,31 +54,33 @@ jobs:
           latest="$(git tag --list 'v[0-9]*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"
           latest="${latest:-v0.0.0}"
           IFS=. read -r MA MI PA <<< "${latest#v}"
-          sha="g$(git rev-parse --short HEAD)"
+          sha="$(git rev-parse HEAD)"
+          gsha="g$(git rev-parse --short HEAD)"
           case "$BUMP" in
-            patch)         VER="$MA.$MI.$((PA+1))";              channel=release ;;
-            minor)         VER="$MA.$((MI+1)).0";                channel=release ;;
-            major)         VER="$((MA+1)).0.0";                  channel=release ;;
-            preview-patch) VER="$MA.$MI.$((PA+1))-preview.$sha"; channel=dev ;;
-            preview-minor) VER="$MA.$((MI+1)).0-preview.$sha";   channel=dev ;;
-            preview-major) VER="$((MA+1)).0.0-preview.$sha";     channel=dev ;;
+            patch)         VER="$MA.$MI.$((PA+1))";               channel=release ;;
+            minor)         VER="$MA.$((MI+1)).0";                 channel=release ;;
+            major)         VER="$((MA+1)).0.0";                   channel=release ;;
+            preview-patch) VER="$MA.$MI.$((PA+1))-preview.$gsha"; channel=dev ;;
+            preview-minor) VER="$MA.$((MI+1)).0-preview.$gsha";   channel=dev ;;
+            preview-major) VER="$((MA+1)).0.0-preview.$gsha";     channel=dev ;;
             *) echo "Unknown bump: $BUMP" >&2; exit 1 ;;
           esac
           if [ "$channel" = release ]; then
-            dekaf="visortelle/dekaf:$VER";     demoapp="visortelle/dekaf-demoapp:$VER"
+            dekaf="visortelle/dekaf";     demoapp="visortelle/dekaf-demoapp"
           else
-            dekaf="visortelle/dekaf-dev:$VER"; demoapp="visortelle/dekaf-demoapp-dev:$VER"
+            dekaf="visortelle/dekaf-dev"; demoapp="visortelle/dekaf-demoapp-dev"
           fi
           {
             echo "version=$VER"
             echo "channel=$channel"
-            echo "dekaf_tag=$dekaf"
-            echo "demoapp_tag=$demoapp"
+            echo "dekaf_image=$dekaf"
+            echo "demoapp_image=$demoapp"
+            echo "sha=$sha"
           } >> "$GITHUB_OUTPUT"
           {
-            echo "### Release \`$VER\` ($channel) from \`$BRANCH\`"
-            echo "- $dekaf"
-            echo "- $demoapp"
+            echo "### Release \`$VER\` ($channel) from \`$BRANCH\` @ \`${sha:0:7}\`"
+            echo "- $dekaf:$VER"
+            echo "- $demoapp:$VER"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check release tag is free
@@ -92,25 +95,132 @@ jobs:
             echo "Tag $tag already exists" >&2; exit 1
           fi
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  # Each arch builds natively on its own runner (no QEMU) and pushes by digest
+  # only — no tag is published here. The merge job assembles the tag.
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: [self-hosted, x64]
+          - arch: arm64
+            platform: linux/arm64
+            runner: [self-hosted, arm64]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
         with:
-          name: dekaf-release
+          ref: ${{ needs.prepare.outputs.sha }}
 
-      - name: Build and push images
+      # LFS is fetched per-runner: the x64 runner stays Nix-only (composite
+      # action), the arm64 runner uses its host git-lfs.
+      - uses: ./.github/actions/git-lfs-pull
+        if: matrix.arch == 'amd64'
+      - name: Git LFS pull (host git-lfs)
+        if: matrix.arch == 'arm64'
+        run: git lfs install --local && git lfs pull && git lfs uninstall --local
+
+      - uses: docker/setup-buildx-action@v3
+        with:
+          name: dekaf-builder
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Build dekaf (${{ matrix.platform }})
+        id: dekaf
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/dekaf/Dockerfile
+          platforms: ${{ matrix.platform }}
+          pull: true
+          provenance: false
+          outputs: type=image,name=${{ needs.prepare.outputs.dekaf_image }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Build demoapp (${{ matrix.platform }})
+        id: demoapp
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/demoapp/Dockerfile
+          platforms: ${{ matrix.platform }}
+          pull: true
+          provenance: false
+          outputs: type=image,name=${{ needs.prepare.outputs.demoapp_image }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digests
         shell: bash
-        env:
-          DEKAF_IMAGE_TAG: ${{ steps.ver.outputs.dekaf_tag }}
-          DEKAF_DEMOAPP_IMAGE_TAG: ${{ steps.ver.outputs.demoapp_tag }}
-        run: nix-shell --run 'make build-docker-images'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/digests/dekaf /tmp/digests/demoapp
+          d='${{ steps.dekaf.outputs.digest }}';   touch "/tmp/digests/dekaf/${d#sha256:}"
+          d='${{ steps.demoapp.outputs.digest }}'; touch "/tmp/digests/demoapp/${d#sha256:}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests-dekaf-${{ matrix.arch }}
+          path: /tmp/digests/dekaf/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests-demoapp-${{ matrix.arch }}
+          path: /tmp/digests/demoapp/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Runs only after both arches built. Stitches the per-arch digests into the
+  # final multi-arch tags (atomic publish), then for real releases bumps the
+  # quick-start compose pins, commits, tags, and pushes.
+  merge:
+    needs: [prepare, build]
+    runs-on: [self-hosted, x64]
+    env:
+      VER: ${{ needs.prepare.outputs.version }}
+      DEKAF_IMAGE: ${{ needs.prepare.outputs.dekaf_image }}
+      DEMOAPP_IMAGE: ${{ needs.prepare.outputs.demoapp_image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+
+      - name: Create multi-arch manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          dekaf_refs=$(for f in /tmp/digests/digests-dekaf-*/*; do echo "${DEKAF_IMAGE}@sha256:$(basename "$f")"; done)
+          demoapp_refs=$(for f in /tmp/digests/digests-demoapp-*/*; do echo "${DEMOAPP_IMAGE}@sha256:$(basename "$f")"; done)
+          docker buildx imagetools create -t "${DEKAF_IMAGE}:${VER}"   $dekaf_refs
+          docker buildx imagetools create -t "${DEMOAPP_IMAGE}:${VER}" $demoapp_refs
+          {
+            echo "### Published \`${VER}\`"
+            echo "- ${DEKAF_IMAGE}:${VER}"
+            echo "- ${DEMOAPP_IMAGE}:${VER}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Bump compose pins, commit, and tag
         if: ${{ !startsWith(inputs.bump, 'preview') }}
         env:
-          VER: ${{ steps.ver.outputs.version }}
           BRANCH: ${{ inputs.branch }}
         shell: bash
         run: |
