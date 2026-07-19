@@ -26,8 +26,14 @@ const DeleteDialog = (props: Props) => {
     const req = new pb.DeleteResourceGroupRequest();
     req.setName(props.resourceGroup);
 
-    const res = await brokersServiceClient.deleteResourceGroup(req, null).catch(err => { `Unable to delete resource group: ${err}` });
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    const res = await brokersServiceClient.deleteResourceGroup(req, null).catch(err => {
+      notifyError(`Unable to delete resource group: ${err}`);
+      return undefined;
+    });
+    if (res === undefined) {
+      return; // transport failure - keep the dialog open, never a silent "success"
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to delete resource group: ${res.getStatus()?.getMessage()}`);
       return;
     }

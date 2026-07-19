@@ -43,7 +43,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
   }
 
   return (
-    <div className={s.ContextLogs}>
+    <div className={s.ContextLogs} data-testid="cs-logs">
       <div className={s.Logs} ref={scrollParentRef}>
         <Virtuoso<MessageDescriptor>
           ref={virtuosoRef}

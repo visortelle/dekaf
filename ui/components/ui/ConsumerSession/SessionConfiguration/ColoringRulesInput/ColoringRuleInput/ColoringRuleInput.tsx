@@ -89,6 +89,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
         <div className={s.Colors}>
           <div className={s.ColorPicker}>
             <ColorPickerButton
+              testId="cs-coloring-fg"
               value={itemSpec.foregroundColor}
               onChange={(v) => onSpecChange({ ...itemSpec, foregroundColor: v })}
               width='inherit'
@@ -100,6 +101,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
 
           <div className={s.ColorPicker}>
             <ColorPickerButton
+              testId="cs-coloring-bg"
               value={itemSpec.backgroundColor}
               onChange={(v) => onSpecChange({ ...itemSpec, backgroundColor: v })}
               width='inherit'

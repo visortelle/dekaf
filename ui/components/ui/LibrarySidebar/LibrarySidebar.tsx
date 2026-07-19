@@ -37,6 +37,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
         tabs={[
           {
             key: 'library',
+            testId: 'lib-tab-library',
             title: <span style={{ display: 'inline-flex', gap: '1ch' }}>📚 Library{itemsCount.library === undefined ? <NoData /> : <>&nbsp;<strong>{itemsCount.library}</strong></>}</span>,
             render: () => (
               <Library
@@ -50,6 +51,7 @@ const LibrarySidebar: React.FC<LibrarySidebarProps> = (props) => {
           },
           {
             key: 'notes',
+            testId: 'lib-tab-notes',
             title: <span style={{ display: 'inline-flex', gap: '1ch' }}>🗒 Notes{itemsCount.notes === undefined ? <NoData /> : <>&nbsp;<strong>{itemsCount.notes}</strong></>}</span>,
             render: () => (
               <Notes

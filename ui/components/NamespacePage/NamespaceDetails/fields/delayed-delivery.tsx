@@ -118,6 +118,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
+                testId='delayed-delivery-type-select'
                 list={[
                   { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
                   { type: 'item', value: 'enabled', title: 'Enabled' },
@@ -148,6 +149,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   )}
                 />
                 <DurationInput
+                  testId='delayed-delivery-tick-input'
                   initialValue={value.tickTimeMs / 1000}
                   onChange={(seconds) => onChange({ ...value, tickTimeMs: seconds * 1000 })}
                 />

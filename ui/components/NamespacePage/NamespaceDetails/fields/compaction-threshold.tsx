@@ -139,6 +139,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         <>
           <div className={sf.FormItem}>
             <Select<PolicyValue['type']>
+              testId="compaction-threshold-type-select"
               list={[
                 { type: 'item', title: 'Inherited from broker config', value: 'inherited-from-broker-config' },
                 { type: 'item', title: 'Automatic compaction disabled', value: 'automatic-compaction-disabled' },
@@ -159,6 +160,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           </div>
           {value.type === 'specified-for-this-namespace' && (
             <MemorySizeInput
+              testId='compaction-threshold-value-input'
               initialValue={value.sizeBytes}
               onChange={(size) => {
                 if (size > 0) {

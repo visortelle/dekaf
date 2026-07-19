@@ -24,6 +24,7 @@ export type FilterChainEditorProps = {
   onChange: (value: ManagedMessageFilterChainValOrRef) => void;
   libraryContext: LibraryContext;
   isReadOnly?: boolean;
+  testId?: string;
   libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
@@ -62,7 +63,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
-    <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }}>
+    <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }} data-testid={props.testId}>
       <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
@@ -136,6 +137,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
               {!isLast && (
                 <div className={s.ModeToggle}>
                   <IconToggle<'all' | 'any'>
+                    testId="cs-filter-logic"
                     items={[
                       { type: 'item', label: 'AND', help: 'Every filter should match.', value: 'all' },
                       { type: 'item', label: 'OR', help: 'Some filter should match.', value: 'any' },

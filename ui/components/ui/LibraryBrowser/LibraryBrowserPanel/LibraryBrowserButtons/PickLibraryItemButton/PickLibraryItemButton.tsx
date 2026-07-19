@@ -32,6 +32,10 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
   const { data: itemCount, error: itemCountError } = useSWR(
     swrKeys.dekaf.library.itemCount._({ itemType: props.itemType, availableForContexts: props.availableForContexts }),
     async () => {
+      if (props.availableForContexts.length === 0) {
+        return; // no search contexts yet - nothing to count (the server rejects an empty filter)
+      }
+
       const req = new pb.GetLibraryItemsCountRequest();
       req.setTypesList([managedItemTypeToPb(props.itemType)]);
 
@@ -68,6 +72,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
     null : (
       <span
         className={s.ItemCount}
+        data-testid="lib-item-count"
         onClick={() => {
           modals.push({
             id: `browse-library-${Date.now()}`,

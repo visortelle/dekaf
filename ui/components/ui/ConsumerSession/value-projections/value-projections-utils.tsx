@@ -48,6 +48,7 @@ export function getValueProjectionThs(props: ValueProjectionThsProps): ValueProj
         th: (
           <Th
             key={`${props.reactKeyPrefix}-${i}`}
+            testId="cs-projection-column-header"
             sort={props.thsProps.sort}
             setSort={props.thsProps.setSort}
             sortKey={sortKey}

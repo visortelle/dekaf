@@ -62,7 +62,7 @@ const TopicSelectorInfo: React.FC<TopicSelectorInfoProps> = (props) => {
           data-tooltip-id={tooltipId}
           data-tooltip-html={tooltipContent === undefined ? undefined : renderToStaticMarkup(tooltipContent)}
         >
-          Non-partitioned topic{topicFqns.length > 1 ? 's' : ''} found:&nbsp;<strong>{topicFqns.length}</strong>
+          Non-partitioned topic{topicFqns.length > 1 ? 's' : ''} found:&nbsp;<strong data-testid="cs-resolve-count">{topicFqns.length}</strong>
         </div>
       )}
     </div>

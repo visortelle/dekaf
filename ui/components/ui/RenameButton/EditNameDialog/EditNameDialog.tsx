@@ -29,19 +29,21 @@ const EditNameDialog: React.FC<EditNameDialogProps> = (props) => {
       }}
     >
       <div className={s.EditNameDialogContent}>
-        <Input value={value} onChange={setValue} focusOnMount />
+        <Input value={value} onChange={setValue} focusOnMount testId="lib-name-input" />
       </div>
       <div className={s.EditNameDialogFooter}>
         <Button
           type='regular'
           text="Cancel"
           onClick={props.onCancel}
+          testId="lib-name-cancel"
         />
         <Button
           type='primary'
           text="Confirm"
           onClick={confirm}
           disabled={value.length === 0}
+          testId="lib-name-confirm"
         />
       </div>
     </div>

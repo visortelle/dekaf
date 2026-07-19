@@ -125,6 +125,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         <>
           <div className={sf.FormItem}>
             <Select<PolicyValue['type']>
+              testId="resource-group-type-select"
               list={[
                 { type: 'item', title: 'Undefined', value: 'undefined' },
                 { type: 'item', title: 'Specified for this namespace', value: 'specified-for-this-namespace' },
@@ -146,6 +147,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <>
               <div className={sf.FormItem}>
                 <Select<string>
+                  testId="resource-group-select"
                   list={resourceGroupsList.map(resourceGroup => {
                     return { type: 'item', value: resourceGroup, title: resourceGroup }
                   })}

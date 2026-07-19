@@ -14,13 +14,15 @@ const defaultIsCaseSensitive = false;
 export type AnyTestOpTypeSelectProps = {
   value: AnyTestOp,
   onChange: (v: AnyTestOp) => void,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const AnyTestOpTypeSelect: React.FC<AnyTestOpTypeSelectProps> = (props) => {
   return (
     <div className={s.AnyTestOpTypeSelect}>
       <Select<AnyTestOp['op']['type']>
+        testId={props.testId}
         size='small'
         list={[
           { type: "item", title: "is defined", value: "TestOpIsDefined" },

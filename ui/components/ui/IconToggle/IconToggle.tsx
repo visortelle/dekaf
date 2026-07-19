@@ -29,7 +29,8 @@ export type IconToggleProps<T> = {
   onChange: (v: T) => void,
   items: IconToggleItem<T>[],
   isReadOnly?: boolean,
-  isWithShadow?: boolean
+  isWithShadow?: boolean,
+  testId?: string
 };
 
 function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
@@ -56,6 +57,7 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
       }}
       data-tooltip-id={tooltipId}
       data-tooltip-html={currentItem?.help === undefined ? undefined : renderToStaticMarkup(<>{currentItem.help}</>)}
+      data-testid={props.testId}
     >
       {(currentItem?.iconSvg) && (
         <div

@@ -36,6 +36,7 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
         <FormItem>
           <FormLabel content="Export format" />
           <Select<Format["type"]>
+            testId="cs-export-format"
             list={[
               { type: "item", value: "json-message-per-entry", title: ".json - message per array entry" },
               { type: "item", value: "json-value-per-entry", title: ".json - value per array entry" },
@@ -78,6 +79,7 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
         <FormItem>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr' }}>
             <Button
+              testId="cs-export-run"
               type='primary'
               text='Export'
               svgIcon={exportIcon}
@@ -130,7 +132,7 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
 
         <FormItem>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr' }}>
-            <SmallButton type='regular' text='Reset export configuration' onClick={() => props.onConfigChange(defaultExportConfig)} />
+            <SmallButton testId="cs-export-reset" type='regular' text='Reset export configuration' onClick={() => props.onConfigChange(defaultExportConfig)} />
           </div>
         </FormItem>
       </div>

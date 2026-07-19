@@ -99,24 +99,36 @@ class PulsarAuthInterceptor extends ServerInterceptor:
 
         var ctx = Context.current().withValue(RequestContext.pulsarAuth, pulsarAuth)
 
-        val pulsarAdmin = ClientsCache.getPulsarAdmin(pulsarAuth)
-        pulsarAdmin match
-            case Left(_)   => cancelWithCredentials(ctx, pulsarAuth)
-            case Right(pa) => ctx = ctx.withValue(RequestContext.pulsarAdmin, pa)
+        // Credential MANAGEMENT must keep working even when the current credentials cannot build a
+        // Pulsar client - that is exactly when the user needs the manager to inspect the list and
+        // switch back to Default. Those endpoints only read the parsed cookie, so skip client
+        // construction for them; every other service gets clients attached (or is cancelled).
+        val serviceName = call.getMethodDescriptor.getServiceName
+        val isAuthManagement = serviceName != null && serviceName.endsWith("PulsarAuthService")
 
-        val pulsarClient = ClientsCache.getPulsarClient(pulsarAuth)
-        pulsarClient match
-            case Left(_)   => cancelWithCredentials(ctx, pulsarAuth)
-            case Right(pc) => ctx = ctx.withValue(RequestContext.pulsarClient, pc)
+        if !isAuthManagement then
+            ClientsCache.getPulsarAdmin(pulsarAuth) match
+                case Left(err) => return rejectUnauthenticated(call, pulsarAuth, err)
+                case Right(pa) => ctx = ctx.withValue(RequestContext.pulsarAdmin, pa)
+
+            ClientsCache.getPulsarClient(pulsarAuth) match
+                case Left(err) => return rejectUnauthenticated(call, pulsarAuth, err)
+                case Right(pc) => ctx = ctx.withValue(RequestContext.pulsarClient, pc)
 
         Contexts.interceptCall(ctx, call, metadata, next)
 
-    private def cancelWithCredentials(context: Context, pulsarAuth: PulsarAuth) =
-        context
-            .withCancellation()
-            .cancel(
-                Status.UNAUTHENTICATED
-                    .withDescription(s"Invalid credentials: ${pulsarAuth.current.getOrElse("")}")
-                    .asRuntimeException()
-            )
+    /** A request whose credentials cannot build a client must STOP here with UNAUTHENTICATED.
+      * (The previous implementation canceled a derived Context and then discarded it, so the call
+      * proceeded anyway and handlers crashed on the missing client values.) */
+    private def rejectUnauthenticated[ReqT, RespT](
+        call: ServerCall[ReqT, RespT],
+        pulsarAuth: PulsarAuth,
+        err: Throwable
+    ): ServerCall.Listener[ReqT] =
+        call.close(
+            Status.UNAUTHENTICATED
+                .withDescription(s"Invalid credentials: ${pulsarAuth.current.getOrElse("")}. ${err.getMessage}"),
+            new Metadata()
+        )
+        new ServerCall.Listener[ReqT] {}
 

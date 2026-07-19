@@ -117,6 +117,7 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = (props) => {
       text: "Overview",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.overview._.path, pathname)),
     },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.get({
@@ -128,6 +129,7 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = (props) => {
       }),
       text: "Consumers",
       onClick: () => { },
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.path, pathname)),
       type: "regular",
     },
     {

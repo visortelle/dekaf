@@ -112,7 +112,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
   }
 
   return (
-    <div className={s.SaveItemDialog}>
+    <div className={s.SaveItemDialog} data-testid="lib-save-dialog">
       <div className={s.Content}>
         <div className={s.AvailableForContexts}>
           <FormItem>
@@ -161,10 +161,12 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
           type='regular'
           text='Cancel'
           onClick={props.onCanceled}
+          testId="lib-save-dialog-cancel"
         />
         <Button
           type='regular'
           text='Overwrite Another'
+          testId="lib-save-dialog-overwrite-another"
           onClick={() => {
             if (libraryItem === undefined) {
               return;
@@ -193,6 +195,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
           <Button
             type='regular'
             text='Save as New'
+            testId="lib-save-dialog-save-as-new"
             disabled={libraryItem === undefined}
             onClick={() => {
               if (libraryItem === undefined) {
@@ -212,6 +215,7 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
           text={props.isExistingItem ? 'Save' : 'Create'}
           disabled={libraryItem === undefined}
           onClick={saveItem}
+          testId="lib-save-dialog-save"
         />
       </div>
     </div>

@@ -70,10 +70,14 @@ const CreateSubscription: React.FC<CreateSubscriptionProps> = (props) => {
     const res = await topicServiceClient
       .createSubscription(req, null)
       .catch((err) => {
-        `Unable to create subscription: ${err}`;
+        notifyError(`Unable to create subscription: ${err}`);
+        return undefined;
       });
 
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    if (res === undefined) {
+      return; // transport failure - stay on the form, never a silent "success"
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
         `Unable to create subscription: ${res.getStatus()?.getMessage()}`
       );
@@ -89,6 +93,7 @@ const CreateSubscription: React.FC<CreateSubscriptionProps> = (props) => {
 
   const subscriptionNameInput = (
     <Input
+      testId="create-subscription-name"
       value={subscriptionName}
       onChange={setSubscriptionName}
       placeholder="subscription-1"
@@ -111,6 +116,7 @@ const CreateSubscription: React.FC<CreateSubscriptionProps> = (props) => {
   const messageIdInput = (
     <div className={s.MessageIdBlock}>
       <Select<InitialCursorPosition>
+        testId="create-subscription-cursor"
         list={list}
         value={initialCursorPosition}
         onChange={setInitialCursorPosition}
@@ -143,9 +149,12 @@ const CreateSubscription: React.FC<CreateSubscriptionProps> = (props) => {
     />
   );
 
+  // With the "Message with specific ID" cursor, an empty/invalid id must block Create - the old
+  // check compared the id VALUE against the literal "messageId", so it never gated anything.
   const isFormValid =
-    subscriptionName.length > 0 && (messageId !== "messageId" ||
-      (initialCursorPosition === "messageId" && messageId !== undefined && messageIdRegexp.test(messageId))
+    subscriptionName.length > 0 && (
+      initialCursorPosition !== "messageId" ||
+      (messageId !== undefined && messageIdRegexp.test(messageId))
     );
 
   return (

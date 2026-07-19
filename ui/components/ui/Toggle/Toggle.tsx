@@ -8,7 +8,8 @@ export type ToggleProps = {
   onChange: (value: boolean) => void,
   label?: string,
   help?: React.ReactElement | string,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const Toggle: React.FC<ToggleProps> = (props) => {
@@ -32,6 +33,8 @@ const Toggle: React.FC<ToggleProps> = (props) => {
       data-tooltip-id={tooltipId}
       data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
       data-tooltip-delay-show={500}
+      data-testid={props.testId}
+      data-checked={props.value}
     >
       <div
         ref={bodyRef}

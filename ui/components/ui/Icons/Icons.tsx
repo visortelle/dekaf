@@ -37,6 +37,7 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
         ${props.className || ''}
         ${props.size === 'small' ? s.NodeIconSmall : ''}
       `}
+      data-testid="nav-node-toggle"
       onClick={props.onClick}
     >
       {props.title}

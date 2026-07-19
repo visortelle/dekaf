@@ -29,6 +29,7 @@ const AuthParamsString: React.FC<AuthParamsStringProps> = (props) => {
           )}
         />
         <Input
+          testId="credentials-authparams-plugin"
           value={props.value.authPluginClassName}
           onChange={v => props.onChange({ ...props.value, authPluginClassName: v })}
         />
@@ -50,6 +51,7 @@ const AuthParamsString: React.FC<AuthParamsStringProps> = (props) => {
           )}
         />
         <Input
+          testId="credentials-authparams-params"
           value={props.value.authParams}
           onChange={v => props.onChange({ ...props.value, authParams: v })}
         />

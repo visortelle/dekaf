@@ -111,6 +111,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
   const adminRolesInput = (
     <ListInput<string>
+      testId="tenant-admin-roles"
       value={
         tenantInfo?.adminRoles.sort((a, b) =>
           a.localeCompare(b, "en", { numeric: true })
@@ -185,6 +186,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
   const allowedClustersInput = (
     <ListInput<string>
+      testId="tenant-allowed-clusters"
       value={
         tenantInfo?.allowedClusters.sort((a, b) =>
           a.localeCompare(b, "en", { numeric: true })

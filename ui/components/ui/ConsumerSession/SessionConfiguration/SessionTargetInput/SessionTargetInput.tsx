@@ -132,6 +132,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       />
 
       <FilterChainEditor
+        testId="cs-target-filters"
         value={itemSpec.messageFilterChain}
         onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
         libraryContext={props.libraryContext}
@@ -146,6 +147,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       />
 
       <ColoringRuleChainInput
+        testId="cs-target-coloring"
         value={itemSpec.coloringRuleChain}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
         libraryContext={props.libraryContext}

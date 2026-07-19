@@ -291,7 +291,7 @@ type SchemaListEntryProps = {
 };
 const SchemaListEntry: React.FC<SchemaListEntryProps> = (props) => {
   return (
-    <div className={`${s.SchemaListEntry} ${props.isSelected ? s.SchemaListEntrySelected : ""}`} onClick={props.onClick}>
+    <div className={`${s.SchemaListEntry} ${props.isSelected ? s.SchemaListEntrySelected : ""}`} data-testid={`schema-version-${props.version}`} onClick={props.onClick}>
       <div>
         <strong>Version:</strong> {props.version}
       </div>

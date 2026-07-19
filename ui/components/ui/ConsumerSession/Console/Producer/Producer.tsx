@@ -157,6 +157,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
             <div className={s.FormControl}>
               <strong>Value encoding</strong>
               <Select<ValueType>
+                testId="produce-encoding"
                 value={valueType}
                 onChange={v => setValueType(v as ValueType)}
                 list={[
@@ -168,15 +169,17 @@ const Producer: React.FC<ProducerProps> = (props) => {
             </div>
             <div className={s.FormControl}>
               <strong>Key</strong>
-              <Input onChange={v => setKey(v)} value={key || ''} placeholder="" size='small' />
+              <Input testId="produce-key" onChange={v => setKey(v)} value={key || ''} placeholder="" size='small' />
             </div>
             <div className={s.FormControl}>
               <strong>Event time</strong>
-              <DatetimePicker
-                value={eventTime}
-                onChange={v => setEventTime(v)}
-                clearable
-              />
+              <div data-testid="produce-event-time">
+                <DatetimePicker
+                  value={eventTime}
+                  onChange={v => setEventTime(v)}
+                  clearable
+                />
+              </div>
             </div>
             <div className={s.FormControl}>
               <strong>Properties</strong>
@@ -184,12 +187,13 @@ const Producer: React.FC<ProducerProps> = (props) => {
                 value={recordToIndexedKv(JSON.parse(propertiesJsonMap))}
                 onChange={v => changePropertiesJsonMap(JSON.stringify(recordFromIndexedKv(v)) || '')}
                 height="240rem"
+                testId="produce-properties"
               />
             </div>
           </div>
 
           <div className={s.ConfigRight}>
-            <div className={s.FormControl}>
+            <div className={s.FormControl} data-testid="produce-value">
               <strong>Value</strong>
               {valueType === 'json' && (
                 <CodeEditor
@@ -213,6 +217,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
       <div className={s.Toolbar}>
         <div className={s.ToolbarControl}>
           <Button
+            testId="produce-send"
             onClick={sendMessage}
             type='primary'
             svgIcon={sendIcon}

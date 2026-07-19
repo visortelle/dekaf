@@ -94,7 +94,7 @@ export const NamespacePropertiesEditor: FC<NamespacePropertiesEditorProps> = (pr
                 </div>
               )}
             />
-            {mode === 'view' && <ActionButton action={{ type: 'predefined', action: 'edit'}} onClick={() => setMode('edit')} title="Edit" />}
+            {mode === 'view' && <span data-testid="namespace-properties-edit-toggle"><ActionButton action={{ type: 'predefined', action: 'edit'}} onClick={() => setMode('edit')} title="Edit" /></span>}
             {mode === 'edit' && <ActionButton action={{ type: 'predefined', action: 'view'}} onClick={() => setMode('view')} title="View" />}
           </div>
 

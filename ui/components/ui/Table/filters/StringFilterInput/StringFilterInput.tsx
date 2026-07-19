@@ -9,7 +9,7 @@ export type StringFilterInputProps = {
 };
 
 const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
-  return <Input value={props.value.value} onChange={(v) => props.onChange({ type: 'string', value: v })} clearable />;
+  return <Input testId="table-filter-chip-value" value={props.value.value} onChange={(v) => props.onChange({ type: 'string', value: v })} clearable />;
 }
 
 export default StringFilterInput;

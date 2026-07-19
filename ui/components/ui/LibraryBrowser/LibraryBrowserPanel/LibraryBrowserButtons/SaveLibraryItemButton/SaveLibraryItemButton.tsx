@@ -19,7 +19,8 @@ export type SaveLibraryItemButtonProps = {
   item: ManagedItem,
   libraryContext: LibraryContext,
   onSaved: (item: ManagedItem) => void,
-  appearance?: 'save' | 'create'
+  appearance?: 'save' | 'create',
+  testId?: string
 };
 
 const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
@@ -30,6 +31,7 @@ const SaveLibraryItemButton: React.FC<SaveLibraryItemButtonProps> = (props) => {
   return (
     <SmallButton
       type='regular'
+      testId={props.testId}
       svgIcon={props.appearance === 'create' ? createIcon : saveIcon}
       text={props.appearance === 'create' ? 'Create' : undefined}
       appearance={props.appearance === 'create' ? 'borderless' : 'borderless-semitransparent'}

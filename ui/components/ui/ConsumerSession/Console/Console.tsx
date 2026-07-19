@@ -38,6 +38,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
     tabs = tabs.concat([{
       key: 'producer',
       title: 'Produce',
+      testId: 'console-tab-produce',
       isRenderAlways: true,
       render: () => {
         if (props.sessionConfig === undefined) {
@@ -60,6 +61,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
     {
       key: 'context-repl',
       title: 'Context REPL',
+      testId: 'console-tab-repl',
       isRenderAlways: true,
       render: () => (
         <ExpressionInspector
@@ -72,6 +74,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
     {
       key: 'context-logs',
       title: 'Context Logs',
+      testId: 'console-tab-logs',
       isRenderAlways: true,
       render: () => (
         <DebugLogs

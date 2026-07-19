@@ -30,6 +30,9 @@ import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.{Duration, SECONDS}
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
+// One FLAT library dir per Dekaf instance - by design. A Dekaf instance always serves exactly one
+// Pulsar connection (docker: one dekaf per pulsar; desktop: each saved connection gets its own
+// DEKAF_DATA_DIR), so per-connection isolation lives at the deployment layer, not in here.
 val libraryRoot = s"${config.dataDir.get}/library"
 
 class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
@@ -48,6 +51,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
         } catch {
+            case err: IllegalArgumentException =>
+                logger.warn(s"Rejected library item save: ${err.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to save library item. ${err.getMessage}")
+                Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
             case err: Exception =>
                 logger.warn(s"Failed to save library item: ${err.getMessage}")
                 val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to save library item. ${err.getMessage}}")
@@ -65,6 +72,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
         } catch {
+            case e: IllegalArgumentException =>
+                logger.warn(s"Rejected library item delete: ${e.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to delete library item. ${e.getMessage}")
+                Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
             case e: Exception =>
                 logger.warn(s"Failed to delete library item: ${e.getMessage}")
                 val status: Status = Status(code = Code.INTERNAL.index, message = "Unable to delete library item")
@@ -109,6 +120,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.ListLibraryItemsResponse(status = Some(status), items = libraryItemsPb))
         } catch {
+            case e: IllegalArgumentException =>
+                logger.warn(s"Rejected library items list: ${e.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to list library items. ${e.getMessage}")
+                Future.successful(pb.ListLibraryItemsResponse(status = Some(status)))
             case e: Exception =>
                 logger.warn(s"Failed to list library items: ${e.getMessage}")
                 val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to list library items. ${e.getMessage}")
@@ -141,6 +156,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
                 itemCountPerType = itemCountPerType
             ))
         } catch {
+            case e: IllegalArgumentException =>
+                logger.warn(s"Rejected library items count: ${e.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to get library items count. ${e.getMessage}")
+                Future.successful(pb.GetLibraryItemsCountResponse(status = Some(status)))
             case e: Exception =>
                 logger.warn(s"Failed to get library items count: ${e.getMessage}")
                 val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library items count. ${e.getMessage}")

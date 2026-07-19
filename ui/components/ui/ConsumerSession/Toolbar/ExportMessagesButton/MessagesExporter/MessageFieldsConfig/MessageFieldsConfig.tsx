@@ -107,7 +107,7 @@ const SortableMessageField: React.FC<SortableMessageFieldProps> = (props) => {
   };
 
   return (
-    <div className={`${s.MessageField} ${isDragging ? s.DraggingMessageField : ''}`} ref={setNodeRef} style={style}>
+    <div className={`${s.MessageField} ${isDragging ? s.DraggingMessageField : ''}`} data-testid={`cs-export-field-${props.id}`} ref={setNodeRef} style={style}>
       <div className={s.IsFieldActiveCheckbox}>
         <Checkbox
           checked={props.isActive}

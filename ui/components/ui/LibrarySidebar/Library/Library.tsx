@@ -23,6 +23,7 @@ const Library: React.FC<LibraryProps> = (props) => {
         tabs={[
           {
             key: 'consumer-sessions',
+            testId: 'lib-subtab-consumer-sessions',
             render: () => (
               <ConsumerSessions
                 libraryContext={props.libraryContext}
@@ -32,6 +33,7 @@ const Library: React.FC<LibraryProps> = (props) => {
           },
           {
             key: 'all-object-types',
+            testId: 'lib-subtab-all-items',
             render: () => (
               <AllObjectTypes
                 onCount={props.onCount}

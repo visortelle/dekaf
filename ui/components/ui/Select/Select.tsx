@@ -20,6 +20,7 @@ export type SelectProps<V> = {
   appearance?: 'regular' | 'no-borders';
   size?: 'regular' | 'small';
   isReadOnly?: boolean;
+  testId?: string;
 }
 
 function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
@@ -45,6 +46,7 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
         onChange={(v) => props.onChange(v.target.value as V)}
         value={props.value}
         disabled={props.disabled || props.isReadOnly}
+        data-testid={props.testId}
       >
         {props.list.map(item => {
           if (item.type === 'empty') {

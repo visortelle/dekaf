@@ -47,6 +47,7 @@ export type ListValue<T> = {
   onAdd?: (value: T, { addUncollapsedItem }: { addUncollapsedItem: (id: string) => void }) => void;
   onChange?: (value: T[]) => void;
   testId?: string;
+  addButtonTestId?: string;
   itemName?: string;
   isHideNothingToShow?: boolean;
   isContentDoesntOverlapRemoveButton?: boolean;
@@ -181,6 +182,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
                 onClick={add}
                 itemName={props.itemName}
                 disabled={Either.isLeft(validationResult)}
+                testId={props.addButtonTestId}
               />
             </div>
           )}
@@ -234,6 +236,8 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
         ${listProps.isContentDoesntOverlapRemoveButton ? s.RemovableListFieldValueWithoutPadding : ''}
         ${isDragging ? s.DraggingItem : ''}
       `}
+      data-testid="list-item"
+      data-item-id={props.id}
       ref={setNodeRef} style={style}
     >
       {props.listProps.renderItem(props.value, props.index, { isCollapsed: Boolean(props.isCollapsed), isDragging, isDraggingSomeItem })}
@@ -260,6 +264,7 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
 
         {(isRemovable && listProps.onRemove) && (
           <SmallButton
+            testId="list-item-remove"
             onClick={() => listProps.onRemove!(props.id)}
             title="Remove this item"
             svgIcon={removeIcon}

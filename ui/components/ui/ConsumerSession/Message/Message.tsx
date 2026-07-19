@@ -33,6 +33,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
     <>
       <Td
         key="index"
+        testId="cs-message"
         width="36rem"
         className={s.IndexField}
         onClick={onClick}
@@ -73,6 +74,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 
       <Td
         key="value"
+        testId="cs-message-value"
         width={`${props.getColumnWidth('value')}px`}
         onClick={onClick}
         coloring={props.coloring}

@@ -34,6 +34,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
           {
             key: 'value',
             title: 'Value',
+            testId: 'cs-details-tab-value',
             render: () => {
               return (
                 <div className={s.TabContent}>
@@ -56,6 +57,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
           {
             key: 'metadata',
             title: 'Metadata',
+            testId: 'cs-details-tab-metadata',
             render: () => {
               return (
                 <div className={s.TabContent}>
@@ -79,6 +81,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
           {
             key: 'properties',
             title: propertiesFieldTitle,
+            testId: 'cs-details-tab-properties',
             render: () => {
               return (
                 <div className={s.TabContent}>

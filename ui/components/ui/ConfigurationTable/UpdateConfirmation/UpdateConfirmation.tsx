@@ -20,8 +20,8 @@ const UpdateConfirmation: React.FC<UpdateConfirmationProps> = (props) => {
       )}
 
       <div className={s.Buttons}>
-        <Button type="regular" onClick={props.onReset} text="Reset" />
-        <Button type="primary" onClick={props.onConfirm} text="Save" disabled={props.validationError !== undefined}/>
+        <Button testId="update-confirm-reset" type="regular" onClick={props.onReset} text="Reset" />
+        <Button testId="update-confirm-save" type="primary" onClick={props.onConfirm} text="Save" disabled={props.validationError !== undefined}/>
       </div>
     </>
 

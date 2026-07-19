@@ -1,0 +1,58 @@
+# Laptop-tuned override for the official apache/pulsar Helm chart, for the e2e "full-shape" cluster.
+# Multi-broker + multi-bookie, ZooKeeper metadata, TLS OFF (keeps the JVM admin/client deps trivial).
+# Used by stack-up-cluster.sh. Align chart/image versions when you run it (chart declares Pulsar 2.10.2, image overridden to 3.2.1 - template-validated only).
+defaultPulsarImageTag: 3.2.1
+
+# TLS off for test simplicity (plaintext admin :8080, broker :6650).
+tls:
+  enabled: false
+  proxy: { enabled: false }
+  broker: { enabled: false }
+  bookie: { enabled: false }
+  zookeeper: { enabled: false }
+certs:
+  internal_issuer: { enabled: false }
+
+# Metadata = ZooKeeper (swap to Oxia later once the chart is bumped).
+components:
+  zookeeper: true
+  bookkeeper: true
+  autorecovery: true
+  broker: true
+  functions: false
+  proxy: true
+  toolset: true
+  pulsar_manager: false
+
+# No monitoring stack on a laptop.
+monitoring:
+  prometheus: false
+  grafana: false
+  node_exporter: false
+  alert_manager: false
+kube-prometheus-stack:
+  enabled: false
+
+# Small footprint, but genuinely multi-broker / multi-bookie.
+zookeeper:
+  replicaCount: 1
+  resources: { requests: { cpu: 0.1, memory: 256Mi } }
+bookkeeper:
+  replicaCount: 3
+  resources: { requests: { cpu: 0.2, memory: 512Mi } }
+  configData:
+    BOOKIE_MEM: "-Xms256m -Xmx512m -XX:MaxDirectMemorySize=256m"
+broker:
+  replicaCount: 2
+  resources: { requests: { cpu: 0.2, memory: 512Mi } }
+  configData:
+    PULSAR_MEM: "-Xms256m -Xmx512m -XX:MaxDirectMemorySize=256m"
+    topicLevelPoliciesEnabled: "true"      # exercise topic-policy tests
+    systemTopicEnabled: "true"
+    # Parity with stack-up.sh: the per-test fixture teardown force-deletes tenants/namespaces.
+    # Without these the same cleanup silently fails on the cluster profile.
+    forceDeleteNamespaceAllowed: "true"
+    forceDeleteTenantAllowed: "true"
+proxy:
+  replicaCount: 1
+  resources: { requests: { cpu: 0.1, memory: 256Mi } }

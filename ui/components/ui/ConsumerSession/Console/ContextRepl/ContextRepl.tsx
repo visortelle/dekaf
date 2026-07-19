@@ -88,7 +88,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
       </div>
 
       <div className={s.Inspector}>
-        <div className={s.CodeEditor}>
+        <div className={s.CodeEditor} data-testid="cs-repl-editor">
           <CodeEditor
             language='javascript'
             height="100%"
@@ -101,6 +101,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
         <div className={s.Logs}>
           <div className={s.ClearLogsButton}>
             <SmallButton
+              testId="cs-repl-clear"
               type="regular"
               svgIcon={clearIcon}
               appearance='borderless-semitransparent'
@@ -109,7 +110,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
             />
           </div>
 
-          <div className={s.LogEntries} ref={logEntriesRef}>
+          <div className={s.LogEntries} data-testid="cs-repl-logs" ref={logEntriesRef}>
             {logs.map((r, i) => {
               const [level, message] = parseLogLine(r);
               const color = getLogColor(level);
@@ -130,6 +131,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
       <div className={s.Toolbar}>
         <div className={s.ToolbarControl}>
           <Button
+            testId="cs-repl-run"
             text='Run'
             type='primary'
             size='small'

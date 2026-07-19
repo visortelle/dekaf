@@ -23,6 +23,7 @@ const ResourceMatcherInput: React.FC<ResourceMatcherInputProps> = (props) => {
           <strong>Select</strong>
           <Select<ResourceMatcher['type']>
             size="small"
+            testId="lib-matcher-category"
             value={props.value.type}
             onChange={(v) => {
               switch (v) {

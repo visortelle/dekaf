@@ -85,6 +85,7 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
   return (
     <div
       className={s.BrowseDialog}
+      data-testid="lib-browse-dialog"
       style={{
         width: props.isSearchResultsOnly ? undefined : 'calc(100vw - 48rem)',
         height: props.isSearchResultsOnly ? undefined : 'calc(100vh - 96rem)',
@@ -163,12 +164,14 @@ const BrowseDialog: React.FC<BrowseDialogProps> = (props) => {
             type='regular'
             text='Cancel'
             onClick={props.onCanceled}
+            testId="lib-browse-cancel"
           />
         )}
         {!props.isHideSelectButton && (
           <Button
             type='primary'
             text='Select'
+            testId="lib-browse-select"
             disabled={selectedItem === undefined}
             onClick={() => {
               if (selectedItem !== undefined) {

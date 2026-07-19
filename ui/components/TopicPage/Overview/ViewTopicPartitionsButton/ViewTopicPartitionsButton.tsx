@@ -19,6 +19,7 @@ const ViewTopicPartitionsButton: React.FC<ViewTopicPartitionsButtonProps> = (pro
     <ActionButton
       action={{ type: 'predefined', action: 'view' }}
       buttonProps={{ className: s.ViewTopicPartitionsButton }}
+      testId="topic-view-partitions-button"
       title="View topic partitions"
       onClick={() => {
         modals.push({

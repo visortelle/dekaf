@@ -12,8 +12,10 @@ import * as Notifications from '../../app/contexts/Notifications';
 import useSWR, { SWRConfiguration, mutate } from 'swr';
 import { renderToStaticMarkup } from 'react-dom/server';
 import NothingToShow from '../NothingToShow/NothingToShow';
-import * as AppContext from '../../app/contexts/AppContext';
+import { AutoRefresh } from '../../app/contexts/AppContext';
 import * as I18n from '../../app/contexts/I18n/I18n';
+import useLocalStorage from 'use-local-storage-state';
+import { localStorageKeys } from '../../local-storage-keys';
 import Toggle from '../Toggle/Toggle';
 import SmallButton from '../SmallButton/SmallButton';
 import refreshIcon from './refresh.svg';
@@ -105,7 +107,14 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const [sort, setSort] = useState<Sort<CK>>(props.defaultSort ?? { type: 'none' });
   const { notifyError } = Notifications.useContext();
   const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
-  const { autoRefresh, setAutoRefresh } = AppContext.useContext();
+  // ONE GLOBAL auto-refresh preference shared by every table - an owner design decision
+  // ("we either want to refresh any table, or not"), deliberately NOT per-table.
+  // use-local-storage-state syncs all hook instances on the same key, so flipping the toggle on
+  // any table updates them all (same behavior the old AppContext-held flag had, minus the plumbing).
+  const [autoRefresh, setAutoRefresh] = useLocalStorage<AutoRefresh>(
+    localStorageKeys.autoRefresh,
+    { defaultValue: { type: 'enabled' } }
+  );
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
   const [filtersInUse, setFiltersInUse] = useState<FiltersInUse<CK>>(props.defaultFiltersInUse ?? {});
   const [filtersInUseDebounced] = useDebounce(filtersInUse, 400);
@@ -221,6 +230,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         className={`${s.Th} ${thProps.isSortable ? s.SortableTh : ''}`}
         style={thProps.style}
         onClick={handleColumnHeaderClick}
+        data-testid="table-th"
+        data-column-key={thProps.columnKey}
+        data-sort-direction={(sort.type === 'by-single-column' && sort.column === thProps.columnKey) ? sort.direction : undefined}
       >
         <div
           data-tooltip-id={tooltipId}
@@ -234,6 +246,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
                 <div
                   className={s.FilterableThIcon}
                   title="Filter by this column"
+                  data-testid="table-filter-icon"
                   onClick={(e) => {
                     e.stopPropagation();
 
@@ -326,7 +339,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
         {props.toolbar?.visibility !== 'hidden' && (
           <div className={s.Toolbar}>
-            <div>
+            <div data-testid="table-counter">
               <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> {props.itemNamePlural || 'items'}
             </div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
@@ -338,9 +351,11 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
                   await mutate(lazyDataLoadedCacheKey);
                 }}
                 svgIcon={refreshIcon}
+                testId="table-refresh"
               />
 
               <Toggle
+                testId="table-auto-refresh"
                 label='Auto refresh'
                 value={autoRefresh.type === 'enabled'}
                 onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}

@@ -144,6 +144,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           />
 
           {!isAdvancedConfig && <Toggle
+            testId="cs-advanced-toggle"
             value={isShowAdvanced}
             onChange={v => setIsShowAdvanced(v)}
             label='Show advanced settings'
@@ -173,6 +174,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             </FormItem>
 
             <FilterChainEditor
+              testId="cs-session-filters"
               value={itemSpec.messageFilterChain}
               onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
               libraryContext={props.libraryContext}
@@ -180,6 +182,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             />
 
             <ValueProjectionListInput
+              testId="cs-session-projections"
               value={itemSpec.valueProjectionList}
               onChange={(v) => onSpecChange({ ...itemSpec, valueProjectionList: v })}
               libraryContext={props.libraryContext}
@@ -187,6 +190,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             />
 
             <ColoringRuleChainInput
+              testId="cs-session-coloring"
               value={itemSpec.coloringRuleChain}
               onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
               libraryContext={props.libraryContext}
@@ -212,6 +216,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             <div
               key={topic.type === 'reference' ? topic.ref : topic.val.metadata.id}
               className={s.TargetColumn}
+              data-testid="cs-target"
             >
               <SessionTargetInput
                 targetIndex={i}
@@ -229,6 +234,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                   {itemSpec.targets.length > 1 && (
                     <>
                       <SmallButton
+                        testId="cs-target-move-left"
                         type='regular'
                         appearance='borderless-semitransparent'
                         svgIcon={moveLeftIcon}
@@ -240,6 +246,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                         disabled={i === 0}
                       />
                       <SmallButton
+                        testId="cs-target-move-right"
                         type='regular'
                         appearance='borderless-semitransparent'
                         svgIcon={moveRightIcon}
@@ -253,6 +260,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                     </>
                   )}
                   <DeleteButton
+                    testId="cs-target-remove"
                     title='Remove this Consumer Session Target'
                     onClick={() => {
                       const newTargets = [...itemSpec.targets];
@@ -271,6 +279,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         <div className={s.LastColumn}>
           {!props.isReadOnly && (
             <AddButton
+              testId="cs-add-target"
               text='Add Target'
               onClick={() => {
                 const newTarget: ManagedConsumerSessionTargetValOrRef = {

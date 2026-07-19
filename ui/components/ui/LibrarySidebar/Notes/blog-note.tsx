@@ -8,6 +8,9 @@ export const blogNote: ManagedMarkdownDocument = {
     type: 'markdown-document'
   },
   spec: {
-    markdown: ``
+    markdown: `The latest releases and changelog are on GitHub:
+
+**[View releases on GitHub](https://github.com/visortelle/dekaf/releases)**
+`
   }
 };

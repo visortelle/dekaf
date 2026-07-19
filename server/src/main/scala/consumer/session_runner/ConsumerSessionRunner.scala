@@ -67,7 +67,20 @@ case class ConsumerSessionRunner(
                     )
 
                     if !messageFilterChainResult.isOk then
-                        createAndSendResponse(Seq.empty)
+                        // Session-level filter miss: emit the SAME count-only placeholder the drained /
+                        // target-filter-miss path (`case None` above) sends - NOT an empty (zero-message)
+                        // response. On a zero-message response the client throws reading the trailing
+                        // counters (ConsumerSession.tsx: newMessages[newMessages.length - 1]
+                        // .getNumMessageProcessed()), which kills the stream handler - so the session
+                        // halted at the first non-matching message. A count-only placeholder advances
+                        // the processed counter, renders no row, and keeps the stream flowing (matching
+                        // the per-target filter, which never halts).
+                        val filteredMsgPb = consumerPb.Message(
+                            numMessageProcessed = numMessageProcessed,
+                            numMessageSent = numMessageSent
+                        )
+                        val filterErrors = if isDebug then messageFilterChainResult.results.flatMap(r => r.error) else Vector.empty
+                        createAndSendResponse(Seq(filteredMsgPb), filterErrors)
 
                     val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
                         sessionConfig.coloringRuleChain.coloringRules

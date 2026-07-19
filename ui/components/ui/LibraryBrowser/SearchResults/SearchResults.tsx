@@ -50,6 +50,11 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 
   useEffect(() => {
     async function fetchSearchResults() {
+      if (props.resourceMatchers.length === 0) {
+        props.onItems([]); // no search contexts - nothing to list (the server rejects an empty filter)
+        return;
+      }
+
       const req = new pb.ListLibraryItemsRequest();
 
       const contextsList = props.resourceMatchers.map(rm => resourceMatcherToPb(rm))
@@ -118,6 +123,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                   onChange={setFilterInputValue}
                   appearance='no-borders'
                   clearable
+                  testId="lib-search-filter"
                 />
               </div>
               <div className={s.Toolbar}>
@@ -126,6 +132,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     options={['Name', 'Last Modified']}
                     value={sort}
                     onChange={setSort}
+                    testId="lib-search-sort"
                   />
                 </div>
               </div>
@@ -187,7 +194,7 @@ const Item: React.FC<ItemProps> = (props) => {
   const i18n = I18n.useContext();
 
   return (
-    <div className={className} onClick={props.onClick} onDoubleClick={props.onDoubleClick}>
+    <div className={className} data-testid="lib-search-result" onClick={props.onClick} onDoubleClick={props.onDoubleClick}>
       <div className={s.ItemName}>
         {props.libraryItem.spec.metadata.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>
@@ -205,7 +212,7 @@ const Item: React.FC<ItemProps> = (props) => {
           {!props.isReadOnly && (
             <ActionButton
               action={{ type: 'predefined', action: 'edit' }}
-              buttonProps={{ appearance: 'borderless-semitransparent' }}
+              buttonProps={{ appearance: 'borderless-semitransparent', testId: 'lib-item-edit' }}
               onClick={() => {
                 modals.push({
                   id: `edit-library-item-${props.libraryItem.spec.metadata.id}`,

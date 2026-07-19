@@ -97,6 +97,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
 
       <FormItem>
         <Select<ManagedTopicSelectorSpec['topicSelector']['type']>
+          testId="cs-target-mode"
           list={[
             { type: 'item', title: 'Current Topic', value: 'current-topic' },
             { type: 'item', title: 'Specific Topic(s)', value: 'multi-topic-selector' },
@@ -134,6 +135,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
       {itemSpec.topicSelector.type === 'multi-topic-selector' && (
         <FormItem>
           <ListInput<string>
+            testId="cs-target-fqn-list"
             value={itemSpec.topicSelector.topicFqns}
             onChange={(v) => {
               if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
@@ -172,7 +174,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
                 {v}
               </span>)}
             editor={{
-              render: (value, onChange) => <Input value={value} onChange={onChange} placeholder='persistent://tenant/namespace/topic' />,
+              render: (value, onChange) => <Input testId="cs-target-fqn-input" value={value} onChange={onChange} placeholder='persistent://tenant/namespace/topic' />,
               initialValue: ''
             }}
             itemName="Topic"
@@ -241,6 +243,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
           <FormItem>
             <FormLabel content="Pattern" />
             <Input
+              testId="cs-target-regex-pattern"
               value={itemSpec.topicSelector.pattern}
               onChange={(v) => {
                 if (itemSpec.topicSelector.type !== 'namespaced-regex-topic-selector') {
@@ -256,7 +259,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         </>
       )}
       {isNotApplicableInThisContext && (
-        <span style={{ color: 'var(--accent-color-red)', display: 'block', marginTop: '-4rem' }}>The topic selector is not applicable in this context.</span>
+        <span data-testid="cs-target-not-applicable" style={{ color: 'var(--accent-color-red)', display: 'block', marginTop: '-4rem' }}>The topic selector is not applicable in this context.</span>
       )}
     </div>
   );

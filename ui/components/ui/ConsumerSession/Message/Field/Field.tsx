@@ -10,6 +10,7 @@ export type FieldProps = {
   rawValue?: string,
   title?: string,
   valueHref?: string,
+  testId?: string,
 }
 const Field: React.FC<FieldProps> = (props) => {
   const { notifySuccess, notifyWarn } = Notifications.useContext();
@@ -38,6 +39,7 @@ const Field: React.FC<FieldProps> = (props) => {
     <div
       className={`${s.FieldValue} ${props.rawValue === undefined ? '' : s.ClickableFieldValue}`}
       title={props.rawValue}
+      data-testid={props.testId}
       onClick={(event) => {
         event.stopPropagation();
         copyRawValue();
@@ -49,7 +51,7 @@ const Field: React.FC<FieldProps> = (props) => {
   );
 
   if (props.valueHref !== undefined) {
-    valueElement = <a href={props.valueHref} className={`${s.FieldValue} ${s.FieldValueLink}`} title={props.rawValue}>{valueContent}</a>;
+    valueElement = <a href={props.valueHref} data-testid={props.testId} className={`${s.FieldValue} ${s.FieldValueLink}`} title={props.rawValue}>{valueContent}</a>;
   }
 
   return (

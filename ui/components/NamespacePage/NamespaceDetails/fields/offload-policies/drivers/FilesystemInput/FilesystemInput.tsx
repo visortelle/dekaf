@@ -24,6 +24,7 @@ const FilesystemInput: React.FC<FilesystemInputProps> = (props) => {
           )}
         />
         <Input
+          testId="offload-filesystem-profile-path"
           value={props.value.fileSystemProfilePath || ''}
           onChange={v => props.onChange({ ...props.value, fileSystemProfilePath: v })}
           placeholder="conf/filesystem_offload_core_site.xml"

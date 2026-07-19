@@ -38,6 +38,7 @@ const Button: React.FC<ButtonProps> = (props) => {
   return (
     <div className={s.Button}>
       <SmallButton
+        testId="credentials-button"
         title='Edit Pulsar Credentials'
         type='primary'
         svgIcon={icon}

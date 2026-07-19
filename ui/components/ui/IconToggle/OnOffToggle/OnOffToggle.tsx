@@ -5,7 +5,8 @@ import powerIcon from './power.svg';
 export type OnOffToggleProps = {
   value: boolean,
   onChange: (v: boolean) => void,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const OnOffToggle: React.FC<OnOffToggleProps> = (props) => {
@@ -32,6 +33,7 @@ const OnOffToggle: React.FC<OnOffToggleProps> = (props) => {
       value={props.value}
       onChange={props.onChange}
       isReadOnly={props.isReadOnly}
+      testId={props.testId}
     />
   );
 }

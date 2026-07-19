@@ -21,6 +21,7 @@ const LibraryItemName: React.FC<LibraryItemNameProps> = (props) => {
               id: 'rename-library-item',
               title: `Rename Library Item`
             }}
+            button={{ testId: 'lib-item-rename' }}
             initialValue={props.value}
             onConfirm={props.onChange}
           />

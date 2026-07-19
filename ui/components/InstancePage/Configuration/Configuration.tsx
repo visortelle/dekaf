@@ -62,10 +62,11 @@ const Configuration = () => {
     <div className={s.Configuration}>
       <div className={s.Toolbar}>
         <div style={{ width: '480rem' }}>
-          <Input value={propertyFilter} onChange={v => setPropertyFilter(v)} placeholder="Search by property name" focusOnMount={true} clearable={true} />
+          <Input testId="config-filter" value={propertyFilter} onChange={v => setPropertyFilter(v)} placeholder="Search by property name" focusOnMount={true} clearable={true} />
         </div>
         <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
           <SmallButton
+            testId="config-toggle-dynamic"
             text={isShowDynamicOnly ? 'Show all' : 'Show dynamic only'}
             onClick={() => setIsShowDynamicOnly(!isShowDynamicOnly)}
             type="primary"
@@ -106,7 +107,7 @@ const Configuration = () => {
           <tbody>
             {allKeys.map((key) => {
               return (
-                <tr key={key} className={s.Row}>
+                <tr key={key} className={s.Row} data-testid="config-row" data-config-key={key}>
                   <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>
                     <div
                       data-tooltip-id={tooltipId}
@@ -227,16 +228,16 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
             {props.configKey}
           </div>
           <div className={s.DynamicConfigValueEditorInput}>
-            <Input onChange={(v) => setInputValue(v)} placeholder="Enter new value" value={inputValue} focusOnMount={true} />
+            <Input testId="config-value-input" onChange={(v) => setInputValue(v)} placeholder="Enter new value" value={inputValue} focusOnMount={true} />
           </div>
 
           <div className={s.DynamicConfigValueEditorButtons}>
             <div className={s.DynamicConfigValueEditorUpdateButton}>
-              <Button text="Delete" type='danger' onClick={deleteDynamicConfigValue} />
+              <Button testId="config-delete" text="Delete" type='danger' onClick={deleteDynamicConfigValue} />
             </div>
 
             <div className={s.DynamicConfigValueEditorUpdateButton}>
-              <Button text="Update" type='primary' onClick={updateDynamicConfigValue} />
+              <Button testId="config-update" text="Update" type='primary' onClick={updateDynamicConfigValue} />
             </div>
           </div>
         </div>
@@ -245,6 +246,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
       {props.configValue}
 
       <ActionButton
+        testId="config-edit"
         onClick={() => setIsShowEditor(!isShowEditor)}
         action={isShowEditor ? { type: 'predefined', action: 'close' } : { type: 'predefined', action: 'edit' }}
       />

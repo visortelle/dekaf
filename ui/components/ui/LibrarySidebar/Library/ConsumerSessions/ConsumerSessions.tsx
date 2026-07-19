@@ -18,6 +18,7 @@ const ConsumerSessions: React.FC<ConsumerSessionsProps> = (props) => {
     <div className={s.ConsumerSessions}>
       <div className={s.NewSessionButton}>
         <SmallButton
+          testId='lib-new-consumer-session'
           type='primary'
           text='New Consumer Session'
           svgIcon={addIcon}

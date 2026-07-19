@@ -11,6 +11,7 @@ export type ResourceMatchersInputProps = {
   onChange: (value: ResourceMatcher[]) => void
   libraryContext: LibraryContext;
   isReadOnly?: boolean
+  addButtonTestId?: string
 };
 
 const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
@@ -23,6 +24,7 @@ const ResourceMatchersInput: React.FC<ResourceMatchersInputProps> = (props) => {
     >
       <ListInput<ResourceMatcher>
         isReadOnly={props.isReadOnly}
+        addButtonTestId={props.addButtonTestId}
         value={props.value}
         renderItem={(matcher) => {
           return (

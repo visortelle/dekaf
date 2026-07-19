@@ -19,7 +19,7 @@ export type JsFilterEditorProps = {
 
 const JsFilterEditor: React.FC<JsFilterEditorProps> = (props) => {
   return (
-    <div className={s.JsFilterEditor}>
+    <div className={s.JsFilterEditor} data-testid="cs-js-filter">
       <div className={s.FormControl}>
         <CodeEditor
           value={props.value.jsCode}

@@ -81,6 +81,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
         {props.managedItemReference && (
           <div
             className={s.ReferenceIcon}
+            data-testid="lib-reference-icon"
             onClick={() => {
               if (props.isReadOnly) {
                 return;

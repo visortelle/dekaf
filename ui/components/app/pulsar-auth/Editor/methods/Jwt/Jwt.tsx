@@ -16,6 +16,7 @@ const Jwt: React.FC<JwtProps> = (props) => {
       <FormItem>
         <FormLabel content='Token' isRequired />
         <Input
+          testId="credentials-jwt-token"
           value={props.value.token}
           onChange={v => props.onChange({ ...props.value, token: v })}
           inputProps={{ type: 'password' }}

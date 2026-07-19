@@ -86,9 +86,13 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
     const res = await namespaceServiceClient
       .createNamespace(req, null)
       .catch((err) => {
-        `Unable to create namespace: ${err}`;
+        notifyError(`Unable to create namespace: ${err}`);
+        return undefined;
       });
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    if (res === undefined) {
+      return; // transport failure - stay on the form, never a silent "success"
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
         `Unable to create namespace: ${res.getStatus()?.getMessage()}`
       );
@@ -102,6 +106,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
 
   const namespaceNameInput = (
     <Input
+      testId="create-namespace-name"
       value={namespaceName}
       onChange={setNamespaceName}
       placeholder="namespace-1"

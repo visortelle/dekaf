@@ -20,6 +20,7 @@ const ExactNamespaceMatcherInput: React.FC<ExactNamespaceMatcherInputProps> = (p
           value={props.value.namespace}
           onChange={(v) => props.onChange({ ...props.value, namespace: v })}
           isReadOnly={props.isReadOnly}
+          testId="lib-matcher-namespace"
         />
       </FormItem>
       <FormItem size='small'>

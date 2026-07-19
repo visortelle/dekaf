@@ -11,6 +11,7 @@ export type MemorySizeInputProps = {
   initialValue: number;
   onChange: (value: number) => void;
   maxLimitBytes?: number;
+  testId?: string;
 };
 
 const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
@@ -33,6 +34,7 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
     <div className={s.MemorySizeInput}>
       <div className={s.Size}>
         <Input
+          testId={props.testId}
           type='number'
           inputProps={{ min: 0 }}
           value={value.size.toString()}

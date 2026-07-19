@@ -47,6 +47,7 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
       <FormItem>
         <FormLabel content='Issuer URL' isRequired />
         <Input
+          testId="credentials-oauth2-issuer"
           onChange={v => props.onChange({ ...props.value, issuerUrl: v })}
           value={props.value.issuerUrl}
         />
@@ -74,6 +75,7 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
       <FormItem>
         <FormLabel content='Audience' />
         <Input
+          testId="credentials-oauth2-audience"
           onChange={v => props.onChange({ ...props.value, audience: v })}
           value={props.value.audience}
         />

@@ -280,7 +280,7 @@ const TopicDetails: React.FC<TopicDetailsProps> = (props) => {
 
   return (
     <div className={s.Policies}>
-      <div className={s.IsGlobalCheckbox}>
+      <div className={s.IsGlobalCheckbox} data-testid="topic-details-is-global">
         <Checkbox
           checked={isGlobal}
           onChange={() => setIsGlobal(v => !v)}

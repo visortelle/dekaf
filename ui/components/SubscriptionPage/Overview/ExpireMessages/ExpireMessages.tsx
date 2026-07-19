@@ -117,6 +117,7 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
           <FormItem>
             <FormLabel content={"Select expiration target:"} />
             <Select<ExpirationTarget>
+              testId="expire-target-select"
               value={expirationTarget}
               onChange={setExpirationTarget}
               list={list}
@@ -128,6 +129,7 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
               <FormItem>
                 <FormLabel content={"Message ID:"} />
                 <Input
+                  testId="expire-message-id-input"
                   placeholder={"0867100018003000"}
                   value={expireByMessageId.messageId}
                   onChange={(id) => setExpireByMessageId(value => {
@@ -168,10 +170,12 @@ const ExpireMessages: React.FC<ExpireMessagesProps> = (props) => {
           {expirationTarget === 'expire-time-in-seconds' &&
             <FormItem>
               <FormLabel content={"Expiration Time (rounded to seconds):"} />
-              <DurationInput
-                initialValue={expireTimeInSeconds}
-                onChange={(timeInSeconds) => setExpireTimeInSeconds(timeInSeconds)}
-              />
+              <div data-testid="expire-duration">
+                <DurationInput
+                  initialValue={expireTimeInSeconds}
+                  onChange={(timeInSeconds) => setExpireTimeInSeconds(timeInSeconds)}
+                />
+              </div>
             </FormItem>
           }
           <div className={s.Info}>

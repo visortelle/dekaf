@@ -375,6 +375,8 @@ const Session: React.FC<SessionProps> = (props) => {
   return (
     <div
       className={s.ConsumerSession}
+      data-testid="cs-session"
+      data-cs-state={sessionState}
       style={{ gridTemplateRows: props.isShowConsole ? 'min-content 1fr 400rem' : 'min-content 1fr 0' }}
     >
       <Toolbar
@@ -404,8 +406,13 @@ const Session: React.FC<SessionProps> = (props) => {
         <div className={s.Content}>
           <div
             className={`${cts.Table} ${s.Table}`}
+            data-testid="cs-table"
+            data-cs-sort={typeof sort.key === 'string' ? `${sort.key}:${sort.direction}` : `projection:${sort.direction}`}
             style={{ position: 'relative' }}
             ref={tableRef}
+            // Focusable: the keyboard navigation below is unreachable for a keyboard user without
+            // a tabIndex - onKeyDown only fires on a focused element.
+            tabIndex={0}
             onWheel={onWheel}
             onKeyDown={(event) => {
               if (virtuosoRef.current === null) {
@@ -437,6 +444,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <tr>
                   <Th
                     key="index"
+                    testId="cs-th-index"
                     title="#"
                     sort={sort}
                     setSort={setSort}
@@ -455,6 +463,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="publishTime"
+                    testId="cs-th-publishTime"
                     title="Publish time"
                     sort={sort}
                     setSort={setSort}
@@ -465,6 +474,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="key"
+                    testId="cs-th-key"
                     title="Key"
                     sort={sort}
                     setSort={setSort}
@@ -477,6 +487,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
                   <Th
                     key="value"
+                    testId="cs-th-value"
                     title="Value"
                     sort={sort}
                     setSort={setSort}
@@ -486,6 +497,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="target"
+                    testId="cs-th-target"
                     title="Target"
                     sort={sort}
                     setSort={setSort}
@@ -495,6 +507,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="topic"
+                    testId="cs-th-topic"
                     title="Topic"
                     sort={sort}
                     setSort={setSort}
@@ -504,6 +517,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="producer"
+                    testId="cs-th-producer"
                     title="Producer"
                     sort={sort}
                     setSort={setSort}
@@ -513,6 +527,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="schemaVersion"
+                    testId="cs-th-schemaVersion"
                     title="Schema version"
                     sort={sort}
                     setSort={setSort}
@@ -522,6 +537,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="size"
+                    testId="cs-th-size"
                     title="Size"
                     sort={sort}
                     setSort={setSort}
@@ -531,6 +547,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="properties"
+                    testId="cs-th-properties"
                     title="Properties"
                     sort={sort}
                     setSort={setSort}
@@ -540,6 +557,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="eventTime"
+                    testId="cs-th-eventTime"
                     title="Event time"
                     sort={sort}
                     setSort={setSort}
@@ -549,6 +567,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="brokerPublishTime"
+                    testId="cs-th-brokerPublishTime"
                     title="Broker pub. time"
                     sort={sort}
                     setSort={setSort}
@@ -558,14 +577,17 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="messageId"
+                    testId="cs-th-messageId"
                     title="Message Id"
                     sort={sort}
                     setSort={setSort}
+                    sortKey="messageId"
                     help={help.messageId}
                     {...resizeProps('messageId')}
                   />
                   <Th
                     key="sequenceId"
+                    testId="cs-th-sequenceId"
                     title="Sequence Id"
                     sort={sort}
                     setSort={setSort}
@@ -575,14 +597,17 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="orderingKey"
+                    testId="cs-th-orderingKey"
                     title="Ordering key"
                     sort={sort}
                     setSort={setSort}
+                    sortKey="orderingKey"
                     help={help.orderingKey}
                     {...resizeProps('orderingKey')}
                   />
                   <Th
                     key="redeliveryCount"
+                    testId="cs-th-redeliveryCount"
                     title="Redelivery count"
                     sort={sort}
                     setSort={setSort}
@@ -592,6 +617,7 @@ const Session: React.FC<SessionProps> = (props) => {
                   />
                   <Th
                     key="sessionContextState"
+                    testId="cs-th-sessionContextState"
                     title="Session Context State"
                     sort={sort}
                     setSort={setSort}
@@ -605,9 +631,10 @@ const Session: React.FC<SessionProps> = (props) => {
           </div>
 
           {messageDetails !== undefined && (
-            <div className={s.MessageDetails}>
+            <div className={s.MessageDetails} data-testid="cs-message-details">
               <div className={s.CloseMessageDetails}>
                 <ActionButton
+                  testId="cs-message-details-close"
                   onClick={() => setSelectedMessages([])}
                   title="Close Message Details"
                   action={{ type: 'predefined', action: 'close' }}

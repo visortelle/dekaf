@@ -15,6 +15,7 @@ const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
     <div className={s.BasicFilterEditor}>
       <FormItem size='small'>
         <BasicMessageFilterOpInput
+          testId="cs-filter-op"
           value={props.value.op}
           onChange={(v) => props.onChange({ ...props.value, op: v })}
           isShowEnableToggle={false}

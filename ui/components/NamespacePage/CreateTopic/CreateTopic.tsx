@@ -48,7 +48,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
     }
   }, [brokersConfig]);
 
-  const topicNameInput = <Input value={topicName} onChange={setTopicName} focusOnMount />
+  const topicNameInput = <Input testId="create-topic-name" value={topicName} onChange={setTopicName} focusOnMount />
   const topicPersistencyInput = (
     <Select<TopicPersistency>
       onChange={setTopicPersistency}
@@ -62,6 +62,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
 
   const topicPartitioningInput = (
     <Select<TopicPartitioning>
+      testId="create-topic-partitioning"
       onChange={setTopicPartitioning}
       value={topicPartitioning}
       list={[

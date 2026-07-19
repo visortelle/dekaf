@@ -26,37 +26,44 @@ def getThreadFactory(poolName: String) =
 val sharedTimer = new HashedWheelTimer(getThreadFactory("shared-pulsar-timer"), 1, TimeUnit.MILLISECONDS)
 
 def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
-    var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarWebUrl.get)
+    // The WHOLE construction is Try-wrapped: `builder.authentication(pluginClass, params)` throws on
+    // an unloadable plugin or bad params, and an escaped exception here used to kill every gRPC call
+    // carrying that cookie instead of degrading to an auth error.
+    Try {
+        var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarWebUrl.get)
 
-    builder = tls.configureAdminClient(builder, config)
+        builder = tls.configureAdminClient(builder, config)
 
-    val pulsarCredentials = pulsarAuth.current match
-        case None    => defaultPulsarAuth.credentials.get("Default")
-        case Some(c) => pulsarAuth.credentials.get(c)
-    pulsarCredentials match
-        case None => Left(new Exception("No credentials found for Pulsar Admin"))
-        case Some(c) =>
-            c match
-                case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
-                case cr: OAuth2Credentials =>
-                    builder.authentication(
-                        AuthenticationFactoryOAuth2.clientCredentials(
-                            URL.createURL(cr.issuerUrl),
-                            URL.createURL(cr.privateKey),
-                            cr.audience.orNull,
-                            cr.scope.orNull
+        val pulsarCredentials = pulsarAuth.current match
+            case None    => defaultPulsarAuth.credentials.get("Default")
+            case Some(c) => pulsarAuth.credentials.get(c)
+        pulsarCredentials match
+            case None => throw new Exception("No credentials found for Pulsar Admin")
+            case Some(c) =>
+                c match
+                    case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
+                    case cr: OAuth2Credentials =>
+                        builder.authentication(
+                            AuthenticationFactoryOAuth2.clientCredentials(
+                                URL.createURL(cr.issuerUrl),
+                                URL.createURL(cr.privateKey),
+                                cr.audience.orNull,
+                                cr.scope.orNull
+                            )
                         )
-                    )
-                case cr: AuthParamsStringCredentials =>
-                    builder.authentication(cr.authPluginClassName, cr.authParams)
-                case _ => Left(new Exception("Unsupported credentials type"))
+                    case cr: AuthParamsStringCredentials =>
+                        builder.authentication(cr.authPluginClassName, cr.authParams)
+                    case _: EmptyCredentials => () // anonymous/default access - no authentication
+                    case _ => throw new Exception("Unsupported credentials type")
 
-    Try(builder.build) match {
-        case Success(value)     => Right(value)
-        case Failure(_) => Left(new Exception("Wrong credentials for Pulsar Admin"))
+        builder.build
+    } match {
+        case Success(value) => Right(value)
+        case Failure(err)   => Left(new Exception(s"Wrong credentials for Pulsar Admin: ${err.getMessage}"))
     }
 
 def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
+  Try {
     val pulsarClientConfig = ClientConfigurationData()
 
     /* By default, for partitioned topics Pulsar client may use several threads.
@@ -91,17 +98,22 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
         .timer(sharedTimer)
         .eventLoopGroup(sharedEventLoopGroup)
 
-    Try(builder.build) match {
-        case Success(value)     => Right(value)
-        case Failure(_) => Left(new Exception("Wrong credentials for Pulsar Client"))
-    }
+    builder.build
+  } match {
+    case Success(value) => Right(value)
+    case Failure(err)   => Left(new Exception(s"Wrong credentials for Pulsar Client: ${err.getMessage}"))
+  }
 
-def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData) =
+/** Configures authentication on the client config, or THROWS for missing/unsupported credentials.
+  * Called inside `makePulsarClient`'s Try, so a throw becomes that function's `Left`. (The previous
+  * version returned `Left` values that every caller discarded, so missing/unsupported credentials
+  * silently produced an anonymous client.) */
+def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData): Unit =
     val pulsarCredentials = pulsarAuth.current match
         case None => defaultPulsarAuth.credentials.get("Default")
         case Some(c) => pulsarAuth.credentials.get(c)
     pulsarCredentials match
-        case None => Left(new Exception("No credentials found for Pulsar Admin"))
+        case None => throw new Exception("No credentials found for Pulsar Client")
         case Some(c) =>
             c match
                 case cr: JwtCredentials => pulsarClientConfig.setAuthentication(AuthenticationFactory.token(cr.token))
@@ -117,4 +129,5 @@ def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfiguratio
                 case cr: AuthParamsStringCredentials =>
                     pulsarClientConfig.setAuthPluginClassName(cr.authPluginClassName)
                     pulsarClientConfig.setAuthParams(cr.authParams)
-                case _ => Left(new Exception("Unsupported credentials type"))
+                case _: EmptyCredentials => () // anonymous/default access - no authentication configured
+                case _ => throw new Exception("Unsupported credentials type")

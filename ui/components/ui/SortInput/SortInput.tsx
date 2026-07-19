@@ -11,6 +11,7 @@ export type SortInputProps<Option extends string> = {
   options: Option[];
   value: Sort<Option>;
   onChange: (value: Sort<Option>) => void;
+  testId?: string;
 };
 
 type InternalOption<Option extends string> = {
@@ -57,6 +58,7 @@ function SortInput<Option extends string>(props: SortInputProps<Option>): React.
         onChange={(v) => props.onChange({ ...props.value, sortBy: internalOptions[v].value.sortBy, sortDirection: internalOptions[v].value.sortDirection })}
         value={`${props.value.sortBy}-${props.value.sortDirection}`}
         appearance='no-borders'
+        testId={props.testId}
       />
     </div>
   );

@@ -102,6 +102,7 @@ const ValueProjectionInput: React.FC<ValueProjectionInputProps> = (props) => {
               )}
             />
             <Input
+              testId="cs-projection-label"
               value={itemSpec.shortName}
               onChange={(v) => onSpecChange({ ...itemSpec, shortName: v })}
               placeholder='Item Name'

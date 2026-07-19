@@ -15,6 +15,7 @@ const TestOpStringIncludesInput: React.FC<TestOpStringIncludesInputProps> = (pro
     <div className={s.TestOpStringIncludesInput}>
       <FormItem>
         <StringFilterInput
+          testId="cs-filter-value"
           size='small'
           value={props.value.includes}
           onChange={(v) => props.onChange({ ...props.value, includes: v })}

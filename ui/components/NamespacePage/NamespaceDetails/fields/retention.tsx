@@ -211,6 +211,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
+                testId="retention-type-select"
                 value={value.type}
                 list={[
                   { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
@@ -285,7 +286,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     />
                   </div>
                   {value.retentionSizeInMb.type === 'limit' && (
-                    <div className={sf.FormItem}>
+                    <div className={sf.FormItem} data-testid="retention-size-value">
                       <MemorySizeInput
                         initialValue={value.retentionSizeInMb.value * bytesInMegabyte}
                         onChange={(v) => {

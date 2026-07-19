@@ -7,6 +7,7 @@ export const ColumnResizeHandle: React.FC<{
   <div
     className={s.ColumnResizeHandle}
     title="Drag to resize column"
+    data-testid="table-resize-handle"
     onClick={(e) => e.stopPropagation()}
     onMouseDown={(e) => {
       e.preventDefault();

@@ -70,6 +70,8 @@
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
     "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/chroma-js": "^2.1.4",
     "@types/file-saver": "^2.0.5",
     "@types/google-protobuf": "^3.15.6",

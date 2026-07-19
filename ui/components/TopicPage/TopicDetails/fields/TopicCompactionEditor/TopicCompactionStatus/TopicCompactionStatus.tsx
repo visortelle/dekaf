@@ -157,6 +157,7 @@ const TopicCompactionStatus: React.FC<TopicCompactionStatusProps> = (props) => {
         <SmallButton
           type='regular'
           text='Trigger Compaction'
+          testId='trigger-compaction-button'
           onClick={async () => {
             const req = new pb.TriggerCompactionRequest();
             req.setTopicFqn(props.topicFqn);

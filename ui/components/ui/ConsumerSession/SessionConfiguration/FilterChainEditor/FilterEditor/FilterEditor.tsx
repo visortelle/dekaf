@@ -86,12 +86,14 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             preItemType: (
               <div style={{ display: 'flex', gap: '4rem' }}>
                 <OnOffToggle
+                  testId="cs-filter-enable"
                   value={itemSpec.isEnabled}
                   onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
                   isReadOnly={props.isReadOnly}
                 />
 
                 <InvertedToggle
+                  testId="cs-filter-negate"
                   value={itemSpec.isNegated}
                   onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
                   helpOverride="Invert result. If enabled, then messages that matches the filter will be not passed and vice versa."
@@ -102,6 +104,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             postItemType: (
               <div>
                 <IconToggle<t.MessageFilterType>
+                  testId="cs-filter-mode"
                   items={[
                     {
                       type: 'item',

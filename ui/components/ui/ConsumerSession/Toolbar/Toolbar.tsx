@@ -46,7 +46,12 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       <div className={s.ToolbarLeft}>
         <div className={s.Control}>
           <SmallButton
-            title={props.sessionState ? "Start or Resume" : "Pause"}
+            testId="cs-play"
+            title={
+              props.sessionState === 'running' || props.sessionState === 'pausing' ? "Pause"
+                : props.sessionState === 'paused' ? "Resume"
+                : "Start"
+            }
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
@@ -56,6 +61,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
+            testId="cs-stop"
             title={"Stop and flush the current session loaded data"}
             svgIcon={resetIcon}
             onClick={() => props.onStopSession()}
@@ -66,6 +72,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
+            testId="cs-tools"
             title={"Toggle additional tools"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
@@ -81,6 +88,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           data-tooltip-html={'Search in message keys and values.'}
         >
           <Input
+            testId="cs-search"
             value={props.searchInResults}
             onChange={props.onSearchInResultsChange}
             placeholder='Search in loaded messages'
@@ -89,7 +97,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           />
           {props.searchInResults !== '' && (
             <div className={s.NumFoundInResults}>
-              <strong>{props.numFoundInResults}</strong> found
+              <strong data-testid="cs-num-found">{props.numFoundInResults}</strong> found
             </div>
           )}
         </div>
@@ -98,7 +106,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       <div className={s.ToolbarRight}>
         <div className={s.MessagesLoadedStats}>
           <div className={s.MessagesLoadedStat}>
-            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesProcessed)}</strong>
+            <strong className={s.MessagesLoadedStatValue} data-testid="cs-processed">{i18n.formatLongNumber(props.messagesProcessed)}</strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp;processed</span>
           </div>
           <div className={s.MessagesLoadedStat}>
@@ -109,7 +117,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.MessagesLoadedStats}>
           <div className={s.MessagesLoadedStat}>
-            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesLoaded)}</strong>
+            <strong className={s.MessagesLoadedStatValue} data-testid="cs-loaded">{i18n.formatLongNumber(props.messagesLoaded)}</strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp; loaded</span>
           </div>
           <div className={s.MessagesLoadedStat}>

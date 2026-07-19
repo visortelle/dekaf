@@ -26,7 +26,12 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
         const column = props.columns.columns[columnKey as CK]!;
 
         return (
-          <div key={columnKey} className={`${s.Filter} ${filterInUse.state === 'inactive' ? s.InactiveFilter : ''}`}>
+          <div
+            key={columnKey}
+            className={`${s.Filter} ${filterInUse.state === 'inactive' ? s.InactiveFilter : ''}`}
+            data-testid="table-filter-chip"
+            data-column-key={columnKey}
+          >
             <div className={s.FilterTitle}>
               <strong className={s.FilterTitleText}>
                 {column.title}
@@ -34,6 +39,7 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
 
               <div className={s.ToggleFilter}>
                 <Toggle
+                  testId="table-filter-chip-toggle"
                   value={filterInUse.state === 'active'}
                   onChange={(v) => {
                     const newFilters = { ...props.filters };
@@ -48,6 +54,7 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
 
               <div className={s.RemoveFilter}>
                 <SmallButton
+                  testId="table-filter-chip-remove"
                   title="Remove this filter"
                   type='regular'
                   svgIcon={removeFilterIcon}

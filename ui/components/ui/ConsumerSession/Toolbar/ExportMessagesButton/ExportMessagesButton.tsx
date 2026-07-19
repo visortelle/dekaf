@@ -13,11 +13,12 @@ const ExportMessagesButton: React.FC<ExportMessagesButtonProps> = (props) => {
   return (
     <div className={s.ExportMessagesButton}>
       <SmallButton
+        testId="cs-export-open"
         title="Export messages"
         svgIcon={exportIcon}
         type='regular'
         text='Export messages'
-        disabled={props.messages.length === 0 && props.sessionState !== 'paused'}
+        disabled={props.messages.length === 0}
         onClick={() => {
           modals.push({
             id: 'export-messages',

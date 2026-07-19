@@ -106,6 +106,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       exit={{ opacity: 0, scale: 0.5 }}
       transition={{ duration: 0.25, ease: 'easeInOut', delay: 0.1 }}
       tabIndex={0}
+      data-testid="modal"
       onKeyDown={(e) => {
         if (!props.entry.isNotCloseable && e.key === 'Escape') {
           props.onClose();

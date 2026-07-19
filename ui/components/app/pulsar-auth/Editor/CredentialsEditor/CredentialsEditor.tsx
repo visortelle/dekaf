@@ -28,12 +28,13 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
     <div className={s.CredentialsEditor}>
       <FormItem>
         <FormLabel content='Name' isRequired />
-        <Input value={credentialsName} annotation="Only alphanumerics, underscores(_) and dashes(-) are allowed." onChange={setCredentialsName} />
+        <Input testId="credentials-name" value={credentialsName} annotation="Only alphanumerics, underscores(_) and dashes(-) are allowed." onChange={setCredentialsName} />
       </FormItem>
 
       <FormItem>
         <FormLabel content='Type' isRequired />
         <Select<CredentialsType>
+          testId="credentials-method-select"
           list={[
             { type: 'item', title: 'Empty', value: 'empty' },
             { type: 'item', title: 'OAuth2', value: 'oauth2' },
@@ -84,6 +85,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
       <div className={s.Footer}>
         <Button type='regular' text='Cancel' onClick={props.onDone} />
         <Button
+          testId="credentials-save"
           type='primary'
           disabled={credentialsName.length === 0}
           text='Save'

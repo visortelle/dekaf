@@ -60,16 +60,19 @@ const AllObjectTypes: React.FC<AllObjectTypesProps> = (props) => {
           value={resourceMatchers}
           onChange={setResourceMatchers}
           libraryContext={props.libraryContext}
+          addButtonTestId="lib-add-context"
         />
       </div>
 
       <div>
         {
           itemTypes.sort((a, b) => getReadableItemType(a).localeCompare(getReadableItemType(b))).map(itemType => {
-            const itemCount = itemCountPerType[itemType] ?? 0;
+            // undefined = count not loaded yet (or the fetch failed) - distinct from a real zero,
+            // so "NoData" can't render (and tests can't assert emptiness) before the data arrived.
+            const loadedCount = itemCountPerType[itemType];
 
             return (
-              <div key={itemType}>
+              <div key={itemType} data-testid={`lib-type-row-${itemType}`} data-loaded={String(loadedCount !== undefined)}>
                 <div className={s.ItemType}>
                   <div className={s.ItemTypeHeader}>
                     <div style={{ marginRight: '24rem' }}>
@@ -79,7 +82,7 @@ const AllObjectTypes: React.FC<AllObjectTypesProps> = (props) => {
                       />
                     </div>
 
-                    {itemCount === 0 && (
+                    {loadedCount === 0 && (
                       <div style={{ display: 'flex', justifySelf: 'center', marginLeft: '-12rem' }}>
                         <NoData />
                       </div>
@@ -104,6 +107,7 @@ const AllObjectTypes: React.FC<AllObjectTypesProps> = (props) => {
                       libraryContext={props.libraryContext}
                       onSaved={() => setRefreshItemCountKey(v => v + 1)}
                       appearance='create'
+                      testId="lib-create-item"
                     />
                   </div>
                 </div>

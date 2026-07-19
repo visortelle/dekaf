@@ -29,3 +29,70 @@ jobs:
       - name: UI unit tests
         shell: bash
         run: nix-shell --run 'cd ui && make test'
+
+  e2e:
+    runs-on: [self-hosted, x64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/git-lfs-pull
+
+      # Playwright's browser download is not pinned/cached elsewhere; do it up front so a clean
+      # runner has Chromium before the suite starts.
+      - name: Install Playwright browsers
+        shell: bash
+        run: nix-shell --run 'cd e2e && sbt "runMain com.microsoft.playwright.CLI install --with-deps chromium"'
+
+      - name: Bring up Pulsar (standalone) + Dekaf server
+        shell: bash
+        run: |
+          # The runner is ephemeral (fresh checkout), so Library writes under server/data don't
+          # persist across runs - no disposable data root needed (a fresh DEKAF_DATA_DIR would also
+          # skip the consumer-session libs.js/proto that run-dekaf builds under the default root).
+          nix-shell --run 'e2e/scripts/stack-up.sh'
+          nix-shell --run 'e2e/scripts/run-dekaf.sh' &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:8090/ >/dev/null 2>&1 && break
+            sleep 5
+          done
+
+      - name: E2E - green lane
+        shell: bash
+        env:
+          DEKAF_BASE_URL: http://localhost:8090
+          PULSAR_ADMIN_URL: http://localhost:18080
+          PULSAR_SERVICE_URL: pulsar://localhost:6650
+          # Record a trace for EVERY test (not just failures) so all results are navigable as artifacts.
+          TRACE: on
+        run: nix-shell --run 'cd e2e && sbt test'
+
+      # Upload results whether the suite passed or failed, so they're always navigable.
+      #   e2e-traces       - one Playwright trace per test (<STATUS>__<Suite>__<test>.zip). Navigate them
+      #                      with `sbt "runMain harness.TraceDashboard"` (clickable, colorized index) or by
+      #                      dropping a zip on https://trace.playwright.dev.
+      #   e2e-test-reports - JUnit XML (target/test-reports) + the static HTML report (target/test-html,
+      #                      open index.html) - a pass/fail tree with durations and failure detail.
+      - name: Upload e2e traces (all tests)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-traces
+          path: e2e/target/traces/*.zip
+          if-no-files-found: ignore
+
+      - name: Upload e2e test reports (JUnit XML + HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-reports
+          path: |
+            e2e/target/test-reports/
+            e2e/target/test-html/
+          if-no-files-found: ignore
+
+      - name: Tear down the stack
+        if: always()
+        shell: bash
+        run: nix-shell --run 'e2e/scripts/stack-down.sh' || true

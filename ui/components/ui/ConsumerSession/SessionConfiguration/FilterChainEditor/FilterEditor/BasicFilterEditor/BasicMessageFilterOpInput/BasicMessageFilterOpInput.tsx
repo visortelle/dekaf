@@ -14,7 +14,8 @@ export type BasicMessageFilterOpInputProps = {
   value: BasicMessageFilterOp,
   onChange: (v: BasicMessageFilterOp) => void,
   isShowEnableToggle: boolean,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (props) => {
@@ -84,6 +85,7 @@ const BasicMessageFilterOpInput: React.FC<BasicMessageFilterOpInputProps> = (pro
           {props.value.op.type === "AnyTestOp" && (
             <div style={{ display: 'flex', flex: '1' }}>
               <AnyTestOpTypeSelect
+                testId={props.testId}
                 value={props.value.op}
                 onChange={(v) => props.onChange({ ...props.value, op: v })}
                 isReadOnly={props.isReadOnly}

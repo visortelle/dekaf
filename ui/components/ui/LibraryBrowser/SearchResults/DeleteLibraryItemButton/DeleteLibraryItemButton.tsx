@@ -25,7 +25,8 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
         type: 'regular',
         title: 'Delete this item',
         svgIcon: deleteIcon,
-        appearance: 'borderless-semitransparent'
+        appearance: 'borderless-semitransparent',
+        testId: 'lib-item-delete'
       }}
       modal={{
         title: 'Delete Library Item',

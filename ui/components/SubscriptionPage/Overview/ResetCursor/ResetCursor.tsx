@@ -112,6 +112,7 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
           <FormItem>
             <FormLabel content={"Select reset subscription target:"} />
             <Select<ResetCursorTarget>
+              testId="reset-target-select"
               value={resetCursorTarget}
               onChange={setResetCursorTarget}
               list={list}
@@ -123,6 +124,7 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
               <FormItem>
                 <FormLabel content={"Message ID:"} />
                 <Input
+                  testId="reset-message-id-input"
                   placeholder={"0867100018003000"}
                   value={resetCursorByMessageId.messageId}
                   onChange={(id) => setResetCursorByMessageId(value => {
@@ -164,6 +166,7 @@ const ResetCursor: React.FC<ResetCursorProps> = (props) => {
             <FormItem>
               <FormLabel content={"Timestamp:"} />
               <Input
+                testId="reset-timestamp-input"
                 type={'number'}
                 placeholder={"0"}
                 value={timestamp.toString()}

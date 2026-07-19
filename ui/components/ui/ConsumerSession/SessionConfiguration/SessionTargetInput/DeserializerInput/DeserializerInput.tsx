@@ -74,6 +74,7 @@ const DeserializerInput: React.FC<DeserializerInputProps> = (props) => {
       </div>
 
       <Select<Deserializer['deserializer']['type']>
+        testId="cs-deserializer"
         list={[
           { type: 'item', value: 'use-latest-topic-schema', title: 'Use topic schema' },
           { type: 'item', value: 'treat-bytes-as-json', title: 'Treat raw bytes as JSON' },

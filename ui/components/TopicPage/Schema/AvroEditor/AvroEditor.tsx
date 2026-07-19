@@ -77,6 +77,7 @@ const AvroEditor: React.FC<AvroEditorProps> = (props) => {
           ]}
           value={source}
           onChange={setSource}
+          testId="avro-source-select"
         />
       </div>
 

@@ -90,6 +90,7 @@ const SkipMessages: React.FC<SkipMessagesProps> = (props) => {
           <FormItem>
             <FormLabel content={"Select skip target:"} />
             <Select<SkipMessagesTarget>
+              testId="skip-target-select"
               value={skipMessagesTarget}
               onChange={setSkipMessagesTarget}
               list={list}
@@ -100,6 +101,7 @@ const SkipMessages: React.FC<SkipMessagesProps> = (props) => {
             <FormItem>
               <FormLabel content={"Number of messages:"} />
               <Input
+                testId="skip-number-input"
                 type={'number'}
                 placeholder={"0"}
                 value={skipNumberOfMessages.toString()}

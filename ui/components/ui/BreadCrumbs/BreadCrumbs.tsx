@@ -182,6 +182,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         className={`${s.Crumb} ${className}`}
         to={href}
         onClick={onClick}
+        data-testid="breadcrumb"
+        data-crumb-type={crumb.type}
       >
         {icon ? <div className={s.CrumbIcon}>{icon}</div> : null}
         <div className={s.CrumbTitle} title={crumbValue}>{crumbValue}</div>
@@ -198,10 +200,11 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   return (
     <>
       <Favicons crumbs={props.crumbs} />
-      <div className={s.BreadCrumbs}>
+      <div className={s.BreadCrumbs} data-testid="breadcrumbs">
         {resourceFqn !== undefined && (
           <div className={s.CopyNameButton}>
             <SmallButton
+              testId="breadcrumbs-copy-fqn"
               onClick={() => {
                 if (resourceFqn !== undefined) {
                   void copyToClipboard(resourceFqn).then((ok) => {

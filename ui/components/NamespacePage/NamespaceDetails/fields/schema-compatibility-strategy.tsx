@@ -74,6 +74,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       {({ value, onChange }) => {
         return (
           <Select<PolicyValue>
+            testId='schema-compatibility-type-select'
             list={strategies.map(s => ({ type: 'item', value: s, title: s.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '') }))}
             value={value}
             onChange={onChange}

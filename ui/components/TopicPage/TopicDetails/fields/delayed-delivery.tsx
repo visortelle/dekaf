@@ -142,6 +142,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   { type: 'item', value: 'disabled', title: 'Disabled' },
                 ]}
                 value={value.type}
+                testId="topic-detail-delayed-delivery-select"
                 onChange={(type) => {
                   if (type === 'inherited-from-namespace-config') {
                     onChange({ type });

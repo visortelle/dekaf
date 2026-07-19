@@ -128,6 +128,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
+                testId='topic-max-consumers-type-select'
                 list={[
                   { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
                   { type: 'item', value: 'unlimited', title: 'Unlimited' },
@@ -145,6 +146,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
             {value.type === 'specified-for-this-topic' && (
               <Input
+                testId='topic-max-consumers-value-input'
                 type="number"
                 value={value.maxConsumers.toString()}
                 onChange={v => onChange({ type: 'specified-for-this-topic', maxConsumers: parseInt(v) })}

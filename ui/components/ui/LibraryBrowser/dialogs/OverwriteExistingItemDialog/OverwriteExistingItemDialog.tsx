@@ -157,7 +157,7 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
   }
 
   return (
-    <div className={s.OverwriteExistingItemDialog}>
+    <div className={s.OverwriteExistingItemDialog} data-testid="lib-overwrite-dialog">
       <div className={s.Content}>
         <div className={s.SearchInContexts}>
           <FormItem>
@@ -219,12 +219,14 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
           type='regular'
           text='Cancel'
           onClick={props.onCanceled}
+          testId="lib-overwrite-cancel"
         />
         <Button
           type='primary'
           text='Overwrite'
           disabled={selectedItem === undefined}
           onClick={saveItem}
+          testId="lib-overwrite-confirm"
         />
       </div>
     </div>

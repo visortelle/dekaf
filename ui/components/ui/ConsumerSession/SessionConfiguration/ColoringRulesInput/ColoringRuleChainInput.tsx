@@ -15,6 +15,7 @@ export type ColoringRuleChainInputProps = {
   onChange: (value: ManagedColoringRuleChainValOrRef) => void,
   libraryContext: LibraryContext,
   isReadOnly?: boolean,
+  testId?: string,
   libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
@@ -49,7 +50,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
   const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
-    <div className={s.ColoringRuleChainInput} style={{ filter: cssFilter }}>
+    <div className={s.ColoringRuleChainInput} style={{ filter: cssFilter }} data-testid={props.testId}>
       <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='coloring-rule-chain'

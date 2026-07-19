@@ -21,22 +21,39 @@ case class LibraryDb(
 
 object Library:
     def createAndRefreshDb(rootDir: String): Library =
+        os.makeDir.all(os.Path(rootDir, os.pwd)) // scoped per-connection subdirs may not exist yet
         val library = Library()
         library.rootDir = rootDir
         library.refreshDb()
         library
 
+    // Item ids become file names - restrict them to a separator-free charset so a crafted id
+    // (e.g. `../../…`) can never escape the library directory. Real ids are UUIDs.
+    private val SafeItemId = "^[A-Za-z0-9_-]{1,200}$".r
+
 class Library:
     private var rootDir = "./data"
     private var db = LibraryDb(itemsById = Map.empty)
     private val logger: Logger = Logger(getClass.getName)
-    
+
     def size: Int = db.itemsById.size
+
+    private def requireSafeItemId(itemId: LibraryItemId): Unit =
+        if Library.SafeItemId.findFirstIn(itemId).isEmpty then
+            throw new IllegalArgumentException(
+                s"Invalid library item id - only alphanumerics, '_' and '-' are allowed."
+            )
 
     def writeItem(item: LibraryItem): Unit =
         val itemId = item.spec.metadata.id
+        requireSafeItemId(itemId)
 
         if item.spec.metadata.name.isEmpty then throw new Exception(s"Library item $itemId should have a name.")
+        // An item with no contexts can never be returned by any search - reject instead of orphaning.
+        if item.metadata.availableForContexts.isEmpty then
+            throw new IllegalArgumentException(
+                s"Library item $itemId must be available in at least one context; an item without contexts would be unreachable."
+            )
 
         val fileName = s"$itemId.binpb"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
@@ -50,6 +67,7 @@ class Library:
         refreshDb()
 
     def deleteItem(itemId: LibraryItemId): Unit =
+        requireSafeItemId(itemId)
         val fileName = s"$itemId.binpb"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
 
@@ -68,24 +86,21 @@ class Library:
                 )
             )
 
-        filter.contexts match
-            case List() => List.empty
-            case _ =>
-                val dbItems = db.itemsById.values.toList
-                val byTypes =
-                    if filter.types.isEmpty
-                    then dbItems
-                    else
-                        dbItems.filter(item =>
-                            val metadata = item.spec.metadata
-                            filter.types.contains(metadata.`type`)
-                        )
-                val byContexts =
-                    if filter.contexts.isEmpty
-                    then byTypes
-                    else getItemsByContexts(byTypes, filter.contexts)
+        // An empty contexts filter used to return an empty list - indistinguishable from a genuine
+        // "no matches". It is a caller error and must fail loudly (mapped to INVALID_ARGUMENT).
+        if filter.contexts.isEmpty then
+            throw new IllegalArgumentException("Search contexts must not be empty.")
 
-                byContexts
+        val dbItems = db.itemsById.values.toList
+        val byTypes =
+            if filter.types.isEmpty
+            then dbItems
+            else
+                dbItems.filter(item =>
+                    val metadata = item.spec.metadata
+                    filter.types.contains(metadata.`type`)
+                )
+        getItemsByContexts(byTypes, filter.contexts)
 
     private def scan(): LibraryScanResults =
         os.list(os.Path(rootDir, os.pwd))

@@ -58,8 +58,14 @@ const CreateTenantPage: React.FC = () => {
     req.setTenantName(tenantName);
     req.setTenantInfo(tenantInfo);
 
-    const res = await tenantServiceClient.createTenant(req, null).catch(err => { `Unable to create tenant: ${err}` });
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    const res = await tenantServiceClient.createTenant(req, null).catch(err => {
+      notifyError(`Unable to create tenant: ${err}`);
+      return undefined;
+    });
+    if (res === undefined) {
+      return; // transport failure - stay on the form, never a silent "success"
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create tenant: ${res.getStatus()?.getMessage()}`);
       return;
     }

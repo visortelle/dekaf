@@ -9,6 +9,7 @@ export type DurationInputProps = {
   // Seconds
   initialValue: number;
   onChange: (seconds: number) => void;
+  testId?: string;
 };
 
 const DurationInput: React.FC<DurationInputProps> = (props) => {
@@ -18,6 +19,7 @@ const DurationInput: React.FC<DurationInputProps> = (props) => {
     <div className={s.DurationInput}>
       <div className={s.Value}>
         <Input
+          testId={props.testId}
           type='number'
           inputProps={{ min: 0 }}
           value={value.value.toString()}

@@ -31,6 +31,19 @@ export type SortKey =
 
 export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
+// Byte-lexicographic order - matches the hex rendering of messageId/orderingKey cells.
+const compareBytes = (a: Uint8Array | null | undefined, b: Uint8Array | null | undefined): number => {
+  const av = a || new Uint8Array();
+  const bv = b || new Uint8Array();
+  const n = Math.min(av.length, bv.length);
+  for (let i = 0; i < n; i++) {
+    if (av[i] !== bv[i]) {
+      return av[i] - bv[i];
+    }
+  }
+  return av.length - bv.length;
+};
+
 export const sortMessages = (
   messages: MessageDescriptor[],
   sort: Sort
@@ -139,6 +152,18 @@ export const sortMessages = (
   if (sort.key === "sequenceId") {
     const sortFn: SortFn = (a, b) => (a.sequenceId || 0) - (b.sequenceId || 0);
     return s(messages, [], sortFn);
+  }
+
+  if (sort.key === "messageId") {
+    const [defs, undefs] = partition(messages, (m) => m.messageId != null);
+    const sortFn: SortFn = (a, b) => compareBytes(a.messageId, b.messageId);
+    return s(defs, undefs, sortFn);
+  }
+
+  if (sort.key === "orderingKey") {
+    const [defs, undefs] = partition(messages, (m) => m.orderingKey != null);
+    const sortFn: SortFn = (a, b) => compareBytes(a.orderingKey, b.orderingKey);
+    return s(defs, undefs, sortFn);
   }
 
   if (sort.key === "redeliveryCount") {

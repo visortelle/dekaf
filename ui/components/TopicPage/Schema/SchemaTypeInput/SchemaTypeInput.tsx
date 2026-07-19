@@ -50,6 +50,7 @@ const SchemaTypeInput: React.FC<SchemaTypeInputProps> = (props) => {
         ]}
         onChange={props.onChange}
         value={props.value}
+        testId="schema-type-select"
       />
     </div>
   );

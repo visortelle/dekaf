@@ -15,6 +15,7 @@ export type ValueProjectionListInputProps = {
   onChange: (v: ManagedValueProjectionListValOrRef) => void,
   libraryContext: LibraryContext,
   isReadOnly?: boolean,
+  testId?: string,
   libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
@@ -49,7 +50,7 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
   const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
-    <div className={s.ValueProjectionsInput} style={{ filter: cssFilter }}>
+    <div className={s.ValueProjectionsInput} style={{ filter: cssFilter }} data-testid={props.testId}>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           isReadOnly={props.isReadOnly}

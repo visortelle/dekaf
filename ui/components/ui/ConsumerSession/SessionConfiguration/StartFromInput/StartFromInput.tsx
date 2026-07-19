@@ -34,7 +34,7 @@ const list: List<StartFromType> = [
   },
   { type: 'item', title: 'Specific time', value: 'dateTime' },
   { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
-  { type: 'item', title: 'Skip fist n messages', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'Skip first n messages', value: 'nthMessageAfterEarliest' },
   { type: 'item', title: 'Latest n messages', value: 'nthMessageBeforeLatest' }
 ];
 
@@ -95,6 +95,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       />
       <div className={s.TypeSelect}>
         <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
+          testId="cs-start-from"
           list={list}
           value={itemSpec.startFrom.type}
           onChange={(v) => {
@@ -161,6 +162,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
         <div className={s.AdditionalControls}>
           <Input
+            testId="cs-start-from-n"
             value={itemSpec.startFrom.n.toString()}
             type='number'
             onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
@@ -174,6 +176,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
         <div className={s.AdditionalControls}>
           <Input
+            testId="cs-start-from-n"
             value={itemSpec.startFrom.n.toString()}
             type='number'
             onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
@@ -187,6 +190,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       {itemSpec.startFrom.type === 'messageId' && (
         <div className={s.AdditionalControls}>
           <Input
+            testId="cs-start-from-message-id"
             value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
             placeholder="08 c3 03 10 cd 04 20 00 30 01"
             onChange={(v) => {

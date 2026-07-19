@@ -53,7 +53,7 @@ const SchemaEntry: React.FC<SchemaEntryProps> = (props) => {
   }, []);
 
   return (
-    <div className={s.SchemaEntry}>
+    <div className={s.SchemaEntry} data-testid="schema-view">
       <div className={s.Header}>
         <H1>View schema</H1>
       </div>

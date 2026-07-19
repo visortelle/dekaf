@@ -9,6 +9,7 @@ export type InputProps = {
   type?: 'text' | 'number' | 'password',
   iconSvg?: string,
   focusOnMount?: boolean,
+  testId?: string,
   inputProps?: InputHTMLAttributes<HTMLInputElement>
 }
 const Input: React.FC<InputProps> = (props) => {
@@ -30,6 +31,7 @@ const Input: React.FC<InputProps> = (props) => {
         onChange={(e) => props.onChange(e.target.value)}
         placeholder={props.placeholder}
         {...props.inputProps}
+        data-testid={props.testId}
       />
       {props.iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={props.iconSvg} />

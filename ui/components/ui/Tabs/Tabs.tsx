@@ -12,7 +12,8 @@ export type Tab<TK extends string> = {
   isRenderAlways?: boolean;
   onClose?: () => void;
   extraControls?: React.ReactElement,
-  style?: React.CSSProperties
+  style?: React.CSSProperties,
+  testId?: string
 }
 
 export type TabsProps<TK extends string> = {
@@ -24,7 +25,8 @@ export type TabsProps<TK extends string> = {
   direction?: 'horizontal' | 'vertical';
   newTab?: {
     onNewTab: () => void,
-    title: string
+    title: string,
+    testId?: string
   }
   scrollToTabId?: string,
 };
@@ -46,6 +48,7 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
             return (
               <div
                 key={tab.key}
+                data-testid={tab.testId}
                 className={`${s.Tab} ${tab.key === props.activeTab ? s.ActiveTab : ''} ${props.direction === 'vertical' ? s.TabVertical : ''}`}
                 onClick={() => props.onActiveTabChange(tab.key as TabKey)}
                 ref={props.scrollToTabId === tab.key ? scrollToTabRef : undefined}
@@ -71,6 +74,7 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
         {props.newTab && (
           <div className={s.NewTabButton}>
             <SmallButton
+              testId={props.newTab.testId}
               appearance='borderless-semitransparent'
               svgIcon={newTabIcon}
               onClick={props.newTab.onNewTab}

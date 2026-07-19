@@ -77,12 +77,12 @@ export const PublishTimeField: React.FC<FieldProps> = (props) => {
 
 export const KeyField: React.FC<FieldProps> = (props) => {
   const key = props.message.key === null ? undefined : props.message.key;
-  return <Field isShowTooltips={props.isShowTooltips} title="Key" value={key} rawValue={key} tooltip={help.key} />
+  return <Field isShowTooltips={props.isShowTooltips} testId="cs-cell-key" title="Key" value={key} rawValue={key} tooltip={help.key} />
 }
 
 export const ValueField: React.FC<FieldProps> = (props) => {
   const value = props.message.value === null ? undefined : limitString(props.message.value, 100);
-  return <Field isShowTooltips={props.isShowTooltips} title="Value" value={value} rawValue={value} tooltip={help.value} />
+  return <Field isShowTooltips={props.isShowTooltips} testId="cs-cell-value" title="Value" value={value} rawValue={value} tooltip={help.value} />
 }
 
 export const SessionTargetIndexField: React.FC<FieldProps> = (props) => {
@@ -97,7 +97,7 @@ export const TopicField: React.FC<FieldProps> = (props) => {
     undefined :
     routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: topicResource.tenant, namespace: topicResource.namespace, topic: topicResource.topic, topicPersistency: topicResource.topicPersistency });
 
-  return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
+  return <Field isShowTooltips={props.isShowTooltips} testId="cs-cell-topic" value={topic} valueHref={topicHref} tooltip={help.topic} />
 }
 
 export const ProducerNameField: React.FC<FieldProps> = (props) => {

@@ -99,6 +99,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         return (
           <ListInput<string>
+            testId="replication-clusters-list"
+            addButtonTestId="replication-clusters-add"
             value={value.replicationClusters}
             getId={(v) => v}
             renderItem={(v) => <div>{v}</div>}
@@ -109,6 +111,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
                 return (
                   <Select<string>
+                    testId="replication-cluster-select"
                     list={[{ type: 'empty', title: '' }, ...list]}
                     value={v}
                     onChange={(v) => onChange(v as string)}

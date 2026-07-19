@@ -43,7 +43,7 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
       type='regular'
       className={s.ActionButton}
       onClick={props.onClick}
-      data-testid={props.testId}
+      testId={props.testId}
       data-tooltip-id={tooltipId}
       data-tooltip-html={tooltipHtml}
       svgIcon={svgIcon}

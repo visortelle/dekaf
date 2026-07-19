@@ -12,7 +12,8 @@ export type ColorPickerButtonProps = {
   width?: string,
   height?: string
   title?: React.ReactElement,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const ColorPickerButton: React.FC<ColorPickerButtonProps> = (props) => {
@@ -21,6 +22,7 @@ const ColorPickerButton: React.FC<ColorPickerButtonProps> = (props) => {
   return (
     <div
       className={s.ColorPickerButton}
+      data-testid={props.testId}
       style={{
         backgroundColor: colorsByName[props.value],
         width: props.width,

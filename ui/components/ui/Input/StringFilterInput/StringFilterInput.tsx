@@ -8,12 +8,14 @@ export type StringFilterInputProps = {
   isMatchCase: boolean,
   onIsMatchCaseChange: (v: boolean) => void,
   size?: InputProps['size'],
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const StringFilterInput: React.FC<StringFilterInputProps> = (props) => {
   return (
     <Input
+      testId={props.testId}
       value={props.value}
       onChange={props.onChange}
       addons={[{

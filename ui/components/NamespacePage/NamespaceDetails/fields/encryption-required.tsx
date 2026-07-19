@@ -76,6 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return (
           <div className={sf.FormItem}>
             <Select<PolicyValue>
+              testId='encryption-required-type-select'
               list={[
                 { type: 'item', value: 'required', title: 'Required' },
                 { type: 'item', value: 'not-required', title: 'Not required' },

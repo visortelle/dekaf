@@ -100,6 +100,7 @@ const NamespaceBundlesEditor: React.FC<NamespaceBundlesEditorProps> = (props) =>
           />
           <SmallButton
             type="danger"
+            testId="ns-clear-backlog-button"
             onClick={() => {
               modals.push({
                 id: "clear-backlog",

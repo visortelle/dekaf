@@ -19,7 +19,8 @@ export type ThProps = {
   style?: React.CSSProperties,
   width?: number,
   onResizeStart?: (startClientX: number) => void,
-  suppressSortClickRef?: MutableRefObject<boolean>
+  suppressSortClickRef?: MutableRefObject<boolean>,
+  testId?: string
 };
 
 export const Th: FC<ThProps> = (props: ThProps) => {
@@ -42,7 +43,7 @@ export const Th: FC<ThProps> = (props: ThProps) => {
   }
 
   return (
-    <th className={`${cts.Th} ${s.Th}`} style={props.style} onClick={handleColumnHeaderClick}>
+    <th className={`${cts.Th} ${s.Th}`} data-testid={props.testId} style={props.style} onClick={handleColumnHeaderClick}>
       <div
         className={props.sortKey === undefined ? '' : cts.SortableTh}
         style={props.width === undefined ? undefined : { width: props.width, overflow: 'hidden' }}

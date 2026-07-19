@@ -43,7 +43,12 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
     //state={props.state}
     />
   );
-  return <div className={`${s.ToolbarButton} ${props.position === 'right' ? s.ToolbarButtonRight : ''}`}>
+  return <div
+    className={`${s.ToolbarButton} ${props.position === 'right' ? s.ToolbarButtonRight : ''}`}
+    data-testid="toolbar-button"
+    data-tab={typeof props.text === 'string' ? props.text : undefined}
+    data-active={props.active}
+  >
     {props.linkTo ? (
       <Link to={props.linkTo}>
         {button}

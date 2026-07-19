@@ -30,7 +30,10 @@ const AvailableInContextsButton: React.FC<AvailableInContextsButtonProps> = (pro
               <div style={{ overflow: 'hidden', maxHeight: 'inherit', display: 'flex' }}>
                 <AvailableInContextsDialog
                   value={props.value}
-                  onChange={props.onChange}
+                  onChange={(v) => {
+                    props.onChange(v);
+                    modals.pop(); // Confirm must close the dialog, same as Cancel
+                  }}
                   onCanceled={modals.pop}
                   libraryContext={props.libraryContext}
                   isReadOnly={props.isReadOnly}

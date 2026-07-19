@@ -15,7 +15,6 @@ import { v4 as uuid } from 'uuid';
 import Tabs, { Tab } from '../../../ui/Tabs/Tabs';
 import ConfirmationButton from '../../../ui/ConfirmationButton/ConfirmationButton';
 import deleteIcon from './delete.svg';
-import backIcon from './back-icon.svg';
 import { blogNote } from './blog-note';
 import defaultMarkdown from './default.md';
 import RenameButton from '../../../ui/RenameButton/RenameButton';
@@ -37,7 +36,6 @@ const Notes: React.FC<NotesProps> = (props) => {
   const [notes, setNotes] = useState<ManagedMarkdownDocument[]>([]);
   const [fetchCount, setFetchCount] = useState(0);
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(props.libraryContext.pulsarResource.type === 'instance' ? blogNote.metadata.id : undefined);
-  const [refreshIframeKey, setRefreshIframeKey] = useState(0);
   const modals = Modals.useContext();
 
   const fetchNotes = async () => {
@@ -213,6 +211,7 @@ const Notes: React.FC<NotesProps> = (props) => {
     return (
       <div style={{ margin: '12rem', padding: '12rem', background: 'var(--surface-color)', borderRadius: '12rem'}}>
         <SmallButton
+          testId='lib-create-first-note'
           type='primary'
           onClick={createNewNote}
           text='Create First Note'
@@ -229,23 +228,11 @@ const Notes: React.FC<NotesProps> = (props) => {
             const isFactoryNote = factoryNotes.some(n => n.metadata.id === note.metadata.id);
             const tab: Tab<string> = {
               key: note.metadata.id,
+              testId: 'lib-note-tab',
               title: note.metadata.name,
               render: () => (
                 <div className={s.MarkdownPreview}>
-                  {selectedNoteId === blogNote.metadata.id && (
-                    <div className={s.ExternalContent}>
-                      <div className={s.ExternalContentControls}>
-                        <SmallButton
-                          appearance='borderless'
-                          onClick={() => setRefreshIframeKey(v => v + 1)}
-                          text='Show all updates'
-                          svgIcon={backIcon}
-                        />
-                      </div>
-                      <iframe key={refreshIframeKey} src="https://github.com/visortelle/dekaf" className={s.ExternalContentIframe} />
-                    </div>
-                  )}
-                  {selectedNote && selectedNoteId !== blogNote.metadata.id && (
+                  {selectedNote && (
                     <MarkdownInput
                       value={selectedNote.spec.markdown}
                       onChange={async (v) => {
@@ -268,7 +255,8 @@ const Notes: React.FC<NotesProps> = (props) => {
                       title: 'Rename Markdown Document'
                     }}
                     button={{
-                      title: 'Rename this markdown document'
+                      title: 'Rename this markdown document',
+                      testId: 'lib-note-rename'
                     }}
                     initialValue={note.metadata.name}
                     onConfirm={async (v) => {
@@ -284,7 +272,8 @@ const Notes: React.FC<NotesProps> = (props) => {
                       type: 'regular',
                       appearance: 'borderless-semitransparent',
                       title: 'Delete this markdown document',
-                      svgIcon: deleteIcon
+                      svgIcon: deleteIcon,
+                      testId: 'lib-note-delete'
                     }}
                     dialog={{
                       content: <>Are you sure that you want to delete this markdown document?</>,
@@ -309,7 +298,8 @@ const Notes: React.FC<NotesProps> = (props) => {
           size='small'
           newTab={{
             onNewTab: createNewNote,
-            title: "Create new note"
+            title: "Create new note",
+            testId: 'lib-new-note'
           }}
           scrollToTabId={selectedNoteId}
         />

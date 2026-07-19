@@ -106,6 +106,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 help={<span>Driver to use to offload old data to long term storage.</span>}
               />
               <Select<PolicyValue['type']>
+                testId='offload-driver-select'
                 value={value.type}
                 list={[
                   { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
@@ -148,6 +149,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     )}
                   />
                   <Input
+                    testId="offload-offloaders-directory"
                     value={value.offloadersDirectory}
                     onChange={v => onChange({ ...value, offloadersDirectory: v })}
                     placeholder="offloaders"

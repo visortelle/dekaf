@@ -119,8 +119,14 @@ const ResourceGroupForm = (props: Props) => {
     const resourceGroupPb = resourceGroupPbFromFormValue(formValue);
     req.setResourceGroup(resourceGroupPb);
 
-    const res = await brokersServiceClient.createResourceGroup(req, null).catch(err => { `Unable to create resource group: ${err}` });
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    const res = await brokersServiceClient.createResourceGroup(req, null).catch(err => {
+      notifyError(`Unable to create resource group: ${err}`);
+      return undefined;
+    });
+    if (res === undefined) {
+      return; // transport failure - stay on the form, never a silent "success"
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create resource group: ${res.getStatus()?.getMessage()}`);
       return;
     }
@@ -134,8 +140,14 @@ const ResourceGroupForm = (props: Props) => {
     const resourceGroupPb = resourceGroupPbFromFormValue(formValue);
     req.setResourceGroup(resourceGroupPb);
 
-    const res = await brokersServiceClient.updateResourceGroup(req, null).catch(err => { `Unable to update resource group: ${err}` });
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    const res = await brokersServiceClient.updateResourceGroup(req, null).catch(err => {
+      notifyError(`Unable to update resource group: ${err}`);
+      return undefined;
+    });
+    if (res === undefined) {
+      return; // transport failure - stay on the form, never a silent "success"
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update resource group: ${res.getStatus()?.getMessage()}`);
       return;
     }

@@ -219,7 +219,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                 </td>
                 {actionsList.map(action => (
                   <td key={action} className={`${ts.Cell}`}>
-                    <div className={`${s.CheckboxCell}`}>
+                    <div className={`${s.CheckboxCell}`} data-testid={`permission-${permission.role}-${action}`}>
                       <Checkbox
                         checked={permission.actions[action]}
                         onChange={(value) => {
@@ -246,6 +246,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                       onClick={() => grant(permission)}
                       type='primary'
                       text='Update'
+                      testId={`permission-update-button-${permission.role}`}
                       disabled={_.isEqual(permissions[index].actions, permission.actions)}
                       className={s.Button}
                     />
@@ -253,7 +254,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                       type='danger'
                       text='Revoke'
                       className={s.Button}
-                      testId="permission-revoke-button"
+                      testId={`permission-revoke-button-${permission.role}`}
                       onClick={() => modals.push({
                         id: 'revoke-permission',
                         title: `Revoke permission`,
@@ -277,6 +278,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                 <td className={`${ts.Cell} ${s.NewRoleInputCell}`}>
                   <Input
                     type='text'
+                    testId="permission-new-role-input"
                     value={formValue.role || ''}
                     onChange={(v) => setFormValue({ ...formValue, role: v })}
                     placeholder='user-role'
@@ -292,7 +294,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                 </td>
                 {actionsList.map(action => (
                   <td key={action} className={`${ts.Cell}`}>
-                    <div className={`${s.CheckboxCell}`}>
+                    <div className={`${s.CheckboxCell}`} data-testid={`permission-new-${action}`}>
                       <Checkbox
                         checked={formValue.actions[action]}
                         onChange={(value) => {
@@ -311,6 +313,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                       onClick={() => grant(formValue, true)}
                       type='primary'
                       text='Grant'
+                      testId="permission-grant-button"
                       disabled={formValue.role.length < 1}
                       className={s.Button}
                     />

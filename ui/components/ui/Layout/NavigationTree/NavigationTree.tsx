@@ -146,9 +146,16 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     const [_, rest] = filterQuery.split("://");
 
     const [tenant, namespace, topic]: (string | undefined)[] = rest.split(filterQuerySep);
-    const isPartition = partitionRegexp.test(filterQuery);
-    const partition = topic.replace(partitionRegexp, "$2");
-    const topicName = isPartition ? topic.replace(partitionRegexp, "$1") : topic;
+    if (topic === undefined) {
+      return;
+    }
+
+    // Match against the TOPIC segment with a fresh non-global regex: the shared /g regex's
+    // lastIndex made .test() alternate results, and String.replace returns its input unchanged on
+    // no match (never undefined), which used to rewrite every non-partition FQN as t/ns/topic/topic.
+    const partitionMatch = new RegExp(partitionRegexp.source).exec(topic);
+    const topicName = partitionMatch === null ? topic : partitionMatch[1];
+    const partition = partitionMatch === null ? undefined : partitionMatch[2];
 
     const newFilterQuery = partition === undefined ? `${tenant}/${namespace}/${topicName}` : `${tenant}/${namespace}/${topicName}/${partition}`;
     setFilterQuery(newFilterQuery);
@@ -463,6 +470,9 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         key={`tree-node-${pathStr}`}
         className={s.Node}
         onClick={handleNodeClick}
+        data-testid="nav-tree-node"
+        data-node-type={node.type}
+        data-node-name={node.name}
       >
         <div className={s.NodeContent}>
           <span>&nbsp;</span>
@@ -488,6 +498,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           value={filterQuery}
           onChange={v => setFilterQuery(v)}
           clearable={true}
+          testId="nav-tree-filter"
         />
       </div>
       <div className={s.TreeControlButtons}>
@@ -501,6 +512,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             onClick={() => setExpandedPaths([])}
             appearance='borderless-semitransparent'
             type='regular'
+            testId="nav-collapse-all"
           />
           <SmallButton
             title="Show Current Resource"
@@ -509,6 +521,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             appearance='borderless-semitransparent'
             type='regular'
             disabled={filterPath.length > 0}
+            testId="nav-show-current"
           />
         </div>
       </div>
@@ -516,7 +529,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       <div className={s.TreeContainer}>
         {(!isTreeInUndefinedState && !scrollToPath.isBeenFinishedOnce) && scrollToPath.state !== 'finished' && (
           <div className={s.Loading}>
-            <span>Navigating o the selected resource...</span>
+            <span>Navigating to the selected resource...</span>
           </div>
         )}
         {isTreeInUndefinedState && !scrollToPath.isBeenFinishedOnce && (

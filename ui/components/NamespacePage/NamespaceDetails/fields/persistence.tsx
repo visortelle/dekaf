@@ -144,6 +144,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
+                testId="persistence-type-select"
                 list={[
                   { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
                   { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
@@ -167,6 +168,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <div className={sf.FormItem}>
                   <strong className={sf.FormLabel}>Ensemble</strong>
                   <Input
+                    testId="persistence-ensemble-input"
                     type='number'
                     onChange={(v) => onChange({ ...value, bookkeeperEnsemble: Number(v) })}
                     value={String(value.bookkeeperEnsemble)}
@@ -176,6 +178,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <div className={sf.FormItem}>
                   <strong className={sf.FormLabel}>Write quorum</strong>
                   <Input
+                    testId="persistence-write-quorum-input"
                     type='number'
                     onChange={(v) => onChange({ ...value, bookkeeperWriteQuorum: Number(v) })}
                     value={String(value.bookkeeperWriteQuorum)}
@@ -185,6 +188,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <div className={sf.FormItem}>
                   <strong className={sf.FormLabel}>Ack quorum</strong>
                   <Input
+                    testId="persistence-ack-quorum-input"
                     type='number'
                     onChange={(v) => onChange({ ...value, bookkeeperAckQuorum: Number(v) })}
                     value={String(value.bookkeeperAckQuorum)}

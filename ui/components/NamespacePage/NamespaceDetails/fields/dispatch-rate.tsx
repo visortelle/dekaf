@@ -117,6 +117,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
+                testId='dispatch-rate-type-select'
                 list={[
                   { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
                   { type: 'item', value: 'specified', title: 'Specified' },
@@ -146,7 +147,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 </div>
                 <div className={sf.FormItem}>
                   <div className={sf.FormLabel}>Msg. dispatch rate</div>
-                  <Input value={String(value.rateInMsg)} onChange={v => onChange({ ...value, rateInMsg: Math.floor(Number(v)) })} type='number' />
+                  <Input testId='dispatch-rate-msg-input' value={String(value.rateInMsg)} onChange={v => onChange({ ...value, rateInMsg: Math.floor(Number(v)) })} type='number' />
                 </div>
                 <div className={sf.FormItem}>
                   <div className={sf.FormLabel}>Period in seconds</div>

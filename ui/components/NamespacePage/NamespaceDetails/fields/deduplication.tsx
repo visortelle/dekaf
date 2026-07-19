@@ -94,6 +94,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       {({ value, onChange }) => {
         return (
           <Select<PolicyValue>
+            testId='deduplication-type-select'
             list={[
               { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
               { type: 'item', value: 'enabled', title: 'Enabled' },

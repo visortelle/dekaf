@@ -6,7 +6,8 @@ export type InvertedToggleProps = {
   value: boolean,
   onChange: (v: boolean) => void,
   helpOverride?: React.ReactElement | string,
-  isReadOnly?: boolean
+  isReadOnly?: boolean,
+  testId?: string
 };
 
 const InvertedToggle: React.FC<InvertedToggleProps> = (props) => {
@@ -33,6 +34,7 @@ const InvertedToggle: React.FC<InvertedToggleProps> = (props) => {
       value={props.value}
       onChange={props.onChange}
       isReadOnly={props.isReadOnly}
+      testId={props.testId}
     />
   );
 }

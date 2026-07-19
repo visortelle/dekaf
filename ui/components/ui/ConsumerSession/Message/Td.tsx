@@ -10,10 +10,11 @@ export type TdProps = {
   children: React.ReactNode,
   width?: string,
   coloring: Coloring,
-  isSelected: boolean
+  isSelected: boolean,
+  testId?: string
 } & React.ThHTMLAttributes<HTMLTableCellElement>;
 export const Td: React.FC<TdProps> = (props) => {
-  const { children, className, width, coloring, isSelected, ...restProps } = props;
+  const { children, className, width, coloring, isSelected, testId, ...restProps } = props;
 
   return (
     <td
@@ -27,6 +28,8 @@ export const Td: React.FC<TdProps> = (props) => {
         color: isSelected ? selectedColor : props.coloring?.foregroundColor,
         backgroundColor: isSelected ? selectedBackgroundColor : props.coloring?.backgroundColor
       }}
+      data-testid={testId}
+      data-cs-selected={isSelected}
       {...restProps}
     >
       <div style={{ width, textOverflow: 'ellipsis', display: 'flex' }} >

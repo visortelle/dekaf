@@ -82,7 +82,7 @@ const Editor: React.FC<EditorProps> = (props) => {
               </thead>
               <tbody>
                 {(maskedCredentials || []).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true })).map((item) => (
-                  <tr key={item.name} className={st.Row}>
+                  <tr key={item.name} className={st.Row} data-testid="credentials-row" data-cred-name={item.name}>
                     <td className={st.Cell}>
                       {currentCredentials === item.name && (
                         <strong style={{ color: `var(--accent-color-blue)` }}>Current</strong>
@@ -93,6 +93,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                     <td className={st.Cell}>
                       <div className={s.CredentialsActions}>
                         <SmallButton
+                          testId="credentials-set-current"
                           type='regular'
                           onClick={async () => {
                             await fetch(`${config.publicBaseUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
@@ -103,6 +104,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                           text='Set as current'
                         />
                         <SmallButton
+                          testId="credentials-delete"
                           type='danger'
                           onClick={async () => {
                             await fetch(`${config.publicBaseUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
@@ -127,8 +129,8 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
-            <Button type='primary' onClick={() => setView('new')} text='Add' />
-            <Button type='regular' onClick={props.onDone} text='Done' />
+            <Button testId="credentials-add" type='primary' onClick={() => setView('new')} text='Add' />
+            <Button testId="credentials-done" type='regular' onClick={props.onDone} text='Done' />
           </div>
         </div>
       )}
@@ -155,6 +157,8 @@ function credentialsTypeToLabel(type: MaskedCredentials['type']): string {
       return 'OAuth2';
     case 'jwt':
       return 'JWT';
+    case 'authParamsString':
+      return 'Auth Params String';
     default:
       return 'Unknown';
   }
