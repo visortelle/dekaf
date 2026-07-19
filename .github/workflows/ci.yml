@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build:
     runs-on: [self-hosted, x64]
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,6 +33,7 @@ jobs:
 
   e2e:
     runs-on: [self-hosted, x64]
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,15 +50,39 @@ jobs:
       - name: Bring up Pulsar (standalone) + Dekaf server
         shell: bash
         run: |
-          # The runner is ephemeral (fresh checkout), so Library writes under server/data don't
-          # persist across runs - no disposable data root needed (a fresh DEKAF_DATA_DIR would also
-          # skip the consumer-session libs.js/proto that run-dekaf builds under the default root).
+          # server/data/library starts empty each run NOT because the runner is ephemeral (it is a
+          # persistent self-hosted runner) but because actions/checkout's default clean wipes
+          # untracked files at checkout. No disposable DEKAF_DATA_DIR needed - it would also skip
+          # the consumer-session libs.js/proto that run-dekaf builds under the default root.
+
+          # Pre-clean: a Dekaf tree leaked by a previous job would still hold :8090 and answer the
+          # readiness probe WITH LAST RUN'S BINARY - the suite would silently test stale code.
+          # Kill the whole envoy -> JVM -> sbt tree by walking up from the :8090 listener.
+          envoy=$(lsof -t -iTCP:8090 -sTCP:LISTEN 2>/dev/null | head -1 || true)
+          if [ -n "$envoy" ]; then
+            jvm=$(ps -o ppid= -p "$envoy" 2>/dev/null | tr -d ' ' || true)
+            sbt=""
+            if [ -n "$jvm" ] && [ "$jvm" != "1" ]; then sbt=$(ps -o ppid= -p "$jvm" 2>/dev/null | tr -d ' ' || true); fi
+            pids=$(printf '%s\n' "$envoy" "$jvm" "$sbt" | grep -vE '^1?$' | tr '\n' ' ' || true)
+            echo "Killing leftover Dekaf tree from a previous run: $pids"
+            kill $pids 2>/dev/null || true
+            sleep 3
+            kill -9 $pids 2>/dev/null || true
+          fi
+
           nix-shell --run 'e2e/scripts/stack-up.sh'
-          nix-shell --run 'e2e/scripts/run-dekaf.sh' &
+          nix-shell --run 'e2e/scripts/run-dekaf.sh' > "$RUNNER_TEMP/dekaf-boot.log" 2>&1 &
+
+          ready=false
           for _ in $(seq 1 60); do
-            curl -sf http://localhost:8090/ >/dev/null 2>&1 && break
+            if curl -sf http://localhost:8090/ >/dev/null 2>&1; then ready=true; break; fi
             sleep 5
           done
+          if [ "$ready" != "true" ]; then
+            echo "::error::Dekaf did not become ready on :8090 within 5 minutes"
+            tail -60 "$RUNNER_TEMP/dekaf-boot.log" || true
+            exit 1
+          fi
 
       - name: E2E - green lane
         shell: bash
@@ -91,6 +117,30 @@ jobs:
             e2e/target/test-reports/
             e2e/target/test-html/
           if-no-files-found: ignore
+
+      - name: Dekaf boot log (on failure)
+        if: failure()
+        shell: bash
+        run: tail -100 "$RUNNER_TEMP/dekaf-boot.log" || true
+
+      - name: Stop the Dekaf server
+        if: always()
+        shell: bash
+        run: |
+          # Kill the backgrounded envoy -> JVM -> sbt tree. The runner is persistent, and GitHub's
+          # orphan cleanup is best-effort: a survivor would hold :8090 and serve THIS run's binary
+          # to the NEXT run (the bring-up step's pre-clean backstops this, belt and suspenders).
+          envoy=$(lsof -t -iTCP:8090 -sTCP:LISTEN 2>/dev/null | head -1 || true)
+          if [ -n "$envoy" ]; then
+            jvm=$(ps -o ppid= -p "$envoy" 2>/dev/null | tr -d ' ' || true)
+            sbt=""
+            if [ -n "$jvm" ] && [ "$jvm" != "1" ]; then sbt=$(ps -o ppid= -p "$jvm" 2>/dev/null | tr -d ' ' || true); fi
+            pids=$(printf '%s\n' "$envoy" "$jvm" "$sbt" | grep -vE '^1?$' | tr '\n' ' ' || true)
+            echo "Stopping Dekaf tree: $pids"
+            kill $pids 2>/dev/null || true
+            sleep 3
+            kill -9 $pids 2>/dev/null || true
+          fi
 
       - name: Tear down the stack
         if: always()
