@@ -35,7 +35,7 @@ export const routes = {
         _: {
           path: "/instance/resource-groups/edit/:groupName",
           get: (props: { groupName: string }) =>
-            `/instance/resource-groups/edit/${props.groupName}`,
+            `/instance/resource-groups/edit/${encodeURIComponent(props.groupName)}`,
         },
       },
     },
@@ -59,14 +59,14 @@ export const routes = {
         _: {
           path: "tenants/:tenant/create-namespace",
           get: (props: { tenant: string }) =>
-            `/tenants/${props.tenant}/create-namespace`,
+            `/tenants/${encodeURIComponent(props.tenant)}/create-namespace`,
         },
       },
       overview: {
         _: {
           path: "tenants/:tenant/overview",
           get: (props: { tenant: string }) =>
-            `/tenants/${props.tenant}/overview`,
+            `/tenants/${encodeURIComponent(props.tenant)}/overview`,
         },
       },
       consumerSession: {
@@ -76,35 +76,35 @@ export const routes = {
             tenant: string,
             managedConsumerSessionId: string | undefined
           }) =>
-            `/tenants/${props.tenant}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
+            `/tenants/${encodeURIComponent(props.tenant)}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
         },
       },
       namespaces: {
         _: {
           path: "tenants/:tenant/namespaces",
           get: (props: { tenant: string }) =>
-            `/tenants/${props.tenant}/namespaces`,
+            `/tenants/${encodeURIComponent(props.tenant)}/namespaces`,
         },
         namespace: {
           overview: {
             _: {
               path: "tenants/:tenant/namespaces/:namespace/overview",
               get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/overview`,
+                `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/overview`,
             }
           },
           details: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/details",
               get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/details`,
+                `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/details`,
             },
           },
           createTopic: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/create-topic",
               get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/create-topic`,
+                `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/create-topic`,
             },
           },
           consumerSession: {
@@ -115,14 +115,14 @@ export const routes = {
                 namespace: string;
                 managedConsumerSessionId?: string
               }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
+                `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
             },
           },
           topics: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/topics",
               get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/topics`,
+                `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics`,
             },
             anyTopicPersistency: {
               topic: {
@@ -136,7 +136,7 @@ export const routes = {
                       topic: string;
                       managedConsumerSessionId?: string
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
+                      `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/consumer-session${props.managedConsumerSessionId === undefined ? '' : `?id=${props.managedConsumerSessionId}`}`,
                   },
                 },
                 producers: {
@@ -148,7 +148,7 @@ export const routes = {
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/producers`,
+                      `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/producers`,
                   },
                 },
                 subscriptions: {
@@ -160,7 +160,7 @@ export const routes = {
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions`,
+                      `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/subscriptions`,
                   },
                   createSubscription: {
                     _ : {
@@ -171,7 +171,7 @@ export const routes = {
                         topicPersistency: PulsarTopicPersistency;
                         topic: string;
                       }) =>
-                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/create-subscription`,
+                        `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/create-subscription`,
                     }
                   },
                   subscription: {
@@ -185,7 +185,7 @@ export const routes = {
                           topic: string;
                           subscription: string;
                         }) =>
-                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions/${props.subscription}/overview`,
+                          `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/subscriptions/${encodeURIComponent(props.subscription)}/overview`,
                       },
                     },
                     consumers: {
@@ -198,7 +198,7 @@ export const routes = {
                           topic: string;
                           subscription: string;
                         }) =>
-                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions/${props.subscription}/consumers`,
+                          `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/subscriptions/${encodeURIComponent(props.subscription)}/consumers`,
                       }
                     }
                   }
@@ -212,7 +212,7 @@ export const routes = {
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/overview`,
+                      `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/overview`,
                   },
                 },
                 schema: {
@@ -224,7 +224,7 @@ export const routes = {
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/schema`,
+                      `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/schema`,
                   },
                   create: {
                     _: {
@@ -235,7 +235,7 @@ export const routes = {
                         topicPersistency: PulsarTopicPersistency;
                         topic: string;
                       }) =>
-                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/schema/create`,
+                        `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/schema/create`,
                     },
                   },
                   view: {
@@ -248,7 +248,7 @@ export const routes = {
                         topic: string;
                         schemaVersion: number;
                       }) =>
-                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/schema/view/${props.schemaVersion}`,
+                        `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/schema/view/${props.schemaVersion}`,
                     },
                   },
                 },
@@ -261,7 +261,7 @@ export const routes = {
                       topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/details`,
+                      `/tenants/${encodeURIComponent(props.tenant)}/namespaces/${encodeURIComponent(props.namespace)}/topics/${encodeURIComponent(props.topicPersistency)}/${encodeURIComponent(props.topic)}/details`,
                   },
                 },
               },

@@ -17,7 +17,7 @@ services:
       - pulsar-net
 
   dekaf:
-    image: visortelle/dekaf:1.1.1
+    image: visortelle/dekaf:1.2.1
     restart: always
     environment:
       DEKAF_PULSAR_WEB_URL: "http://pulsar:8080"
@@ -34,7 +34,7 @@ services:
       - pulsar-net
 
   dekaf-demoapp:
-    image: visortelle/dekaf-demoapp:1.1.1
+    image: visortelle/dekaf-demoapp:1.2.1
     restart: always
     depends_on:
       pulsar:
