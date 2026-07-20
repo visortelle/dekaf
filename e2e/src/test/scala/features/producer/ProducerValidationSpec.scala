@@ -26,7 +26,10 @@ class ProducerValidationSpec extends DekafSuite:
     val editor = page.getByTestId("produce-value").locator(".monaco-editor").first()
     editor.click()
     page.keyboard().`type`("notjson")
-    page.getByTestId("produce-send").click()
+    // dispatchEvent, not click(): with INVALID input Monaco keeps re-rendering its error markers,
+    // and on the slow CI box the button below never passes Playwright's stability check
+    // ("element is not stable" x30s). The button's real clickability is covered by PRD-2.
+    page.getByTestId("produce-send").dispatchEvent("click")
 
     // The specific validation error is shown (Producer.tsx:84) and the success toast never appears.
     // (Use the CASE_INSENSITIVE flag, not an inline (?i) - the browser JS regex engine rejects (?i).)

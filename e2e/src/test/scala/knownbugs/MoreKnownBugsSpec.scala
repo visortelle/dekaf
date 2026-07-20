@@ -172,26 +172,6 @@ class MoreKnownBugsSpec extends DekafSuite:
     assertThat(filter).hasValue("public/default/some-topic",
       new com.microsoft.playwright.assertions.LocatorAssertions.HasValueOptions().setTimeout(10000))
   }
-
-  // --- Fixed app-side, but still not driveable from this JVM/UI harness -------------------------
-  // The app defects below were fixed on 2026-07-19; the tests stay `ignore`d because faithfully
-  // DRIVING them still needs machinery this harness doesn't have. Each notes what would unlock it.
-
-  // FIXED in KeyValueEditor.tsx (JsonView onChange now applies edits; readonly follows mode).
-  // Still unautomated: asserting it needs Monaco-level editing/read-only introspection.
-  ignore("BUG-2: 'As JSON' KeyValueEditor edits persist and respect readonly") {}
-
-  // FIXED in AvailableInContextsButton.tsx (Confirm now pops the modal like Cancel).
-  // Still unautomated: reaching the dialog requires the un-instrumented LibraryItemEditor flow.
-  ignore("BUG-7: 'Available in Contexts' Confirm closes the modal") {}
-
-  // FIXED server-side (Library.scala / LibraryServiceImpl.scala): empty-context items are rejected
-  // (8), empty search-contexts is INVALID_ARGUMENT - distinguishable from no-match (9), and item
-  // ids are charset-validated against path traversal (17). Still unautomated here: exercising the
-  // service API directly needs a generated LibraryService gRPC stub the e2e module doesn't have.
-  // BUG-16 (per-connection storage scoping) was RECLASSIFIED as by-design and reverted: a Dekaf
-  // instance always serves one Pulsar; isolation lives at the deployment layer (the desktop app
-  // gives each saved connection its own DEKAF_DATA_DIR; docker runs one dekaf per pulsar).
-  ignore("BUG-8: a zero-context library item is rejected, not orphaned (Library.scala)") {}
-  ignore("BUG-9: empty 'Search in Contexts' differs from 'no matches' (Library.scala)") {}
-  ignore("BUG-17: library id is sanitized against path traversal (Library.scala)") {}
+  // Note: BUG-2/7 (fixed, Monaco/deep-dialog) are covered by jest component tests, and BUG-8/9/17
+  // (fixed, server-side) by server LibraryBugRegressionsTest - not driveable from this e2e harness.
+  // See e2e/README.md §6.
