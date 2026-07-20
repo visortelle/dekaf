@@ -34,6 +34,12 @@ jobs:
   e2e:
     runs-on: [self-hosted, Linux, x64]
     timeout-minutes: 60
+    # The CI box is shared - host :6650/:18080 belong to other standing stacks, so the e2e stack
+    # runs on its own ports (stack-up.sh / run-dekaf.sh honor these env vars).
+    env:
+      PULSAR_ADMIN_PORT: 28080
+      PULSAR_BROKER_PORT: 26650
+      DEKAF_PORT: 28090
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,7 +52,7 @@ jobs:
         shell: bash
         run: |
           # Kill any Dekaf leaked by a previous run - it would answer the probe with a stale binary.
-          envoy=$(lsof -t -iTCP:8090 -sTCP:LISTEN 2>/dev/null | head -1 || true)
+          envoy=$(lsof -t -iTCP:"$DEKAF_PORT" -sTCP:LISTEN 2>/dev/null | head -1 || true)
           if [ -n "$envoy" ]; then
             jvm=$(ps -o ppid= -p "$envoy" 2>/dev/null | tr -d ' ' || true)
             sbt=""
@@ -63,11 +69,11 @@ jobs:
 
           ready=false
           for _ in $(seq 1 60); do
-            if curl -sf http://localhost:8090/ >/dev/null 2>&1; then ready=true; break; fi
+            if curl -sf "http://localhost:$DEKAF_PORT/" >/dev/null 2>&1; then ready=true; break; fi
             sleep 5
           done
           if [ "$ready" != "true" ]; then
-            echo "::error::Dekaf did not become ready on :8090 within 5 minutes"
+            echo "::error::Dekaf did not become ready on :$DEKAF_PORT within 5 minutes"
             tail -60 "$RUNNER_TEMP/dekaf-boot.log" || true
             exit 1
           fi
@@ -75,9 +81,9 @@ jobs:
       - name: E2E - green lane
         shell: bash
         env:
-          DEKAF_BASE_URL: http://localhost:8090
-          PULSAR_ADMIN_URL: http://localhost:18080
-          PULSAR_SERVICE_URL: pulsar://localhost:6650
+          DEKAF_BASE_URL: http://localhost:${{ env.DEKAF_PORT }}
+          PULSAR_ADMIN_URL: http://localhost:${{ env.PULSAR_ADMIN_PORT }}
+          PULSAR_SERVICE_URL: pulsar://localhost:${{ env.PULSAR_BROKER_PORT }}
           TRACE: on # trace every test, not just failures - results stay navigable as artifacts
         run: nix-shell --run 'cd e2e && sbt test'
 
@@ -111,7 +117,7 @@ jobs:
         shell: bash
         run: |
           # Kill the envoy -> JVM -> sbt tree; a survivor would serve this binary to the next run.
-          envoy=$(lsof -t -iTCP:8090 -sTCP:LISTEN 2>/dev/null | head -1 || true)
+          envoy=$(lsof -t -iTCP:"$DEKAF_PORT" -sTCP:LISTEN 2>/dev/null | head -1 || true)
           if [ -n "$envoy" ]; then
             jvm=$(ps -o ppid= -p "$envoy" 2>/dev/null | tr -d ' ' || true)
             sbt=""
