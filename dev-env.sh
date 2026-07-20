@@ -26,6 +26,12 @@ function configure_kubectl() {
 }
 
 add_binary_dependencies_to_path
-configure_kubectl
+
+# kubectl-against-core-infra is OPTIONAL dev tooling: it needs a logged-in pulumi (or
+# PULUMI_ACCESS_TOKEN). Skip quietly when unavailable instead of printing a scary
+# "error: PULUMI_ACCESS_TOKEN must be set..." on every shell entry, locally and in CI.
+if [ -n "${PULUMI_ACCESS_TOKEN:-}" ] || pulumi whoami >/dev/null 2>&1; then
+  configure_kubectl
+fi
 
 alias k="kubectl"

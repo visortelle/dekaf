@@ -41,23 +41,11 @@ jobs:
 
       - uses: ./.github/actions/git-lfs-pull
 
-      # Playwright's browser download is not pinned/cached elsewhere; do it up front so a clean
-      # runner has Chromium before the suite starts.
-      - name: Install Playwright browsers
-        shell: bash
-        run: nix-shell --run 'cd e2e && sbt "runMain com.microsoft.playwright.CLI install --with-deps chromium"'
-
+      # No browser-install step: browsers come from the nix store (flake.nix: nixpkgs-playwright).
       - name: Bring up Pulsar (standalone) + Dekaf server
         shell: bash
         run: |
-          # server/data/library starts empty each run NOT because the runner is ephemeral (it is a
-          # persistent self-hosted runner) but because actions/checkout's default clean wipes
-          # untracked files at checkout. No disposable DEKAF_DATA_DIR needed - it would also skip
-          # the consumer-session libs.js/proto that run-dekaf builds under the default root.
-
-          # Pre-clean: a Dekaf tree leaked by a previous job would still hold :8090 and answer the
-          # readiness probe WITH LAST RUN'S BINARY - the suite would silently test stale code.
-          # Kill the whole envoy -> JVM -> sbt tree by walking up from the :8090 listener.
+          # Kill any Dekaf leaked by a previous run - it would answer the probe with a stale binary.
           envoy=$(lsof -t -iTCP:8090 -sTCP:LISTEN 2>/dev/null | head -1 || true)
           if [ -n "$envoy" ]; then
             jvm=$(ps -o ppid= -p "$envoy" 2>/dev/null | tr -d ' ' || true)
@@ -90,16 +78,11 @@ jobs:
           DEKAF_BASE_URL: http://localhost:8090
           PULSAR_ADMIN_URL: http://localhost:18080
           PULSAR_SERVICE_URL: pulsar://localhost:6650
-          # Record a trace for EVERY test (not just failures) so all results are navigable as artifacts.
-          TRACE: on
+          TRACE: on # trace every test, not just failures - results stay navigable as artifacts
         run: nix-shell --run 'cd e2e && sbt test'
 
-      # Upload results whether the suite passed or failed, so they're always navigable.
-      #   e2e-traces       - one Playwright trace per test (<STATUS>__<Suite>__<test>.zip). Navigate them
-      #                      with `sbt "runMain harness.TraceDashboard"` (clickable, colorized index) or by
-      #                      dropping a zip on https://trace.playwright.dev.
-      #   e2e-test-reports - JUnit XML (target/test-reports) + the static HTML report (target/test-html,
-      #                      open index.html) - a pass/fail tree with durations and failure detail.
+      # Always upload: per-test traces (view via `sbt "runMain harness.TraceDashboard"` or
+      # trace.playwright.dev) + JUnit XML / HTML reports.
       - name: Upload e2e traces (all tests)
         if: always()
         uses: actions/upload-artifact@v4
@@ -127,9 +110,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          # Kill the backgrounded envoy -> JVM -> sbt tree. The runner is persistent, and GitHub's
-          # orphan cleanup is best-effort: a survivor would hold :8090 and serve THIS run's binary
-          # to the NEXT run (the bring-up step's pre-clean backstops this, belt and suspenders).
+          # Kill the envoy -> JVM -> sbt tree; a survivor would serve this binary to the next run.
           envoy=$(lsof -t -iTCP:8090 -sTCP:LISTEN 2>/dev/null | head -1 || true)
           if [ -n "$envoy" ]; then
             jvm=$(ps -o ppid= -p "$envoy" 2>/dev/null | tr -d ' ' || true)

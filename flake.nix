@@ -4,6 +4,12 @@
     nixpkgs = {
       url = "nixpkgs/nixos-unstable";
     };
+    # e2e browsers: playwright-driver.version here MUST equal playwrightVersion in e2e/build.sbt
+    # (1.47.0) - bump together. Verify a candidate rev with:
+    #   nix eval github:NixOS/nixpkgs/<rev>#legacyPackages.x86_64-linux.playwright-driver.version
+    nixpkgs-playwright = {
+      url = "github:NixOS/nixpkgs/c792c60b8a97daa7efe41a6e4954497ae410e0c1";
+    };
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
@@ -15,6 +21,7 @@
   outputs =
     { self
     , nixpkgs
+    , nixpkgs-playwright
     , flake-compat
     , flake-utils
     ,
@@ -48,6 +55,10 @@
             else
               [ ];
 
+          # Pre-patched e2e browsers (Linux only - macOS keeps Playwright's own download).
+          playwrightBrowsers =
+            (import nixpkgs-playwright { inherit system; }).playwright-driver.browsers;
+
           runtimeLibraryPath = lib.makeLibraryPath ([ pkgs.zlib ]);
 
           pulsar-ui-dev = pkgs.mkShell {
@@ -59,6 +70,11 @@
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
 
               source ./dev-env.sh
+            '' + lib.optionalString pkgs.stdenv.isLinux ''
+              # e2e browsers from the store; the driver must not download into the read-only path.
+              export PLAYWRIGHT_BROWSERS_PATH="${playwrightBrowsers}"
+              export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+              export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
             '';
 
             packages = [

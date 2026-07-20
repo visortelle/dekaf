@@ -36,9 +36,12 @@ object TraceDashboard:
     val pw =
       try com.microsoft.playwright.Playwright.create()
       catch case t: Throwable => { System.err.println(s"Could not start Playwright to locate the viewer: $t"); return }
-    val viewerDir = Trace.locateViewerDir.getOrElse {
-      System.err.println("Could not locate the bundled trace viewer assets."); pw.close(); return
-    }
+    // A `match` (not `getOrElse`'s lambda) so the early `return` stays local to main - non-local
+    // returns are deprecated in Scala 3 and this was the build's one warning.
+    val viewerDir = Trace.locateViewerDir match
+      case Some(dir) => dir
+      case None =>
+        System.err.println("Could not locate the bundled trace viewer assets."); pw.close(); return
 
     val server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0)
     server.createContext("/", (ex: HttpExchange) =>
