@@ -13,27 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-e2e:
     runs-on: [self-hosted, Linux, x64]
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: ./.github/actions/git-lfs-pull
-
-      - name: Build + server tests
-        shell: bash
-        run: nix-shell --run 'make build'
-
-      - name: UI unit tests
-        shell: bash
-        run: nix-shell --run 'cd ui && make test'
-
-  e2e:
-    runs-on: [self-hosted, Linux, x64]
-    timeout-minutes: 60
+    timeout-minutes: 90
     # The CI box is shared - host :6650/:18080 belong to other standing stacks, so the e2e stack
     # runs on its own ports (stack-up.sh / run-dekaf.sh honor these env vars).
     env:
@@ -46,6 +28,15 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/git-lfs-pull
+
+      # Codegen (proto -> ui/grpc-web + server pb) + ui build + server build + server unit tests.
+      - name: Build + server tests
+        shell: bash
+        run: nix-shell --run 'make build'
+
+      - name: UI unit tests
+        shell: bash
+        run: nix-shell --run 'cd ui && make test'
 
       # No browser-install step: browsers come from the nix store (flake.nix: nixpkgs-playwright).
       - name: Bring up Pulsar (standalone) + Dekaf server
