@@ -80,6 +80,37 @@ jobs:
 
       # Always upload: per-test traces (view via `sbt "runMain harness.TraceDashboard"` or
       # trace.playwright.dev) + JUnit XML / HTML reports.
+      # Render results on the run's Summary page; the zips stay downloadable as before.
+      - name: Test results summary
+        if: always()
+        shell: bash
+        run: |
+          python3 - >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          import glob, xml.etree.ElementTree as ET
+          tests = failures = errors = skipped = 0
+          bad = []
+          for p in sorted(glob.glob("e2e/target/test-reports/TEST-*.xml")):
+              try:
+                  root = ET.parse(p).getroot()
+              except ET.ParseError:
+                  continue
+              for s in ([root] if root.tag == "testsuite" else root.findall("testsuite")):
+                  tests += int(s.get("tests", 0)); failures += int(s.get("failures", 0))
+                  errors += int(s.get("errors", 0)); skipped += int(s.get("skipped", 0))
+                  for c in s.iter("testcase"):
+                      if c.find("failure") is not None or c.find("error") is not None:
+                          bad.append(f'{s.get("name")} :: {c.get("name")}')
+          print("## e2e results")
+          print("| tests | passed | failed | errors | skipped |")
+          print("|---|---|---|---|---|")
+          print(f"| {tests} | {tests - failures - errors - skipped} | {failures} | {errors} | {skipped} |")
+          if bad:
+              print("\n**Failing tests:**")
+              for b in bad:
+                  print(f"- `{b}`")
+          print("\n_Traces + full JUnit XML / HTML reports: run artifacts `e2e-traces`, `e2e-test-reports`._")
+          EOF
+
       - name: Upload e2e traces (all tests)
         if: always()
         uses: actions/upload-artifact@v4

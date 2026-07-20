@@ -120,35 +120,52 @@ class PulsarFixtures:
     finally producer.close()
 
   /** Best-effort teardown of everything this fixture created. Runs after each test.
-    * Failures are logged (not thrown - teardown must not fail a test) so leaks aren't silent. */
+    * Failures are logged (not thrown - teardown must not fail a test) so leaks aren't silent.
+    * Two deliberate softenings (both bit on CI):
+    *   - not-found on a delete = SUCCESS: the resource is already gone, usually deleted by the
+    *     test itself (the tenant/RG deletion specs) - that's the goal state, not a leak;
+    *   - one retry after a short pause: broker-side races (topic GC on namespace force-delete)
+    *     surface as transient 500s on a loaded box and clear on the second attempt. */
   def cleanup(): Unit =
-    def warn(what: String, t: Throwable): Unit =
-      val msg = s"$what failed: ${t.getMessage}"
-      System.err.println(s"[cleanup] $msg")
-      cleanupFailures.synchronized(cleanupFailures += msg)
-    extraCleanups.reverse.foreach(f => try f() catch case t: Throwable => warn("onCleanup action", t))
+    def alreadyGone(t: Throwable): Boolean =
+      t.isInstanceOf[org.apache.pulsar.client.admin.PulsarAdminException.NotFoundException] ||
+        Option(t.getMessage).exists(_.toLowerCase.contains("not found"))
+    def attempt(what: String)(op: => Unit): Unit =
+      try op
+      catch
+        case t: Throwable if alreadyGone(t) => ()
+        case _: Throwable =>
+          Thread.sleep(1500)
+          try op
+          catch
+            case t: Throwable if alreadyGone(t) => ()
+            case t: Throwable =>
+              val msg = s"$what failed: ${t.getMessage}"
+              System.err.println(s"[cleanup] $msg")
+              cleanupFailures.synchronized(cleanupFailures += msg)
+    extraCleanups.reverse.foreach(f => attempt("onCleanup action")(f()))
     extraCleanups.clear()
     // A namespace whose replication references a cluster we're about to delete can't be deleted; drop
     // its replication back to the local cluster first. Only geo-rep tests register extra clusters.
     val resetReplication = createdClusters.nonEmpty
     createdTenants.foreach: tenant =>
-      try
-        admin.namespaces().getNamespaces(tenant).asScala.foreach: ns =>
-          try
-            if resetReplication then
-              try admin.namespaces().setNamespaceReplicationClusters(ns, Set(firstCluster).asJava)
-              catch case _: Throwable => () // best-effort - the ns may have no replication set
-            admin.namespaces().deleteNamespace(ns, true)
-          catch case t: Throwable => warn(s"deleteNamespace($ns)", t)
-        admin.tenants().deleteTenant(tenant)
-      catch case t: Throwable => warn(s"deleteTenant($tenant)", t)
+      val namespaces =
+        try admin.namespaces().getNamespaces(tenant).asScala.toList
+        catch case _: Throwable => Nil // tenant already gone (deleted by the test) - nothing to do
+      namespaces.foreach: ns =>
+        attempt(s"deleteNamespace($ns)"):
+          if resetReplication then
+            try admin.namespaces().setNamespaceReplicationClusters(ns, Set(firstCluster).asJava)
+            catch case _: Throwable => () // best-effort - the ns may have no replication set
+          admin.namespaces().deleteNamespace(ns, true)
+      attempt(s"deleteTenant($tenant)")(admin.tenants().deleteTenant(tenant))
     createdTenants.clear()
     createdResourceGroups.foreach: rg =>
-      try admin.resourcegroups().deleteResourceGroup(rg) catch case t: Throwable => warn(s"deleteResourceGroup($rg)", t)
+      attempt(s"deleteResourceGroup($rg)")(admin.resourcegroups().deleteResourceGroup(rg))
     createdResourceGroups.clear()
     // Clusters last - after every namespace that referenced them is gone.
     createdClusters.foreach: c =>
-      try admin.clusters().deleteCluster(c) catch case t: Throwable => warn(s"deleteCluster($c)", t)
+      attempt(s"deleteCluster($c)")(admin.clusters().deleteCluster(c))
     createdClusters.clear()
 
   /** Close clients at suite end. */
