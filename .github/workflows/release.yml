@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   prepare:
-    runs-on: [self-hosted, x64]
+    runs-on: [self-hosted, Linux, x64]
     outputs:
       version: ${{ steps.ver.outputs.version }}
       channel: ${{ steps.ver.outputs.channel }}
@@ -155,7 +155,7 @@ jobs:
   # quick-start compose pins, commits, tags, and pushes.
   merge:
     needs: [prepare, build]
-    runs-on: [self-hosted, x64]
+    runs-on: [self-hosted, Linux, x64]
     env:
       VER: ${{ needs.prepare.outputs.version }}
       DEKAF_IMAGE: ${{ needs.prepare.outputs.dekaf_image }}
