@@ -77,6 +77,18 @@ export type ConsumerSessionStartFrom =
   { type: "latestMessage" } |
   { type: "nthMessageAfterEarliest", n: number } |
   { type: "nthMessageBeforeLatest", n: number } |
+  // "About % through the data": approximately this far through the messages a topic still holds.
+  // 0 = earliest retained, 1 = past the latest. Resolved by entry ordinal, which Pulsar can address
+  // instantly at any topic size - and which is why the position is only approximate, since one entry
+  // holds a whole batch of messages. PER PHYSICAL TOPIC.
+  { type: "approximateDataPosition", fraction: number } |
+  // "About % through the time range": approximately this far through the time a topic still covers.
+  // 0 = earliest retained, 1 = the last message. The range runs from the earliest first-message
+  // publish time to the latest last-message publish time across a topic's partitions, so this one is
+  // PER LOGICAL TOPIC. The two are separate modes because they answer different questions: on a topic
+  // where almost everything arrived in the last hour of a month's retention, half the MESSAGES are
+  // inside that last hour while half the TIME is fifteen days back.
+  { type: "approximateTimePosition", fraction: number } |
   { type: "messageId"; hexString: string } |
   { type: "dateTime"; dateTime: Date } |
   {

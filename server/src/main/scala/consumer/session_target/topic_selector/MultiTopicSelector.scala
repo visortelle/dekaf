@@ -14,9 +14,14 @@ case class MultiTopicSelector(topicFqns: Vector[String]):
                             val partitions = getTopicPartitions(adminClient, topicFqn)
                             partitions
                         case TopicPartitioningType.NonPartitioned => Vector(topicFqn)
-                case Failure(_) =>
-                    println(s"Failed to get topic partitioning for topic $topicFqn")
-                    Vector.empty
+                case Failure(err) =>
+                    // Swallowing this DROPPED the topic from the selection. The user named these
+                    // FQNs explicitly, so silently consuming from a subset is wrong - and when
+                    // every topic was unresolvable (unreachable broker, topic deleted between the
+                    // picker and the session) the selector returned an empty vector, which the
+                    // session runner accepted as a consumer-less session reported to the UI as OK.
+                    // The sibling NamespacedRegexTopicSelector has always let these propagate.
+                    throw new RuntimeException(s"Failed to resolve topic $topicFqn. ${err.getMessage}", err)
         }.distinct
 
 object MultiTopicSelector:

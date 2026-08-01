@@ -21,7 +21,7 @@ class PulsarAuthServiceImpl extends pb.PulsarAuthServiceGrpc.PulsarAuthService:
     override def getMaskedCredentials(request: GetMaskedCredentialsRequest): Future[GetMaskedCredentialsResponse] =
         val pulsarAuth = RequestContext.pulsarAuth.get()
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(
             GetMaskedCredentialsResponse(
                 status = Some(status),
@@ -39,7 +39,7 @@ class PulsarAuthServiceImpl extends pb.PulsarAuthServiceGrpc.PulsarAuthService:
     override def getCurrentCredentials(request: GetCurrentCredentialsRequest): Future[GetCurrentCredentialsResponse] =
         val pulsarAuth = RequestContext.pulsarAuth.get()
         
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(
             GetCurrentCredentialsResponse(
                 status = Some(status),

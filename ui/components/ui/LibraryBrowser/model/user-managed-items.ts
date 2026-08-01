@@ -114,12 +114,18 @@ export type StartFromEarliestMessage = { type: 'earliestMessage' };
 export type StartFromLatestMessage = { type: 'latestMessage' };
 export type StartFromNthMessageAfterEarliest = { type: 'nthMessageAfterEarliest', n: number };
 export type StartFromNthMessageBeforeLatest = { type: 'nthMessageBeforeLatest', n: number };
+/** "About % through the data": a proportion of the messages a topic still holds, in [0, 1].
+ *  0 = earliest retained, 1 = past the latest. */
+export type StartFromApproximateDataPosition = { type: 'approximateDataPosition', fraction: number };
+/** "About % through the time range": a proportion of the time a topic still covers, in [0, 1].
+ *  0 = earliest retained, 1 = the last message. */
+export type StartFromApproximateTimePosition = { type: 'approximateTimePosition', fraction: number };
 export type StartFromMessageId = { type: 'messageId', messageId: ManagedMessageIdValOrRef };
 export type StartFromDateTime = { type: 'dateTime', dateTime: ManagedDateTimeValOrRef };
 export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: ManagedRelativeDateTimeValOrRef };
 
 export type ManagedConsumerSessionStartFromSpec = {
-  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
+  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromApproximateDataPosition | StartFromApproximateTimePosition | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
 };
 export type ManagedConsumerSessionStartFrom = {
   metadata: ManagedItemMetadata,

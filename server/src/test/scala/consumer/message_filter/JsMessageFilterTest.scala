@@ -21,8 +21,10 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         isShouldFail: Boolean = false
     )
 
+    // One pool (one GraalVM Engine) for the suite - see BasicMessageFilterTest.
+    private val sessionContextPool = ConsumerSessionContextPool()
+
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContextPool = ConsumerSessionContextPool()
         val jsMessageFilter = JsMessageFilter(jsCode = spec.jsCode)
         val filter = MessageFilter(
             isEnabled = true,
@@ -36,9 +38,14 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         val sessionContext = sessionContextPool.getNextContext
         sessionContext.setCurrentMessage(spec.messageAsJsonOmittingValue, Right(spec.messageValueAsJson.trim))
 
-        val result = sessionContext.testMessageFilter(filter = filter).isOk
+        val result = sessionContext.testMessageFilter(filter = filter)
 
-        if spec.isShouldFail then !result else result
+        // See BasicMessageFilterTest: a thrown JS error must not satisfy an `isShouldFail` case.
+        if result.error.nonEmpty then
+            java.lang.System.err.println(s"[js-filter-test] unexpected evaluation error: ${result.error.get}")
+            false
+        else if spec.isShouldFail then !result.isOk
+        else result.isOk
 
     def spec = suite(s"${this.getClass.toString}")(
         test(JsMessageFilter.getClass.toString) {
@@ -127,4 +134,4 @@ object JsMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         }
-    )
+    ) @@ TestAspect.sequential

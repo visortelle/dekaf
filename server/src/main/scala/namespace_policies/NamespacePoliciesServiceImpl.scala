@@ -24,7 +24,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try {
             val isAllowAutoUpdateSchema = adminClient.namespaces.getIsAllowAutoUpdateSchema(request.namespace)
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(
               GetIsAllowAutoUpdateSchemaResponse(
                 status = Some(status),
@@ -33,7 +33,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetIsAllowAutoUpdateSchemaResponse(status = Some(status)))
         }
 
@@ -43,11 +43,11 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try {
             adminClient.namespaces.setIsAllowAutoUpdateSchema(request.namespace, request.isAllowAutoUpdateSchema)
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(SetIsAllowAutoUpdateSchemaResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetIsAllowAutoUpdateSchemaResponse(status = Some(status)))
         }
 
@@ -56,7 +56,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try {
             val strategy = adminClient.namespaces.getSchemaCompatibilityStrategy(request.namespace)
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(
               GetSchemaCompatibilityStrategyResponse(
                 status = Some(status),
@@ -65,7 +65,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSchemaCompatibilityStrategyResponse(status = Some(status)))
 
         }
@@ -80,11 +80,11 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
               request.namespace,
               schemaCompatibilityStrategyFromPb(request.strategy)
             )
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
 
         }
@@ -94,7 +94,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try {
             val schemaValidationEnforced = adminClient.namespaces.getSchemaValidationEnforced(request.namespace)
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(
               GetSchemaValidationEnforceResponse(
                 status = Some(status),
@@ -103,7 +103,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSchemaValidationEnforceResponse(status = Some(status)))
         }
 
@@ -113,11 +113,11 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting schema validation enforce policy for namespace ${request.namespace}")
             adminClient.namespaces.setSchemaValidationEnforced(request.namespace, request.schemaValidationEnforced)
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(SetSchemaValidationEnforceResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSchemaValidationEnforceResponse(status = Some(status)))
 
         }
@@ -133,13 +133,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             Future.successful(
               GetAutoSubscriptionCreationResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 autoSubscriptionCreation = autoSubscriptionCreationPb
               )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetAutoSubscriptionCreationResponse(status = Some(status)))
 
         }
@@ -155,14 +155,14 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED =>
                     AutoSubscriptionCreationOverride.builder.allowAutoSubscriptionCreation(false).build()
                 case _ =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Wrong allow subscription creation argument received")
+                    val status = Status(code = Code.INVALID_ARGUMENT.value, message = "Wrong allow subscription creation argument received")
                     return Future.successful(SetAutoSubscriptionCreationResponse(status = Some(status)))
 
             adminClient.namespaces.setAutoSubscriptionCreation(request.namespace, autoSubscriptionCreationOverride)
-            Future.successful(SetAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetAutoSubscriptionCreationResponse(status = Some(status)))
 
         }
@@ -173,10 +173,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing auto subscription creation policy for namespace ${request.namespace}")
             adminClient.namespaces.removeAutoSubscriptionCreation(request.namespace)
-            Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(status)))
         }
 
@@ -205,14 +205,14 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             Future.successful(
               GetAutoTopicCreationResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 autoTopicCreation = autoTopicCreationPb,
                 autoTopicCreationOverride = autoTopicCreationOverridePb
               )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetAutoTopicCreationResponse(status = Some(status)))
         }
 
@@ -221,13 +221,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         val adminClient = RequestContext.pulsarAdmin.get()
 
         if !request.autoTopicCreation.isAutoTopicCreationSpecified then
-            val status = Status(code = Code.FAILED_PRECONDITION.index)
+            val status = Status(code = Code.FAILED_PRECONDITION.value)
             return Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
 
         val autoTopicCreationOverridePb = request.autoTopicCreationOverride match
             case Some(v) => v
             case _ =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index)
+                val status = Status(code = Code.FAILED_PRECONDITION.value)
                 return Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
 
         try {
@@ -250,10 +250,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                         .build
 
             adminClient.namespaces.setAutoTopicCreation(request.namespace, autoTopicCreation)
-            Future.successful(SetAutoTopicCreationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetAutoTopicCreationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
         }
 
@@ -263,10 +263,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try {
             adminClient.namespaces.removeAutoTopicCreation(request.namespace)
-            Future.successful(RemoveAutoTopicCreationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveAutoTopicCreationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveAutoTopicCreationResponse(status = Some(status)))
         }
 
@@ -307,14 +307,14 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             Future.successful(
               GetBacklogQuotasResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 destinationStorage = destinationStorageBacklogQuotaPb,
                 messageAge = messageAgeBacklogQuotaPb
               )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetBacklogQuotasResponse(status = Some(status)))
         }
 
@@ -361,10 +361,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
-            Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetBacklogQuotasResponse(status = Some(status)))
         }
 
@@ -380,13 +380,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     logger.info(s"Removing backlog quota (message age) on namespace ${request.namespace}")
                     adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.message_age)
                 case _ =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified")
+                    val status = Status(code = Code.INVALID_ARGUMENT.value, message = "Backlog quota type should be specified")
                     return Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
 
-            Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.value))))
         catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
         }
 
@@ -398,13 +398,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             Future.successful(
               GetNamespaceAntiAffinityGroupResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 namespaceAntiAffinityGroup = namespaceAntiAffinityGroup
               )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetNamespaceAntiAffinityGroupResponse(status = Some(status)))
         }
 
@@ -413,10 +413,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try
             adminClient.namespaces.setNamespaceAntiAffinityGroup(request.namespace, request.namespaceAntiAffinityGroup)
-            Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.value))))
         catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(status)))
         }
 
@@ -425,10 +425,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
         try
             adminClient.namespaces.deleteNamespaceAntiAffinityGroup(request.namespace)
-            Future.successful(RemoveNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.value))))
         catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveNamespaceAntiAffinityGroupResponse(status = Some(status)))
         }
 
@@ -446,13 +446,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 .toList
             Future.successful(
               GetAntiAffinityNamespacesResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 namespaces
               )
             )
         catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetAntiAffinityNamespacesResponse(status = Some(status)))
         }
 
@@ -468,13 +468,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 case None => None
             Future.successful(
               GetBookieAffinityGroupResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 groupData = groupData
               )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetBookieAffinityGroupResponse(status = Some(status)))
         }
 
@@ -491,10 +491,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             logger.info(s"Setting bookie affinity group for namespace ${request.namespace}. $groupData")
             adminClient.namespaces.setBookieAffinityGroup(request.namespace, groupData)
-            Future.successful(SetBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetBookieAffinityGroupResponse(status = Some(status)))
         }
 
@@ -504,10 +504,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing bookie affinity group policy for namespace ${request.namespace}")
             adminClient.namespaces.deleteBookieAffinityGroup(request.namespace)
-            Future.successful(RemoveBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveBookieAffinityGroupResponse(status = Some(status)))
         }
 
@@ -519,12 +519,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 case None => pb.GetCompactionThresholdResponse.Threshold.Disabled(new pb.CompactionThresholdDisabled())
                 case Some(v) => pb.GetCompactionThresholdResponse.Threshold.Enabled(new CompactionThresholdEnabled(threshold = v))
             Future.successful(GetCompactionThresholdResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 threshold
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetCompactionThresholdResponse(status = Some(status)))
         }
 
@@ -534,10 +534,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting compaction threshold policy for namespace ${request.namespace}. ${request.threshold}")
             adminClient.namespaces.setCompactionThreshold(request.namespace, request.threshold)
-            Future.successful(SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetCompactionThresholdResponse(status = Some(status)))
         }
 
@@ -547,10 +547,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing compaction threshold policy for namespace ${request.namespace}")
             adminClient.namespaces.removeCompactionThreshold(request.namespace)
-            Future.successful(RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveCompactionThresholdResponse(status = Some(status)))
         }
 
@@ -565,12 +565,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     pb.GetDeduplicationSnapshotIntervalResponse.Interval.Enabled(new DeduplicationSnapshotIntervalEnabled(interval = v))
 
             Future.successful(GetDeduplicationSnapshotIntervalResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 interval
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
 
@@ -580,10 +580,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting deduplication snapshot interval policy for namespace ${request.namespace}. ${request.interval}")
             adminClient.namespaces.setDeduplicationSnapshotInterval(request.namespace, request.interval)
-            Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
 
@@ -593,10 +593,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing deduplication snapshot interval policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDeduplicationSnapshotInterval(request.namespace)
-            Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
 
@@ -611,12 +611,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     pb.GetDeduplicationResponse.Deduplication.Specified(new DeduplicationSpecified(enabled = v))
 
             Future.successful(GetDeduplicationResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 deduplication
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetDeduplicationResponse(status = Some(status)))
         }
 
@@ -626,10 +626,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting deduplication policy for namespace ${request.namespace}")
             adminClient.namespaces.setDeduplicationStatus(request.namespace, request.enabled)
-            Future.successful(SetDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetDeduplicationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetDeduplicationResponse(status = Some(status)))
         }
 
@@ -639,10 +639,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing deduplication policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDeduplicationStatus(request.namespace)
-            Future.successful(RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveDeduplicationResponse(status = Some(status)))
         }
 
@@ -660,12 +660,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetDelayedDeliveryResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 delayedDelivery = delayedDeliveryPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetDelayedDeliveryResponse(status = Some(status)))
         }
 
@@ -680,10 +680,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 .build()
 
             adminClient.namespaces.setDelayedDeliveryMessages(request.namespace, delayedDeliveryPolicies)
-            Future.successful(SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetDelayedDeliveryResponse(status = Some(status)))
         }
 
@@ -693,10 +693,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing delayed delivery policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDelayedDeliveryMessages(request.namespace)
-            Future.successful(RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveDelayedDeliveryResponse(status = Some(status)))
         }
 
@@ -716,12 +716,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetDispatchRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 dispatchRate = dispatchRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetDispatchRateResponse(status = Some(status)))
         }
 
@@ -738,10 +738,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 .build
 
             adminClient.namespaces.setDispatchRate(request.namespace, dispatchRate)
-            Future.successful(SetDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetDispatchRateResponse(status = Some(status)))
         }
 
@@ -751,10 +751,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing dispatch rate policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDispatchRate(request.namespace)
-            Future.successful(RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveDispatchRateResponse(status = Some(status)))
         }
 
@@ -764,17 +764,17 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             val encryptionRequired = Option(adminClient.namespaces.getEncryptionRequiredStatus(request.namespace)) match
                 case None =>
-                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Can't fetch encryption status from broker")
+                    val status = Status(code = Code.FAILED_PRECONDITION.value, message = "Can't fetch encryption status from broker")
                     return Future.successful(GetEncryptionRequiredResponse(status = Some(status)))
                 case Some(v) => v
 
             Future.successful(GetEncryptionRequiredResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 encryptionRequired
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetEncryptionRequiredResponse(status = Some(status)))
         }
 
@@ -784,10 +784,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting encryption required policy for namespace ${request.namespace}")
             adminClient.namespaces.setEncryptionRequiredStatus(request.namespace, request.encryptionRequired)
-            Future.successful(SetEncryptionRequiredResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetEncryptionRequiredResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetEncryptionRequiredResponse(status = Some(status)))
         }
 
@@ -812,12 +812,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetInactiveTopicPoliciesResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 inactiveTopicPolicies = inactiveTopicPoliciesPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetInactiveTopicPoliciesResponse(status = Some(status)))
         }
 
@@ -840,10 +840,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     throw new IllegalArgumentException("Invalid inactiveTopicDeleteMode mode")
 
             adminClient.namespaces.setInactiveTopicPolicies(request.namespace, inactiveTopicPolicies)
-            Future.successful(SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetInactiveTopicPoliciesResponse(status = Some(status)))
         }
 
@@ -853,10 +853,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing inactive topic policies policy for namespace ${request.namespace}")
             adminClient.namespaces.removeInactiveTopicPolicies(request.namespace)
-            Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(status)))
         }
 
@@ -873,12 +873,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxConsumersPerSubscriptionResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxConsumersPerSubscription = maxConsumersPerSubscriptionPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
 
@@ -888,10 +888,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max consumers per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxConsumersPerSubscription(request.namespace, request.maxConsumersPerSubscription)
-            Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
 
@@ -901,10 +901,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max consumers per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxConsumersPerSubscription(request.namespace)
-            Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
 
@@ -921,12 +921,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxConsumersPerTopicResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxConsumersPerTopic = maxConsumersPerTopicPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxConsumersPerTopicResponse(status = Some(status)))
         }
 
@@ -936,10 +936,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max consumers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxConsumersPerTopic(request.namespace, request.maxConsumersPerTopic)
-            Future.successful(SetMaxConsumersPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxConsumersPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxConsumersPerTopicResponse(status = Some(status)))
         }
 
@@ -949,10 +949,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max consumers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxConsumersPerTopic(request.namespace)
-            Future.successful(RemoveMaxConsumersPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxConsumersPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxConsumersPerTopicResponse(status = Some(status)))
         }
 
@@ -969,12 +969,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxProducersPerTopicResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxProducersPerTopic = maxProducersPerTopicPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxProducersPerTopicResponse(status = Some(status)))
         }
 
@@ -984,10 +984,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max producers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxProducersPerTopic(request.namespace, request.maxProducersPerTopic)
-            Future.successful(SetMaxProducersPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxProducersPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxProducersPerTopicResponse(status = Some(status)))
         }
 
@@ -997,10 +997,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max producers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxProducersPerTopic(request.namespace)
-            Future.successful(RemoveMaxProducersPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxProducersPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxProducersPerTopicResponse(status = Some(status)))
         }
 
@@ -1017,12 +1017,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxSubscriptionsPerTopicResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxSubscriptionsPerTopic = maxSubscriptionsPerTopicPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
 
@@ -1032,10 +1032,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max subscriptions per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxSubscriptionsPerTopic(request.namespace, request.maxSubscriptionsPerTopic)
-            Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
 
@@ -1045,10 +1045,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max subscriptions per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxSubscriptionsPerTopic(request.namespace)
-            Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
 
@@ -1065,12 +1065,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxTopicsPerNamespaceResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxTopicsPerNamespace = maxTopicsPerNamespacePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxTopicsPerNamespaceResponse(status = Some(status)))
         }
 
@@ -1080,10 +1080,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max topics per namespace policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxTopicsPerNamespace(request.namespace, request.maxTopicsPerNamespace)
-            Future.successful(SetMaxTopicsPerNamespaceResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxTopicsPerNamespaceResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxTopicsPerNamespaceResponse(status = Some(status)))
         }
 
@@ -1093,10 +1093,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max topics per namespace policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxTopicsPerNamespace(request.namespace)
-            Future.successful(RemoveMaxTopicsPerNamespaceResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxTopicsPerNamespaceResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxTopicsPerNamespaceResponse(status = Some(status)))
         }
 
@@ -1113,12 +1113,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxUnackedMessagesPerConsumerResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxUnackedMessagesPerConsumer = maxUnackedMessagesPerConsumerPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxUnackedMessagesPerConsumerResponse(status = Some(status)))
         }
 
@@ -1128,10 +1128,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max unacked messages per consumer policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxUnackedMessagesPerConsumer(request.namespace, request.maxUnackedMessagesPerConsumer)
-            Future.successful(SetMaxUnackedMessagesPerConsumerResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxUnackedMessagesPerConsumerResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxUnackedMessagesPerConsumerResponse(status = Some(status)))
         }
 
@@ -1141,10 +1141,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max unacked messages per consumer policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxUnackedMessagesPerConsumer(request.namespace)
-            Future.successful(RemoveMaxUnackedMessagesPerConsumerResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxUnackedMessagesPerConsumerResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxUnackedMessagesPerConsumerResponse(status = Some(status)))
         }
 
@@ -1161,12 +1161,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMaxUnackedMessagesPerSubscriptionResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxUnackedMessagesPerSubscription = maxUnackedMessagesPerSubscriptionPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMaxUnackedMessagesPerSubscriptionResponse(status = Some(status)))
         }
 
@@ -1176,10 +1176,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting max unacked messages per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxUnackedMessagesPerSubscription(request.namespace, request.maxUnackedMessagesPerSubscription)
-            Future.successful(SetMaxUnackedMessagesPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMaxUnackedMessagesPerSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMaxUnackedMessagesPerSubscriptionResponse(status = Some(status)))
         }
 
@@ -1189,10 +1189,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing max unacked messages per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxUnackedMessagesPerSubscription(request.namespace)
-            Future.successful(RemoveMaxUnackedMessagesPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMaxUnackedMessagesPerSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMaxUnackedMessagesPerSubscriptionResponse(status = Some(status)))
         }
 
@@ -1209,12 +1209,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetMessageTtlResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 messageTtl = messageTtlPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetMessageTtlResponse(status = Some(status)))
         }
 
@@ -1224,10 +1224,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting message TTL policy for namespace ${request.namespace}")
             adminClient.namespaces.setNamespaceMessageTTL(request.namespace, request.messageTtlSeconds)
-            Future.successful(SetMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetMessageTtlResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetMessageTtlResponse(status = Some(status)))
         }
 
@@ -1237,10 +1237,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing message TTL policy for namespace ${request.namespace}")
             adminClient.namespaces.removeNamespaceMessageTTL(request.namespace)
-            Future.successful(RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveMessageTtlResponse(status = Some(status)))
         }
 
@@ -1257,12 +1257,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetOffloadDeletionLagResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 offloadDeletionLag = offloadDeletionLagPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetOffloadDeletionLagResponse(status = Some(status)))
         }
 
@@ -1272,10 +1272,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting offload deletion lag policy for namespace ${request.namespace}")
             adminClient.namespaces.setOffloadDeleteLag(request.namespace, request.offloadDeletionLagMs, TimeUnit.MILLISECONDS)
-            Future.successful(SetOffloadDeletionLagResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetOffloadDeletionLagResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetOffloadDeletionLagResponse(status = Some(status)))
         }
 
@@ -1285,10 +1285,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing offload deletion lag policy for namespace ${request.namespace}")
             adminClient.namespaces.clearOffloadDeleteLag(request.namespace)
-            Future.successful(RemoveOffloadDeletionLagResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveOffloadDeletionLagResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveOffloadDeletionLagResponse(status = Some(status)))
         }
 
@@ -1298,7 +1298,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             val offloadThresholdPb = Option(adminClient.namespaces.getOffloadThreshold(request.namespace)) match
                 case None =>
-                    val status = Status(code = Code.FAILED_PRECONDITION.index)
+                    val status = Status(code = Code.FAILED_PRECONDITION.value)
                     return Future.successful(GetOffloadThresholdResponse(status = Some(status)))
                 case Some(v) =>
                     pb.GetOffloadThresholdResponse.OffloadThreshold.Specified(new OffloadThresholdSpecified(
@@ -1306,12 +1306,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetOffloadThresholdResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 offloadThreshold = offloadThresholdPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetOffloadThresholdResponse(status = Some(status)))
         }
 
@@ -1321,10 +1321,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting offload threshold policy for namespace ${request.namespace}")
             adminClient.namespaces.setOffloadThreshold(request.namespace, request.offloadThresholdBytes)
-            Future.successful(SetOffloadThresholdResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetOffloadThresholdResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetOffloadThresholdResponse(status = Some(status)))
         }
 
@@ -1344,12 +1344,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetPersistenceResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 persistence = persistencePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetPersistenceResponse(status = Some(status)))
         }
 
@@ -1360,10 +1360,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             logger.info(s"Setting persistence policy for namespace ${request.namespace}")
             val persistencePolicies = PersistencePolicies(request.bookkeeperEnsemble, request.bookkeeperWriteQuorum, request.bookkeeperAckQuorum, request.managedLedgerMaxMarkDeleteRate)
             adminClient.namespaces.setPersistence(request.namespace, persistencePolicies)
-            Future.successful(SetPersistenceResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetPersistenceResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetPersistenceResponse(status = Some(status)))
         }
 
@@ -1373,10 +1373,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing persistence policy for namespace ${request.namespace}")
             adminClient.namespaces.removePersistence(request.namespace)
-            Future.successful(RemovePersistenceResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemovePersistenceResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemovePersistenceResponse(status = Some(status)))
         }
 
@@ -1389,12 +1389,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 .getOrElse(Seq.empty[String])
 
             Future.successful(GetReplicationClustersResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 replicationClusters
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetReplicationClustersResponse(status = Some(status)))
         }
 
@@ -1404,10 +1404,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting replication clusters for namespace ${request.namespace}")
             adminClient.namespaces.setNamespaceReplicationClusters(request.namespace, request.replicationClusters.toSet.asJava)
-            Future.successful(SetReplicationClustersResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetReplicationClustersResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetReplicationClustersResponse(status = Some(status)))
         }
 
@@ -1427,12 +1427,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetReplicatorDispatchRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 replicatorDispatchRate = replicatorDispatchRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetReplicatorDispatchRateResponse(status = Some(status)))
         }
 
@@ -1449,10 +1449,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 .build
 
             adminClient.namespaces.setReplicatorDispatchRate(request.namespace, dispatchRate)
-            Future.successful(SetReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetReplicatorDispatchRateResponse(status = Some(status)))
         }
 
@@ -1462,10 +1462,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing replicator dispatch rate for namespace ${request.namespace}")
             adminClient.namespaces.removeReplicatorDispatchRate(request.namespace)
-            Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(status)))
         }
 
@@ -1485,12 +1485,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetSubscriptionDispatchRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 subscriptionDispatchRate = subscriptionDispatchRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscriptionDispatchRateResponse(status = Some(status)))
         }
 
@@ -1507,10 +1507,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 .build
 
             adminClient.namespaces.setSubscriptionDispatchRate(request.namespace, dispatchRate)
-            Future.successful(SetSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSubscriptionDispatchRateResponse(status = Some(status)))
         }
 
@@ -1520,10 +1520,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing subscription dispatch rate for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscriptionDispatchRate(request.namespace)
-            Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(status)))
         }
 
@@ -1541,12 +1541,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetRetentionResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 retention = retentionPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetRetentionResponse(status = Some(status)))
         }
 
@@ -1558,10 +1558,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             val retention = new RetentionPolicies(request.retentionTimeInMinutes, request.retentionSizeInMb)
 
             adminClient.namespaces.setRetention(request.namespace, retention)
-            Future.successful(SetRetentionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetRetentionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetRetentionResponse(status = Some(status)))
         }
 
@@ -1571,10 +1571,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing retention for namespace ${request.namespace}")
             adminClient.namespaces.removeRetention(request.namespace)
-            Future.successful(RemoveRetentionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveRetentionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveRetentionResponse(status = Some(status)))
         }
 
@@ -1592,12 +1592,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetSubscribeRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 subscribeRate = subscribeRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscribeRateResponse(status = Some(status)))
         }
 
@@ -1609,10 +1609,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             val subscribeRate = new SubscribeRate(request.subscribeThrottlingRatePerConsumer, request.ratePeriodInSeconds)
 
             adminClient.namespaces.setSubscribeRate(request.namespace, subscribeRate)
-            Future.successful(SetSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetSubscribeRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSubscribeRateResponse(status = Some(status)))
         }
 
@@ -1622,10 +1622,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing subscribe rate policy for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscribeRate(request.namespace)
-            Future.successful(RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveSubscribeRateResponse(status = Some(status)))
         }
 
@@ -1638,12 +1638,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 case SubscriptionAuthMode.Prefix => pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX
 
             Future.successful(GetSubscriptionAuthModeResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 subscriptionAuthMode = subscriptionAuthModePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscriptionAuthModeResponse(status = Some(status)))
         }
 
@@ -1656,13 +1656,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 case pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_NONE => SubscriptionAuthMode.None
                 case pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX => SubscriptionAuthMode.Prefix
                 case _ =>
-                    return Future.successful(SetSubscriptionAuthModeResponse(status = Some(Status(code = Code.INVALID_ARGUMENT.index, message = "Invalid subscription auth mode"))))
+                    return Future.successful(SetSubscriptionAuthModeResponse(status = Some(Status(code = Code.INVALID_ARGUMENT.value, message = "Invalid subscription auth mode"))))
 
             adminClient.namespaces.setSubscriptionAuthMode(request.namespace, subscriptionAuthMode)
-            Future.successful(SetSubscriptionAuthModeResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetSubscriptionAuthModeResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSubscriptionAuthModeResponse(status = Some(status)))
         }
 
@@ -1679,12 +1679,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetSubscriptionExpirationTimeResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 subscriptionExpirationTime = subscriptionExpirationTimePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscriptionExpirationTimeResponse(status = Some(status)))
         }
 
@@ -1694,10 +1694,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting subscription expiration time policy for namespace ${request.namespace}")
             adminClient.namespaces.setSubscriptionExpirationTime(request.namespace, request.subscriptionExpirationTimeInMinutes)
-            Future.successful(SetSubscriptionExpirationTimeResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetSubscriptionExpirationTimeResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSubscriptionExpirationTimeResponse(status = Some(status)))
         }
 
@@ -1707,10 +1707,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing subscription expiration time policy for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscriptionExpirationTime(request.namespace)
-            Future.successful(RemoveSubscriptionExpirationTimeResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveSubscriptionExpirationTimeResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveSubscriptionExpirationTimeResponse(status = Some(status)))
         }
 
@@ -1727,7 +1727,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             val subscriptionTypesEnabledPb = Option(adminClient.namespaces.getSubscriptionTypesEnabled(request.namespace)) match
                 case None =>
-                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Subscription types enabled can't be null. Looks like a Pulsar error.")
+                    val status = Status(code = Code.FAILED_PRECONDITION.value, message = "Subscription types enabled can't be null. Looks like a Pulsar error.")
                     return Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
                 case Some(v) if v.size() == 0 =>
                     pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Inherited(new SubscriptionTypesEnabledInherited())
@@ -1737,12 +1737,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetSubscriptionTypesEnabledResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 subscriptionTypesEnabled = subscriptionTypesEnabledPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
 
@@ -1762,10 +1762,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             val subscriptionTypesEnabled = request.types.map(pbToSubscriptionType).toSet.asJava
             adminClient.namespaces.setSubscriptionTypesEnabled(request.namespace, subscriptionTypesEnabled)
-            Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
 
@@ -1775,10 +1775,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing subscription types enabled policy for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscriptionTypesEnabled(request.namespace)
-            Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
         }
 
@@ -1830,12 +1830,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     pb.GetOffloadPoliciesResponse.OffloadPolicies.Specified(offloadPoliciesToPb(v))
 
             Future.successful(GetOffloadPoliciesResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 offloadPolicies = offloadPoliciesPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetOffloadPoliciesResponse(status = Some(status)))
         }
 
@@ -1887,15 +1887,15 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
             request.offloadPolicies match
                 case None =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, "Offload policies should be specified")
+                    val status = Status(code = Code.INVALID_ARGUMENT.value, "Offload policies should be specified")
                     Future.successful(SetOffloadPoliciesResponse(status = Some(status)))
                 case Some(v) =>
                     val offloadPolicies = offloadPoliciesFromPb(v)
                     adminClient.namespaces.setOffloadPolicies(request.namespace, offloadPolicies)
-                    Future.successful(SetOffloadPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+                    Future.successful(SetOffloadPoliciesResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetOffloadPoliciesResponse(status = Some(status)))
         }
 
@@ -1905,10 +1905,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing offload policies policy for namespace ${request.namespace}")
             adminClient.namespaces.removeOffloadPolicies(request.namespace)
-            Future.successful(RemoveOffloadPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveOffloadPoliciesResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveOffloadPoliciesResponse(status = Some(status)))
         }
     override def getPublishRate(request: GetPublishRateRequest): Future[GetPublishRateResponse] =
@@ -1925,12 +1925,12 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     ))
 
             Future.successful(GetPublishRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 publishRate = publishRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetPublishRateResponse(status = Some(status)))
         }
     override def setPublishRate(request: SetPublishRateRequest): Future[SetPublishRateResponse] =
@@ -1940,10 +1940,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             logger.info(s"Setting publish rate policy for namespace ${request.namespace}. ${request.rateInMsg}, ${request.rateInByte}")
             val publishRate = PublishRate(request.rateInMsg, request.rateInByte)
             adminClient.namespaces.setPublishRate(request.namespace, publishRate)
-            Future.successful(SetPublishRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(SetPublishRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetPublishRateResponse(status = Some(status)))
         }
     override def removePublishRate(request: RemovePublishRateRequest): Future[RemovePublishRateResponse] =
@@ -1952,10 +1952,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing publish rate policy for namespace ${request.namespace}")
             adminClient.namespaces.removePublishRate(request.namespace)
-            Future.successful(RemovePublishRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemovePublishRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemovePublishRateResponse(status = Some(status)))
         }
 
@@ -1974,13 +1974,13 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             val resourceGroups = Option(adminClient.resourcegroups.getResourceGroups).map(_.asScala.toSeq).getOrElse(Seq.empty[String])
 
             Future.successful(pb.GetResourceGroupResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 resourceGroup,
                 resourceGroups,
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetResourceGroupResponse(status = Some(status)))
         }
 
@@ -1990,10 +1990,10 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Setting resource group policy for namespace ${request.namespace}")
             adminClient.namespaces.setNamespaceResourceGroup(request.namespace, request.resourceGroup)
-            Future.successful(pb.SetResourceGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetResourceGroupResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetResourceGroupResponse(status = Some(status)))
         }
 
@@ -2003,9 +2003,9 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
         try {
             logger.info(s"Removing resource group policy for namespace ${request.namespace}")
             adminClient.namespaces.removeNamespaceResourceGroup(request.namespace)
-            Future.successful(RemoveResourceGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveResourceGroupResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RemoveResourceGroupResponse(status = Some(status)))
         }

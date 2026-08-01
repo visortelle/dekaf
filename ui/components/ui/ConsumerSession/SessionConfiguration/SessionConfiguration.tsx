@@ -6,8 +6,10 @@ import LibraryBrowserPanel, { LibraryBrowserPanelProps } from '../../LibraryBrow
 import { useHover } from '../../../app/hooks/use-hover';
 import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionTarget, ManagedConsumerSessionTargetValOrRef } from '../../LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../LibraryBrowser/useManagedItemValue';
+import NothingToShow from '../../NothingToShow/NothingToShow';
 import { LibraryContext } from '../../LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
+import { targetTopicsPersistency } from './StartFromInput/target-topics-persistency';
 import SessionTargetInput from './SessionTargetInput/SessionTargetInput';
 import AddButton from '../../AddButton/AddButton';
 import DeleteButton from '../../DeleteButton/DeleteButton';
@@ -19,10 +21,9 @@ import SmallButton from '../../SmallButton/SmallButton';
 import { arrayMove } from './array-move';
 import moveLeftIcon from './icons/move-left.svg';
 import moveRightIcon from './icons/move-right.svg';
-import Input from '../../Input/Input';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
-
-export const defaultNumDisplayItems = 10_000;
+import NumDisplayItemsInput from './NumDisplayItemsInput';
+import { defaultNumDisplayItems } from './display-items';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -33,20 +34,63 @@ export type SessionConfigurationProps = {
   libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
+// `/consumer-session?id=` accepts the id of ANY persisted library item, so the value handed to this
+// editor is not guaranteed to be a consumer session config - it can be a foreign item type or an
+// incomplete spec. Reaching into such a spec used to throw during render and, with no error boundary
+// above the route, take the whole app down with it. Hence the tolerant reads below and the shape
+// check before rendering the editor.
+function isConsumerSessionConfigSpec(spec: unknown): spec is ManagedConsumerSessionConfigSpec {
+  const isObject = (v: unknown) => typeof v === 'object' && v !== null;
+
+  if (!isObject(spec)) {
+    return false;
+  }
+
+  const s = spec as Partial<ManagedConsumerSessionConfigSpec>;
+
+  // A val-or-ref field must be the DISCRIMINATED shape, not merely an object: a persisted
+  // `{ startFrom: {} }` passed the object check and then sat in useManagedItemValue forever -
+  // neither a value to render nor a reference to resolve, so the editor showed an endless
+  // spinner. Malformed means broken, and broken must say so.
+  const isValOrRef = (v: unknown): boolean => {
+    if (!isObject(v)) {
+      return false;
+    }
+    const candidate = v as { type?: unknown; val?: unknown; ref?: unknown };
+    if (candidate.type === 'value') {
+      return isObject(candidate.val);
+    }
+    if (candidate.type === 'reference') {
+      return typeof candidate.ref === 'string' && candidate.ref !== '';
+    }
+    return false;
+  };
+
+  // Every field the RUNTIME conversion reads has to be here, not only the ones whose absence threw
+  // during render: a spec that renders but cannot be converted leaves the session with no runtime
+  // config, which used to show as a Play button that started nothing.
+  return Array.isArray(s.targets)
+    && isValOrRef(s.startFrom)
+    && isObject(s.messageFilterChain)
+    && isObject(s.coloringRuleChain)
+    && isObject(s.valueProjectionList)
+    && isObject(s.pauseTriggerChain);
+}
+
 function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
-  if (value.val?.spec.coloringRuleChain.val?.spec.coloringRules.length) {
+  if (value.val?.spec?.coloringRuleChain?.val?.spec?.coloringRules?.length) {
     return true;
   }
 
-  if (value.val?.spec.messageFilterChain.val?.spec.filters.length) {
+  if (value.val?.spec?.messageFilterChain?.val?.spec?.filters?.length) {
     return true;
   }
 
-  if (value.val?.spec.valueProjectionList.val?.spec.projections.length) {
+  if (value.val?.spec?.valueProjectionList?.val?.spec?.projections?.length) {
     return true;
   }
 
-  if (value.val?.spec.numDisplayItems !== undefined) {
+  if (value.val?.spec?.numDisplayItems !== undefined) {
     return true;
   }
 
@@ -82,7 +126,26 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   }
 
   const item = resolveResult.value;
-  const itemSpec = item.spec;
+  const itemSpec = item?.spec;
+
+  if (!isConsumerSessionConfigSpec(itemSpec)) {
+    return (
+      <div style={{ margin: '12rem', flex: '1' }}>
+        <NothingToShow
+          reason="error"
+          content={(
+            <div data-testid="cs-invalid-config">
+              The library item with id: {item?.metadata?.id ?? (props.value.type === 'reference' ? props.value.ref : 'unknown')}
+              {item?.metadata?.type === undefined ? '' : ` (type: ${item.metadata.type})`}
+              &nbsp;is not a valid Consumer Session configuration.
+              <br />
+              Open a Consumer Session configuration item, or start a new session instead.
+            </div>
+          )}
+        />
+      </div>
+    );
+  }
 
   const onSpecChange = (spec: ManagedConsumerSessionConfigSpec) => {
     const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, val: { ...item, spec } };
@@ -141,6 +204,9 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
             libraryContext={props.libraryContext}
             isReadOnly={props.isReadOnly}
+            // The start-from modes depend on what the selected topics retain, and the targets that
+            // decide that live here.
+            targetTopicsPersistency={targetTopicsPersistency(itemSpec.targets, props.libraryContext)}
           />
 
           {!isAdvancedConfig && <Toggle
@@ -163,11 +229,10 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                   isReadOnly={props.isReadOnly}
                 />
                 <div style={{ visibility: itemSpec.numDisplayItems === undefined ? 'hidden' : 'visible' }}>
-                  <Input
-                    type="number"
-                    value={String(itemSpec.numDisplayItems)}
-                    size='small'
-                    onChange={v => onSpecChange({ ...itemSpec, numDisplayItems: Number(v) })}
+                  <NumDisplayItemsInput
+                    value={itemSpec.numDisplayItems ?? defaultNumDisplayItems}
+                    onChange={(numDisplayItems) => onSpecChange({ ...itemSpec, numDisplayItems })}
+                    isReadOnly={props.isReadOnly}
                   />
                 </div>
               </div>

@@ -95,6 +95,8 @@ message ManagedConsumerSessionStartFromSpec {
     ManagedMessageIdValOrRef start_from_message_id = 3;
     ManagedDateTimeValOrRef start_from_date_time = 4;
     ManagedRelativeDateTimeValOrRef start_from_relative_date_time = 5;
+    tools.teal.pulsar.ui.api.v1.ApproximateDataPosition start_from_approximate_data_position = 8;
+    tools.teal.pulsar.ui.api.v1.ApproximateTimePosition start_from_approximate_time_position = 9;
   }
 }
 

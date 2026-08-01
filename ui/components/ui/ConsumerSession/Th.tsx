@@ -4,7 +4,7 @@ import { Sort, SortKey } from "./sort";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../SvgIcon/SvgIcon';
-import { FC, MutableRefObject } from "react";
+import React, { FC, MutableRefObject } from "react";
 import s from './ConsumerSession.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import { isEqual } from "lodash";
@@ -20,7 +20,10 @@ export type ThProps = {
   width?: number,
   onResizeStart?: (startClientX: number) => void,
   suppressSortClickRef?: MutableRefObject<boolean>,
-  testId?: string
+  testId?: string,
+  /** Native-drag column reorder, provided by the table that owns the order. */
+  dragProps?: React.ThHTMLAttributes<HTMLTableCellElement>,
+  isDragOver?: boolean
 };
 
 export const Th: FC<ThProps> = (props: ThProps) => {
@@ -43,7 +46,13 @@ export const Th: FC<ThProps> = (props: ThProps) => {
   }
 
   return (
-    <th className={`${cts.Th} ${s.Th}`} data-testid={props.testId} style={props.style} onClick={handleColumnHeaderClick}>
+    <th
+      className={`${cts.Th} ${s.Th} ${props.isDragOver ? s.ThDragOver : ''}`}
+      data-testid={props.testId}
+      style={props.style}
+      onClick={handleColumnHeaderClick}
+      {...(props.dragProps ?? {})}
+    >
       <div
         className={props.sortKey === undefined ? '' : cts.SortableTh}
         style={props.width === undefined ? undefined : { width: props.width, overflow: 'hidden' }}

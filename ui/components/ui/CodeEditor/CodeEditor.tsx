@@ -5,6 +5,15 @@ import { IRange } from 'monaco-editor';
 
 import s from './CodeEditor.module.css';
 
+// @monaco-editor/react fetches Monaco at runtime through its own AMD loader, and its default base
+// is cdn.jsdelivr.net - so every code editor here depended on the public internet: seconds of
+// third-party network before the first editor mounts, and no editor at all when jsdelivr is
+// unreachable (offline, air-gapped, or blocked). Dekaf serves the identical files itself
+// (ui/build.js copies monaco-editor/min/vs next to the bundle), so resolve them from our own
+// origin. Absolute-ised against document.baseURI because the loader also builds worker URLs from
+// this value, and those are not resolved against the page's <base href>.
+loader.config({ paths: { vs: new URL('ui/static/dist/vs', document.baseURI).toString() } });
+
 export type Dependencies = {
   label: string,
   documentation: string,

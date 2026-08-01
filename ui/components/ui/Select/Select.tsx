@@ -6,7 +6,9 @@ import arrowDownIcon from './arrow-down.svg';
 export type ListItem<V> = {
   type: 'item',
   value: V,
-  title: string
+  title: string,
+  /** Kept visible but not selectable - an option that is inapplicable here, rather than absent. */
+  disabled?: boolean
 } | { type: 'group', title: string, items: ListItem<V>[] } | { type: 'empty', title: string };
 
 export type List<V> = ListItem<V>[]
@@ -30,7 +32,7 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
     }
 
     const valueKey = item.value.toString();
-    return <option key={valueKey} value={valueKey}>{item.title}</option>
+    return <option key={valueKey} value={valueKey} disabled={item.disabled}>{item.title}</option>
   }
 
   return (

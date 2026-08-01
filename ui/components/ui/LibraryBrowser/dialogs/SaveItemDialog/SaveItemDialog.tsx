@@ -44,8 +44,19 @@ const SaveItemDialog: React.FC<SaveItemDialogProps> = (props) => {
       return;
     }
 
+    // The pb conversion parses free-text fields (a message id's hex string) and throws on input the
+    // inline editors flag but do not block. It runs synchronously inside this async click handler,
+    // so without the guard the throw is only an unhandled rejection - the dialog would just sit
+    // there, saving nothing and saying nothing.
+    let itemPb: pb.LibraryItem;
+    try {
+      itemPb = libraryItemToPb(libraryItem);
+    } catch (err) {
+      notifyError(`Unable to save library item. ${err}`);
+      return;
+    }
+
     const req = new pb.SaveLibraryItemRequest();
-    const itemPb = libraryItemToPb(libraryItem);
     req.setItem(itemPb);
 
     const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {

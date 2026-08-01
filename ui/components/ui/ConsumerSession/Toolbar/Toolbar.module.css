@@ -19,6 +19,32 @@
   justify-content: flex-end;
 }
 
+/* Sits in the ToolbarLeft button row, between Play and Stop: spaced like a .Control, captions
+   left-aligned under the inputs so they read as labels rather than as right-aligned stats. */
+.DeliveryControl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-right: 8rem;
+}
+
+.DeliveryControlInput {
+  width: 72rem;
+  font-size: 12rem;
+  padding: 1rem 6rem;
+  text-align: right;
+  border: 1rem solid var(--border-color, #d0d0d0);
+  border-radius: 4rem;
+  background: var(--surface-color, transparent);
+  color: inherit;
+}
+
+.DeliveryControlCaption {
+  font-size: 12rem;
+  color: var(--text-color-secondary, #666);
+  white-space: nowrap;
+}
+
 .MessagesLoadedStats {
   display: flex;
   flex-direction: column;

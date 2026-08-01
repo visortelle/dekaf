@@ -40,11 +40,18 @@ const withCopyButton = (content: ReactNode) => {
 }
 
 const isShortTimeout = 100;
-const defaultValue: Value = {
-  notifySuccess: (content, notificationId, isShort) => toast.success(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
-  notifyInfo: (content, notificationId, isShort) => toast.info(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
-  notifyWarn: (content, notificationId, isShort) => toast.warn(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
-  notifyError: (content, notificationId, isShort) => toast.error(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
+
+// Each body is braced so it genuinely returns undefined, matching the `=> void` above.
+// As bare expressions these returned react-toastify's Id, and TypeScript permits a
+// value-returning function where `void` is declared - so nothing caught it. Callers do
+// `const res = await call().catch(err => notifyError(...))` and then test `res === undefined`;
+// with an Id coming back that guard silently failed and the next line threw
+// "res.getStatus is not a function", crashing the component instead of showing the error.
+export const defaultValue: Value = {
+  notifySuccess: (content, notificationId, isShort) => { toast.success(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }); },
+  notifyInfo: (content, notificationId, isShort) => { toast.info(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }); },
+  notifyWarn: (content, notificationId, isShort) => { toast.warn(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }); },
+  notifyError: (content, notificationId, isShort) => { toast.error(withCopyButton(content), { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }); },
 };
 
 const Context = React.createContext<Value>(defaultValue);

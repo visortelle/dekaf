@@ -16,6 +16,8 @@ export type MessageProps = {
   sessionConfig: ConsumerSessionConfig;
   valueProjectionThs: ValueProjectionTh[],
   getColumnWidth: (key: MessageColumnKey) => number,
+  /** The reorderable columns in render order (index and publishTime stay fixed in front). */
+  columnOrder: MessageColumnKey[],
   onClick: React.MouseEventHandler<HTMLTableCellElement>
 };
 
@@ -28,6 +30,40 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const isSelected = (props.sessionState === 'running' || props.message.numMessageProcessed === null) ?
     false :
     props.selectedMessages.includes(props.message.numMessageProcessed);
+
+  // One cell per reorderable column, keyed exactly like the header - the row follows whatever
+  // order the header is dragged into.
+  const fieldContent: Record<MessageColumnKey, React.ReactNode> = {
+    publishTime: <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />,
+    key: <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    value: <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    sessionTargetIndex: <SessionTargetIndexField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    topic: <TopicField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    producerName: <ProducerNameField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    schemaVersion: <SchemaVersionField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    size: <SizeField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    properties: <PropertiesField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    eventTime: <EventTimeField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    brokerPublishTime: <BrokerPublishTimeField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    messageId: <MessageIdField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    sequenceId: <SequenceIdField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    orderingKey: <OrderingKeyField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    redeliveryCount: <RedeliveryCountField isShowTooltips={props.isShowTooltips} message={props.message} />,
+    sessionContextState: <SessionContextStateJsonField isShowTooltips={props.isShowTooltips} message={props.message} />,
+  };
+
+  const fieldTd = (columnKey: MessageColumnKey) => (
+    <Td
+      key={columnKey}
+      testId={columnKey === 'value' ? 'cs-message-value' : undefined}
+      width={`${props.getColumnWidth(columnKey)}px`}
+      onClick={onClick}
+      coloring={props.coloring}
+      isSelected={isSelected}
+    >
+      {fieldContent[columnKey]}
+    </Td>
+  );
 
   return (
     <>
@@ -54,164 +90,21 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
 
-      <Td
-        key="key"
-        width={`${props.getColumnWidth('key')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      {getValueProjectionTds({
-        sessionConfig: props.sessionConfig,
-        valueProjectionThs: props.valueProjectionThs,
-        coloring: props.coloring,
-        message: props.message,
-        isSelected
+      {props.columnOrder.flatMap((columnKey) => {
+        const cells = [fieldTd(columnKey)];
+        // Value-projection columns are glued after the KEY column wherever it sits - the same
+        // neighbourhood they have always rendered in, whatever order the rest takes.
+        if (columnKey === 'key') {
+          cells.push(...getValueProjectionTds({
+            sessionConfig: props.sessionConfig,
+            valueProjectionThs: props.valueProjectionThs,
+            coloring: props.coloring,
+            message: props.message,
+            isSelected
+          }));
+        }
+        return cells;
       })}
-
-      <Td
-        key="value"
-        testId="cs-message-value"
-        width={`${props.getColumnWidth('value')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="sessionTargetIndex"
-        width={`${props.getColumnWidth('sessionTargetIndex')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <SessionTargetIndexField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="topic"
-        width={`${props.getColumnWidth('topic')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <TopicField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="producerName"
-        width={`${props.getColumnWidth('producerName')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <ProducerNameField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="schemaVersion"
-        width={`${props.getColumnWidth('schemaVersion')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <SchemaVersionField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="size"
-        width={`${props.getColumnWidth('size')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <SizeField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="properties"
-        width={`${props.getColumnWidth('properties')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <PropertiesField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="eventTime"
-        width={`${props.getColumnWidth('eventTime')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <EventTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="brokerPublishTime"
-        width={`${props.getColumnWidth('brokerPublishTime')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <BrokerPublishTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="message"
-        width={`${props.getColumnWidth('messageId')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <MessageIdField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="sequence"
-        width={`${props.getColumnWidth('sequenceId')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <SequenceIdField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="ordering"
-        width={`${props.getColumnWidth('orderingKey')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <OrderingKeyField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="redeliveryCount"
-        width={`${props.getColumnWidth('redeliveryCount')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <RedeliveryCountField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
-
-      <Td
-        key="sessionContextState"
-        width={`${props.getColumnWidth('sessionContextState')}px`}
-        onClick={onClick}
-        coloring={props.coloring}
-        isSelected={isSelected}
-      >
-        <SessionContextStateJsonField isShowTooltips={props.isShowTooltips} message={props.message} />
-      </Td>
     </>
   );
 }

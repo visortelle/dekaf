@@ -10,6 +10,14 @@
     nixpkgs-playwright = {
       url = "github:NixOS/nixpkgs/c792c60b8a97daa7efe41a6e4954497ae410e0c1";
     };
+    # Codegen: the buf in the main nixpkgs lock is 1.30.0, whose darwin binary has no
+    # LC_UUID load command and so cannot launch at all on macOS 15+ ("dyld: missing
+    # LC_UUID load command"), breaking `cd proto && make build` on every recent Mac.
+    # Pinned separately rather than bumping the main lock, which would churn the whole
+    # toolchain (JVM, sbt, node, envoy) for a single tool.
+    nixpkgs-buf = {
+      url = "github:NixOS/nixpkgs/e2587caef70cea85dd97d7daab492899902dbf5d";
+    };
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
@@ -22,6 +30,7 @@
     { self
     , nixpkgs
     , nixpkgs-playwright
+    , nixpkgs-buf
     , flake-compat
     , flake-utils
     ,
@@ -59,6 +68,9 @@
           playwrightBrowsers =
             (import nixpkgs-playwright { inherit system; }).playwright-driver.browsers;
 
+          # See the nixpkgs-buf input: the main lock's buf cannot launch on modern macOS.
+          buf = (import nixpkgs-buf { inherit system; }).buf;
+
           runtimeLibraryPath = lib.makeLibraryPath ([ pkgs.zlib ]);
 
           pulsar-ui-dev = pkgs.mkShell {
@@ -90,7 +102,7 @@
               pkgs.maven
 
               pkgs.protobuf3_20
-              pkgs.buf
+              buf
               protoc-gen-grpc-web
               protoc-gen-scala
 

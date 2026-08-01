@@ -28,6 +28,33 @@ case class ConsumerSessionContextConfig(
 )
 
 class ConsumerSessionContext(config: ConsumerSessionContextConfig):
+    /** Nobody enters this context without holding this.
+      *
+      * A GraalVM context may MIGRATE between threads but may NOT be entered by two at once - the
+      * loser gets "Multi threaded access requested by thread ... but is not allowed for
+      * language(s) js". A consumer session hands this ONE context to every partition of every
+      * target, and Pulsar delivers each partition on its own listener thread, so they collide.
+      *
+      * It guards more than that exception, and the more that it guards is the harder half:
+      * `setCurrentMessage` writes the message under test into a GLOBAL JS variable, and the filter
+      * chain, the coloring rules and the value projections all read it back out afterwards - each
+      * one a SEPARATE entry into the context, with a gap in between. `getStdout` likewise drains
+      * and RESETS a buffer shared by all of them. Held for the whole of one message those hand-offs
+      * cannot cross; held per JS call they still could, and that outcome throws nothing at all - it
+      * just judges one message by another message's contents.
+      *
+      * Reentrant, so a lease may nest inside a lease without deadlocking.
+      */
+    private val lock = new java.util.concurrent.locks.ReentrantLock()
+
+    /** Run `use` with this context entered by nobody else. Prefer leasing through
+      * `ConsumerSessionContextPool.withNextContext`, which keeps the choice of context and the
+      * exclusion over it together. */
+    def exclusively[A](use: => A): A =
+        lock.lock()
+        try use
+        finally lock.unlock()
+
     val context: Context = Context
         .newBuilder("js")
         .engine(config.engine)
@@ -59,6 +86,17 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
       |console.debug = (...args) => ${VarPrefix}consoleLog('[DEBUG]', ...(args.map(arg => stringify(arg, null, 4))));
       """.stripMargin
     )
+
+    /** Release the JS context this session held.
+      *
+      * `close(true)` rather than `close()`: the plain form REFUSES while any thread is inside the
+      * context, and a session is stopped from a gRPC thread while its listener threads may still be
+      * mid-message. The cancelling form is the only one that can be relied on to actually free it.
+      *
+      * Nothing closed this at all, so every consumer session ever created leaked a Graal context
+      * (and, through the pool, an engine) for the life of the process.
+      */
+    def close(): Unit = context.close(true)
 
     def getStdout: String =
         val logs = config.stdout.toString

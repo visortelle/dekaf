@@ -1,0 +1,42 @@
+.TopicPositions {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The table itself sits flush with the panel; only the text states carry padding. */
+.Empty,
+.Error {
+  color: var(--text-color-secondary, #666);
+  padding: 8rem 12rem;
+}
+
+.Error {
+  color: var(--error-color, #b00020);
+}
+
+/* The table is wide by nature - eleven columns of ids and timestamps - so it scrolls inside its
+   own box rather than making the console scroll sideways. The shared Table sizes itself with
+   flex (its scroll container is flex: 1), so this wrap must be a flex column with a definite
+   height - as a plain block the scroll container collapses to 0 and no rows render. */
+.TableWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.Id {
+  font-family: monospace;
+}
+
+.Unavailable {
+  color: var(--text-color-secondary, #666);
+  font-style: italic;
+}
+
+.AggregateLabel {
+  font-weight: 600;
+}

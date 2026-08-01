@@ -24,8 +24,17 @@ final case class LibrarySidebar(page: Page):
   def openConsumerSessionsSubtab(): Unit = consumerSessionsSubtab.click()
   def openAllItemsSubtab(): Unit         = allItemsSubtab.click()
 
-  /** From the Notes tab: create a note (first-note button when empty, else the "+" new-note button). */
+  /** From the Notes tab: create a note (first-note button when empty, else the "+" new-note button).
+    *
+    * The panel renders a "Loading..." placeholder until its first `ListLibraryItems` resolves, so
+    * until then NEITHER button exists. `isVisible` does not wait, so branching on it while that
+    * fetch is still in flight takes the else-branch and then burns the whole timeout on
+    * `lib-new-note` - a button that can never appear for a topic with no notes. Waiting for either
+    * button first is the missing readiness precondition: it makes the branch read a settled panel
+    * rather than whichever render happened to be on screen. */
   def createNote(): Unit =
+    createFirstNoteButton.or(newNoteButton).first()
+      .waitFor(new Locator.WaitForOptions().setTimeout(15000))
     if createFirstNoteButton.isVisible then createFirstNoteButton.click()
     else newNoteButton.click()
 

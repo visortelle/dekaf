@@ -22,6 +22,8 @@ jobs:
       PULSAR_ADMIN_PORT: 28080
       PULSAR_BROKER_PORT: 26650
       DEKAF_PORT: 28090
+      # Isolate the Library's data dir per run so items don't accumulate and skew counts.
+      DEKAF_FRESH_DATA: 1
     steps:
       - uses: actions/checkout@v4
         with:

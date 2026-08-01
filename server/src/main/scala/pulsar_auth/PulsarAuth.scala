@@ -136,7 +136,15 @@ def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
     val clientPulsarAuth = json match
         case None => Right(defaultPulsarAuth)
         case Some(encodedValue) =>
-            val v = URLDecoder.decode(encodedValue, UTF_8)
+            // URLDecoder throws IllegalArgumentException on malformed percent-encoding ("%", "%ZZ",
+            // "a%2"), and it used to sit OUTSIDE this Either - so a hand-edited cookie produced a
+            // server error instead of the intended 400.
+            val v =
+                try URLDecoder.decode(encodedValue, UTF_8)
+                catch
+                    case err: IllegalArgumentException =>
+                        logger.warn(s"Malformed percent-encoding in cookie: ${err.getMessage}")
+                        return Left(new Exception("Unable to parse pulsar_auth cookie."))
 
             decode[PulsarAuth](v) match
                 case Left(err) =>
@@ -148,7 +156,15 @@ def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
 
     clientPulsarAuth
 
-def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
+/** The cookie-hardening inputs are parameters (defaulting to the process config, so the single
+  * production call site is unchanged) purely so they can be varied in tests - the package-level
+  * `config` val is loaded once per process and cannot be. */
+def pulsarAuthToCookie(
+    pulsarAuth: PulsarAuth,
+    publicBaseUrl: Option[String] = config.publicBaseUrl,
+    cookieSecure: Option[Boolean] = config.cookieSecure,
+    cookieSameSite: Option[String] = config.cookieSameSite
+): String =
     val pulsarAuthWithoutEncodingMetadata = pulsarAuth.copy(
         credentials = pulsarAuth.credentials.map((name, credentials) =>
             credentials match
@@ -161,6 +177,13 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
                             scope = cr.scope.map(scope => URLEncoder.encode(scope, UTF_8))
                         )
                     )
+                // parsePulsarAuthCookie URL-DECODES the whole cookie value, so anything written
+                // raw comes back mangled: a `+` in authParams turned into a space and `%xx` was
+                // eaten. authParams carries tokens/passwords, so encode it like the OAuth2 fields.
+                case cr: AuthParamsStringCredentials => (
+                        name,
+                        cr.copy(authParams = URLEncoder.encode(cr.authParams, UTF_8))
+                    )
                 case _ => (name, credentials)
         )
     )
@@ -168,20 +191,39 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieName = "pulsar_auth"
     val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
 
-    val cookiePath = config.publicBaseUrl.map {
+    val cookiePath = publicBaseUrl.map {
         java.net.URI.create(_).getPath match
             case ""   => "/"
             case path => path
     }.getOrElse("/")
 
-    val cookieSecureValue = config.cookieSecure match
+    val cookieSecureValue = cookieSecure match
         case Some(true) => "Secure; "
         case _          => ""
 
-    val cookieSameSiteValue = (config.cookieSecure, config.cookieSameSite) match
-        case (_, Some("lax"))           => "SameSite=Lax; "
-        case (_, Some("strict"))        => "SameSite=Strict; "
-        case (Some(true), Some("none")) => "SameSite=None; "
-        case _                          => ""
+    s"$cookieName=$cookieValue; Path=$cookiePath; HttpOnly; Max-Age=31536000; $cookieSecureValue${sameSiteAttribute(cookieSecure, cookieSameSite)}"
 
-    s"$cookieName=$cookieValue; Path=$cookiePath; HttpOnly; Max-Age=31536000; $cookieSameSiteValue$cookieSameSiteValue"
+/** Render the SameSite attribute, the cookie's built-in CSRF control.
+  *
+  * The value is matched case-insensitively and trimmed: it arrives from a YAML key or the
+  * DEKAF_COOKIE_SAME_SITE environment variable, where `Lax`, `STRICT` and a stray trailing space are
+  * all ordinary things for an operator to write. A strict lowercase match silently fell through to
+  * "", emitting NO SameSite attribute at all - so a capitalised value looked configured but left the
+  * cookie on the browser default. Anything still unrecognised after normalisation is logged loudly
+  * for the same reason: dropping the attribute must never be the quiet outcome of a typo.
+  */
+def sameSiteAttribute(cookieSecure: Option[Boolean], cookieSameSite: Option[String]): String =
+    cookieSameSite.map(_.trim.toLowerCase) match
+        case None | Some("") => ""
+        case Some("lax")     => "SameSite=Lax; "
+        case Some("strict")  => "SameSite=Strict; "
+        case Some("none") =>
+            // Browsers reject SameSite=None unless the cookie is also Secure, so emitting it on a
+            // plain-HTTP deployment would drop the cookie entirely and break auth.
+            if cookieSecure.contains(true) then "SameSite=None; "
+            else
+                logger.warn("cookieSameSite=none requires cookieSecure=true; omitting SameSite (browsers reject None without Secure).")
+                ""
+        case Some(other) =>
+            logger.warn(s"Unknown cookieSameSite value '$other' (expected lax, strict or none); omitting SameSite.")
+            ""

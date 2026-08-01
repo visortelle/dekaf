@@ -169,6 +169,10 @@ const MessagesExporter = (props: MessagesExporterProps) => {
         setErrorKey(errorKey + 1);
         notifyInfo("Invalid export config. Resetting to default. Try to reload the page if the problem persists.");
       }}
+      // ErrorBoundary keeps its own error state (and keeps rendering the empty fallback) until it is
+      // reset. Re-keying the child alone left the user with a blank modal, so hand the bumped key to
+      // resetKeys - that clears the error and re-renders the controls with the default config.
+      resetKeys={[errorKey]}
       fallback={<></>}
     >
       <_MessagesExporter key={errorKey} {...props} config={config} onConfigChange={setConfig} />

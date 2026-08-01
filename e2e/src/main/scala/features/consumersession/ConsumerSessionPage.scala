@@ -23,6 +23,30 @@ final case class ConsumerSessionPage(page: Page):
   val startFromN: Locator         = page.getByTestId("cs-start-from-n")
   val startFromMessageId: Locator = page.getByTestId("cs-start-from-message-id")
 
+  /** The Start-From "additional controls" block - whatever the selected mode reveals below the
+    * dropdown (the n input, the message-id input, the datetime picker, the relative picker).
+    *
+    * Anchored on the CSS-module class PREFIX rather than a `testId`: the datetime and relative
+    * pickers are third-party/shared components with no instrumentation of their own, and `ui/` is
+    * out of scope for this change. The `-module__AdditionalControls` prefix is stable across builds;
+    * only the trailing content hash moves. Scoping is REQUIRED, not cosmetic - the always-mounted
+    * Producer console renders its own datetime picker, so a page-wide `input[name='year']` matches
+    * two different controls. */
+  val startFromAdditional: Locator = page.locator("[class*='StartFromInput-module__AdditionalControls']")
+
+  // --- The two approximate modes + persistency advice ---
+  // Both render the SAME percent control, so each carries its own test-id prefix; sharing one would
+  // let a test drive "% through the data" while asserting "% through the time range".
+  val startFromDataFraction: Locator       = page.getByTestId("cs-start-from-data-fraction")
+  val startFromDataFractionSlider: Locator = page.getByTestId("cs-start-from-data-fraction-slider")
+  val startFromDataFractionError: Locator  = page.getByTestId("cs-start-from-data-fraction-error")
+  val startFromTimeFraction: Locator       = page.getByTestId("cs-start-from-time-fraction")
+  val startFromTimeFractionSlider: Locator = page.getByTestId("cs-start-from-time-fraction-slider")
+  val startFromTimeFractionError: Locator  = page.getByTestId("cs-start-from-time-fraction-error")
+  val startFromNonPersistentNote: Locator    = page.getByTestId("cs-start-from-non-persistent-note")
+  val startFromMixedPersistencyNote: Locator = page.getByTestId("cs-start-from-mixed-persistency-note")
+  val startFromProgress: Locator             = page.getByTestId("cs-start-from-progress")
+
   // --- Advanced reveal (CS-15) ---
   val advancedToggle: Locator = page.getByTestId("cs-advanced-toggle")
 
@@ -99,14 +123,75 @@ final case class ConsumerSessionPage(page: Page):
 
   // --- Navigation ---
   def openForTopic(tenant: String, namespace: String, topic: String): Unit =
-    page.navigate(s"/tenants/$tenant/namespaces/$namespace/topics/persistent/$topic/consumer-session")
+    openForTopic(tenant, namespace, topic, persistency = "persistent")
+
+  /** `persistency` is the route segment: "persistent" or "non-persistent". */
+  def openForTopic(tenant: String, namespace: String, topic: String, persistency: String): Unit =
+    page.navigate(s"/tenants/$tenant/namespaces/$namespace/topics/$persistency/$topic/consumer-session")
 
   /** Namespace-level mount (no current topic) - drives CS-7. */
   def openForNamespace(tenant: String, namespace: String): Unit =
     page.navigate(s"/tenants/$tenant/namespaces/$namespace/consumer-session")
 
+  /** Switch target 1's topic selector to "Specific Topic(s)" and enter the given FQNs. */
+  def setTargetTopicsSpecific(topicFqns: Seq[String]): Unit =
+    page.getByTestId("cs-target-mode").first().selectOption(new SelectOption().setValue("multi-topic-selector"))
+    topicFqns.foreach { fqn =>
+      val input = page.getByTestId("cs-target-fqn-input").first()
+      input.fill(fqn)
+      input.press("Enter")
+    }
+
+  /** Toggle target 1's read-compacted consumption mode. */
+  def toggleTargetCompacted(): Unit = page.getByTestId("cs-target-compacted").first().click()
+
+  val startFromDegradedBanner: Locator = page.getByTestId("cs-start-from-degraded")
+
   def setStartFrom(label: String): Unit =
     startFromSelect.selectOption(new SelectOption().setLabel(label))
+
+  /** Every Start-From option as (visible label, is it selectable). A mode the selected topics cannot
+    * honour is rendered `disabled` rather than hidden, so the list is a stable catalog and the flag
+    * is what varies - which is why both halves are read here rather than just the labels. */
+  def startFromOptions: List[(String, Boolean)] =
+    startFromSelect.locator("option").all().asScala.toList
+      .map(o => o.innerText().trim -> (o.getAttribute("disabled") == null))
+
+  def startFromLabels: List[String] = startFromOptions.map(_._1)
+  def disabledStartFromLabels: List[String] = startFromOptions.filterNot(_._2).map(_._1)
+
+  /** Start From = "About % through the data", set to `percent` of the messages a topic still holds
+    * (0-100; the model stores the fraction). */
+  def setStartFromDataPercent(percent: String): Unit = startFromDataFraction.fill(percent)
+
+  /** Start From = "About % through the time range", set to `percent` of the time a topic still
+    * covers (0-100; the model stores the fraction). */
+  def setStartFromTimePercent(percent: String): Unit = startFromTimeFraction.fill(percent)
+
+  /** Start From = "Specific time", set to `at` in the BROWSER's local zone (same machine as the
+    * test JVM, so `LocalDateTime.ofInstant(i, ZoneId.systemDefault)` is the right conversion).
+    *
+    * The picker is second-granular and rebuilds its Date from ALL six inputs on every change, so
+    * the fields are filled in coarse-to-fine order and the final `second` write is what commits the
+    * complete tuple. That last write is nudged through a different value first: React suppresses an
+    * onChange when the input's value is unchanged, which would otherwise leave the picker holding
+    * whatever it was seeded with (`new Date()`) whenever the target second happened to match. */
+  def setStartFromDateTime(at: java.time.LocalDateTime): Unit =
+    def part(name: String, value: Int): Unit =
+      startFromAdditional.locator(s"input[name='$name']").fill(value.toString)
+    part("year", at.getYear)
+    part("month", at.getMonthValue)
+    part("day", at.getDayOfMonth)
+    part("hour24", at.getHour)
+    part("minute", at.getMinute)
+    part("second", if at.getSecond == 0 then 1 else 0)
+    part("second", at.getSecond)
+
+  /** Start From = "Relative time ago", e.g. `setStartFromRelative(10, "second")`. `unit` is the
+    * option value: second | minute | hour | day | week | month | year. */
+  def setStartFromRelative(value: Int, unit: String): Unit =
+    startFromAdditional.locator("input[type='number']").fill(value.toString)
+    startFromAdditional.locator("select").selectOption(new SelectOption().setValue(unit))
 
   def revealAdvanced(): Unit = advancedToggle.click()
   def setDeserializer(label: String): Unit = deserializerSelect.selectOption(new SelectOption().setLabel(label))
@@ -133,6 +218,20 @@ final case class ConsumerSessionPage(page: Page):
       playButton.click()
 
   def stop(): Unit               = stopButton.click()
+
+  // --- the browser-wide delivery controls (localStorage-backed, in the toolbar) ---
+  val rateLimitInput: Locator  = page.getByTestId("cs-rate-limit")
+  val pauseAfterInput: Locator = page.getByTestId("cs-pause-after")
+
+  /** Commit a rate limit (msgs/second, 0 clears). The input is draft-committed on Enter/blur. */
+  def setRateLimit(n: Int): Unit =
+    rateLimitInput.fill(if n > 0 then n.toString else "")
+    rateLimitInput.press("Enter")
+
+  /** Commit an auto-pause threshold (messages loaded, 0 clears). */
+  def setPauseAfter(n: Int): Unit =
+    pauseAfterInput.fill(if n > 0 then n.toString else "")
+    pauseAfterInput.press("Enter")
   def clickFirstMessage(): Unit  = messages.first().click()
   def searchInResults(t: String): Unit = searchInput.fill(t)
   // Force-click: the button's own "Toggle additional tools" tooltip can overlay it and intercept a normal click.
@@ -150,9 +249,20 @@ final case class ConsumerSessionPage(page: Page):
     assertThat(messages).hasCount(n, new LocatorAssertions.HasCountOptions().setTimeout(timeoutMs))
 
   /** Wait until the toolbar reports `n` messages loaded. Use this instead of `waitMessages` when n is
-    * larger than a viewport - the message table is virtualized, so DOM rows != loaded messages. */
+    * larger than a viewport - the message table is virtualized, so DOM rows != loaded messages.
+    *
+    * The counter renders through `numeral(n).format('0,0')`, so the expected text must carry the
+    * same thousands separator - `hasText("2000")` against a counter showing "2,000" waited out its
+    * whole timeout on a session that had in fact finished. */
   def awaitLoaded(n: Int, timeoutMs: Double = 30000): Unit =
-    assertThat(loaded).hasText(n.toString, new LocatorAssertions.HasTextOptions().setTimeout(timeoutMs))
+    val expected = java.text.NumberFormat.getIntegerInstance(java.util.Locale.US).format(n.toLong)
+    assertThat(loaded).hasText(expected, new LocatorAssertions.HasTextOptions().setTimeout(timeoutMs))
+
+  /** The toolbar's loaded counter as a number, right now. Digits only: it is rendered through
+    * `numeral(n).format('0,0')`, so a four-figure count carries a thousands separator. */
+  def loadedCount: Int =
+    val digits = loaded.innerText().replaceAll("[^0-9]", "")
+    digits.toIntOption.getOrElse(throw new AssertionError(s"the loaded counter does not read as a number: '${loaded.innerText()}'"))
 
   // --- lifecycle triggers (CS-18) ---
   def wheelUpOverTable(): Unit =

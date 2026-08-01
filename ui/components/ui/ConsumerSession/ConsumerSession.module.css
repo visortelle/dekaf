@@ -83,3 +83,17 @@
   /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-x: contain;
 }
+
+/* The sticky best-effort banner: a degraded start-from stays disclosed for the session's life. */
+.StartFromDegraded {
+  padding: 6rem 12rem;
+  background: var(--warning-background-color, #fff7e0);
+  color: var(--warning-text-color, #7a5b00);
+  border-bottom: 1rem solid var(--border-color, #e0d5a8);
+  font-size: 12rem;
+}
+
+/* Drop-position indicator while a header drag hovers this column. */
+.ThDragOver {
+  box-shadow: inset 3rem 0 0 0 var(--accent-color, #4a72ff);
+}

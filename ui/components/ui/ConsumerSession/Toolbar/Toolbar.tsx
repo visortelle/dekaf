@@ -1,4 +1,5 @@
 import React from 'react';
+import useLocalStorage from 'use-local-storage-state';
 import s from './Toolbar.module.css'
 import pauseIcon from './icons/pause.svg';
 import resumeIcon from './icons/resume.svg';
@@ -10,6 +11,70 @@ import SmallButton from '../../SmallButton/SmallButton';
 import Input from '../../Input/Input';
 import ExportMessagesButton from './ExportMessagesButton/ExportMessagesButton';
 import { tooltipId } from '../../Tooltip/Tooltip';
+import { localStorageKeys } from '../../../local-storage-keys';
+
+/**
+ * A small non-negative integer input committed on blur or Enter, with 0 meaning "off".
+ *
+ * DRAFT-COMMITTED, like the other numeric inputs in the session config: keystrokes edit a local
+ * draft, and only a valid commit reaches storage - so a half-typed value can never become the
+ * live setting, and an invalid one reverts to what was there before.
+ */
+export const DeliveryControlInput: React.FC<{
+  testId: string;
+  caption: string;
+  title: string;
+  value: number;
+  onCommit: (n: number) => void;
+}> = (props) => {
+  const [draft, setDraft] = React.useState<string>(props.value > 0 ? String(props.value) : '');
+
+  // An external change (another tab via the storage event, or a reset) replaces the draft - the
+  // input shows the live value whenever the user is not mid-edit.
+  React.useEffect(() => {
+    setDraft(props.value > 0 ? String(props.value) : '');
+  }, [props.value]);
+
+  // Above this, "messages per second" and "messages to load" stop meaning anything - and the
+  // wire carries an int64, so the ceiling also keeps the value inside every representation.
+  const maxCommittable = 1_000_000_000;
+
+  const commit = () => {
+    // Digits only ever enter the draft (invalid text is REJECTED wholesale below, not stripped
+    // into a different number), so the only invalid draft is the empty string - the explicit off.
+    const parsed = draft === '' ? 0 : Number.parseInt(draft, 10);
+    const next = Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, maxCommittable) : 0;
+    setDraft(next > 0 ? String(next) : '');
+    props.onCommit(next);
+  };
+
+  return (
+    <div className={s.DeliveryControl} data-tooltip-id={tooltipId} data-tooltip-html={props.title}>
+      <input
+        className={s.DeliveryControlInput}
+        data-testid={props.testId}
+        value={draft}
+        placeholder="off"
+        inputMode="numeric"
+        onChange={(e) => {
+          // REJECT invalid text, never repair it: stripping turned a pasted "1.5" into 15 and
+          // "1e3" into 13 - a different number than the user gave, silently.
+          const next = e.target.value;
+          if (/^[0-9]{0,10}$/.test(next)) {
+            setDraft(next);
+          }
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+      />
+      <span className={s.DeliveryControlCaption}>{props.caption}</span>
+    </div>
+  );
+};
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -30,7 +95,20 @@ export type ToolbarProps = {
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const i18n = I18n.useContext();
 
+  // Browser-wide delivery controls, NOT session config: both live in localStorage and ride the
+  // session's requests (the rate on each Resume, the auto-pause purely client-side), so neither
+  // can travel with a saved session into a library item.
+  const [rateLimit, setRateLimit] = useLocalStorage<number>(localStorageKeys.consumerSessionRateLimit, { defaultValue: 0 });
+  const [pauseAfter, setPauseAfter] = useLocalStorage<number>(localStorageKeys.consumerSessionPauseAfterLoaded, { defaultValue: 0 });
+
   const playButtonState = (props.sessionState === 'new' || props.sessionState === 'paused') ? 'play' : 'pause';
+
+  // No runtime config means the stored configuration could not be converted into one - there is
+  // nothing to send. Play used to stay enabled and start a session that could never leave
+  // "initializing", which reads as a hang rather than as the configuration error it is. This only
+  // matters for the transition that BUILDS a session from the config - Play from `new`; pause and
+  // resume are name-only RPCs that never touch it (see the disabled scoping below).
+  const isConfigUnusable = props.config === undefined;
 
   let playButtonOnClick: () => void;
   switch (props.sessionState) {
@@ -55,9 +133,24 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
-            disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
+            disabled={(isConfigUnusable && props.sessionState === 'new') || (props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running')}
           />
         </div>
+
+        <DeliveryControlInput
+          testId="cs-rate-limit"
+          caption="msg/s limit"
+          value={rateLimit}
+          onCommit={setRateLimit}
+          title={'Show at most this many messages per second. Leave empty for full speed.<br/>Takes effect when you press Play. Your browser remembers it - it is not saved with the session.'}
+        />
+        <DeliveryControlInput
+          testId="cs-pause-after"
+          caption="pause after"
+          value={pauseAfter}
+          onCommit={setPauseAfter}
+          title={'Load exactly this many more messages, then pause - Play loads the next batch. Leave empty to turn this off.<br/>Your browser remembers it - it is not saved with the session.'}
+        />
 
         <div className={s.Control}>
           <SmallButton
@@ -81,6 +174,9 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           />
         </div>
 
+      </div>
+
+      <div className={s.ToolbarRight}>
         <div
           className={s.Control}
           style={{ position: 'relative', width: '320rem' }}
@@ -101,9 +197,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             </div>
           )}
         </div>
-      </div>
-
-      <div className={s.ToolbarRight}>
         <div className={s.MessagesLoadedStats}>
           <div className={s.MessagesLoadedStat}>
             <strong className={s.MessagesLoadedStatValue} data-testid="cs-processed">{i18n.formatLongNumber(props.messagesProcessed)}</strong>

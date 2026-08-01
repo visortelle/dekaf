@@ -3,11 +3,18 @@ package library.managed_items
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
-import _root_.consumer.start_from.{EarliestMessage, LatestMessage, NthMessageAfterEarliest, NthMessageBeforeLatest}
+import _root_.consumer.start_from.{
+    ApproximateDataPosition,
+    ApproximateTimePosition,
+    EarliestMessage,
+    LatestMessage,
+    NthMessageAfterEarliest,
+    NthMessageBeforeLatest
+}
 
 case class ManagedConsumerSessionStartFromSpec(
-    startFrom: EarliestMessage | LatestMessage | ManagedConsumerSessionStartFromValOrRef | ManagedMessageIdValOrRef | ManagedDateTimeValOrRef |
-        ManagedRelativeDateTimeValOrRef | NthMessageBeforeLatest | NthMessageAfterEarliest
+    startFrom: EarliestMessage | LatestMessage | ManagedMessageIdValOrRef | ManagedDateTimeValOrRef |
+        ManagedRelativeDateTimeValOrRef | NthMessageBeforeLatest | NthMessageAfterEarliest | ApproximateDataPosition | ApproximateTimePosition
 )
 
 object ManagedConsumerSessionStartFromSpec:
@@ -26,6 +33,10 @@ object ManagedConsumerSessionStartFromSpec:
                 ManagedConsumerSessionStartFromSpec(startFrom = NthMessageAfterEarliest.fromPb(sf.value))
             case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageBeforeLatest =>
                 ManagedConsumerSessionStartFromSpec(startFrom = NthMessageBeforeLatest.fromPb(sf.value))
+            case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromApproximateDataPosition =>
+                ManagedConsumerSessionStartFromSpec(startFrom = ApproximateDataPosition.fromPb(sf.value))
+            case sf: pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromApproximateTimePosition =>
+                ManagedConsumerSessionStartFromSpec(startFrom = ApproximateTimePosition.fromPb(sf.value))
             case _ =>
                 throw new IllegalArgumentException("Invalid ManagedConsumerSessionStartFromSpec type")
 
@@ -58,6 +69,14 @@ object ManagedConsumerSessionStartFromSpec:
             case v: NthMessageBeforeLatest =>
                 pb.ManagedConsumerSessionStartFromSpec(
                     startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromNthMessageBeforeLatest(NthMessageBeforeLatest.toPb(v))
+                )
+            case v: ApproximateDataPosition =>
+                pb.ManagedConsumerSessionStartFromSpec(
+                    startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromApproximateDataPosition(ApproximateDataPosition.toPb(v))
+                )
+            case v: ApproximateTimePosition =>
+                pb.ManagedConsumerSessionStartFromSpec(
+                    startFrom = pb.ManagedConsumerSessionStartFromSpec.StartFrom.StartFromApproximateTimePosition(ApproximateTimePosition.toPb(v))
                 )
             case _ =>
                 throw new IllegalArgumentException("Invalid ManagedConsumerSessionStartFromSpec type")

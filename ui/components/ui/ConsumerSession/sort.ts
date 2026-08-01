@@ -55,7 +55,9 @@ export const sortMessages = (
     undefs: MessageDescriptor[],
     sortFn: SortFn
   ): MessageDescriptor[] {
-    let result = defs.sort(sortFn);
+    // Copy first: `defs` is often the caller's array (the ConsumerSession `messages` state when the
+    // session is paused), and an in-place sort would rewrite it into visual order.
+    let result = defs.slice().sort(sortFn);
     result = sort.direction === "asc" ? result : result.reverse();
     return result.concat(undefs);
   }

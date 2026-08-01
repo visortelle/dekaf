@@ -10,13 +10,30 @@ import _root_.pulsar_auth.{defaultPulsarAuth, jwtCredentialsDecoder, validCreden
 import io.circe.parser.decode as decodeJson
 
 object PulsarAuthRoutes:
-    val routes: EndpointGroup = () => {
-        addCredentials()
-        useCredentials()
-        deleteCredentials()
-    }
+    /** What every successful route writes into `Set-Cookie`. */
+    private type SetCookie = (io.javalin.http.Context, PulsarAuth) => Unit
 
-    private def addCredentials(): Unit =
+    def routes: EndpointGroup = routesWith()
+
+    /** The cookie-hardening inputs are parameters defaulting to the process config - same reason as
+      * `pulsarAuthToCookie`: the package-level `config` val is loaded once per process and cannot be
+      * varied, so nothing could otherwise observe over HTTP that these routes really emit the
+      * CONFIGURED Secure/SameSite attributes. `routes` keeps the production call site unchanged. */
+    def routesWith(
+        publicBaseUrl: Option[String] = config.publicBaseUrl,
+        cookieSecure: Option[Boolean] = config.cookieSecure,
+        cookieSameSite: Option[String] = config.cookieSameSite
+    ): EndpointGroup =
+        val setCookie: SetCookie =
+            (ctx, pulsarAuth) => setCookieAndSuccess(ctx, pulsarAuth, publicBaseUrl, cookieSecure, cookieSameSite)
+
+        () => {
+            addCredentials(setCookie)
+            useCredentials(setCookie)
+            deleteCredentials(setCookie)
+        }
+
+    private def addCredentials(setCookie: SetCookie): Unit =
         post(
             s"/pulsar-auth/add/{credentialsName}",
             ctx =>
@@ -51,13 +68,13 @@ object PulsarAuthRoutes:
                                                 current = Some(credentialsName),
                                                 credentials = pulsarAuth.credentials + (credentialsName -> credentials)
                                             )
-                                            setCookieAndSuccess(ctx, newPulsarAuth)
+                                            setCookie(ctx, newPulsarAuth)
                             case _ =>
                                 ctx.status(400)
                                 ctx.result("Credentials name contains illegal characters. Only alphanumerics, underscores(_) and dashes(-) are allowed.")
         )
 
-    private def useCredentials(): Unit =
+    private def useCredentials(setCookie: SetCookie): Unit =
         post(
             s"/pulsar-auth/use/{credentialsName}",
             ctx =>
@@ -73,12 +90,18 @@ object PulsarAuthRoutes:
                         if credentialsName.isBlank then
                             ctx.status(400)
                             ctx.result("Credentials name shouldn't be blank")
+                        // Selecting a name that isn't in the map used to succeed, after which every
+                        // client construction failed and the interceptor answered UNAUTHENTICATED
+                        // for all calls - a self-inflicted brick from one request.
+                        else if !pulsarAuth.credentials.contains(credentialsName) then
+                            ctx.status(404)
+                            ctx.result(s"No credentials named '$credentialsName'")
                         else
                             val newPulsarAuth = pulsarAuth.copy(current = Some(credentialsName))
-                            setCookieAndSuccess(ctx, newPulsarAuth)
+                            setCookie(ctx, newPulsarAuth)
         )
 
-    private def deleteCredentials(): Unit =
+    private def deleteCredentials(setCookie: SetCookie): Unit =
         post(
             "/pulsar-auth/delete/{credentialsName}",
             ctx =>
@@ -99,15 +122,34 @@ object PulsarAuthRoutes:
                                 case DefaultCredentialsName =>
                                     ctx.status(400)
                                     ctx.result(s"Can't delete default credentials")
+                                // Deleting a name that isn't in the map used to answer 200 and still
+                                // rewrite `current` - a typo silently changed which credentials every
+                                // later Pulsar call ran under. Refuse, and write no cookie at all.
+                                case credentialsName: String if !pulsarAuth.credentials.contains(credentialsName) =>
+                                    ctx.status(404)
+                                    ctx.result(s"No credentials named '$credentialsName'")
                                 case credentialsName: String =>
                                     val newCredentials = pulsarAuth.credentials - credentialsName
-                                    val newPulsarAuth =
-                                        pulsarAuth.copy(credentials = newCredentials, current = newCredentials.keys.headOption.orElse(Some("Default")))
+                                    // `current` used to be reassigned unconditionally to
+                                    // `newCredentials.keys.headOption`, so removing an UNRELATED
+                                    // credential repointed the session at whatever came first in map
+                                    // iteration order. The selection may only move when the deleted
+                                    // name is the selected one - and then only to Default, which
+                                    // setCookieAndSuccess guarantees still exists.
+                                    val newCurrent =
+                                        if pulsarAuth.current.contains(credentialsName) then Some(DefaultCredentialsName)
+                                        else pulsarAuth.current
 
-                                    setCookieAndSuccess(ctx, newPulsarAuth)
+                                    setCookie(ctx, pulsarAuth.copy(credentials = newCredentials, current = newCurrent))
         )
 
-    def setCookieAndSuccess(ctx: io.javalin.http.Context, pulsarAuth: PulsarAuth): Unit =
+    def setCookieAndSuccess(
+        ctx: io.javalin.http.Context,
+        pulsarAuth: PulsarAuth,
+        publicBaseUrl: Option[String] = config.publicBaseUrl,
+        cookieSecure: Option[Boolean] = config.cookieSecure,
+        cookieSameSite: Option[String] = config.cookieSameSite
+    ): Unit =
         def withNewDefaultAuth(pulsarAuth: PulsarAuth): PulsarAuth =
             // Dekaf admin can change default credentials,
             // so we need deliver new default credentials to users.
@@ -117,7 +159,7 @@ object PulsarAuthRoutes:
                 )
             )
 
-        val newCookieHeader = pulsar_auth.pulsarAuthToCookie(withNewDefaultAuth(pulsarAuth))
+        val newCookieHeader = pulsar_auth.pulsarAuthToCookie(withNewDefaultAuth(pulsarAuth), publicBaseUrl, cookieSecure, cookieSameSite)
 
         ctx.header(
             "Set-Cookie",

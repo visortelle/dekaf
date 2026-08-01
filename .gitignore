@@ -118,3 +118,10 @@ result
 
 # Docker
 **/slim.*.json
+
+# macOS
+.DS_Store
+
+# Local design assets (~24MB of PNG/GIF concepts) - not part of the product build.
+# Anchored to the repo root so it does not also swallow any nested `design/` dir elsewhere.
+/design/

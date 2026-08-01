@@ -1,6 +1,7 @@
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
+import { messageIdError } from "../SessionConfiguration/StartFromInput/message-id";
 import {
   MessageDescriptor,
   PartialMessageDescriptor,
@@ -287,6 +288,48 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): Consume
 
     case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_LATEST_MESSAGE:
       return { type: 'latestMessage' };
+
+    // These two were missing while startFromToPb wrote them, so the mapping was one-way: a saved
+    // "skip first n" / "latest n" config serialized fine and then threw "Unknown StartFrom value
+    // case" on the way back in.
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_NTH_MESSAGE_AFTER_EARLIEST: {
+      const nthMessageAfterEarliestPb = startFrom.getStartFromNthMessageAfterEarliest();
+      if (nthMessageAfterEarliestPb === undefined) {
+        throw new Error('NthMessageAfterEarliest should be defined.');
+      }
+
+      return { type: 'nthMessageAfterEarliest', n: nthMessageAfterEarliestPb.getN() };
+    }
+
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_NTH_MESSAGE_BEFORE_LATEST: {
+      const nthMessageBeforeLatestPb = startFrom.getStartFromNthMessageBeforeLatest();
+      if (nthMessageBeforeLatestPb === undefined) {
+        throw new Error('NthMessageBeforeLatest should be defined.');
+      }
+
+      return { type: 'nthMessageBeforeLatest', n: nthMessageBeforeLatestPb.getN() };
+    }
+
+    // The two approximate modes carry the SAME payload - one double - so a branch that reached for
+    // the other one's oneof case would still produce a valid-looking fraction; the only symptom
+    // would be a session positioned by the wrong rule.
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_DATA_POSITION: {
+      const approximateDataPositionPb = startFrom.getStartFromApproximateDataPosition();
+      if (approximateDataPositionPb === undefined) {
+        throw new Error('ApproximateDataPosition should be defined.');
+      }
+
+      return { type: 'approximateDataPosition', fraction: approximateDataPositionPb.getFraction() };
+    }
+
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_TIME_POSITION: {
+      const approximateTimePositionPb = startFrom.getStartFromApproximateTimePosition();
+      if (approximateTimePositionPb === undefined) {
+        throw new Error('ApproximateTimePosition should be defined.');
+      }
+
+      return { type: 'approximateTimePosition', fraction: approximateTimePositionPb.getFraction() };
+    }
 
     case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_MESSAGE_ID: {
       const byteArray = startFrom.getStartFromMessageId()?.getMessageId_asU8();
@@ -761,7 +804,7 @@ export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.Consumer
   return targetPb;
 }
 
-function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
+export function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
   const startFromPb = new pb.ConsumerSessionStartFrom();
 
   switch (startFrom.type) {
@@ -777,9 +820,24 @@ function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionS
     case 'nthMessageBeforeLatest':
       startFromPb.setStartFromNthMessageBeforeLatest(new pb.NthMessageBeforeLatest().setN(startFrom.n));
       break;
-    case 'messageId':
+    case 'approximateDataPosition':
+      startFromPb.setStartFromApproximateDataPosition(new pb.ApproximateDataPosition().setFraction(startFrom.fraction));
+      break;
+    case 'approximateTimePosition':
+      startFromPb.setStartFromApproximateTimePosition(new pb.ApproximateTimePosition().setFraction(startFrom.fraction));
+      break;
+    case 'messageId': {
+      // The last point where a start position of zero bytes can still be stopped. The shared hex
+      // parser accepts blank text - an empty byte payload is a real thing - but an empty start
+      // position is not, and the server refuses it after a full create round trip.
+      const idError = messageIdError(startFrom.hexString);
+      if (idError !== undefined) {
+        throw new Error(idError);
+      }
+
       startFromPb.setStartFromMessageId(new pb.MessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
       break;
+    }
     case 'dateTime':
       const epochSeconds = Math.floor(startFrom.dateTime.getTime() / 1000);
       const timestampPb = new Timestamp();
@@ -869,4 +927,3 @@ export function valueProjectionResultToPb(v: ValueProjectionResult): pb.ValuePro
   }
   return resultPb;
 }
-

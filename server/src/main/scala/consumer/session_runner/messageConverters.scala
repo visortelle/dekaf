@@ -57,11 +57,11 @@ object converters:
         val messageId = Option(msg.getMessageId.toByteArray)
         val sequenceId = Option(msg.getSequenceId)
         val producerName = Option(msg.getProducerName)
-        val key = Option(msg.getKey).flatMap(key => {
-            parseJson(s"""\"$key\"""") match
-                case Left(_) => None
-                case Right(k) => Some(k)
-        })
+        // Encode via circe rather than splicing the raw key into a JSON string literal: a key
+        // containing a quote/backslash/newline produced invalid JSON, which parsed to Left and
+        // silently DROPPED the key - so key filters and key projections quietly missed those
+        // messages. (The value path already goes through primitiveConv.bytesToJsonString.)
+        val key = Option(msg.getKey).map(_.asJson)
         val size = Option(msg.size)
         val orderingKey = Option(msg.getOrderingKey)
         val topic = Option(msg.getTopicName)

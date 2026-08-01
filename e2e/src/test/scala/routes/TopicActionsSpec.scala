@@ -1,12 +1,13 @@
 package routes
 
 import harness.DekafSuite
+import harness.Eventually
 import ui.ConfirmationDialog
 import com.microsoft.playwright.Page.GetByRoleOptions
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.assertions.LocatorAssertions
 import com.microsoft.playwright.options.AriaRole
-import org.apache.pulsar.client.api.Schema
+import org.apache.pulsar.client.api.{MessageId, Schema}
 import java.util.regex.Pattern
 import scala.jdk.CollectionConverters.*
 
@@ -24,6 +25,26 @@ class TopicActionsSpec extends DekafSuite:
     }
     ok
   }
+
+  /** Produce `n` NON-batched messages (1 message == 1 entry => deterministic backlog/entry counts). */
+  private def produce(fqn: String, n: Int): Unit = {
+    val p = client.newProducer(Schema.STRING).topic(fqn).enableBatching(false).create()
+    try (1 to n).foreach(i => p.send(s"msg-$i"))
+    finally p.close()
+  }
+
+  private def backlogOf(fqn: String, sub: String): Long = {
+    val subs = admin.topics().getStats(fqn).getSubscriptions
+    if subs.containsKey(sub) then subs.get(sub).getMsgBacklog else -1L
+  }
+
+  /** Expiry compares each message's publish time against `now - expireTimeInSeconds`, so
+    * "the messages are older than the threshold" is a real precondition of the expire assertion.
+    * Poll for it (page load usually covers it already) instead of sleeping blind. */
+  private def awaitOlderThan(producedAt: Long, ageMs: Long): Unit =
+    Eventually.eventually(timeoutMs = 10000, intervalMs = 200) {
+      assert(System.currentTimeMillis() - producedAt > ageMs)
+    }
 
   private def partitionedTopic(count: Int): (String, String, String, String) = {
     val t = fixtures.createTenant()
@@ -77,31 +98,67 @@ class TopicActionsSpec extends DekafSuite:
     })
   }
 
-  test("TOP-3: expire messages on all subscriptions") {
+  test("TOP-3: expire messages on all subscriptions clears every subscription's backlog") {
     val (t, ns, topic) = fixtures.freshTopicParts()
+    val fqn = s"persistent://$t/$ns/$topic"
+
+    // Arrange a REAL backlog on two subscriptions - "all subscriptions" is only proven by more
+    // than one - then act through the UI and poll the admin oracle for the state change.
+    val subA = fixtures.unique("suba")
+    val subB = fixtures.unique("subb")
+    admin.topics().createSubscription(fqn, subA, MessageId.earliest)
+    admin.topics().createSubscription(fqn, subB, MessageId.earliest)
+    produce(fqn, 3)
+    val producedAt = System.currentTimeMillis()
+    Eventually.eventually() {
+      assert(backlogOf(fqn, subA) == 3L)
+      assert(backlogOf(fqn, subB) == 3L)
+    }
+
     page.navigate(s"/tenants/$t/namespaces/$ns/topics/persistent/$topic/overview")
 
     page.getByTestId("expire-topic-messages-button").click()
 
-    // Confirm stays disabled until duration > 0 (ExpireAllSubscriptions.tsx:93).
+    // Confirm stays disabled until duration > 0 (ExpireAllSubscriptions.tsx:93). DurationInput's
+    // default unit is seconds, so "1" == expireTimeInSeconds 1.
     page.getByRole(AriaRole.SPINBUTTON).fill("1")
+    awaitOlderThan(producedAt, 2000)
     // No force checkbox on this dialog - force must stay false.
     ConfirmationDialog(page).confirm(guard = Some("CONFIRM"))
 
-    // Empty-backlog expire is a server no-op → assert the success toast + no error toast.
     assertThat(page.getByText("Messages were successfully expired")).isVisible(visible(15000))
+    // The oracle - a toast only proves a request was fired; this proves the backlog actually drained.
+    Eventually.eventually() {
+      assert(backlogOf(fqn, subA) == 0L)
+      assert(backlogOf(fqn, subB) == 0L)
+    }
   }
 
-  test("TOP-4: unload a topic") {
+  test("TOP-4: unload a topic reloads its managed ledger (data preserved)") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
+
+    // Arrange state that only survives ONE load: entriesAddedCounter lives on the ManagedLedger
+    // INSTANCE, so it counts this load's 3 writes and restarts at 0 once the topic is closed and
+    // re-opened (the next admin read re-loads it). Re-opening also appends a fresh ledger.
+    produce(fqn, 3)
+    Eventually.eventually() { assert(admin.topics().getInternalStats(fqn).entriesAddedCounter == 3L) }
+    val ledgersBefore = admin.topics().getInternalStats(fqn).ledgers.size()
+
     page.navigate(s"/tenants/$t/namespaces/$ns/topics/persistent/$topic/overview")
 
     page.getByTestId("topic-page-unload-button").click()
     ConfirmationDialog(page).confirm(guard = Some(fqn)) // guard = topic FQN, no force
 
-    // Unload is transient: assert success toast + topic still present.
     assertThat(page.getByText(Pattern.compile("has been successfully unloaded"))).isVisible(visible(15000))
+    // The oracle: the managed ledger really was closed and re-opened.
+    Eventually.eventually() {
+      val stats = admin.topics().getInternalStats(fqn)
+      assert(stats.entriesAddedCounter == 0L)      // per-load counter restarted
+      assert(stats.ledgers.size() > ledgersBefore) // re-open created a new ledger
+    }
+    // Unload, not delete: the topic and its 3 entries survive.
+    assert(admin.topics().getInternalStats(fqn).numberOfEntries == 3L)
     assert(admin.topics().getList(s"$t/$ns").asScala.exists(_.contains(topic)))
   }
 

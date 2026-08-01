@@ -119,6 +119,64 @@ message RelativeDateTime {
   bool is_rounded_to_unit_start = 3;
 }
 
+// Start approximately the given distance through the DATA a topic still holds -
+// "about % through the data".
+//
+// Pulsar can address a position by ENTRY ordinal or by timestamp in constant/log
+// time at any topic size, but it has no message-ordinal index unless the operator
+// enables brokerEntryMetadataInterceptors (empty by default). So "60% of the way
+// in" is resolvable instantly on a billion-message topic, while "skip the first
+// 600 million messages" is not - the latter has to count.
+//
+// This mode therefore advertises an APPROXIMATE position rather than an exact
+// message count: the approximation lives in the contract instead of being hidden
+// behind it.
+//
+// Resolved PER PHYSICAL TOPIC: every topic of the session, and every partition of
+// a partitioned topic, is positioned against its own backlog.
+//
+// The counterpart to ApproximateTimePosition, and the distinction is not
+// cosmetic. On a topic where 99% of the messages arrived in the last hour of a
+// 30-day retention, "50%" of the DATA lands inside that last hour, while 50% of
+// the TIME RANGE lands 15 days back. One message used to answer both questions,
+// which made it impossible to name or to reason about.
+message ApproximateDataPosition {
+  // Outside [0.0, 1.0] is rejected. BOTH ENDPOINTS ARE EXACT and neither is an
+  // entry ordinal:
+  //
+  //   0.0 = `MessageId.earliest` - the earliest retained message, exactly as the
+  //         "Earliest message" mode.
+  //   1.0 = `MessageId.latest` - PAST the last retained message, exactly as the
+  //         "Latest message" mode: nothing retained is shown at all, only what is
+  //         published from now on. It is NOT "the latest retained message"; that
+  //         reading cost a reviewer a round trip, so it is spelled out here.
+  //
+  // Interior fractions are resolved against ENTRY ordinals, so the position is
+  // proportional to stored entries rather than to message count; the two diverge
+  // as far as batch sizes varied over the topic's lifetime.
+  double fraction = 1;
+}
+
+// Start approximately the given distance through the TIME RANGE a topic still
+// covers - "about % through the time range".
+//
+// Resolved PER LOGICAL TOPIC, not per partition: `earliest` is the MINIMUM first-
+// message publish time across the topic's partitions, `latest` the MAXIMUM last-
+// message publish time across them, and the cutoff is
+// `earliest + fraction * (latest - earliest)` (floored to a whole millisecond).
+// Every partition is then seeked to that one instant.
+//
+// Taking min/max across partitions rather than a per-partition quantile is
+// deliberate: it gives clean endpoints by construction, is monotonic in the
+// fraction, and is independent of the partition count. It also avoids the defect
+// ApproximateDataPosition has to live with, where one idle partition drags a
+// quantile-based cutoff backwards.
+message ApproximateTimePosition {
+  // 0.0 = earliest retained message, 1.0 = the last message. Outside [0.0, 1.0]
+  // is rejected. Both endpoints are exact rather than interpolated.
+  double fraction = 1;
+}
+
 message ConsumerSessionStartFrom {
   oneof start_from {
     EarliestMessage start_from_earliest_message = 1;
@@ -128,6 +186,8 @@ message ConsumerSessionStartFrom {
     MessageId start_from_message_id = 3;
     DateTime start_from_date_time = 4;
     RelativeDateTime start_from_relative_date_time = 5;
+    ApproximateDataPosition start_from_approximate_data_position = 8;
+    ApproximateTimePosition start_from_approximate_time_position = 9;
   }
 }
 
@@ -543,9 +603,59 @@ message ResumeRequest {
   string consumer_name = 1;
   bool include_consumer_stats = 2;
   bool is_debug = 3;
+
+  // Cap on how many messages per second this session DELIVERS to the client, applied from this
+  // resume onward. 0 means unlimited; negative is refused outright.
+  //
+  // PER REQUEST, NOT PER SESSION CONFIG, like the two flags above it, and deliberately so: the
+  // value belongs to the BROWSER doing the watching (it lives in localStorage), so it must never
+  // travel into a saved library item and follow the session to another person's screen.
+  //
+  // The limit shapes steady-state delivery only. Start-from positioning - the counted skip of a
+  // "skip first n" or the retained-history walk of a "latest n" - is never slowed by it: those
+  // messages were never going to be shown, and slowing the seek would only delay the first visible
+  // message. The count is per SESSION, not per partition, so the number means what it says
+  // regardless of how many partitions the selector matched.
+  int64 max_messages_per_second = 4;
+
+  // Deliver AT MOST this many messages on this stream, then deliver nothing more until the next
+  // resume. 0 means no budget; negative is refused.
+  //
+  // The count is of messages LOADED - the ones that passed every filter and went on the wire, the
+  // number the toolbar's "loaded" counter shows - not of messages processed. A session whose
+  // filters drop most of what they read may well process hundreds to load ten; the budget lets it,
+  // and stops the STREAM at exactly ten.
+  //
+  // Enforced at the delivery drain, EXACTLY: the message that spends the last unit is the last one
+  // sent, whatever was mid-batch behind it stays queued - unacknowledged, undelivered - for the
+  // next resume. A client-side "pause after n" can only ever be approximate (a whole chunk lands
+  // before the client can react, and the first chunk under a rate limit is the full one-second
+  // burst); this is the server-side half that makes the number mean itself.
+  int64 max_messages_to_deliver = 5;
 }
 
-message ConsumerStats {}
+// Progress of a start-from position that has to be resolved by counting messages
+// rather than by seeking. Only NthMessageAfterEarliest needs this: skipping N
+// messages exactly costs O(N) because Pulsar stores no message-ordinal index, so
+// a large N takes real time and the UI must be able to say so.
+message StartFromProgress {
+  int64 messages_skipped = 1;
+  int64 messages_to_skip = 2;
+  // True once the requested position has been reached and normal delivery began.
+  bool complete = 3;
+  // True once the position was resolved BEST-EFFORT rather than exactly: a stream the merge was
+  // waiting on stayed silent past the stall window and was abandoned (named below). The COUNT is
+  // still exact; WHICH messages were dropped may differ from the exact answer. Sticky for the
+  // session - a degradation that happened does not un-happen.
+  bool degraded = 4;
+  // The streams ("consumer@topic") the resolution gave up waiting for.
+  repeated string abandoned_streams = 5;
+}
+
+message ConsumerStats {
+  // Absent unless the session's start-from is still being resolved.
+  StartFromProgress start_from_progress = 1;
+}
 
 message ResumeResponse {
   google.rpc.Status status = 1;
@@ -579,6 +689,83 @@ message ResolveTopicSelectorResponse {
   repeated string topic_fqns = 2;
 }
 
+// One physical topic's endpoints and how far this session has read through them.
+//
+// A DEBUG VIEW, polled on demand - never pushed with the message stream. Filling one
+// row costs three admin round trips (first entry, last entry, internal stats), so a
+// session over a wide selector costs three per PARTITION every refresh. That is why
+// the client asks for this rather than receiving it, and why the asking is off by
+// default.
+//
+// EVERY FIELD IS OPTIONAL BECAUSE EVERY LOOKUP CAN DECLINE. A topic Pulsar refuses to
+// examine at all (non-persistent: 405) answers with `unavailable_reason` set and the
+// endpoints absent - which is different from an EMPTY topic, where the lookups
+// succeed and there is genuinely nothing to report. Absent means "not known", never
+// "zero".
+message TopicPosition {
+  // The physical topic - a partition of a partitioned topic, not the parent, since
+  // `examineMessage` refuses the parent outright.
+  string topic_fqn = 1;
+
+  // The oldest message the topic still holds. Absent on an empty topic, and on one
+  // whose first entry aged out between the two lookups.
+  google.protobuf.BytesValue first_message_id = 2;
+  google.protobuf.Int64Value first_publish_time = 3;
+
+  // The newest message the topic holds. Absent on an empty topic: `examineMessage`
+  // THROWS for "latest" there rather than answering, where "earliest" clamps.
+  google.protobuf.BytesValue last_message_id = 4;
+  google.protobuf.Int64Value last_publish_time = 5;
+
+  // The newest message this session has PROCESSED from this topic - which is the read
+  // position, not the last row on screen. A session filter can drop almost everything
+  // it reads, so the last DISPLAYED message can lag this by an arbitrary amount and
+  // would make both progress figures below read far too low.
+  //
+  // Absent until the session has processed something from this topic.
+  google.protobuf.BytesValue cursor_message_id = 6;
+  google.protobuf.Int64Value cursor_publish_time = 7;
+
+  // Where the cursor sits in the topic's TIME range: 0.0 at the first message's
+  // publish time, 1.0 at the last's. Absent when there is no cursor yet, and on a
+  // topic that occupies a single instant (first == last), which has no interior to
+  // place anything in.
+  google.protobuf.DoubleValue cursor_time_fraction = 8;
+
+  // The PROPORTION OF RETAINED ENTRIES THE SESSION HAS CONSUMED: cursor ordinal
+  // over retained count. Sitting ON the first of N entries is 1/N - one entry
+  // consumed - and on the last it is 1.0; a topic retaining a single entry is
+  // therefore 1.0 the moment that entry is read. There is no 0.0 with a cursor
+  // present: a cursor exists only once something was consumed.
+  //
+  // ENTRIES, NOT MESSAGES. A batched entry holds many messages, so this tracks
+  // message count only as closely as batch sizes stayed uniform - the same
+  // approximation ApproximateDataPosition documents. It is named for what it measures.
+  google.protobuf.DoubleValue cursor_entry_fraction = 9;
+
+  // Entries the topic still retains, as `getInternalStats` reports it.
+  google.protobuf.Int64Value retained_entries = 10;
+
+  // The cursor's 1-based ordinal among the retained entries, which is the numerator of
+  // `cursor_entry_fraction`. Shown so a reader can see the arithmetic rather than
+  // trust a percentage.
+  google.protobuf.Int64Value cursor_entry_ordinal = 11;
+
+  // Why this row is blank, when it is. Set for a topic the broker refuses to examine
+  // (a non-persistent topic cannot answer either lookup) and for a lookup that failed
+  // outright. An EMPTY topic is NOT a reason - it answers, with nothing in it.
+  google.protobuf.StringValue unavailable_reason = 12;
+}
+
+message GetTopicPositionsRequest {
+  string consumer_name = 1;
+}
+
+message GetTopicPositionsResponse {
+  google.rpc.Status status = 1;
+  repeated TopicPosition positions = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
@@ -586,4 +773,8 @@ service ConsumerService {
   rpc Pause(PauseRequest) returns (PauseResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
   rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
+
+  // Poll the per-topic debug view. See [[TopicPosition]] for why this is polled rather
+  // than pushed.
+  rpc GetTopicPositions(GetTopicPositionsRequest) returns (GetTopicPositionsResponse);
 }

@@ -126,8 +126,18 @@ const OverwriteExistingItemDialog: React.FC<OverwriteExistingItemDialogProps> = 
     const itemToSave = cloneDeep(libraryItem);
     itemToSave.spec.metadata.id = selectedItem.spec.metadata.id;
 
+    // Same guard as SaveItemDialog: the pb conversion parses free-text fields (a message id's hex
+    // string) and throws synchronously on invalid input. Uncaught, that is only an unhandled
+    // rejection out of this async click handler and the dialog wedges with no feedback.
+    let itemPb: pb.LibraryItem;
+    try {
+      itemPb = libraryItemToPb(itemToSave);
+    } catch (err) {
+      notifyError(`Unable to save library item. ${err}`);
+      return;
+    }
+
     const req = new pb.SaveLibraryItemRequest();
-    const itemPb = libraryItemToPb(itemToSave);
     req.setItem(itemPb);
 
     const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {

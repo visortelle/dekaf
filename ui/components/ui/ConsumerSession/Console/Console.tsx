@@ -7,6 +7,7 @@ import Tabs, { Tab } from '../../Tabs/Tabs';
 import s from './Console.module.css'
 import DebugLogs from './ContextLogs/ContextLogs';
 import ExpressionInspector from './ContextRepl/ContextRepl';
+import TopicPositions from './TopicPositions/TopicPositions';
 import { LibraryContext } from '../../LibraryBrowser/model/library-context';
 
 export type ConsoleProps = {
@@ -23,16 +24,40 @@ export type ConsoleProps = {
   libraryContext: LibraryContext;
 };
 
-type TabKey = 'producer' | 'visualize' | 'context-logs' | 'context-repl' | 'export';
+type TabKey = 'producer' | 'visualize' | 'context-logs' | 'context-repl' | 'export' | 'topic-positions';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabKey>('producer');
+  // Topic Positions leads and is the default: it is the tab that answers "where am I?", which
+  // is the first question on an open session - and unlike 'producer' it exists on EVERY page
+  // (the Produce tab only renders on topic pages, so a producer default pointed at a missing
+  // tab everywhere else).
+  const [activeTab, setActiveTab] = React.useState<TabKey>('topic-positions');
 
   if (props.sessionConfig === undefined) {
     return null;
   }
 
-  let tabs: Tab<TabKey>[] = [];
+  let tabs: Tab<TabKey>[] = [
+    {
+      key: 'topic-positions',
+      title: 'Topic Positions',
+      testId: 'console-tab-topic-positions',
+      // Rendered always, like its siblings - but it is handed `isVisible` and polls nothing
+      // while hidden, which is what keeps a debug view off the broker for everyone not looking
+      // at it.
+      isRenderAlways: true,
+      render: () => (
+        <TopicPositions
+          consumerName={props.consumerName}
+          sessionState={props.sessionState}
+          // BOTH gates: the tab being the selected one AND the panel being open. As the default
+          // tab, selection alone is true from page load - without the isShow half this would
+          // poll the broker with the panel shut, for every visitor of every session page.
+          isVisible={props.isShow && activeTab === 'topic-positions'}
+        />
+      )
+    }
+  ];
 
   if (props.libraryContext.pulsarResource.type === 'topic') {
     tabs = tabs.concat([{
@@ -58,6 +83,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
   }
 
   tabs = tabs.concat([
+
     {
       key: 'context-repl',
       title: 'Context REPL',

@@ -46,7 +46,7 @@ class TenantServiceImpl extends pb.ChildrenCountServiceGrpc.ChildrenCountService
             given ExecutionContext = ExecutionContext.global
             val allResults = Await.result(Future.sequence(allFutures), Duration(1, TimeUnit.MINUTES))
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(
               pb.GetChildrenCountResponse(
                 status = Some(status),
@@ -59,6 +59,6 @@ class TenantServiceImpl extends pb.ChildrenCountServiceGrpc.ChildrenCountService
             )
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetChildrenCountResponse(status = Some(status)))
         }

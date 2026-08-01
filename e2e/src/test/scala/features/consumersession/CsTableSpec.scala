@@ -1,6 +1,7 @@
 package features.consumersession
 
 import harness.DekafSuite
+import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.client.api.Schema
 
 class CsTableSpec extends DekafSuite:
@@ -111,3 +112,37 @@ class CsTableSpec extends DekafSuite:
     assert(math.abs(domAfterReload - domAfterResize) <= 3,
       s"restored column rendered at ${domAfterReload}px, expected ~${domAfterResize}px (persisted width not re-applied)")
   }
+
+  test("CS-TBL-REORDER: a message column dragged onto another lands before it and is REMEMBERED") {
+    val (t, ns, topic) = fixtures.freshTopicParts()
+    fixtures.produceStrings(s"persistent://$t/$ns/$topic", 3)
+
+    val cs = ConsumerSessionPage(page)
+    cs.openForTopic(t, ns, topic)
+    cs.setStartFrom("Earliest message")
+    cs.play()
+    cs.awaitLoaded(3)
+
+    def headerKeys(): List[String] =
+      page.locator("[data-testid^='cs-th-']").all().asScala.toList
+        .map(_.getAttribute("data-testid").stripPrefix("cs-th-"))
+
+    // `.all()` does not wait; the header commits a frame after the first rows do.
+    page.getByTestId("cs-th-topic").waitFor()
+    val before = headerKeys()
+    assert(before.indexOf("topic") > before.indexOf("value"), s"unexpected default order: $before")
+
+    // Drag TOPIC onto VALUE: topic must land immediately before value, rows following the header.
+    page.getByTestId("cs-th-topic").dragTo(page.getByTestId("cs-th-value"))
+    val after = headerKeys()
+    assert(
+      after.indexOf("topic") == after.indexOf("value") - 1,
+      s"dragged column should sit immediately before its target, got $after"
+    )
+    // The sticky pair stays put in front.
+    assert(after.take(2) == List("index", "publishTime"), s"sticky pair must stay first, got ${after.take(2)}")
+
+    val stored = page.evaluate("() => localStorage.getItem('table:consumer-session-messages:column-order') || ''").toString
+    assert(stored.contains("topic"), s"expected a persisted message-column order, got '$stored'")
+  }
+

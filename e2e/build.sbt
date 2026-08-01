@@ -51,6 +51,11 @@ lazy val root = project
 
       // Test framework
       "org.scalatest" %% "scalatest" % scalatestVersion % Test,
+      // Parsing what the app EXPORTS (CS-28 reads the downloaded .zip's JSON back as records rather
+      // than substring-searching it). Already on the classpath via pulsar-client-admin-original;
+      // declared here, at that same version, because a test asserting on parsed JSON should not
+      // depend on which JSON library the Pulsar client happens to pull in.
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.14.2" % Test,
       // Renders ScalaTest's `-h` HTML report (see testOptions above); required on the classpath.
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8" % Test,
     ),

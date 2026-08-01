@@ -42,9 +42,18 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
     }
   }, [inputRef.current]);
 
+  // `disabled` stops typing into the native field and NOTHING else. The addons and the clear button
+  // below are plain divs with an `onClick`, so a read-only field kept two working ways to edit the
+  // value it was only supposed to be showing: an addon changes what the value MEANS (the regex
+  // `m`/`i` flags, match-case), and clear empties it outright.
+  //
+  // The addons stay on screen, because which flags are set is part of what is being read; the clear
+  // button does not, because it is nothing but a mutation.
+  const isClearable = clearable && !isReadOnly;
+
   let paddingRightRem = 12;
   addons?.forEach(() => paddingRightRem += 24);
-  if (clearable) {
+  if (isClearable) {
     paddingRightRem += 24
   }
 
@@ -66,7 +75,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
           ${s.InputInput}
           ${isError ? s.InputInputWithError : ''}
           ${iconSvg ? s.InputInputWithIcon : ''}
-          ${clearable ? s.InputInputClearable : ''}
+          ${isClearable ? s.InputInputClearable : ''}
         `}
         type={type || 'text'}
         value={value}
@@ -78,8 +87,12 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
             inputRef?.current?.blur();
           }
         }}
-        disabled={inputProps?.disabled || isReadOnly}
         {...inputProps}
+        // AFTER the spread, deliberately: callers forward native attributes through `inputProps`,
+        // and one that mentions `disabled` at all - including the `disabled: props.disabled` that
+        // evaluates to `undefined` - used to overwrite the computed value and hand a read-only
+        // field back to the user.
+        disabled={inputProps?.disabled || isReadOnly}
         data-testid={testId}
       />
       {iconSvg && (<div className={s.InputIcon}>
@@ -92,8 +105,8 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
             return (
               <div
                 key={addon.id}
-                onClick={addon.onClick}
-                className={`${s.Addon} ${addon.isEnabled ? '' : s.AddonDisabled}`}
+                onClick={isReadOnly ? undefined : addon.onClick}
+                className={`${s.Addon} ${addon.isEnabled ? '' : s.AddonDisabled} ${isReadOnly ? s.AddonReadOnly : ''}`}
                 data-tooltip-id={addon.help ? tooltipId : undefined}
                 data-tooltip-html={addon.help ? renderToStaticMarkup(<>{addon.help}</>) : undefined}
               >
@@ -104,7 +117,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
           })}
         </div>
       )}
-      {clearable && (
+      {isClearable && (
         <div className={s.Clear} onClick={() => onChange('')}>
           <SvgIcon svg={clearIcon} />
         </div>

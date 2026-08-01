@@ -12,6 +12,17 @@ case class ManagedRelativeDateTimeSpec(
 
 object ManagedRelativeDateTimeSpec:
     def fromPb(v: pb.ManagedRelativeDateTimeSpec): ManagedRelativeDateTimeSpec =
+        // Trust boundary: managed_items.proto stores `value` as int64, but a relative date-time can
+        // only ever be resolved into the api form (consumer.proto RelativeDateTime.value is int32).
+        // A library file written by a non-Dekaf client could persist a value that is negative or
+        // outside int32 range; accepting it would let the later narrowing to int32 silently truncate.
+        // Reject here (IllegalArgumentException -> INVALID_ARGUMENT on save, skipped file on scan),
+        // matching the other malformed-input guards, rather than storing a value that can never
+        // become a valid session request.
+        if v.value < 0 || v.value > Int.MaxValue then
+            throw new IllegalArgumentException(
+                s"Managed relative date-time value ${v.value} is out of range; it must be a non-negative int32 (0..${Int.MaxValue})."
+            )
         ManagedRelativeDateTimeSpec(
             value = v.value,
             unit = DateTimeUnit.fromPb(v.unit),

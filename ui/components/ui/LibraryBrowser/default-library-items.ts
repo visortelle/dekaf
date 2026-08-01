@@ -150,11 +150,16 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
       return v;
     }
     case "consumer-session-start-from": {
+      // Earliest by default: a fresh session shows the topic's existing data on Play, instead of
+      // sitting silently until new traffic happens to arrive. A non-persistent topic retains
+      // nothing and the server refuses every history-based position there, so it keeps Latest.
+      const isLiveOnlyTopic = libraryContext.pulsarResource.type === 'topic'
+        && libraryContext.pulsarResource.topicPersistency === 'non-persistent';
       const v: ManagedConsumerSessionStartFrom = {
         metadata,
         spec: {
           startFrom: {
-            type: "latestMessage"
+            type: isLiveOnlyTopic ? "latestMessage" : "earliestMessage"
           }
         }
       };

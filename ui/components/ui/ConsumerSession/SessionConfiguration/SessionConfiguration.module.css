@@ -59,3 +59,9 @@
   z-index: 1;
   display: flex;
 }
+
+.FieldError {
+  color: var(--accent-color-red);
+  font-size: x-small;
+  margin-top: 4rem;
+}

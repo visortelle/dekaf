@@ -47,17 +47,17 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                     adminClient.schemas.createSchema(request.topic, schemaInfo)
 
                     logger.info(s"Successfully created schema with name ${s.name} for topic ${request.topic}.")
-                    val status = Status(code = Code.OK.index)
+                    val status = Status(code = Code.OK.value)
                     Future.successful(CreateSchemaResponse(status = Some(status)))
                 } catch {
                     case err =>
                         logger.info(s"Failed to create schema with name ${s.name} for topic ${request.topic}. Reason: ${err.getMessage}.")
-                        val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                        val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                         Future.successful(CreateSchemaResponse(status = Some(status)))
                 }
 
             case _ =>
-                val status = Status(code = Code.INVALID_ARGUMENT.index)
+                val status = Status(code = Code.INVALID_ARGUMENT.value)
                 Future.successful(CreateSchemaResponse(status = Some(status)))
 
     override def deleteSchema(request: DeleteSchemaRequest): Future[DeleteSchemaResponse] =
@@ -69,12 +69,12 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             adminClient.schemas.deleteSchema(request.topic, request.force)
 
             logger.info(s"Successfully deleted latest schema for topic ${request.topic}.")
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(DeleteSchemaResponse(status = Some(status)))
         } catch {
             case err =>
                 logger.info(s"Failed to delete latest schema for topic ${request.topic}. Reason: ${err.getMessage}.")
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteSchemaResponse(status = Some(status)))
         }
 
@@ -84,7 +84,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
         try {
             val schemaInfoWithVersion = adminClient.schemas.getSchemaInfoWithVersion(request.topic)
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
 
             logger.info(s"Successfully got latest schema info for topic ${request.topic}.")
             Future.successful(
@@ -97,11 +97,11 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         } catch {
             case (_: PulsarAdminException.NotFoundException) =>
                 logger.info(s"No schema where found for topic ${request.topic}.")
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(GetLatestSchemaInfoResponse(status = Some(status), schemaInfo = None, schemaVersion = None))
             case (err: PulsarAdminException) =>
                 logger.info(s"Failed to get latest schema info for topic ${request.topic}. Reason: ${err.getMessage}.")
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetLatestSchemaInfoResponse(status = Some(status)))
         }
 
@@ -124,12 +124,12 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 .map(v => SchemaInfoWithVersion(schemaInfo = Some(schemaInfoToPb(v._1)), schemaVersion = v._2))
 
             logger.info(s"Successfully listed schemas for topic ${request.topic}.")
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(ListSchemasResponse(status = Some(status), schemas = schemas))
         } catch {
             case err =>
                 logger.info(s"Failed to list schemas for topic ${request.topic}. Reason: ${err.getMessage}.")
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(ListSchemasResponse(status = Some(status)))
         }
 
@@ -163,7 +163,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             )
 
         logger.info(s"Compiled ${files.size} protobuf native files.")
-        val status = Status(code = Code.OK.index)
+        val status = Status(code = Code.OK.value)
         Future.successful(CompileProtobufNativeResponse(status = Some(status), files))
 
     override def testCompatibility(request: TestCompatibilityRequest): Future[TestCompatibilityResponse] =
@@ -174,14 +174,14 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             case Some(spb) => schemaInfoFromPb(spb)
             case None =>
                 logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
-                val status = Status(code = Code.INVALID_ARGUMENT.index)
+                val status = Status(code = Code.INVALID_ARGUMENT.value)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
         val compatibilityTestResult = protobufnative.schemaCompatibility.test(pulsarAdmin = adminClient, topic = request.topic, schemaInfo = schemaInfo)
 
         logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
 
-        val status = Status(code = Code.OK.index)
+        val status = Status(code = Code.OK.value)
         Future.successful(
             TestCompatibilityResponse(
                 status = Some(status),
@@ -196,7 +196,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         request.schemaType match
             case SchemaTypePb.SCHEMA_TYPE_PROTOBUF_NATIVE =>
                 val descriptor = ProtobufNativeSchemaUtils.deserialize(request.rawSchema.toByteArray)
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(
                     GetHumanReadableSchemaResponse(
                         status = Some(status),
@@ -204,7 +204,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                     )
                 )
             case _ =>
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(
                     GetHumanReadableSchemaResponse(
                         status = Some(status),

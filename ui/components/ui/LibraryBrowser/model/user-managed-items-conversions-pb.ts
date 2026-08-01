@@ -33,6 +33,7 @@ import {
 } from "../../ConsumerSession/conversions/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
+import { messageIdError } from "../../ConsumerSession/SessionConfiguration/StartFromInput/message-id";
 import { basicMessageFilterFromPb, basicMessageFilterTargetFromPb, basicMessageFilterTargetToPb, basicMessageFilterToPb } from "../../ConsumerSession/conversions/basic-message-filter-conversions";
 import { Int32Value, Int64Value } from "google-protobuf/google/protobuf/wrappers_pb";
 import { deserializerFromPb, deserializerToPb } from "../../ConsumerSession/deserializer/deserializer";
@@ -109,6 +110,15 @@ export function managedMessageIdSpecFromPb(v: pb.ManagedMessageIdSpec): t.Manage
 }
 
 export function managedMessageIdSpecToPb(v: t.ManagedMessageIdSpec): pb.ManagedMessageIdSpec {
+  // The SAME refusal the Play path makes, at the persistence sink: the shared parser maps blank
+  // text to a zero-length byte array, so a freshly selected Message-ID mode could be SAVED blank
+  // and every later Play of that item failed. A value that cannot start a session must not be
+  // storable either.
+  const invalidReason = messageIdError(v.hexString);
+  if (invalidReason !== undefined) {
+    throw new Error(invalidReason);
+  }
+
   const specPb = new pb.ManagedMessageIdSpec();
   const messageIdPb = new consumerPb.MessageId();
   messageIdPb.setMessageId(hexStringToByteArray(v.hexString));
@@ -169,7 +179,13 @@ export function managedDateTimeSpecFromPb(v: pb.ManagedDateTimeSpec): t.ManagedD
 
 export function managedDateTimeSpecToPb(v: t.ManagedDateTimeSpec): pb.ManagedDateTimeSpec {
   const specPb = new pb.ManagedDateTimeSpec();
-  specPb.setDateTime(Timestamp.fromDate(v.dateTime));
+  // Store whole epoch seconds, dropping any sub-second part. The session request floors this exact
+  // value to seconds (startFromToPb's dateTime case), so `Timestamp.fromDate` - which would keep the
+  // millis as nanos - leaves the at-rest value richer than the session can use, and save-then-load
+  // is not stable. The second-granular picker never produces sub-second input anyway.
+  const timestampPb = new Timestamp();
+  timestampPb.setSeconds(Math.floor(v.dateTime.getTime() / 1000));
+  specPb.setDateTime(timestampPb);
   return specPb;
 }
 
@@ -291,6 +307,10 @@ export function managedConsumerSessionStartFromSpecFromPb(v: pb.ManagedConsumerS
       return { startFrom: { type: 'nthMessageAfterEarliest', n: v.getStartFromNthMessageAfterEarliest()!.getN() } };
     case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_NTH_MESSAGE_BEFORE_LATEST:
       return { startFrom: { type: 'nthMessageBeforeLatest', n: v.getStartFromNthMessageBeforeLatest()!.getN() } };
+    case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_DATA_POSITION:
+      return { startFrom: { type: 'approximateDataPosition', fraction: v.getStartFromApproximateDataPosition()!.getFraction() } };
+    case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_TIME_POSITION:
+      return { startFrom: { type: 'approximateTimePosition', fraction: v.getStartFromApproximateTimePosition()!.getFraction() } };
     case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_MESSAGE_ID:
       return { startFrom: { type: 'messageId', messageId: managedMessageIdValOrRefFromPb(v.getStartFromMessageId()!) } };
     case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_DATE_TIME:
@@ -316,6 +336,12 @@ export function managedConsumerSessionStartFromSpecToPb(v: t.ManagedConsumerSess
       break;
     case 'nthMessageBeforeLatest':
       specPb.setStartFromNthMessageBeforeLatest(new consumerPb.NthMessageBeforeLatest().setN(v.startFrom.n));
+      break;
+    case 'approximateDataPosition':
+      specPb.setStartFromApproximateDataPosition(new consumerPb.ApproximateDataPosition().setFraction(v.startFrom.fraction));
+      break;
+    case 'approximateTimePosition':
+      specPb.setStartFromApproximateTimePosition(new consumerPb.ApproximateTimePosition().setFraction(v.startFrom.fraction));
       break;
     case 'messageId':
       specPb.setStartFromMessageId(managedMessageIdValOrRefToPb(v.startFrom.messageId));

@@ -118,3 +118,34 @@ class TableSpec extends DekafSuite:
     assert(math.abs(domAfterReload - domAfterResize) <= 3,
       s"restored column rendered at ${domAfterReload}px, expected ~${domAfterResize}px (persisted width not re-applied)")
   }
+
+  test("NAV-6: a column dragged onto another lands BEFORE it, persists, and survives a reload") {
+    openTenantsTable()
+
+    def columnKeys(): List[String] =
+      page.locator("[data-testid='table-th']").all().asScala.toList.map(_.getAttribute("data-column-key"))
+
+    val before = columnKeys()
+    assert(before.indexOf("allowedClusters") > before.indexOf("namespacesCount"), s"unexpected default order: $before")
+
+    // Drag 'allowedClusters' onto 'namespacesCount': it must land immediately before it. The
+    // sticky first column (tenantName) is not draggable and must stay first throughout.
+    page.locator("[data-testid='table-th'][data-column-key='allowedClusters']")
+      .dragTo(page.locator("[data-testid='table-th'][data-column-key='namespacesCount']"))
+
+    val after = columnKeys()
+    assert(after.head == "tenantName", s"the sticky column must stay first, got $after")
+    assert(
+      after.indexOf("allowedClusters") == after.indexOf("namespacesCount") - 1,
+      s"dragged column should sit immediately before its target, got $after"
+    )
+
+    // Persisted like the widths: the order is in localStorage and survives a reload.
+    val stored = page.evaluate("() => localStorage.getItem('table:tenants-table:column-order') || ''").toString
+    assert(stored.contains("allowedClusters"), s"expected a persisted column order, got '$stored'")
+    page.reload()
+    assertThat(page.getByTestId("table-counter")).isVisible(vis(15000))
+    val reloaded = columnKeys()
+    assert(reloaded == after, s"the order must survive a reload: before=$after after=$reloaded")
+  }
+
