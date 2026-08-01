@@ -2,7 +2,9 @@
 <html lang="en">
 
 <head>
-  <base href="${publicBaseUrl}/" />
+  <#-- Origin-relative on purpose. An absolute base href breaks the UI when Dekaf is
+       opened on a host other than DEKAF_PUBLIC_BASE_URL. See #349. -->
+  <base href="${basePath}" />
 
   <meta charset="UTF-8"/>
   <meta name="viewport"
@@ -27,6 +29,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     const config = {
       publicBaseUrl: '${publicBaseUrl}',
+      basePath: '${basePath}',
       pulsarName: '${pulsarName}',
       pulsarColor: '${pulsarColor}',
       pulsarBrokerUrl: '${pulsarBrokerUrl}',

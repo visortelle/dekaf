@@ -9,6 +9,12 @@ type BuildInfo = {
 
 export type Config = {
   publicBaseUrl: string,
+  /**
+   * The path part of publicBaseUrl, starting and ending with a slash, e.g. "/" or "/dekaf/".
+   * Use it instead of publicBaseUrl to build URLs the browser has to request, so that they
+   * stay on the origin the UI is actually served from. See #349.
+   */
+  basePath: string,
   pulsarName: string,
   pulsarColor: string,
   pulsarBrokerUrl: string,
@@ -33,6 +39,7 @@ export type Value = {
 const defaultValue: Value = {
   config: {
     publicBaseUrl: '',
+    basePath: '/',
     pulsarName: '',
     pulsarColor: '',
     pulsarBrokerUrl: '',

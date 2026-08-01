@@ -47,12 +47,13 @@ const _App: React.FC<AppProps> = (props) => {
         revalidateIfStale: true,
       }}
     >
-      <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicBaseUrl.replace(/\/$/, "")}/api`}>
+      {/* Built from the current origin on purpose - see the basePath docs in AppContext. */}
+      <GrpcClient.DefaultProvider grpcWebUrl={`${window.location.origin}${props.config.basePath}api`}>
         <HealthCheckContext.DefaultProvider>
           <Notifications.DefaultProvider>
             <BrokerConfig.DefaultProvider>
               <HelmetProvider>
-                <Router basename={new URL(props.config.publicBaseUrl).pathname} />
+                <Router basename={props.config.basePath} />
               </HelmetProvider>
             </BrokerConfig.DefaultProvider>
           </Notifications.DefaultProvider>

@@ -26,6 +26,18 @@ import java.text.MessageFormat
 object HttpServer:
     private val isBinaryBuild = buildinfo.ExtraBuildInfo.isBinaryBuild
 
+    /** The path part of the public base URL, always starting and ending with a slash.
+      *
+      * The UI uses it as the HTML base href. It has to stay origin-relative: an absolute
+      * base href makes the browser resolve history.pushState URLs against a different
+      * origin whenever Dekaf is opened on another host than the configured public base
+      * URL, which fails with a SecurityError and leaves the user with a blank page.
+      */
+    def basePathOf(publicBaseUrl: String): String =
+        val path = scala.util.Try(java.net.URI(publicBaseUrl).getPath).toOption.filter(_ != null).getOrElse("")
+        val trimmed = path.stripPrefix("/").stripSuffix("/")
+        if trimmed.isEmpty then "/" else s"/$trimmed/"
+
     def createApp(appConfig: Config): Javalin =
         Javalin
             .create { config =>
@@ -62,6 +74,7 @@ object HttpServer:
                     ctx => {
                         val model = Map(
                             "publicBaseUrl" -> appConfig.publicBaseUrl.get,
+                            "basePath" -> basePathOf(appConfig.publicBaseUrl.get),
                             "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
                             "pulsarWebUrl" -> appConfig.pulsarWebUrl.get,

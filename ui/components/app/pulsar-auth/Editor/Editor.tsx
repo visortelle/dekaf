@@ -96,7 +96,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                           testId="credentials-set-current"
                           type='regular'
                           onClick={async () => {
-                            await fetch(`${config.publicBaseUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            await fetch(`${config.basePath}pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
                               .catch((err) => notifyError(`Unable to set current credentials: ${err}`));
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
@@ -107,7 +107,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                           testId="credentials-delete"
                           type='danger'
                           onClick={async () => {
-                            await fetch(`${config.publicBaseUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            await fetch(`${config.basePath}pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
                               .catch((err) => notifyError(`Unable to delete credentials: ${err}`));
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
