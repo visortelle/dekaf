@@ -1,6 +1,6 @@
 package consumer
 
-import _root_.consumer.session_config.ConsumerSessionConfig
+import _root_.consumer.session_config.{ConsumerSessionConfig, MessageDeliveryOrder}
 import _root_.pulsar_auth.RequestContext
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
@@ -21,7 +21,9 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     ResumeRequest,
     ResumeResponse,
     RunCodeRequest,
-    RunCodeResponse
+    RunCodeResponse,
+    SetDeliveryOrderRequest,
+    SetDeliveryOrderResponse
 }
 import com.typesafe.scalalogging.Logger
 import _root_.consumer.session_target.topic_selector.TopicSelector
@@ -29,13 +31,13 @@ import consumer.session_runner.{
     ConsumerSessionRunner,
     LedgerSpan,
     LogEndpoint,
-    TopicCursor,
+    TopicConsumedBounds,
     TopicPositionInputs,
     TopicPositionRow,
     brokerAnswer,
     buildTopicPositionRow,
     entryIdOf,
-    furthestCursors,
+    mergeConsumedBounds,
     storeConsumerSession,
     topicPositionToPb
 }
@@ -61,6 +63,44 @@ object ConsumerServiceImpl:
             sessionConfig = sessionConfig
         )
 
+    /** How long a session may sit without a live play stream before it is reaped. Generous on
+      * purpose: a paused tab is a session with no stream, and a user coming back from a meeting
+      * should find their session where they left it. What this bounds is the FOREVER case - a
+      * closed tab whose `beforeunload` Delete never delivered used to leave consumers connected
+      * and reconnect-looping for the life of the process. */
+    private val idleSessionTtlNanos: Long = java.util.concurrent.TimeUnit.HOURS.toNanos(1)
+
+    /** How often the janitor looks - precision is irrelevant at a 1-hour TTL. */
+    private val janitorPeriodSeconds: Long = 60
+
+    /** How long a session may sit with no live play stream AND every one of its consumers
+      * disconnected before it is reaped - the short leash beside [[idleSessionTtlNanos]].
+      *
+      * Disconnected + unwatched is dead weight. If the disconnect is a transient broker blip and
+      * a user is actually watching, their live play stream fails the first condition and protects
+      * the session; if the tab is gone AND the broker connection is gone, nothing of value is
+      * lost by reaping in minutes rather than an hour. The case this exists for can never recover
+      * at all: a consumer whose topic or namespace was force-deleted reconnect-loops on a
+      * subscription with nothing left to reconnect to, at full retry volume, for however long the
+      * session survives - an hour of that spam serves nobody.
+      *
+      * Two janitor periods, so one sweep's sighting never reaps on its own: the state must be
+      * seen to HOLD across sweeps before it is believed.
+      */
+    private val disconnectedSessionGraceNanos: Long =
+        java.util.concurrent.TimeUnit.SECONDS.toNanos(janitorPeriodSeconds * 2)
+
+    /** The most sessions this server runs at once. Each session holds consumers, receiver queues
+      * and JS contexts; without a bound, abandoned tabs alone could grow that without limit (the
+      * idle janitor trims them, but only after the TTL).
+      *
+      * AN ADMISSION BOUND, not a post-hoc count. It used to be read off the map under a lock
+      * scoped to ONE session name, and the expensive build then ran before the insertion - so
+      * concurrent creates of DIFFERENT names all observed the same pre-build size and all passed.
+      * At an empty map an arbitrary number of builds could pass a 100-session check, each free to
+      * subscribe up to 2,000 streams. See [[ConsumerServiceImpl.reserveAdmission]]. */
+    val maxActiveSessions: Int = 100
+
 
 /** @param consumerSessions
   *   the live sessions this service owns. A constructor parameter (with the production default)
@@ -70,12 +110,27 @@ object ConsumerServiceImpl:
   *   how a session is built. Injectable for the same reason: the lifecycle ORDERING - that a
   *   predecessor is stopped before its replacement subscribes, and that two creates under one name
   *   never overlap - is a property of this class and has to be testable without a broker.
+  * @param idleSessionTtlNanos
+  *   how long a session may sit with NO live play stream before the janitor stops and removes it.
+  *   A parameter only so a test can expire a session without waiting an hour.
+  * @param disconnectedSessionGraceNanos
+  *   how long a session with no live play stream AND every consumer disconnected may persist
+  *   before the janitor reaps it early - see the companion default for why that state gets the
+  *   short leash. A parameter only so a test can cross the window without waiting minutes.
+  *
+  * DEFERRED, KNOWINGLY: sessions are addressed by name alone. Any caller that knows (or guesses) a
+  * session's name can resume it, run code against its JS contexts, pause it or delete it - there
+  * is no binding to the creator's identity or connection. Fixing that is an API-surface design
+  * (an opaque capability handed back by create, or identity plumbed from auth), not a patch here.
   */
 class ConsumerServiceImpl(
     private val consumerSessions: ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner] =
         new ConcurrentHashMap[ConsumerSessionName, ConsumerSessionRunner](),
     private val makeSession: (ConsumerSessionName, ConsumerSessionConfig) => ConsumerSessionRunner =
-        ConsumerServiceImpl.makeFromRequestContext
+        ConsumerServiceImpl.makeFromRequestContext,
+    private val idleSessionTtlNanos: Long = ConsumerServiceImpl.idleSessionTtlNanos,
+    private val disconnectedSessionGraceNanos: Long = ConsumerServiceImpl.disconnectedSessionGraceNanos,
+    private val maxActiveSessions: Int = ConsumerServiceImpl.maxActiveSessions
 ) extends ConsumerServiceGrpc.ConsumerService:
     private val logger: Logger = Logger(getClass.getName)
 
@@ -102,6 +157,50 @@ class ConsumerServiceImpl(
     /** How many distinct names currently hold or wait for a lifecycle lock - a test's window into
       * the map's lifetime, and nothing else's. */
     private[consumer] def lifecycleLockCount: Int = lifecycleLocks.size
+
+    /** Builds that have taken an admission permit and have not yet installed (or abandoned) their
+      * runner. The permit has to cover the BUILD, not merely the installed runner: subscribing a
+      * session's consumers is where the threads, connections and receiver queues the cap exists to
+      * bound are actually taken, and it happens long before anything reaches the map.
+      *
+      * Counted separately from the map rather than replacing it, so the installed half stays
+      * authoritative: delete, the janitor's reap and a replacement all drop the map entry, and
+      * none of them needs to remember to hand a permit back for the arithmetic to stay right.
+      */
+    private val buildsInFlight = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /** Sessions this server is running or building right now - what [[maxActiveSessions]] bounds,
+      * and a test's window onto it. */
+    private[consumer] def admittedSessionCount: Int = consumerSessions.size + buildsInFlight.get
+
+    /** At most one Topic Positions scan per session, off the gRPC threads and inside the
+      * server-wide broker-admin budget. See [[TopicPositionScanner]]. */
+    private val topicPositionScans = consumer.session_runner.TopicPositionScanner()
+
+    /** Take one GLOBAL admission permit for a build about to start, or answer false.
+      *
+      * `allowance` is how many of the currently installed sessions this build is about to remove:
+      * 1 for a REPLACEMENT, whose predecessor is stopped a few lines below and therefore does not
+      * count against the total the replacement will produce. That is what keeps the browser's
+      * ordinary flow - it re-creates the session on every configuration change - admissible at the
+      * cap, without the replacement first dropping its predecessor's slot and racing another name
+      * for it.
+      *
+      * A CAS loop rather than a new lock: the count of installed sessions is read fresh on every
+      * attempt, so two creates that both see room compete for the same permit and exactly one of
+      * them gets it. No lock is introduced and no lock ordering changes - this is called while the
+      * caller holds its per-name lifecycle lock and takes nothing else.
+      */
+    private def reserveAdmission(allowance: Int): Boolean =
+        var reserved = false
+        var settled = false
+        while !settled do
+            val inFlight = buildsInFlight.get
+            if consumerSessions.size + inFlight - allowance >= maxActiveSessions then settled = true
+            else if buildsInFlight.compareAndSet(inFlight, inFlight + 1) then
+                reserved = true
+                settled = true
+        reserved
 
     /** Run `body` holding this name's lifecycle lock. REF-COUNTED: the entry exists only while
       * someone holds or waits for it, and the last one out removes it. The names arrive on RPC
@@ -130,9 +229,158 @@ class ConsumerServiceImpl(
                     else current
             )
 
+    /** The transport says a play stream's call died - the tab closed, the network dropped, or the
+      * client simply cancelled after a pause. Intake is PAUSED, never deleted: the ordinary UI
+      * pause cancels its stream too, and the user expects that session to still be there on the
+      * next Play. Deletion is the idle janitor's job, an hour later.
+      *
+      * Under the lifecycle lock like every other lifecycle step, so it cannot interleave
+      * target-by-target with a resume in flight; the compare-and-clear inside the runner then
+      * makes a LATE cancellation of a replaced stream a no-op instead of a stomp on the
+      * successor's play.
+      */
+    private def onPlayStreamCancelled(
+        sessionName: ConsumerSessionName,
+        observer: io.grpc.stub.StreamObserver[ResumeResponse]
+    ): Unit =
+        withLifecycleLock(sessionName) {
+            Option(consumerSessions.get(sessionName)).foreach { consumerSession =>
+                if consumerSession.releaseCancelledObserver(observer) && !consumerSession.isStreamCompleted then
+                    logger.info(s"Play stream for consumer session $sessionName was cancelled by the transport. Pausing its intake.")
+                    Try(consumerSession.pause()).failed.foreach(err =>
+                        logger.warn(s"Consumer session $sessionName could not be fully paused after its stream was cancelled. ${err.getMessage}")
+                    )
+            }
+        }
+
+    /** When the janitor FIRST saw each still-installed runner with no live play stream AND every
+      * consumer disconnected - the early-reap rule's memory between sweeps. An entry is cleared
+      * the moment a sweep sees the state break (a consumer reconnected, a stream re-wired), so
+      * the grace window measures a state that HELD, not one that flickered. Keyed by name but
+      * bound to the runner instance: a replacement under the same name starts its own window.
+      * Only [[reapIdleSessions]] touches this map - one janitor thread, or a test driving it
+      * directly - and every sweep prunes the entries of sessions that are gone, so client-chosen
+      * names cannot accumulate here.
+      */
+    private val disconnectedIdleFirstSeenNanos = new ConcurrentHashMap[ConsumerSessionName, (ConsumerSessionRunner, Long)]()
+
+    /** Stop and remove every session no client is coming back for. TWO rules say when:
+      *
+      *   - THE TTL: no live play stream for [[idleSessionTtlNanos]]. Generous on purpose - a
+      *     paused tab is a session with no stream, and its user may just be in a meeting.
+      *   - THE SHORT LEASH: no live play stream AND every consumer of every target answering
+      *     `isConnected == false` (a cheap in-memory flag, not a broker round trip), both seen to
+      *     hold across sweeps for [[disconnectedSessionGraceNanos]]. Disconnected + unwatched is
+      *     dead weight: a watching user's live stream protects a session through any broker blip,
+      *     and in the worst case - the session's topics force-deleted under it - the consumers
+      *     reconnect-loop on topics that can never come back, so the remaining TTL buys nothing
+      *     but an hour of retry spam.
+      *
+      * This is the backstop for clients that vanish without a Delete RPC: the browser sends it
+      * from `beforeunload`, where delivery is best-effort, so a closed tab could leave its
+      * consumers connected - and, once their namespace was deleted, reconnect-looping - for the
+      * life of the process. Each expired name is re-checked under its lifecycle lock, so a session
+      * the user resumes between the scan and the reap is left exactly as their resume wired it.
+      *
+      * Package-private and time-injected so a test can expire sessions deterministically; the
+      * scheduled task below is the only production caller.
+      */
+    private[consumer] def reapIdleSessions(nowNanos: Long): Vector[ConsumerSessionName] =
+        def noLiveStreamFor(runner: ConsumerSessionRunner, windowNanos: Long): Boolean =
+            runner.reapableSinceNanos.exists(since => nowNanos - since >= windowNanos)
+
+        // "Every consumer of every target says it is not connected" - and there IS at least one.
+        // A session holding no consumers at all holds nothing on the broker, so the short leash
+        // has no business with it; the TTL remains its only bound.
+        def fullyDisconnected(runner: ConsumerSessionRunner): Boolean =
+            val consumers = runner.targets.values.flatMap(_.consumers.values)
+            consumers.nonEmpty && consumers.forall(!_.isConnected)
+
+        // Entries of sessions that no longer exist (deleted, replaced, reaped) go first, then the
+        // installed sessions' observations are brought up to date inside the sweep below.
+        disconnectedIdleFirstSeenNanos.entrySet.removeIf(entry => consumerSessions.get(entry.getKey) ne entry.getValue._1)
+
+        // The short leash's whole verdict. The first-seen clause is the SUSTAINED requirement: a
+        // single sweep's sighting records the state but never reaps it - it must still hold a
+        // full grace window later, with `reapableSinceNanos` (which any resume in between would
+        // have reset) confirming nobody watched for that window either.
+        def earlyExpired(sessionName: ConsumerSessionName, runner: ConsumerSessionRunner): Boolean =
+            noLiveStreamFor(runner, disconnectedSessionGraceNanos)
+                && Option(disconnectedIdleFirstSeenNanos.get(sessionName))
+                    .exists((seen, firstSeen) => (seen eq runner) && nowNanos - firstSeen >= disconnectedSessionGraceNanos)
+                && fullyDisconnected(runner)
+
+        def expired(sessionName: ConsumerSessionName, runner: ConsumerSessionRunner): Boolean =
+            noLiveStreamFor(runner, idleSessionTtlNanos) || earlyExpired(sessionName, runner)
+
+        consumerSessions.asScala.toVector.flatMap { (sessionName, candidate) =>
+            // This sweep's observation first, so the sustained clock is fed by the same sweeps
+            // that read it: note a first sighting, keep an existing one, forget a broken one.
+            if candidate.reapableSinceNanos.isDefined && fullyDisconnected(candidate) then
+                disconnectedIdleFirstSeenNanos.compute(
+                    sessionName,
+                    (_, existing) => if existing != null && (existing._1 eq candidate) then existing else (candidate, nowNanos)
+                )
+            else disconnectedIdleFirstSeenNanos.remove(sessionName)
+
+            Option.when(expired(sessionName, candidate)) {
+                withLifecycleLock(sessionName) {
+                    // Same runner, still expired, now that nothing else can be mid-lifecycle.
+                    Option(consumerSessions.get(sessionName)).filter(r => (r eq candidate) && expired(sessionName, r)) match
+                        case Some(runner) =>
+                            val reason =
+                                if noLiveStreamFor(runner, idleSessionTtlNanos) then
+                                    s"no live play stream for over ${idleSessionTtlNanos / 1_000_000_000L}s"
+                                else
+                                    s"no live play stream and every consumer disconnected for over ${disconnectedSessionGraceNanos / 1_000_000_000L}s"
+                            logger.info(s"Reaping consumer session $sessionName: $reason.")
+                            Try(runner.stop()).failed.foreach(err =>
+                                logger.warn(s"Idle consumer session $sessionName could not be fully released. ${err.getMessage}")
+                            )
+                            consumerSessions.remove(sessionName, runner)
+                            disconnectedIdleFirstSeenNanos.remove(sessionName)
+                            Some(sessionName)
+                        case None => None
+                }
+            }.flatten
+        }
+
+    // The janitor itself: one shared maintenance thread, one scan a minute. Never cancelled - the
+    // service lives for the process. It also drives the cleanup quarantine's retry: a consumer that
+    // refused to unsubscribe or close is retained rather than forgotten, and this is the only thing
+    // that ever calls it again - see [[consumer.session_runner.CleanupQuarantine]].
+    ConsumerSessionRunner.maintenanceScheduler.scheduleWithFixedDelay(
+        () =>
+            Try(reapIdleSessions(System.nanoTime())).failed.foreach(err => logger.warn(s"Idle-session sweep failed. ${err.getMessage}"))
+            Try(consumer.session_runner.consumerCleanupQuarantine.retryPending()).failed
+                .foreach(err => logger.warn(s"Retrying quarantined consumer cleanups failed. ${err.getMessage}"))
+        ,
+        ConsumerServiceImpl.janitorPeriodSeconds,
+        ConsumerServiceImpl.janitorPeriodSeconds,
+        java.util.concurrent.TimeUnit.SECONDS
+    )
+
+    /** Whether the transport has already reported this call dead. Only a real server-streaming
+      * observer can say; a plain one (a test's, or a unary path) never claims to be cancelled. */
+    private def isCancelled(observer: io.grpc.stub.StreamObserver[ResumeResponse]): Boolean =
+        observer match
+            case sco: io.grpc.stub.ServerCallStreamObserver[ResumeResponse @unchecked] => sco.isCancelled
+            case _                                                                     => false
+
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val sessionName = request.consumerName
         logger.info(s"Resuming consumer session: $sessionName")
+
+        // FIRST, while gRPC still allows handler registration: hear about the call dying. Without
+        // this, a closed tab or dropped connection leaves the session consuming and acknowledging
+        // into a dead stream until something else stops it. Installing the handler also switches
+        // grpc-java from THROWING on sends into a cancelled call to silently dropping them, which
+        // is what every Pulsar listener thread pushing into this observer wants. Plain observers
+        // (tests) simply do without.
+        responseObserver match
+            case observer: io.grpc.stub.ServerCallStreamObserver[ResumeResponse @unchecked] =>
+                observer.setOnCancelHandler(() => onPlayStreamCancelled(sessionName, responseObserver))
+            case _ => ()
 
         // For the cases where the observer was never wired into anything: nothing else can be
         // writing to it, so answering it directly is safe here and only here.
@@ -171,6 +419,27 @@ class ConsumerServiceImpl(
                     // gate is sticky, so wiring the observer in would swallow every response;
                     // the client's remedy is to create the session again.
                     answerAndClose(s"Consumer session $sessionName is closed and cannot be resumed. Create the session again.")
+                // THE CANCELLATION THAT ARRIVED FIRST. The cancel callback above has to be
+                // installed before this lock is taken - gRPC only allows handler registration
+                // early - and the observer is wired into the runner only inside the resume below.
+                // A call that dies in that window (or while another lifecycle operation holds this
+                // lock) runs `onPlayStreamCancelled` against a runner this observer was never
+                // wired into: the compare-and-clear finds no match, answers false, and does
+                // nothing. Resuming anyway would then wire an ALREADY-DEAD stream, open every
+                // target's intake and clear the idle clock - so messages fail into a stream nobody
+                // holds and are nacked forever, while the janitor can no longer see the session as
+                // abandoned and its subscription pins broker resources for the life of the process.
+                //
+                // Rechecked HERE, under the lifecycle lock, which is what makes the window empty:
+                // a cancellation landing after this read must queue behind us for the lock and
+                // will then find the observer wired. Nothing is answered on the observer - the
+                // call is gone - and the session is left exactly as it was, so a predecessor play
+                // stream (a second tab) keeps running and an idle session stays reapable.
+                case Some(consumerSession) if isCancelled(responseObserver) =>
+                    logger.info(
+                        s"The play stream for consumer session $sessionName was cancelled before it could be wired; " +
+                            "leaving the session as it was."
+                    )
                 case Some(consumerSession) =>
                     try
                         // BOTH request flags, not just the debug one: `include_consumer_stats` is
@@ -208,11 +477,25 @@ class ConsumerServiceImpl(
         val sessionName = request.consumerName
         logger.info(s"Pausing consumer session $sessionName")
 
+        // ADVISORY FIRST, before the lifecycle lock: close the intake the moment the user asks.
+        // The serialized pause below can queue behind a resume still arming a wide session (or the
+        // idle janitor holding this name), and for that whole wait the session kept delivering into
+        // a browser whose user had already clicked Pause. Pausing is idempotent and every step is
+        // safe against a runner in any state (gates are flags, arbiter holds are per-reason, a
+        // consumer mid-close just fails its hold) - so this is best-effort and SILENT: the
+        // serialized phase below remains the authoritative answer, re-pausing whatever a concurrent
+        // resume may have re-opened in between, and ITS verdict is what the client hears. Nothing
+        // is lost in the window either way: a closed gate refuses and hands back for redelivery,
+        // and the limiter's backlog waits unacknowledged.
+        Option(consumerSessions.get(sessionName)).foreach(session => Try(session.pause()))
+
         // Serialized with create, delete and resume under the same name. Pause used to take no
         // lock, so on a multi-target session it could interleave TARGET BY TARGET with a resume -
         // both answering OK while half the targets finished paused and half running, with the
         // limiter believing whichever call it heard last. The browser makes that race ordinary: a
-        // quick hidden-then-visible tab abandons its pending pause and immediately resumes.
+        // quick hidden-then-visible tab abandons its pending pause and immediately resumes. The
+        // advisory above narrows that race to a transient (final state is decided HERE, last in
+        // the lock queue); it does not replace the serialization.
         val status: Status = withLifecycleLock(sessionName) {
             Option(consumerSessions.get(sessionName)) match
                 case None =>
@@ -226,32 +509,164 @@ class ConsumerServiceImpl(
         }
         Future.successful(PauseResponse(status = Some(status)))
 
+    /** Change the delivery order of a session that is ALREADY RUNNING - the actionable half of the
+      * Guaranteed stall disclosure.
+      *
+      * A DEDICATED RPC rather than a flag on Resume: this mutates a live session, and a
+      * session-mutating operation must be asked for explicitly instead of riding along with
+      * pressing Play. It changes the LIVE session only; the saved configuration is the client's to
+      * update if it wants the next Play to start this way.
+      *
+      * Serialized under the same per-name lifecycle lock as create, delete, pause and resume: the
+      * switch releases held messages down the ordinary delivery path, so it must not interleave
+      * with a resume rewiring the observers those messages are about to be written to, or with a
+      * delete stopping the runner underneath it. Inside the runner it then takes the session's
+      * ORDERING lock, which is the same order `resume` already establishes (lifecycle lock, then
+      * ordering lock, then the merge's own monitor) - no new lock ordering is introduced.
+      */
+    override def setDeliveryOrder(request: SetDeliveryOrderRequest): Future[SetDeliveryOrderResponse] =
+        val sessionName = request.consumerName
+
+        def answer(code: Code, message: String = ""): Future[SetDeliveryOrderResponse] =
+            if code != Code.OK then logger.warn(message)
+            Future.successful(SetDeliveryOrderResponse(status = Some(Status(code = code.value, message = message))))
+
+        // THE WIRE VALUE IS CHECKED BEFORE THE CONVERSION, and that is load-bearing.
+        // `MessageDeliveryOrder.fromPb` resolves both UNSPECIFIED and an unrecognized future value
+        // to the product default (Best effort) - right for a session CONFIGURATION, where absence
+        // means "the product default", and exactly wrong for a MUTATION, where it would turn
+        // "the client said nothing" into "the client asked to switch to Best effort".
+        request.messageDeliveryOrder match
+            case consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED =>
+                answer(Code.INVALID_ARGUMENT, s"message_delivery_order names no order. Say which order session $sessionName should switch to.")
+            case unknown: consumerPb.MessageDeliveryOrder.Unrecognized =>
+                answer(
+                    Code.INVALID_ARGUMENT,
+                    s"message_delivery_order ${unknown.unrecognizedValue} is not a delivery order this server knows. Upgrade the server, or choose a known order."
+                )
+            case wire =>
+                val requested = MessageDeliveryOrder.fromPb(wire)
+                logger.info(s"Setting the delivery order of consumer session $sessionName to $requested")
+
+                val status: Status = withLifecycleLock(sessionName) {
+                    Option(consumerSessions.get(sessionName)) match
+                        case None =>
+                            val msg = s"No such consumer session: $sessionName"
+                            logger.warn(msg)
+                            Status(code = Code.FAILED_PRECONDITION.value, message = msg)
+                        case Some(consumerSession) if consumerSession.isStreamCompleted =>
+                            val msg = s"Consumer session $sessionName is closed; its delivery order cannot be changed. Create the session again."
+                            logger.warn(msg)
+                            Status(code = Code.FAILED_PRECONDITION.value, message = msg)
+                        case Some(consumerSession) =>
+                            Try(consumerSession.setDeliveryOrder(requested)) match
+                                case Success(_) => Status(code = Code.OK.value)
+                                case Failure(err) =>
+                                    logger.warn(s"Refused to change the delivery order of consumer session $sessionName. ${err.getMessage}")
+                                    Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
+                }
+                Future.successful(SetDeliveryOrderResponse(status = Some(status)))
+
+    /** Why this CREATE REQUEST is malformed, or `None` - everything decidable from the request
+      * ALONE, before a single broker call.
+      *
+      * These same rules are also enforced inside `ConsumerSessionRunner.make`, and deliberately so:
+      * there they guard the build, here they let the refusal be classified honestly. A request that
+      * asks for a negative skip, a fraction of NaN, more targets than a session may run, or a start
+      * position that cannot describe a compacted target is WRONG - retrying it unchanged can never
+      * work - and answering FAILED_PRECONDITION told the client the opposite. Deciding it here also
+      * means a malformed request never reaches the broker at all.
+      */
+    private def malformedRequestReason(sessionName: ConsumerSessionName, sessionConfig: ConsumerSessionConfig): Option[String] =
+        val enabledTargets = sessionConfig.targets.filter(_.isEnabled)
+        // Indexed over ENABLED targets, exactly as `make` counts them - a disabled target is not
+        // part of this session and its consumption mode is not this session's contradiction.
+        val readCompactedTargetIndexes = enabledTargets.zipWithIndex.collect {
+            case (targetConfig, targetIndex) if targetConfig.consumptionMode.mode
+                    .isInstanceOf[_root_.consumer.session_target.consumption_mode.modes.ReadCompactedConsumptionMode] =>
+                targetIndex
+        }
+        ConsumerSessionRunner
+            .enabledTargetCountRejectionReason(sessionName, enabledTargets.size)
+            .orElse(consumer.session_runner.startFromCountRejectionReason(sessionConfig.startFrom))
+            .orElse(consumer.session_runner.startFromFractionRejectionReason(sessionConfig.startFrom))
+            .orElse(consumer.session_runner.readCompactedStartFromRejectionReason(sessionConfig.startFrom, readCompactedTargetIndexes))
+
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
+        val sessionName = request.consumerName
+
+        def invalidArgument(message: String): Future[CreateConsumerResponse] =
+            logger.warn(s"Refusing to create consumer session $sessionName: $message")
+            Future.successful(CreateConsumerResponse(status = Some(Status(code = Code.INVALID_ARGUMENT.value, message = message))))
+
+        // THE REQUEST IS JUDGED BEFORE THE WORLD IS. Everything below this point can fail because
+        // of the broker or of what this server is already running, and that is FAILED_PRECONDITION;
+        // everything above it is the request itself, and that is INVALID_ARGUMENT. They used to be
+        // one status, so a client could not tell "fix your request" from "try again later".
+        request.consumerSessionConfig match
+            case None => invalidArgument("consumer_session_config is required, but the request carried none.")
+            case Some(configPb) =>
+                Try(ConsumerSessionConfig.fromPb(configPb)) match
+                    case Failure(err) =>
+                        invalidArgument(s"consumer_session_config could not be read. ${Option(err.getMessage).getOrElse(err.getClass.getSimpleName)}")
+                    case Success(sessionConfig) =>
+                        malformedRequestReason(sessionName, sessionConfig) match
+                            case Some(reason) => invalidArgument(reason)
+                            case None         => buildConsumerSession(sessionName, sessionConfig)
+
+    /** The half that can fail because of the broker, the topology or this server's own load. Every
+      * failure here is FAILED_PRECONDITION: the request was fine, the world was not. */
+    private def buildConsumerSession(
+        sessionName: ConsumerSessionName,
+        sessionConfig: ConsumerSessionConfig
+    ): Future[CreateConsumerResponse] =
         Try {
-            val sessionName = request.consumerName
             logger.info(s"Creating consumer session. $sessionName")
 
-            val sessionConfig = ConsumerSessionConfig.fromPb(request.consumerSessionConfig.get)
-
             withLifecycleLock(sessionName) {
-                // STOP THE PREDECESSOR FIRST. The replacement subscribes under the very same
-                // exclusive, non-durable subscription, so on the same topic a still-live
-                // predecessor refuses it - and the failure arrived long before the atomic map swap
-                // that was supposed to release it. The browser re-creates a session whenever its
-                // configuration changes, so this was the ordinary path, not a corner.
-                //
-                // Removing before building also means a build that FAILS leaves the name empty
-                // rather than leaving the old session running behind a client that has moved on:
-                // the user asked for this name to hold something else, and is told it does not.
-                Option(consumerSessions.remove(sessionName)).foreach(previous =>
-                    Try(previous.stop()).failed.foreach(err =>
-                        logger.warn(s"The consumer session being replaced under $sessionName could not be fully released. ${err.getMessage}")
+                // ADMISSION BEFORE THE BUILD, and the permit is held across ALL of it. The check
+                // used to sit between the predecessor's removal and the build, reading a map size
+                // that every concurrent create of a different name read identically - so the cap
+                // bounded only what had already finished building, which is nothing anybody is
+                // protected by. `allowance = 1` for a replacement: its predecessor is stopped just
+                // below and does not count against the total this build will produce.
+                val replacing = consumerSessions.containsKey(sessionName)
+                if !reserveAdmission(allowance = if replacing then 1 else 0) then
+                    throw new RuntimeException(
+                        s"This server is already running $admittedSessionCount consumer sessions, its limit. " +
+                            "Delete sessions you no longer need (abandoned ones expire on their own) and try again."
                     )
-                )
 
-                // Still not a bare `put`: nothing but this lock stands between two creates, and a
-                // predecessor that somehow survives one must be stopped rather than abandoned.
-                storeConsumerSession(consumerSessions, sessionName, makeSession(sessionName, sessionConfig))
+                try
+                    // STOP THE PREDECESSOR FIRST. The replacement subscribes under the very same
+                    // exclusive, non-durable subscription, so on the same topic a still-live
+                    // predecessor refuses it - and the failure arrived long before the atomic map
+                    // swap that was supposed to release it. The browser re-creates a session
+                    // whenever its configuration changes, so this was the ordinary path, not a
+                    // corner.
+                    //
+                    // Removing before building also means a build that FAILS leaves the name empty
+                    // rather than leaving the old session running behind a client that has moved
+                    // on: the user asked for this name to hold something else, and is told it does
+                    // not.
+                    Option(consumerSessions.remove(sessionName)).foreach(previous =>
+                        Try(previous.stop()).failed.foreach(err =>
+                            logger.warn(s"The consumer session being replaced under $sessionName could not be fully released. ${err.getMessage}")
+                        )
+                    )
+
+                    // Still not a bare `put`: nothing but this lock stands between two creates, and
+                    // a predecessor that somehow survives one must be stopped rather than
+                    // abandoned.
+                    storeConsumerSession(consumerSessions, sessionName, makeSession(sessionName, sessionConfig))
+                finally
+                    // The permit goes back LAST, after the runner is in the map - the map entry is
+                    // what counts from here. Releasing it first would open a window in which the
+                    // session is admitted by nothing at all. On the failure path nothing was
+                    // installed, so this is the release that keeps a refused build from
+                    // permanently costing the server a session slot.
+                    buildsInFlight.decrementAndGet()
+                    ()
             }
         } match
             case Success(_) =>
@@ -352,7 +767,7 @@ class ConsumerServiceImpl(
     private def gatherTopicPosition(
         adminClient: PulsarAdmin,
         topicFqn: String,
-        cursor: Option[TopicCursor]
+        consumedBounds: Option[TopicConsumedBounds]
     ): TopicPositionRow =
         Try {
             val first = brokerAnswer("examining the first entry", topicFqn)(
@@ -370,7 +785,8 @@ class ConsumerServiceImpl(
                 topicFqn = topicFqn,
                 first = first,
                 last = last,
-                cursor = cursor,
+                firstConsumed = consumedBounds.map(_.first),
+                cursor = consumedBounds.map(_.last),
                 ledgers = ledgers,
                 currentLedgerEntries = stats.currentLedgerEntries,
                 retainedEntries = stats.numberOfEntries,
@@ -387,7 +803,8 @@ class ConsumerServiceImpl(
                         topicFqn = topicFqn,
                         first = None,
                         last = None,
-                        cursor = cursor,
+                        firstConsumed = consumedBounds.map(_.first),
+                        cursor = consumedBounds.map(_.last),
                         ledgers = Vector.empty,
                         currentLedgerEntries = 0,
                         retainedEntries = 0,
@@ -402,24 +819,39 @@ class ConsumerServiceImpl(
         // something to ask about. A client polling this tab before the session has been started is
         // the ordinary case, not an error path, and resolving the request context up here made even
         // that answer impossible to produce - or to test - without a broker behind it.
-        Option(consumerSessions.get(sessionName)) match
+        //
+        // A TERMINAL RUNNER IS "GONE" TOO, and answering that is what lets a polling client stop.
+        // The tab polls once a second for as long as it believes the session exists, and a runner
+        // whose stream has ended - stopped, replaced, or failed out of a resume - is unreachable
+        // for good (the terminal gate is sticky; the client's remedy is to create the session
+        // again). It stays in the map until delete or the janitor removes it, and while it did the
+        // poll answered OK and went on scanning the broker on its behalf indefinitely.
+        Option(consumerSessions.get(sessionName)).filterNot(_.isStreamCompleted) match
             case None =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = s"No such consumer session: $sessionName")
                 Future.successful(GetTopicPositionsResponse(status = Some(status)))
             case Some(consumerSession) =>
+                // RESOLVED HERE, ON THE gRPC THREAD, and passed into the scan: the request context
+                // is a thread-local, so it exists only for as long as this call is on this thread.
                 val adminClient = RequestContext.pulsarAdmin.get()
 
                 // One row per PHYSICAL topic, which is what the session actually subscribes to and
                 // the only thing `examineMessage` will answer for - it refuses a partitioned parent
                 // outright (405).
-                val cursors = furthestCursors(consumerSession.targets.values.map(_.consumerListener.cursors))
+                val consumedBounds = mergeConsumedBounds(consumerSession.targets.values.map(_.consumerListener.consumedBounds))
                 val topicFqns = consumerSession.targets.values.flatMap(_.consumers.keys).toVector.distinct.sorted
 
-                Try(topicFqns.map(topicFqn => gatherTopicPosition(adminClient, topicFqn, cursors.get(topicFqn)))) match
-                    case Success(rows) =>
-                        val status: Status = Status(code = Code.OK.value)
-                        Future.successful(GetTopicPositionsResponse(status = Some(status), positions = rows.map(topicPositionToPb)))
-                    case Failure(err) =>
-                        logger.warn(s"Could not read topic positions for $sessionName. ${err.getMessage}")
-                        val status: Status = Status(code = Code.UNKNOWN.value, message = err.getMessage)
-                        Future.successful(GetTopicPositionsResponse(status = Some(status)))
+                // OFF THIS THREAD, BOUNDED, AND COALESCED - see [[TopicPositionScanner]]. The rows
+                // used to be gathered serially, right here, before an already-completed Future was
+                // returned: a 2,000-topic session held a service thread for about 6,000 admin calls
+                // that no client deadline could cancel, and the tab's once-a-second poll started
+                // another sweep on top of every sweep still running.
+                topicPositionScans
+                    .scan(sessionName, topicFqns, topicFqn => gatherTopicPosition(adminClient, topicFqn, consumedBounds.get(topicFqn)))
+                    .transform {
+                        case Success(rows) =>
+                            Success(GetTopicPositionsResponse(status = Some(Status(code = Code.OK.value)), positions = rows.map(topicPositionToPb)))
+                        case Failure(err) =>
+                            logger.warn(s"Could not read topic positions for $sessionName. ${err.getMessage}")
+                            Success(GetTopicPositionsResponse(status = Some(Status(code = Code.UNKNOWN.value, message = err.getMessage))))
+                    }(scala.concurrent.ExecutionContext.parasitic)

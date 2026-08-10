@@ -18,6 +18,32 @@ import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
   */
 class CsTopicPositionsSpec extends DekafSuite:
 
+  /** Count the real grpc-web calls without delaying or replacing them. The script is installed
+    * before navigation because a page evaluation would be discarded by the navigation itself. */
+  private def installTopicPositionsRequestCounter(): Unit =
+    context.addInitScript(
+      """(() => {
+        |  const marker = 'ConsumerService/GetTopicPositions';
+        |  const openOrig = XMLHttpRequest.prototype.open;
+        |  const sendOrig = XMLHttpRequest.prototype.send;
+        |  XMLHttpRequest.prototype.open = function (method, url) {
+        |    this.__isTopicPositionsRequest = String(url).indexOf(marker) !== -1;
+        |    return openOrig.apply(this, arguments);
+        |  };
+        |  XMLHttpRequest.prototype.send = function () {
+        |    if (this.__isTopicPositionsRequest) {
+        |      window.__topicPositionsRequestCount = (window.__topicPositionsRequestCount || 0) + 1;
+        |    }
+        |    return sendOrig.apply(this, arguments);
+        |  };
+        |})();""".stripMargin
+    )
+
+  private def topicPositionsRequestCount: Int =
+    page.evaluate("() => window.__topicPositionsRequestCount || 0") match
+      case n: Number => n.intValue()
+      case value     => throw new AssertionError(s"Topic Positions request counter is not numeric: $value")
+
   test("CS-TP-1: before the session is started the tab says so - no table, no raw server error") {
     // The tab is reachable the moment the page loads, so opening it before Play is the ORDINARY
     // case. Nothing exists to ask about yet: no poll is armed (the jest suite pins the zero-RPC
@@ -41,6 +67,37 @@ class CsTopicPositionsSpec extends DekafSuite:
     assertThat(page.getByText("__dekaf_")).not().isVisible()
   }
 
+  test("CS-TP-2: first and last consumed are tracked before Topic Positions is opened") {
+    // Read the broker's real ids before starting Dekaf. They are the end-to-end oracle: a unit
+    // fixture cannot prove the id survived Pulsar -> listener bookkeeping -> protobuf -> browser.
+    val (t, ns, topic) = fixtures.freshTopicParts()
+    val topicFqn = s"persistent://$t/$ns/$topic"
+    fixtures.produceStrings(topicFqn, 5)
+    val retained = fixtures.readAllMessages(topicFqn)
+    val expectedFirst = fixtures.messageIdHex(retained.head.getMessageId)
+    val expectedLast = fixtures.messageIdHex(retained.last.getMessageId)
+
+    val cs = ConsumerSessionPage(page)
+    cs.openForTopic(t, ns, topic)
+    cs.closeTools()
+    cs.setStartFrom("Earliest message")
+    cs.play()
+    cs.awaitLoaded(5)
+    // More tools is deliberately closed before consumption. Listener-side history must not depend on the
+    // expensive broker-inspection tab having mounted or polled while consumption happened.
+
+    cs.openTools()
+    val tools = ToolsPanel(page)
+    assertThat(tools.topicPositionsCell(topicFqn, TopicPositionsColumn.FirstConsumedId)).hasText(expectedFirst)
+    assertThat(tools.topicPositionsCell(topicFqn, TopicPositionsColumn.LastConsumedId)).hasText(expectedLast)
+
+    val cells = tools.topicPositionsCells(topicFqn)
+    assert(cells(TopicPositionsColumn.FirstConsumedPublished).trim != "-",
+      s"first consumed published time should be known, got '${cells(TopicPositionsColumn.FirstConsumedPublished)}'")
+    assert(cells(TopicPositionsColumn.LastConsumedPublished).trim != "-",
+      s"last consumed published time should be known, got '${cells(TopicPositionsColumn.LastConsumedPublished)}'")
+  }
+
   test("CS-TP-3: a running session reports each partition, and the entry counts ADD UP") {
     // The arithmetic check that only a real broker can settle: three partitions, 30 messages, and
     // the per-partition entry totals must sum to exactly what was published.
@@ -49,6 +106,7 @@ class CsTopicPositionsSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
+    cs.closeTools()
     cs.setStartFrom("Earliest message")
     cs.play()
     cs.awaitLoaded(30)
@@ -65,11 +123,19 @@ class CsTopicPositionsSpec extends DekafSuite:
     // test the refresh cycle's phase, not the arithmetic.
     assertThat(tools.topicPositionsRow("All topics")).containsText("30 / 30")
 
-    // "ordinal / total" in the ENTRIES READ column (cell 1 - consumption columns lead the table);
-    // the totals are what must reconcile.
+    // "ordinal / total" in the RETAINED ENTRY POSITION column; the denominators are what must
+    // reconcile with the number published.
     val totals = partitions.map { p =>
       val cells = tools.topicPositionsCells(p)
-      cells(1).split('/').last.trim.replace(",", "").toInt
+      assert(cells(TopicPositionsColumn.FirstConsumedId).trim != "-",
+        s"$p should report its first consumed id after reading with the tab closed")
+      assert(cells(TopicPositionsColumn.FirstConsumedPublished).trim != "-",
+        s"$p should report its first consumed publish time after reading with the tab closed")
+      assert(cells(TopicPositionsColumn.LastConsumedId).trim != "-",
+        s"$p should report its last consumed id after reading with the tab closed")
+      assert(cells(TopicPositionsColumn.LastConsumedPublished).trim != "-",
+        s"$p should report its last consumed publish time after reading with the tab closed")
+      cells(TopicPositionsColumn.RetainedEntryPosition).split('/').last.trim.replace(",", "").toInt
     }
     assert(
       totals.sum == 30,
@@ -78,8 +144,20 @@ class CsTopicPositionsSpec extends DekafSuite:
 
     // The ALL TOPICS row sums what the per-partition rows show - the whole session, one line.
     val aggregate = tools.topicPositionsCells("All topics")
-    assert(aggregate(1).replace(",", "").contains("30 / 30"), s"aggregate entries read should be 30 / 30, got '${aggregate(1)}'")
-    assert(aggregate(2).trim == "0", s"aggregate entries left should be 0, got '${aggregate(2)}'")
+    assert(aggregate(TopicPositionsColumn.RetainedEntryPosition).replace(",", "").contains("30 / 30"),
+      s"aggregate retained entry position should be 30 / 30, got '${aggregate(TopicPositionsColumn.RetainedEntryPosition)}'")
+    assert(aggregate(TopicPositionsColumn.EntriesAfterCursor).trim == "0",
+      s"aggregate entries after cursor should be 0, got '${aggregate(TopicPositionsColumn.EntriesAfterCursor)}'")
+    // Message ids from independent partition logs cannot be combined honestly, but their publish
+    // time envelope can: earliest first-consumed and latest last-consumed.
+    assert(aggregate(TopicPositionsColumn.FirstConsumedId).trim == "-",
+      s"aggregate first consumed id should be blank, got '${aggregate(TopicPositionsColumn.FirstConsumedId)}'")
+    assert(aggregate(TopicPositionsColumn.LastConsumedId).trim == "-",
+      s"aggregate last consumed id should be blank, got '${aggregate(TopicPositionsColumn.LastConsumedId)}'")
+    assert(aggregate(TopicPositionsColumn.FirstConsumedPublished).trim != "-",
+      s"aggregate first consumed published time should be known")
+    assert(aggregate(TopicPositionsColumn.LastConsumedPublished).trim != "-",
+      s"aggregate last consumed published time should be known")
   }
 
   test("CS-TP-4: a figure the server does not know is BLANK, not 0%") {
@@ -103,13 +181,88 @@ class CsTopicPositionsSpec extends DekafSuite:
 
     val cells = tools.topicPositionsCells(topicFqn)
     // The topic's own endpoints ARE known.
-    assert(cells(6).trim.nonEmpty && cells(6).trim != "-", s"first message id should be known, got '${cells(6)}'")
-    assert(cells(9).trim.nonEmpty && cells(9).trim != "-", s"last published should be known, got '${cells(9)}'")
-    // The session's position is not - including the lag clock, which without a cursor is a guess.
-    assert(cells(10).trim == "-", s"cursor id should be blank before anything is read, got '${cells(10)}'")
-    assert(cells(4).trim == "-", s"'behind' should be blank without a cursor, got '${cells(4)}'")
-    assert(cells(5).trim == "-", s"% of time range should be blank, got '${cells(5)}'")
-    assert(cells(3).trim == "-", s"% of entries should be blank, got '${cells(3)}'")
+    assert(cells(TopicPositionsColumn.OldestRetainedId).trim.nonEmpty && cells(TopicPositionsColumn.OldestRetainedId).trim != "-",
+      s"oldest retained message id should be known, got '${cells(TopicPositionsColumn.OldestRetainedId)}'")
+    assert(
+      cells(TopicPositionsColumn.NewestRetainedPublished).trim.nonEmpty &&
+        cells(TopicPositionsColumn.NewestRetainedPublished).trim != "-",
+      s"newest retained published time should be known, got '${cells(TopicPositionsColumn.NewestRetainedPublished)}'")
+    // The session has consumed nothing - neither bound nor progress may be invented.
+    assert(cells(TopicPositionsColumn.FirstConsumedId).trim == "-",
+      s"first consumed id should be blank before anything is read, got '${cells(TopicPositionsColumn.FirstConsumedId)}'")
+    assert(cells(TopicPositionsColumn.FirstConsumedPublished).trim == "-",
+      s"first consumed published should be blank before anything is read, got '${cells(TopicPositionsColumn.FirstConsumedPublished)}'")
+    assert(cells(TopicPositionsColumn.LastConsumedId).trim == "-",
+      s"last consumed id should be blank before anything is read, got '${cells(TopicPositionsColumn.LastConsumedId)}'")
+    assert(cells(TopicPositionsColumn.LastConsumedPublished).trim == "-",
+      s"last consumed published should be blank before anything is read, got '${cells(TopicPositionsColumn.LastConsumedPublished)}'")
+    assert(cells(TopicPositionsColumn.PublishTimeLag).trim == "-",
+      s"publish-time lag should be blank without a cursor, got '${cells(TopicPositionsColumn.PublishTimeLag)}'")
+    assert(cells(TopicPositionsColumn.PublishTimeFraction).trim == "-",
+      s"publish-time position should be blank, got '${cells(TopicPositionsColumn.PublishTimeFraction)}'")
+    assert(cells(TopicPositionsColumn.EntryPositionFraction).trim == "-",
+      s"stored entry position percentage should be blank, got '${cells(TopicPositionsColumn.EntryPositionFraction)}'")
+  }
+
+  test("CS-TP-5: polling runs only while Topic Positions is visible") {
+    installTopicPositionsRequestCounter()
+    val (t, ns, topic) = fixtures.freshTopicParts()
+    val topicFqn = s"persistent://$t/$ns/$topic"
+    fixtures.produceStrings(topicFqn, 2)
+
+    val cs = ConsumerSessionPage(page)
+    cs.openForTopic(t, ns, topic)
+    cs.closeTools()
+    cs.setStartFrom("Earliest message")
+    cs.play()
+    cs.awaitLoaded(2)
+
+    // Topic Positions is the default tab internally, but the closed Tools panel is also a
+    // visibility gate. Starting and consuming must not silently arm its broker-heavy poller.
+    page.waitForTimeout(2200)
+    assert(topicPositionsRequestCount == 0,
+      s"Topic Positions made $topicPositionsRequestCount request(s) while Tools was closed")
+
+    cs.openTools()
+    val tools = ToolsPanel(page)
+    assertThat(tools.topicPositionsRow(topicFqn)).isVisible()
+    val openedCount = topicPositionsRequestCount
+    assert(openedCount > 0, "opening Topic Positions did not make its initial request")
+    // A visible tab keeps polling - the contract in this cell's title. The window is deliberately
+    // GENEROUS and pins no cadence: the Table asks for 1000ms, but SWR floors the effective period
+    // at its dedupingInterval (2000ms by default), so refreshes actually land every ~2s. Measured
+    // on 2026-08-09 (samples at 500ms: first refresh at ~2.5-3s, then 5s, 7s, 9s), which is why the
+    // old fixed 2200ms wait failed deterministically - it expired just before the first refresh.
+    harness.Eventually.eventually(timeoutMs = 8000, intervalMs = 250) {
+      assert(topicPositionsRequestCount > openedCount,
+        s"visible Topic Positions did not refresh: request count stayed at $openedCount")
+    }
+
+    // Switching tabs unmounts the Table poller. Give the state transition a moment, then observe
+    // more than two refresh intervals: no NEW request may start (an already-issued response may
+    // still finish, which is harmless and deliberately not confused with another request here).
+    tools.produceTab.click()
+    assertThat(tools.produceSend).isVisible()
+    page.waitForTimeout(150)
+    val hiddenTabCount = topicPositionsRequestCount
+    page.waitForTimeout(2200)
+    assert(topicPositionsRequestCount == hiddenTabCount,
+      s"Topic Positions kept polling behind Produce: $hiddenTabCount -> $topicPositionsRequestCount")
+
+    // Reopening proves the counter and refresh lifecycle are live, then closing the whole panel
+    // exercises the second visibility gate independently of tab selection.
+    tools.topicPositionsTab.click()
+    assertThat(tools.topicPositionsTable).isVisible()
+    page.waitForTimeout(1200)
+    assert(topicPositionsRequestCount > hiddenTabCount,
+      s"Topic Positions did not resume polling after reopening: still $topicPositionsRequestCount")
+
+    cs.closeTools()
+    page.waitForTimeout(150)
+    val closedPanelCount = topicPositionsRequestCount
+    page.waitForTimeout(2200)
+    assert(topicPositionsRequestCount == closedPanelCount,
+      s"Topic Positions kept polling with Tools closed: $closedPanelCount -> $topicPositionsRequestCount")
   }
 
   test("CS-TP-6: sorting is live, and the ALL TOPICS row stays pinned on top through it") {

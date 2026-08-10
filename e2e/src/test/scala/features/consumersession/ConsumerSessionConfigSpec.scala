@@ -19,11 +19,11 @@ class ConsumerSessionConfigSpec extends DekafSuite:
     "Relative time ago",
     "Skip first n messages",
     "Latest n messages",
-    // Two approximate modes, not one: "about half way in" is either half the MESSAGES or half the
-    // TIME, and a single control could not say which. Named in full here because a count would be
+    // Two approximate modes, not one: "about half way in" is either half the ENTRIES or half the
+    // PUBLISH-TIME RANGE, and a single control could not say which. Named in full here because a count would be
     // satisfied by one mode renamed to the other's label.
-    "About % through the data",
-    "About % through the time range"
+    "Approximate position (% of data)",
+    "Approximate position (% of time)"
   )
 
   test("CS-1: Start-From offers every mode, all of them selectable on a persistent topic") {

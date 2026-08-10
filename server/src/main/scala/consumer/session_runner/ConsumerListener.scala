@@ -8,7 +8,42 @@ import java.util.concurrent.atomic.AtomicBoolean
 import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
+/** What this session has already decided about ONE broker entry's batch members, and whether the
+  * broker can still redeliver that entry.
+  *
+  * `decided` is the standing decision - delivered or dropped - that makes a redelivered copy pure
+  * paperwork. `unfinished` is the lifecycle half: members whose broker answer is not final yet,
+  * either because their acknowledgment is still in flight or because they were handed BACK. The
+  * broker retires an entry only once every one of its members has been acknowledged on one consumer
+  * incarnation, so an entry is redeliverable - and its record therefore load-bearing - until every
+  * member has been decided AND every one of those decisions has been acknowledged.
+  */
+private final class BatchEntryState:
+    val decided: java.util.BitSet = java.util.BitSet()
+    val unfinished: java.util.BitSet = java.util.BitSet()
+
+    /** How many members this entry holds, as the broker's own id reports it, or -1 when the id does
+      * not carry it. Only ids built by hand lack it; every id a Pulsar consumer delivers has it. */
+    var batchSize: Int = -1
+
+    /** This entry can no longer be redelivered - every member has been decided and answered for -
+      * so its record is dead weight. Without a batch size, completeness is unknowable and the
+      * answer falls back to "nothing outstanding", which is no weaker than having no record at all.
+      */
+    def isSettled: Boolean =
+        unfinished.isEmpty && (batchSize <= 0 || decided.cardinality >= batchSize)
+
 object ConsumerListener:
+    /** How many SETTLED entry records to keep - entries nothing is owed for, kept only against a
+      * broker unload redelivering what it has not yet retired. Entries still owed a redelivery are
+      * exempt (see [[BatchEntryState]]), which is what makes this a cache size rather than the
+      * correctness bound it was mistaken for. */
+    private[session_runner] val settledBatchEntryCap: Int = 512
+
+    /** How far one insertion may walk looking for settled records to reclaim. Keeps the per-message
+      * cost constant when the oldest records are all still owed; the next insertion continues. */
+    private[session_runner] val settledBatchEntryEvictionWalk: Int = 64
+
     /** What to do with a message the broker just delivered. */
     enum Action:
         /** The session is paused - hand it back so it is redelivered on resume. */
@@ -72,39 +107,50 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * Deliberately WIDER than [[progressDiscard]]. This is the mechanism - what diagnostics and
       * tests ask "how many messages are still to be dropped" - and it must answer for a latest-n
       * seek correction too. What the CLIENT is shown is the narrower one.
+      *
+      * `filter(_.total > 0)`: an ordering-ONLY layer carries a shared ZERO budget (it orders, it
+      * drops nothing), and letting that zero shadow the listener's own counter made a latest-n's
+      * per-topic overshoot report 0 remaining - so `startFromResolutionActive` went false, and the
+      * rate limiter's permit hold was un-suppressed in exactly the window the suppression exists
+      * to protect. A merge that was ARMED with a budget keeps answering even once it is spent -
+      * its zero then genuinely means "nothing left to drop".
       */
-    def effectiveDiscard: StartFromDiscard = startFromOrdering.progressDiscard.getOrElse(startFromDiscard)
+    def effectiveDiscard: StartFromDiscard = startFromOrdering.progressDiscard.filter(_.total > 0).getOrElse(startFromDiscard)
 
-    /** How far this listener has read into each physical topic it consumes, for the "Topic Positions"
-      * debug view. Read out of band by [[cursors]] on a gRPC thread while listener threads write it,
-      * hence concurrent.
+    /** The consumed range for each physical topic this listener consumes, for the "Topic Positions"
+      * debug view. Read out of band by [[consumedBounds]] on a gRPC thread while listener threads
+      * write it, hence concurrent.
       *
       * RECORDED WHERE MESSAGES ARE ACKNOWLEDGED - on a Drop as well as a Deliver - because both mean
       * the session consumed the message. The alternative, letting the client derive it from the rows
       * on screen, is wrong by however much the session filters out: a filter passing 1% of a topic
       * would show a session that had read to the end as barely started.
       *
-      * A HIGH-WATER MARK. `negativeAcknowledge` and the merge's cap both put messages back for
-      * redelivery, so an OLDER message can legitimately arrive after a newer one has been counted;
-      * letting the cursor walk backwards there would make the view flicker between two positions
-      * neither of which is wrong. Only advancing keeps it monotonic, which is what "how far has this
-      * read" means.
+      * OUTWARD-ONLY BOUNDS. `negativeAcknowledge` and the merge's cap both put messages back for
+      * redelivery, so an OLDER message can legitimately arrive after a newer one has been counted.
+      * That older message may widen `first`, but can never walk `last` backwards. One immutable
+      * value per topic also means an RPC cannot observe a new first paired with an old last.
       */
-    private val cursorByTopic = ConcurrentHashMap[String, TopicCursor]()
+    private val consumedBoundsByTopic = ConcurrentHashMap[String, TopicConsumedBounds]()
 
-    /** Record that `topicFqn` has been consumed as far as this message. Advances only - see
-      * [[cursorByTopic]].
+    /** Record one message that `topicFqn` has consumed. The range only widens - see
+      * [[consumedBoundsByTopic]].
       */
     def recordCursor(topicFqn: String, messageId: PulsarMessageId, publishTime: Long): Unit =
-        cursorByTopic.merge(
+        val incoming = TopicCursor(messageId, publishTime)
+        // `compute` avoids constructing and immediately discarding a one-element bounds object
+        // for every message after the first; the only steady-state allocations are the incoming
+        // cursor and the immutable replacement the atomic map publishes.
+        consumedBoundsByTopic.compute(
             topicFqn,
-            TopicCursor(messageId, publishTime),
-            (existing, incoming) => if incoming.messageId.compareTo(existing.messageId) > 0 then incoming else existing
+            (_, existing) =>
+                if existing == null then TopicConsumedBounds(incoming, incoming)
+                else widenConsumedBounds(existing, incoming)
         )
         ()
 
-    /** A snapshot of the read position per topic. */
-    def cursors: Map[String, TopicCursor] = cursorByTopic.asScala.toMap
+    /** An atomic-per-topic snapshot of the consumed ranges. */
+    def consumedBounds: Map[String, TopicConsumedBounds] = consumedBoundsByTopic.asScala.toMap
 
     /** Whether the pause gate is open. The permit-hold arbitration reads this so the delivery
       * pacer's backpressure can never resume a consumer the USER paused. */
@@ -137,14 +183,29 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
         catch
             case err: Throwable =>
                 logger.warn(s"Handing a message back for redelivery: delivering it failed. ${err.getMessage}")
+                // THE EXPLICIT LIFECYCLE TRANSITION the merge's duplicate arm consults: only a
+                // failure recorded here licenses delivering a watermarked copy as the retry.
+                failedDeliveries.add((held.consumer.getTopic, held.message.getMessageId))
+                held.listener.noteBatchMemberHandedBack(held.consumer.getTopic, held.message.getMessageId)
                 Try(held.consumer.negativeAcknowledge(held.message))
                 ()
 
     /** Route one Deliver outcome: through the session's rate limiter when one is installed,
-      * straight through otherwise. The limiter's offer is an enqueue - it never blocks the calling
-      * listener thread and never blocks the ordering lock the merge path holds around it. */
+      * straight through otherwise.
+      *
+      * WHILE THE ORDERING LOCK IS LIVE the offer is FORCED to be an enqueue. The unlimited
+      * (rate 0) path used to answer processNow and run the whole delivery - deserialization, the
+      * JS lease, the blocking gRPC write - inline on the offering thread with the session's
+      * ordering lock held, so one backpressured client parked every listener thread and the
+      * sweep with them. Forcing the queue moves the write to the limiter's single drainer,
+      * OUTSIDE the lock, and order is preserved by construction: the enqueue happens under the
+      * same lock that decided the order, the queue is FIFO, and the limiter refuses inline
+      * processing whenever a backlog or an in-flight drain exists - so a later message can never
+      * overtake a queued one. Once the merge settles (`serializesDeliveries` false), the
+      * unlimited inline fast path is back, exactly as before.
+      */
     def deliver(held: HeldMessage): Unit = deliveryRateLimiter match
-        case Some(limiter) => limiter.offer(held)
+        case Some(limiter) => limiter.offer(held, forceQueueOnce = startFromOrdering.serializesDeliveries)
         case None          => deliverNow(held)
 
     /** Called once per message the discard swallows, so a skip in flight can be reported to the
@@ -155,6 +216,21 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * nothing to preserve across a pause: it carries no state.
       */
     var onStartFromDiscardProgress: () => Unit = () => ()
+
+    /** GUARANTEED replay: the chunk completed - every stream delivered its recorded range and
+      * the heap is drained. The runner wires this per play (it carries the play generation and
+      * a once-per-chunk claim) to the AUTO-PAUSE and the caught-up signal; a no-op until then.
+      * Invoked from [[pumpGuaranteedDelivery]] under the session's ordering lock. */
+    var onReplayCaughtUp: () => Unit = () => ()
+
+    /** Whether the delivery currently running through this listener's target pipeline is a SEAM
+      * VIOLATION - its order key undercuts one already emitted (possible only across a resume
+      * seam under producer clock skew, or a source-log inversion). Set and cleared around each
+      * barrier send by [[pumpGuaranteedDelivery]]; every guaranteed delivery runs serialized
+      * under the session's ordering lock, so a plain flag cannot race. Always false outside
+      * guaranteed ordering - the relax to best effort clears it for good. The target pipeline
+      * stamps it onto the outgoing row (Message.replay_seam_violation). */
+    @volatile var replaySeamFlagPending: Boolean = false
 
     /** Report a drop to the client, and NEVER let that reporting cost the message.
       *
@@ -221,7 +297,135 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * Bounded by the number of failed acknowledgments (rare - a disconnect race), and each entry
       * leaves the moment its redelivery is finalized.
       */
-    private val awaitingAckRetry = ConcurrentHashMap.newKeySet[PulsarMessageId]()
+    /** streamId -> the consumer's pause arbiter, set by the target runner at build time. The
+      * merge's flow-control hooks go through these - see [[ConsumerPauseArbiter]]. */
+    var pauseArbiters: Map[String, ConsumerPauseArbiter] = Map.empty
+
+    // Keyed by (topic FQN, message id), NEVER by the id alone: this listener serves every topic
+    // consumer of its target, and a bare id is not an identity - measured against a real broker,
+    // EVERY non-persistent message arrives as ledger 0, entry 0, so an id-keyed marker from one
+    // failed ack would swallow the next unrelated message of that topic as "paperwork".
+    private val awaitingAckRetry = ConcurrentHashMap.newKeySet[(String, PulsarMessageId)]()
+
+    /** Which per-message timestamp the delivery order compares - rewired at session build from the
+      * configured [[consumer.session_config.DeliveryOrderKey]]. The default is publish time,
+      * which every message carries. */
+    var orderingTimeOf: org.apache.pulsar.client.api.Message[Array[Byte]] => Long = _.getPublishTime
+
+    /** How many messages used publish time because the selected timestamp was absent on
+      * the message (no broker stamp, no event time). Feeds the client's remediation notice. */
+    val orderKeyFallbacks = new java.util.concurrent.atomic.AtomicLong(0)
+
+    /** Deliveries this listener SAW fail downstream - the explicit lifecycle fact that licenses
+      * the merge to treat a watermarked broker copy as the retry (and nothing else does; see the
+      * merge's duplicate arm). Entries leave when the retry is claimed. Bounded by the number of
+      * failed deliveries between redeliveries - rare, and discarded with the listener. */
+    private val failedDeliveries = ConcurrentHashMap.newKeySet[(String, PulsarMessageId)]()
+
+    /** Batch members this session already DECIDED (delivered or dropped), by their entry.
+      *
+      * A batched producer packs many messages into one broker ENTRY, and without broker-side
+      * batch-index acknowledgment (a broker setting Dekaf must not require) the per-member acks
+      * are client-local bits: the broker only retires the entry once EVERY member is acknowledged
+      * on one consumer incarnation of it. So when the pause gate slices an entry - first half
+      * delivered, second half refused and handed back - the broker redelivers the WHOLE entry,
+      * already-shown members included, wearing a fresh ack set. Those copies used to be re-decided
+      * from scratch: re-shown (the loaded count inflated by half a batch per hot pause), or in the
+      * counted modes re-dropped against budget already spent on them.
+      *
+      * The bits are set inside [[acknowledge]] - the one point every decision funnels through, for
+      * delivered and dropped alike - and consulted at the top of [[received]], in the same
+      * "the decision stands, only the paperwork remains" position as [[awaitingAckRetry]]:
+      * acknowledge the copy (that is what completes the redelivered entry's ack set and retires
+      * the entry) and show it to nobody.
+      *
+      * Non-persistent topics are excluded for the usual identity reason (every id is ledger 0,
+      * entry 0 - and nothing is ever redelivered).
+      *
+      * RETENTION IS A LIFECYCLE, NOT AN AGE, and that is the whole design of the eviction below.
+      * These records used to be evicted by insertion order at 512 entries while ONE target may hold
+      * a thousand physical streams: a hot pause slices one outstanding entry PER STREAM, so the
+      * earliest ~488 of them were discarded before their redelivery ever arrived, and the
+      * whole-entry redelivery then re-showed members this session had already delivered - or, in
+      * the counted modes, spent a second unit of the user's budget on them. A record is now exempt
+      * from the cap for exactly as long as the broker still owes this session the redelivery it
+      * describes ([[BatchEntryState.isSettled]]), so the structure covers every admitted stream by
+      * construction and not by a bigger magic number. It still cannot grow without bound: an entry
+      * leaves the owed set the moment its handed-back members are decided again, so the size is
+      * bounded by the settled cap plus the sliced entries the session's own streams are holding -
+      * one per stream, and the streams are admission-capped.
+      */
+    private val decidedBatchMembers = java.util.LinkedHashMap[(String, Long, Long), BatchEntryState]()
+
+    private def batchMemberKey(topicFqn: String, id: PulsarMessageId): Option[((String, Long, Long), Int, Int)] =
+        id match
+            case b: org.apache.pulsar.client.impl.BatchMessageIdImpl if b.getBatchIndex >= 0 && !isNonPersistentTopic(topicFqn) =>
+                Some(((topicFqn, b.getLedgerId, b.getEntryId), b.getBatchIndex, b.getBatchSize))
+            case _ => None
+
+    private def noteBatchMemberDecided(topicFqn: String, id: PulsarMessageId): Unit =
+        batchMemberKey(topicFqn, id).foreach { (key, idx, batchSize) =>
+            decidedBatchMembers.synchronized {
+                val state = decidedBatchMembers.computeIfAbsent(key, _ => BatchEntryState())
+                if batchSize > state.batchSize then state.batchSize = batchSize
+                state.decided.set(idx)
+                // Decided, but the broker has not answered for it yet: the acknowledgment this
+                // decision is about to issue is in flight, and until it lands the entry can still
+                // be redelivered whole.
+                state.unfinished.set(idx)
+                evictSettledBatchEntries()
+            }
+        }
+
+    /** The broker took this member's acknowledgment. One member closer to the entry being retired,
+      * and the only transition that can ever make a record reclaimable. */
+    private def noteBatchMemberAcknowledged(topicFqn: String, id: PulsarMessageId): Unit =
+        batchMemberKey(topicFqn, id).foreach { (key, idx, _) =>
+            decidedBatchMembers.synchronized {
+                Option(decidedBatchMembers.get(key)).foreach(_.unfinished.clear(idx))
+            }
+        }
+
+    /** A member of an entry this session is tracking was handed BACK to the broker, so the whole
+      * entry is coming again. Recorded only for entries already being tracked: an entry with no
+      * decided member has nothing to protect - every member of it will simply be decided on the
+      * redelivery, which is correct. */
+    private def noteBatchMemberHandedBack(topicFqn: String, id: PulsarMessageId): Unit =
+        batchMemberKey(topicFqn, id).foreach { (key, idx, _) =>
+            decidedBatchMembers.synchronized {
+                Option(decidedBatchMembers.get(key)).foreach(_.unfinished.set(idx))
+            }
+        }
+
+    /** Drop the records the broker can no longer redeliver, oldest first, until the settled ones are
+      * back inside their cap. An entry still owed a redelivery is skipped WHATEVER its age - that is
+      * the fix. The walk is budgeted so the per-message cost stays constant even in the pathological
+      * case where the oldest records are all still owed; anything the budget does not reach is
+      * reclaimed by the next insertion. */
+    private def evictSettledBatchEntries(): Unit =
+        if decidedBatchMembers.size > ConsumerListener.settledBatchEntryCap then
+            val entries = decidedBatchMembers.entrySet.iterator
+            var steps = 0
+            while entries.hasNext
+                && steps < ConsumerListener.settledBatchEntryEvictionWalk
+                && decidedBatchMembers.size > ConsumerListener.settledBatchEntryCap
+            do
+                if entries.next().getValue.isSettled then entries.remove()
+                steps += 1
+
+    private def isDecidedBatchCopy(topicFqn: String, id: PulsarMessageId): Boolean =
+        batchMemberKey(topicFqn, id).exists { (key, idx, _) =>
+            decidedBatchMembers.synchronized {
+                Option(decidedBatchMembers.get(key)).exists(_.decided.get(idx))
+            }
+        }
+
+    /** Test-only window: how many batch entries currently carry decided-member bits. */
+    private[session_runner] def decidedBatchEntryCount: Int =
+        decidedBatchMembers.synchronized(decidedBatchMembers.size)
+
+    /** Test-only window into the failed-delivery registry. */
+    private[session_runner] def failedDeliveryCount: Int = failedDeliveries.size
 
     /** Test-only window: how many decided messages still owe the broker an acknowledgment. */
     private[session_runner] def awaitingAckRetryCount: Int = awaitingAckRetry.size
@@ -232,19 +436,39 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * replaced both the refund and the log-and-hope paths.
       */
     private def acknowledge(consumer: org.apache.pulsar.client.api.Consumer[Array[Byte]], msg: org.apache.pulsar.client.api.Message[Array[Byte]]): Unit =
+        // The decision this acknowledgment finalizes is recorded FIRST, unconditionally: even if
+        // the ack itself fails, the decision stands (that is [[awaitingAckRetry]]'s doctrine), and
+        // a whole-entry redelivery caused by a sliced sibling must not re-decide this member.
+        noteBatchMemberDecided(consumer.getTopic, msg.getMessageId)
         def retryOnRedelivery(reason: String): Unit =
-            logger.warn(
-                s"A decided message's acknowledgment failed; its decision stands and the redelivery will only be acknowledged. Consumer: ${consumer.getConsumerName}. $reason"
-            )
-            awaitingAckRetry.add(msg.getMessageId)
-            Try(consumer.negativeAcknowledge(msg))
-            ()
+            // A NON-PERSISTENT message's failed ack is FINAL, and inconsequential: the broker
+            // stores nothing, so nothing will ever be redelivered to finalize - and every
+            // non-persistent id looks identical (ledger 0, entry 0), so a marker here would
+            // swallow the next unrelated message of the topic as paperwork.
+            if isNonPersistentTopic(consumer.getTopic) then
+                logger.warn(
+                    s"A non-persistent message's acknowledgment failed; nothing is stored, so there is nothing to retry. Consumer: ${consumer.getConsumerName}. $reason"
+                )
+            else
+                logger.warn(
+                    s"A decided message's acknowledgment failed; its decision stands and the redelivery will only be acknowledged. Consumer: ${consumer.getConsumerName}. $reason"
+                )
+                awaitingAckRetry.add((consumer.getTopic, msg.getMessageId))
+                noteBatchMemberHandedBack(consumer.getTopic, msg.getMessageId)
+                Try(consumer.negativeAcknowledge(msg))
+                ()
 
         if !consumer.isConnected then retryOnRedelivery(s"Consumer ${consumer.getConsumerName} is not connected.")
         else
             Try(consumer.acknowledgeAsync(msg)) match
                 case Success(acknowledged) =>
-                    acknowledged.whenComplete((_, err) => if err != null then retryOnRedelivery(err.getMessage))
+                    acknowledged.whenComplete((_, err) =>
+                        if err != null then retryOnRedelivery(err.getMessage)
+                        // THE BROKER HAS THE ANSWER. Only now is this member's part of its entry
+                        // final; the entry is retired - and its record reclaimable - once every
+                        // member has got this far.
+                        else noteBatchMemberAcknowledged(consumer.getTopic, msg.getMessageId)
+                    )
                     ()
                 case Failure(err) => retryOnRedelivery(err.getMessage)
 
@@ -264,10 +488,22 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
         // Finalize the paperwork and show it to nobody: not the gate (a pause cannot un-decide
         // it), not the discard (its unit was spent on this very message), not the merge (it was
         // already cut). This check is what keeps skip-n and latest-n exact across ack failures.
-        if awaitingAckRetry.remove(msg.getMessageId) then
+        if awaitingAckRetry.remove((consumer.getTopic, msg.getMessageId)) then
+            acknowledge(consumer, msg)
+        // A COPY OF A DECIDED BATCH MEMBER: a sibling's refusal (the pause gate slicing an entry)
+        // made the broker redeliver the whole entry, this member included. Its decision stands -
+        // it was shown or dropped already - so acknowledge the copy (completing the redelivered
+        // entry's fresh ack set is what finally retires the entry) and show it to nobody: not the
+        // gate, not the discard, not the merge. Without this, every hot pause re-showed the
+        // already-shown half of the entry it sliced.
+        else if isDecidedBatchCopy(consumer.getTopic, msg.getMessageId) then
             acknowledge(consumer, msg)
         else decide(consumer.getTopic, canAcknowledge = consumer.isConnected) match
             case ConsumerListener.Action.Reject =>
+                // THE PAUSE SLICE. This member is going back, so the broker will redeliver its
+                // whole entry - already-decided siblings included - and their records have to
+                // outlive the cap until it does. See [[decidedBatchMembers]].
+                noteBatchMemberHandedBack(consumer.getTopic, msg.getMessageId)
                 consumer.negativeAcknowledge(msg)
 
             case ConsumerListener.Action.Drop =>
@@ -286,29 +522,41 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
                 // and value projections then saw the messages in a different order than the merge
                 // had just decided on. A pass-through session takes no lock at all.
                 startFromOrdering.inOrder {
-                    // How the merge's flow control reaches THIS stream's consumer. Registered on
-                    // first delivery - a stream that never delivers has nothing to pause - and a
-                    // no-op for a pass-through layer.
-                    startFromOrdering.registerStreamPauseHooks(
-                        startFromStreamId(consumer.getConsumerName, consumer.getTopic),
-                        pause = () => { Try(consumer.pause()); () },
-                        resume = () => { Try(consumer.resume()); () }
-                    )
+                    // How the merge's flow control reaches THIS stream's consumer: through its
+                    // pause ARBITER, holding and releasing only the Merge reason - so releasing a
+                    // hot stream at the cut can never wake a consumer the user or the delivery
+                    // pacer still holds. Registered on first delivery; a no-op for pass-through.
+                    val streamId = startFromStreamId(consumer.getConsumerName, consumer.getTopic)
+                    pauseArbiters.get(streamId).foreach { arbiter =>
+                        startFromOrdering.registerStreamPauseHooks(
+                            streamId,
+                            // The arbiter answers whether the client call took; the reconcile
+                            // records only successful transitions and retries the rest.
+                            pause = () => arbiter.hold(PauseReason.Merge),
+                            resume = () => arbiter.release(PauseReason.Merge)
+                        )
+                    }
                     // What comes back is what the OFFER resolved, which is often not the message
                     // just offered and may belong to another topic - and therefore to another
                     // target's listener, which is why each held message carries its own.
                     val resolved = startFromOrdering.offer(
                         consumerName = consumer.getConsumerName,
                         topicFqn = consumer.getTopic,
-                        publishTime = msg.getPublishTime,
+                        orderTime = orderingTimeOf(msg),
                         messageId = msg.getMessageId,
-                        payload = HeldMessage(consumer, msg, this)
+                        payload = HeldMessage(consumer, msg, this),
+                        // Claimed exactly once: this arrival IS the retry of a delivery this
+                        // listener saw fail, and the merge may deliver it past its watermark.
+                        knownFailedRetry = failedDeliveries.remove((consumer.getTopic, msg.getMessageId))
                     )
                     handleResolved(resolved)
                     // The batch that spends the budget's last unit is handled just above, still
                     // under the lock; only AFTER it may later messages take the lock-free path.
                     startFromOrdering.settleIfDone()
                     startFromOrdering.reconcileFlowControl()
+                    // Guaranteed ordering delivers through its barrier, not through the offer's
+                    // resolutions - this offer may have completed the head set it was waiting on.
+                    pumpGuaranteedDelivery()
                 }
 
     /** The stall watchdog's entry: give up on a stream silent past the window even when NO further
@@ -318,6 +566,7 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
     def sweepStartFromStall(): Unit =
         startFromOrdering.inOrder {
             val abandonedBefore = startFromOrdering.abandonedStreams.size
+            val warningsBefore = startFromOrdering.stallWarningCount
             val resolved = startFromOrdering.sweepStalled()
             if resolved.nonEmpty then handleResolved(resolved)
             // A sweep's give-up can spend the budget's last unit too (drain on abandonment), and
@@ -325,22 +574,137 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
             startFromOrdering.settleIfDone()
             startFromOrdering.reconcileFlowControl()
             // A give-up changed the ANSWER (degraded, abandoned stream names) even when it
-            // resolved no messages - and it may never be followed by another drop. Push the
-            // disclosure itself; the runner's gate lets the first degraded frame through
-            // whatever the reporting interval says.
-            if startFromOrdering.abandonedStreams.size > abandonedBefore then reportDiscardProgress()
+            // resolved no messages - and it may never be followed by another drop. A stall WARNING
+            // changed what the user needs to see too: without a frame now, a stalled positioning
+            // sits behind "awaiting new messages" until the give-up half a minute later. Push the
+            // disclosure itself; the runner's gate lets the first degraded frame and each stall
+            // warning through whatever the reporting interval says.
+            if startFromOrdering.abandonedStreams.size > abandonedBefore
+                || startFromOrdering.stallWarningCount > warningsBefore
+            then reportDiscardProgress()
+            // The tick is also the guaranteed barrier's RETRY timer: a failed send left its head
+            // in place, and nothing else may ever come along to re-attempt it.
+            pumpGuaranteedDelivery()
         }
 
     /** The streams the start-from resolution gave up waiting for - the session's degradation
       * record, surfaced through the progress API. */
     def startFromAbandonedStreams: Vector[String] = startFromOrdering.abandonedStreams
 
+    /** How often the resolution has newly stalled - see [[StartFromMerge.stallWarningCount]]. The
+      * runner's report gate reads this to let the disclosing frame through its interval. */
+    def startFromStallWarnings: Long = startFromOrdering.stallWarningCount
+
+    /** GUARANTEED-MODE delivery pump: deliver the single safe head, commit only when the send
+      * SUCCEEDED, retry the same head in place otherwise. This is the no-compromise barrier: a
+      * message never leaves the merge until a client actually received it, so a failed or
+      * superseded send costs latency, never order and never the message. Paced by the delivery
+      * limiter's token bucket (its queue would break the barrier); stopped by a paused drain
+      * (user pause, spent budget). Runs under the ordering lock like every delivery decision. */
+    def pumpGuaranteedDelivery(): Unit =
+        if startFromOrdering.isGuaranteedOrdering then
+            startFromOrdering.inOrder {
+                var going = true
+                while going do
+                    // Find a deliverable head BEFORE spending a rate token. A hot topic can call
+                    // this pump repeatedly while another topic is still headless; charging those
+                    // waits depleted the bucket without delivering anything, so the head that
+                    // finally became safe was needlessly delayed.
+                    startFromOrdering.peekGuaranteed() match
+                        case None => going = false
+                        case Some(held) =>
+                            val paced = deliveryRateLimiter.forall(l => !l.isDrainingPausedNow && l.tryAcquireDeliveryToken())
+                            if !paced then
+                                startFromOrdering.abortGuaranteed()
+                                going = false
+                            else
+                                // The seam flag is decided at the peek - between it and the
+                                // commit nothing else can emit, so the row the client sees and
+                                // the counter the commit advances cannot disagree.
+                                if deliverStrict(held, startFromOrdering.peekIsSeamViolation) then
+                                    startFromOrdering.commitGuaranteed()
+                                    startFromOrdering.reconcileFlowControl()
+                                else
+                                    // The send never took: the head stays in the merge AND the
+                                    // token goes back - the retry must not pay a second token
+                                    // for the same delivery (mirrors requeueFront's refund on
+                                    // the queued path).
+                                    deliveryRateLimiter.foreach(_.returnDeliveryToken())
+                                    startFromOrdering.abortGuaranteed()
+                                    going = false
+                // THE REPLAY BOUNDARY CHECK, on every pump's way out: the chunk can complete on
+                // the commit above, on a past-boundary arrival finishing the last waited stream,
+                // or - for an empty replay - on the resume's very first pump with no message
+                // ever delivered. The hook auto-pauses and signals; its generation gate and
+                // once-flag make a repeat call here free.
+                if startFromOrdering.isReplayCaughtUp then onReplayCaughtUp()
+            }
+
+    /** Deliver for the guaranteed barrier: true only when the send took. NO negative-ack and NO
+      * failed-delivery record on failure - the original never left the merge, the broker owes
+      * nothing, and the pump retries it in place on the next tick. `seamViolation` rides to the
+      * target pipeline through the listener's flag (set around the send, serialized by the
+      * ordering lock) and onto the outgoing row; a retry re-sends the memoized response, flag
+      * and all, without re-reading it. */
+    private def deliverStrict(held: HeldMessage, seamViolation: Boolean): Boolean =
+        try
+            held.listener.replaySeamFlagPending = seamViolation
+            try held.listener.targetMessageHandler.onNext(held.message)
+            finally held.listener.replaySeamFlagPending = false
+            held.listener.finalizeDelivered(held)
+            true
+        catch
+            case err: Throwable =>
+                logger.info(s"Guaranteed delivery attempt failed; the head stays in place and will be retried. ${err.getMessage}")
+                false
+
+    /** The paperwork of a SUCCESSFUL delivery - acknowledgment and the debug cursor - on the
+      * listener the message belongs to. */
+    private[session_runner] def finalizeDelivered(held: HeldMessage): Unit =
+        acknowledge(held.consumer, held.message)
+        recordCursor(held.consumer.getTopic, held.message.getMessageId, held.message.getPublishTime)
+
     /** Called by the runner on RESUME, before it re-arms the sweep: paused time must not count
-      * against a silent stream, and the resume just woke every consumer wholesale, so the
-      * flow-control bookkeeping has to match that reality too. */
+      * against a silent stream. (The flow-control bookkeeping needs no reset any more - a user
+      * resume releases only the User reason on each consumer's arbiter, so merge holds survive
+      * it untouched.) */
     def resetStartFromStallClock(): Unit = startFromOrdering.inOrder {
         startFromOrdering.resetStallClock()
-        startFromOrdering.resetAppliedFlowControl()
+    }
+
+    /** THE LIVE DELIVERY-ORDER SWITCH: relax this session's guaranteed ordering to best effort and
+      * hand out whatever that releases, in the new order.
+      *
+      * Under [[StartFromOrdering.inOrder]] exactly like an offer and a sweep, which is what makes
+      * it safe against concurrent delivery: the relaxation, the messages it releases and their
+      * handling are one serialized step, so no listener thread can interleave a later batch in
+      * front of it and no guaranteed peek can be outstanding across it (a peek and its
+      * commit/abort live inside one `inOrder` block in [[pumpGuaranteedDelivery]]).
+      *
+      * NOT a re-initialization: the same consumers, the same subscription, the same acknowledgment
+      * identity and the same start-from budget carry on. The held messages are RELEASED, never
+      * re-read - they were received and not acknowledged, and a recreate would have lost them.
+      */
+    def relaxDeliveryOrderToBestEffort(): Unit = startFromOrdering.inOrder {
+        // The replay's per-delivery seam flag dies with the barrier: best-effort deliveries run
+        // concurrently on listener threads and must never read a stale true.
+        replaySeamFlagPending = false
+        val released = startFromOrdering.relaxGuaranteedToBestEffort()
+        if released.nonEmpty then handleResolved(released)
+        // Same tail as every other decision point: a released batch can spend a counted cut's last
+        // unit, and what it drained changes what flow control wants held still. There is
+        // deliberately no `pumpGuaranteedDelivery` here - the barrier is exactly what was given up.
+        startFromOrdering.settleIfDone()
+        startFromOrdering.reconcileFlowControl()
+    }
+
+    /** GUARANTEED replay, on RESUME: extend the boundary to the freshly captured ends, under the
+      * ordering lock like every boundary decision. The runner calls this AFTER bumping the play
+      * generation and BEFORE releasing any consumer - the serialization against the offer path
+      * is what makes a past-end nack racing the re-capture converge (see
+      * [[StartFromOrdering.extendReplayBoundary]]). */
+    def extendReplayBoundary(streams: Vector[StartFromStream]): Unit = startFromOrdering.inOrder {
+        startFromOrdering.extendReplayBoundary(streams)
     }
 
     /** Act on what the ordering layer resolved - deliver, drop, or hand back each message. Shared
@@ -384,18 +748,42 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
                                     // retain drops most of what it sees and counts none of it, and
                                     // reporting those would put a frame on the wire per dropped message.
                                     if ordersProgress then held.listener.reportDiscardProgress()
+                                case StartFromOutcome.Requeue =>
+                                    // A broker copy whose original's fate is still open: decide
+                                    // NOTHING - no acknowledgment, no budget, no cursor - and
+                                    // hand it back for the broker's backoff to retry.
+                                    held.listener.noteBatchMemberHandedBack(held.consumer.getTopic, held.message.getMessageId)
+                                    Try(held.consumer.negativeAcknowledge(held.message))
+                                    ()
+                                case StartFromOutcome.NextChunk =>
+                                    // GUARANTEED replay: recorded past the boundary. Hand it back
+                                    // and PAUSE its consumer - the arbiter's Boundary reason, so a
+                                    // user pause and the merge's flow control are untouched - and
+                                    // decide nothing at all: no acknowledgment, no budget, no
+                                    // cursor, no memo entry, no batch-member record (its whole
+                                    // entry is past the boundary - a batch cannot straddle it, so
+                                    // no sibling is tracked). The Resume that extends the boundary
+                                    // releases the hold and the redelivery arrives in-chunk.
+                                    held.listener.pauseArbiters
+                                        .get(startFromStreamId(held.consumer.getConsumerName, held.consumer.getTopic))
+                                        .foreach(_.hold(PauseReason.Boundary))
+                                    Try(held.consumer.negativeAcknowledge(held.message))
+                                    ()
                                 case StartFromOutcome.Deliver =>
-                                    // Through the rate limiter when one is installed. The offer is
-                                    // an instant enqueue, so holding the ordering lock across it
-                                    // costs nothing - and the DROPS around it stay unlimited,
-                                    // which is what keeps a counted skip positioning at full
-                                    // speed under any limit.
+                                    // Through the rate limiter when one is installed. Under a
+                                    // live merge the offer is FORCED to be an instant enqueue
+                                    // (see [[deliver]]), so holding the ordering lock across it
+                                    // costs nanoseconds - the write itself runs on the limiter's
+                                    // drainer, outside this lock - and the DROPS around it stay
+                                    // unlimited, which is what keeps a counted skip positioning
+                                    // at full speed under any limit.
                                     held.listener.deliver(held)
                         catch
                             case err: Throwable =>
                                 logger.warn(
                                     s"Handing a start-from-ordered message back for redelivery: delivering it failed. ${err.getMessage}"
                                 )
+                                held.listener.noteBatchMemberHandedBack(held.consumer.getTopic, held.message.getMessageId)
                                 Try(held.consumer.negativeAcknowledge(held.message))
                                 ()
                     }

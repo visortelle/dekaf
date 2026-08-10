@@ -6,7 +6,7 @@ import resumeIcon from './icons/resume.svg';
 import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import { SessionState, ConsumerSessionConfig, MessageDescriptor } from '../types';
+import { SessionState, ConsumerSessionConfig, MessageDescriptor, MessageDeliveryOrder } from '../types';
 import SmallButton from '../../SmallButton/SmallButton';
 import Input from '../../Input/Input';
 import ExportMessagesButton from './ExportMessagesButton/ExportMessagesButton';
@@ -90,6 +90,32 @@ export type ToolbarProps = {
   searchInResults: string,
   onSearchInResultsChange: (v: string) => void,
   numFoundInResults: number,
+  /** How many messages the ordering layer emitted out of the selected-time order so far -
+   * best-effort mode's honest quality gauge (clock skew past the reorder window, retries). Under
+   * guaranteed the chip is NOT rendered: the server ticks this counter and the seam counter on
+   * the same commit-phase inversions, so showing both would count each event twice. */
+  orderingLateDeliveries: number,
+  /** Whether the server actually RUNS an ordering layer for this session. A single-stream
+   * session builds none and pays no reorder latency, whatever the config asked - the chip must
+   * not claim otherwise. */
+  orderingActive: boolean,
+  /** Topic/partition streams that have held delivery past the server's warning interval. Under
+   * the replay design this is the documented time-seek corner (a stream the seek positioned past
+   * its end); the disclosure and its escape stay for it. */
+  orderingWaitingStreams: number,
+  /** Messages that used publish time because the selected time was absent. */
+  orderKeyFallbacks: number,
+  /** Ordering violations the guaranteed replay delivered flagged: a producer clock wrote an
+   * earlier timestamp into a pause window, or the source log itself stores an inversion (the
+   * proto names both causes). Monotonic per session. */
+  replaySeamViolations: number,
+  /** Switches THIS session's delivery order, applied by whoever owns the session configuration.
+   *
+   * A Guaranteed stream that a time seek positioned past its end can hold the merge (the
+   * documented stall corner), so disclosing the wait is not enough - the same chip that reports
+   * the stall has to be able to end it. When no caller can apply the change the control is not
+   * rendered at all: a button that does nothing is worse than no button. */
+  onDeliveryOrderChange?: (order: MessageDeliveryOrder) => void,
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -102,6 +128,14 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   const [pauseAfter, setPauseAfter] = useLocalStorage<number>(localStorageKeys.consumerSessionPauseAfterLoaded, { defaultValue: 0 });
 
   const playButtonState = (props.sessionState === 'new' || props.sessionState === 'paused') ? 'play' : 'pause';
+  // Be defensive at this presentation boundary too: older/incomplete callers that omit the
+  // field have the same meaning as protobuf UNSPECIFIED and old saved JSON - Best effort.
+  const messageDeliveryOrder = props.config?.messageDeliveryOrder ?? 'best-effort';
+  const deliveryOrderTime = props.config?.deliveryOrderKey === 'broker-publish-time'
+    ? 'Broker publish time'
+    : props.config?.deliveryOrderKey === 'event-time'
+      ? 'Event time'
+      : 'Publish time';
 
   // No runtime config means the stored configuration could not be converted into one - there is
   // nothing to send. Play used to stay enabled and start a session that could never leave
@@ -166,10 +200,10 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         <div className={s.Control}>
           <SmallButton
             testId="cs-tools"
-            title={"Toggle additional tools"}
+            title={"Toggle More tools"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
-            text={"Tools"}
+            text={"More tools"}
             type="regular"
           />
         </div>
@@ -218,6 +252,96 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
           </div>
         </div>
+
+        {props.config !== undefined && (messageDeliveryOrder === 'best-effort'
+          || messageDeliveryOrder === 'guaranteed') && props.orderingActive && (
+          <div
+            className={s.MessagesLoadedStats}
+            data-testid="cs-order-chip"
+            role="status"
+            title={
+              messageDeliveryOrder === 'guaranteed'
+                ? 'Replays everything recorded up to Play (or the last Resume), of what retention still holds, ' +
+                  'in exact order of the selected timestamp, then pauses when caught up. Stored order within ' +
+                  'each stream is preserved, so timestamp reversals and redeliveries are counted as out of order.'
+                : 'Merges by the selected timestamp within ~0.75 s. Late messages may ' +
+                  'appear out of order; none are dropped.'
+            }
+          >
+            <div className={s.MessagesLoadedStat}>
+              <span className={s.MessagesLoadedStatTitle}>
+                {messageDeliveryOrder === 'guaranteed' ? 'Replaying history - exact order' : 'Best effort'} · {deliveryOrderTime}
+              </span>
+              {props.orderingWaitingStreams > 0 && (
+                <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-waiting">
+                  &nbsp;· waiting for {i18n.formatLongNumber(props.orderingWaitingStreams)} topics/partitions
+                </strong>
+              )}
+              {/* The escape from that wait, RIGHT NEXT TO IT. The replay waits only on streams
+                  still inside their recorded range - but a range that can no longer be delivered
+                  (trimmed by retention, or the start position seeked past the end) holds that
+                  wait forever and looks exactly like an empty topic; the disclosure above says
+                  so, and this ends it in one click, without going back through the configuration
+                  screen. Offered only for a Guaranteed session that is actually stalled, and
+                  only when a caller can apply the change. */}
+              {messageDeliveryOrder === 'guaranteed'
+                && props.orderingWaitingStreams > 0
+                && props.onDeliveryOrderChange !== undefined && (
+                <button
+                  type="button"
+                  data-testid="cs-order-switch-best-effort"
+                  onClick={() => props.onDeliveryOrderChange?.('best-effort')}
+                  title={
+                    'Stop waiting for the silent topics/partitions. Switches this session to Best effort, ' +
+                    'which merges within a bounded reorder window and delivers late messages out of order ' +
+                    'rather than holding everything for them. Nothing already loaded is lost.'
+                  }
+                  style={{
+                    marginLeft: '8rem',
+                    padding: '0 6rem',
+                    border: '1rem solid currentColor',
+                    borderRadius: '3rem',
+                    background: 'transparent',
+                    color: 'inherit',
+                    font: 'inherit',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Continue with Best effort
+                </button>
+              )}
+              {props.orderKeyFallbacks > 0 && (
+                <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-key-fallbacks">
+                  &nbsp;· {i18n.formatLongNumber(props.orderKeyFallbacks)} used publish time
+                </strong>
+              )}
+              {/* Under guaranteed the seam chip below owns inversions - the server ticks both
+                  counters on the same commit-phase events, so rendering both here would show
+                  each violation twice with two different causal labels. */}
+              {messageDeliveryOrder !== 'guaranteed' && props.orderingLateDeliveries > 0 && (
+                <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-late">
+                  &nbsp;· {i18n.formatLongNumber(props.orderingLateDeliveries)} late
+                </strong>
+              )}
+              {/* Replay ordering violations, loudly: the replay delivered these flagged (each
+                  row carries its own marker); this is the session-level count. The tooltip names
+                  both causes the proto does - the chip stays short. */}
+              {props.replaySeamViolations > 0 && (
+                <strong
+                  className={s.MessagesLoadedStatValue}
+                  data-testid="cs-replay-seam-violations"
+                  title={
+                    'Delivered flagged, never silently: a producer clock wrote an earlier timestamp ' +
+                    'into a pause window, or the source log itself stores an inversion.'
+                  }
+                >
+                  &nbsp;· {i18n.formatLongNumber(props.replaySeamViolations)} out of order
+                </strong>
+              )}
+            </div>
+          </div>
+        )}
 
         <div>
           <ExportMessagesButton

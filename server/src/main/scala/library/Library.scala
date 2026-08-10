@@ -3,6 +3,7 @@ package library
 import scalapb.json4s.JsonFormat
 import com.typesafe.scalalogging.Logger
 import com.tools.teal.pulsar.ui.library.v1.library as pb
+import scala.concurrent.blocking
 import scala.util.{Failure, Success, Try}
 
 type FileName = String
@@ -51,6 +52,11 @@ class Library:
     //     the unrelated writer with NoSuchFileException;
     //   - deleteItem's exists-then-remove could let two concurrent deletes both report success.
     // One lock over the whole sequence makes each mutation atomic with respect to the others.
+    //
+    // Each mutation is additionally wrapped in scala.concurrent.blocking: LibraryServiceImpl is
+    // bound on ExecutionContext.global (see GrpcServer), a bounded ForkJoinPool that only spawns
+    // compensation threads for blocking it is TOLD about - unmarked, the O(N) directory rescan
+    // below, serialized under this lock, would starve unrelated compute tasks pool-wide.
     private val mutationLock = new Object
 
     def size: Int = db.itemsById.size
@@ -61,7 +67,7 @@ class Library:
                 s"Invalid library item id - only alphanumerics, '_' and '-' are allowed."
             )
 
-    def writeItem(item: LibraryItem): Unit = mutationLock.synchronized {
+    def writeItem(item: LibraryItem): Unit = blocking(mutationLock.synchronized {
         val itemId = item.spec.metadata.id
         requireSafeItemId(itemId)
 
@@ -82,9 +88,9 @@ class Library:
         )
 
         refreshDb()
-    }
+    })
 
-    def deleteItem(itemId: LibraryItemId): Unit = mutationLock.synchronized {
+    def deleteItem(itemId: LibraryItemId): Unit = blocking(mutationLock.synchronized {
         requireSafeItemId(itemId)
         val fileName = Library.fileNameOf(itemId)
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
@@ -102,7 +108,7 @@ class Library:
         os.remove(filePath)
 
         refreshDb()
-    }
+    })
 
     def getItemById(itemId: LibraryItemId): Option[LibraryItem] =
         db.itemsById.get(itemId)
@@ -137,7 +143,28 @@ class Library:
             .map { path =>
                 val fileName = path.last
                 val fileContent = os.read.bytes(path)
-                val scanResultEntryA = Try(LibraryItem.fromPb(pb.LibraryItem.parseFrom(fileContent)))
+                val scanResultEntryA = Try {
+                    val itemPb = pb.LibraryItem.parseFrom(fileContent)
+                    // A stored item carrying the unimplemented AllNamespaceMatcher.namespace_regex
+                    // must keep LOADING. The conversion below REFUSES a set regex - right for
+                    // request data, where accepting it would silently widen the caller's scope -
+                    // but on this path the refusal made the whole item vanish from the library
+                    // with only a WARN and no way to repair it through the product. Strip the
+                    // FIELD (it was never applied by any version that wrote it), keep the ITEM,
+                    // and name what was ignored.
+                    val lenientPb = itemPb.copy(metadata = itemPb.metadata.map(md =>
+                        md.copy(availableForContexts = md.availableForContexts.map(matcher =>
+                            resourceMatcherWithoutNamespaceRegex(
+                                matcher,
+                                pattern =>
+                                    logger.warn(
+                                        s"Library file $fileName: ignoring unimplemented AllNamespaceMatcher.namespace_regex '$pattern'; the matcher covers every namespace of the matching tenant."
+                                    )
+                            )
+                        ))
+                    ))
+                    LibraryItem.fromPb(lenientPb)
+                }
                 val scanResultEntry = scanResultEntryA.toEither
 
                 scanResultEntry match
@@ -172,7 +199,14 @@ class Library:
             }
             .toMap
 
-    private def refreshDb(): Unit = mutationLock.synchronized {
+    // Every mutation rebuilds the snapshot by rescanning the WHOLE directory rather than patching
+    // the one key it touched. Deliberate: the scan is the single reconciliation point (it also
+    // picks up files an operator adds or removes out of band), and an incremental update would
+    // have to re-prove every scan invariant on its own (safe-id filter, name/id agreement,
+    // parse-failure skips) - drift between the two paths would surface as phantom or missing
+    // items. N is the library size (hundreds of small files), mutations are user-click rare, and
+    // the I/O is marked `blocking`, so the O(N) rescan is cheap for what it buys.
+    private def refreshDb(): Unit = blocking(mutationLock.synchronized {
         val scanResult = scan()
         val itemsById = scanResult.collect { case (_, Right(item)) =>
             val itemId = item.spec.metadata.id
@@ -181,4 +215,4 @@ class Library:
         logger.info(s"Library refreshed. Found ${itemsById.size} items in library")
 
         db = LibraryDb(itemsById = itemsById)
-    }
+    })

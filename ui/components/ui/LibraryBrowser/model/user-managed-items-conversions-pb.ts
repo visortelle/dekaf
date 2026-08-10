@@ -307,10 +307,10 @@ export function managedConsumerSessionStartFromSpecFromPb(v: pb.ManagedConsumerS
       return { startFrom: { type: 'nthMessageAfterEarliest', n: v.getStartFromNthMessageAfterEarliest()!.getN() } };
     case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_NTH_MESSAGE_BEFORE_LATEST:
       return { startFrom: { type: 'nthMessageBeforeLatest', n: v.getStartFromNthMessageBeforeLatest()!.getN() } };
-    case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_DATA_POSITION:
-      return { startFrom: { type: 'approximateDataPosition', fraction: v.getStartFromApproximateDataPosition()!.getFraction() } };
-    case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_TIME_POSITION:
-      return { startFrom: { type: 'approximateTimePosition', fraction: v.getStartFromApproximateTimePosition()!.getFraction() } };
+    case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_ENTRY_POSITION:
+      return { startFrom: { type: 'approximateEntryPosition', fraction: v.getStartFromApproximateEntryPosition()!.getFraction() } };
+    case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_PUBLISH_TIME_POSITION:
+      return { startFrom: { type: 'approximatePublishTimePosition', fraction: v.getStartFromApproximatePublishTimePosition()!.getFraction() } };
     case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_MESSAGE_ID:
       return { startFrom: { type: 'messageId', messageId: managedMessageIdValOrRefFromPb(v.getStartFromMessageId()!) } };
     case pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_DATE_TIME:
@@ -337,11 +337,11 @@ export function managedConsumerSessionStartFromSpecToPb(v: t.ManagedConsumerSess
     case 'nthMessageBeforeLatest':
       specPb.setStartFromNthMessageBeforeLatest(new consumerPb.NthMessageBeforeLatest().setN(v.startFrom.n));
       break;
-    case 'approximateDataPosition':
-      specPb.setStartFromApproximateDataPosition(new consumerPb.ApproximateDataPosition().setFraction(v.startFrom.fraction));
+    case 'approximateEntryPosition':
+      specPb.setStartFromApproximateEntryPosition(new consumerPb.ApproximateEntryPosition().setFraction(v.startFrom.fraction));
       break;
-    case 'approximateTimePosition':
-      specPb.setStartFromApproximateTimePosition(new consumerPb.ApproximateTimePosition().setFraction(v.startFrom.fraction));
+    case 'approximatePublishTimePosition':
+      specPb.setStartFromApproximatePublishTimePosition(new consumerPb.ApproximatePublishTimePosition().setFraction(v.startFrom.fraction));
       break;
     case 'messageId':
       specPb.setStartFromMessageId(managedMessageIdValOrRefToPb(v.startFrom.messageId));
@@ -1197,7 +1197,22 @@ export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSess
     pauseTriggerChain: managedConsumerSessionPauseTriggerChainValOrRefFromPb(v.getPauseTriggerChain()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
     valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!),
-    numDisplayItems: v.getNumDisplayItems()?.getValue()
+    numDisplayItems: v.getNumDisplayItems()?.getValue(),
+    // Absent/unspecified on the wire means the DEFAULT, which is best-effort - the server maps
+    // proto absence the same way, for items saved before the field existed as much as for new
+    // ones. Guaranteed and Fastest are only ever explicit choices.
+    messageDeliveryOrder: v.getMessageDeliveryOrder() === consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED
+      ? 'as-received'
+      : v.getMessageDeliveryOrder() === consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
+        ? 'guaranteed'
+        : 'best-effort',
+    deliveryOrderKey: v.getDeliveryOrderKey() === consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_BROKER_PUBLISH_TIME
+      ? 'broker-publish-time'
+      : v.getDeliveryOrderKey() === consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_EVENT_TIME
+        ? 'event-time'
+        : v.getDeliveryOrderKey() === consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_PUBLISH_TIME
+          ? 'publish-time'
+          : undefined
   };
 }
 
@@ -1212,6 +1227,24 @@ export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSession
 
   if (v.numDisplayItems !== undefined) {
     specPb.setNumDisplayItems(new Int64Value().setValue(v.numDisplayItems));
+  }
+
+  if (v.messageDeliveryOrder === 'as-received') {
+    specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED);
+  } else if (v.messageDeliveryOrder === 'guaranteed') {
+    specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
+  } else {
+    // 'best-effort' or a missing value from an older JSON item: both write the default, so a
+    // re-saved legacy item carries the order it will actually run under.
+    specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+  }
+
+  if (v.deliveryOrderKey === 'broker-publish-time') {
+    specPb.setDeliveryOrderKey(consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_BROKER_PUBLISH_TIME);
+  } else if (v.deliveryOrderKey === 'event-time') {
+    specPb.setDeliveryOrderKey(consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_EVENT_TIME);
+  } else if (v.deliveryOrderKey === 'publish-time') {
+    specPb.setDeliveryOrderKey(consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_PUBLISH_TIME);
   }
 
   return specPb;

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import s from './StartFromInput.module.css'
 import Select, { List } from '../../../Select/Select';
 import DatetimePicker from '../../../DatetimePicker/DatetimePicker';
-import { ConsumerSessionStartFrom } from '../../types';
+import { ConsumerSessionStartFrom, MessageDeliveryOrder } from '../../types';
 import Input from '../../../Input/Input';
 import RelativeDateTimePicker from '../../../RelativeDateTimePicker/RelativeDateTimePicker';
 import { v4 as uuid } from 'uuid';
@@ -15,7 +15,7 @@ import { cloneDeep } from 'lodash';
 import ApproximateFractionInput from './ApproximateFractionInput';
 import MessageCountInput from './MessageCountInput';
 import { defaultApproximateFraction } from './approximate-fraction';
-import { TargetTopicsPersistency, startFromPersistencyAdvice } from './target-topics-persistency';
+import { TargetTopicsPersistency, historyDependentStartFromTypes, startFromPersistencyAdvice } from './target-topics-persistency';
 import { messageIdError } from './message-id';
 import { latestMessageCountMax } from './message-count';
 
@@ -31,6 +31,13 @@ export type StartFromInputProps = {
    * (the standalone library item editor), which leaves every mode available.
    */
   targetTopicsPersistency?: TargetTopicsPersistency;
+  /**
+   * The session's delivery order, when the editor knows it. Guaranteed is an exact replay of
+   * recorded history (owner decision, 2026-08-09), so "Latest message" - a replay of nothing - is
+   * disabled under it, with a note, through the same mechanism as the non-persistent gating.
+   * Omitted in the standalone library item editor, which gates nothing.
+   */
+  deliveryOrder?: MessageDeliveryOrder;
 };
 
 type StartFromType = ConsumerSessionStartFrom['type'];
@@ -47,40 +54,38 @@ const list: List<StartFromType> = [
   { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
   { type: 'item', title: 'Skip first n messages', value: 'nthMessageAfterEarliest' },
   { type: 'item', title: 'Latest n messages', value: 'nthMessageBeforeLatest' },
-  // Two modes, not one, because "about half way in" is two different questions: half the MESSAGES
-  // behind you, or half the TIME behind you. On a topic where almost everything arrived in the last
-  // hour of a month's retention those land hours and weeks apart.
-  { type: 'item', title: 'About % through the data', value: 'approximateDataPosition' },
-  { type: 'item', title: 'About % through the time range', value: 'approximateTimePosition' }
+  // One estimates position from retained entries; the other interpolates over publish time.
+  { type: 'item', title: 'Approximate position (% of data)', value: 'approximateEntryPosition' },
+  { type: 'item', title: 'Approximate position (% of time)', value: 'approximatePublishTimePosition' }
 ];
 
-// Every mode except the live tail needs the topic to have kept something. On a non-persistent topic
-// they are all unusable - including "Earliest message", which is the misleading one: nothing is
-// retained, so it quietly behaves as "from now" instead of failing.
-const historyDependentStartFromTypes: StartFromType[] = [
-  'earliestMessage',
-  'messageId',
-  'dateTime',
-  'relativeDateTime',
-  'nthMessageAfterEarliest',
-  'nthMessageBeforeLatest',
-  // Both approximate modes are proportions OF a history, so neither can be computed where there is
-  // none: one needs the topic's entry count, the other its first and last publish times.
-  'approximateDataPosition',
-  'approximateTimePosition'
-];
-
-function startFromList(isHistoryUnavailable: boolean): List<StartFromType> {
-  if (!isHistoryUnavailable) {
+// Which modes need retained history - and why - lives in target-topics-persistency.ts, shared
+// with the session-local fallback so the note below and what Play actually sends cannot disagree.
+//
+// `isLatestReplayGated` is the other gate, from the delivery order: Guaranteed replays recorded
+// history, and "Latest message" selects a replay of nothing - the combination is legal (Play
+// yields an instant caught-up answer) but never useful, so the option is disabled while the
+// history modes are on the table. Never together with the history gate: on topics that retain
+// nothing, Latest is the one mode that exists and must stay selectable.
+function startFromList(isHistoryUnavailable: boolean, isLatestReplayGated: boolean): List<StartFromType> {
+  if (!isHistoryUnavailable && !isLatestReplayGated) {
     return list;
   }
 
   return list.map((item) => {
-    if (item.type !== 'item' || !historyDependentStartFromTypes.includes(item.value)) {
+    if (item.type !== 'item') {
       return item;
     }
 
-    return { ...item, disabled: true };
+    if (isHistoryUnavailable && historyDependentStartFromTypes.includes(item.value)) {
+      return { ...item, disabled: true };
+    }
+
+    if (isLatestReplayGated && !isHistoryUnavailable && item.value === 'latestMessage') {
+      return { ...item, disabled: true };
+    }
+
+    return item;
   });
 }
 
@@ -93,6 +98,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     ? 'none'
     : startFromPersistencyAdvice(props.targetTopicsPersistency);
   const isHistoryUnavailable = persistencyAdvice === 'history-unavailable';
+  const isLatestReplayGated = props.deliveryOrder === 'guaranteed';
   const resolvedStartFromType = resolveResult.type === 'success' ? resolveResult.value?.spec?.startFrom?.type : undefined;
 
   useEffect(() => {
@@ -101,22 +107,15 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     }
   }, [resolveResult]);
 
-  // A mode the selected topics can no longer honour would just sit there being unusable, so drop
-  // back to the live tail - the only thing a non-persistent topic can actually do.
-  useEffect(() => {
-    if (!isHistoryUnavailable || props.isReadOnly || resolveResult.type !== 'success') {
-      return;
-    }
-
-    if (resolvedStartFromType === undefined || resolvedStartFromType === 'latestMessage') {
-      return;
-    }
-
-    props.onChange({
-      ...props.value,
-      val: { ...resolveResult.value, spec: { startFrom: { type: 'latestMessage' } } }
-    });
-  }, [isHistoryUnavailable, resolvedStartFromType, props.isReadOnly]);
+  // A configured mode the selected topics can no longer honour is NOT rewritten. This effect used
+  // to overwrite it with the live tail, which silently destroyed the configured message id / time
+  // / count - and, for a referenced library item, wrote a local `val` over a kept
+  // `type: 'reference'`, so the session disagreed with the item it named. The stored value now
+  // stays exactly as the user wrote it; the session applies the live tail as a session-local
+  // substitution at conversion time (effectiveStartFrom), and the note below says so.
+  const isStartFromInapplicable = isHistoryUnavailable
+    && resolvedStartFromType !== undefined
+    && historyDependentStartFromTypes.includes(resolvedStartFromType);
 
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
@@ -176,7 +175,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       <div className={s.TypeSelect}>
         <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
           testId="cs-start-from"
-          list={startFromList(isHistoryUnavailable)}
+          list={startFromList(isHistoryUnavailable, isLatestReplayGated)}
           value={itemSpec.startFrom.type}
           onChange={(v) => {
             switch (v as StartFromType) {
@@ -196,12 +195,12 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 5 } });
                 return;
               }
-              case 'approximateDataPosition': {
-                onSpecChange({ startFrom: { type: 'approximateDataPosition', fraction: defaultApproximateFraction } });
+              case 'approximateEntryPosition': {
+                onSpecChange({ startFrom: { type: 'approximateEntryPosition', fraction: defaultApproximateFraction } });
                 return;
               }
-              case 'approximateTimePosition': {
-                onSpecChange({ startFrom: { type: 'approximateTimePosition', fraction: defaultApproximateFraction } });
+              case 'approximatePublishTimePosition': {
+                onSpecChange({ startFrom: { type: 'approximatePublishTimePosition', fraction: defaultApproximateFraction } });
                 return;
               }
               case 'messageId': {
@@ -253,10 +252,25 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           now on.
         </div>
       )}
+      {isStartFromInapplicable && (
+        <div className={s.PersistencyNote} data-testid="cs-start-from-inapplicable-note" role="status">
+          The configured start position needs history these topics do not keep, so this session will start from the
+          latest message instead. The configuration itself is left unchanged.
+        </div>
+      )}
       {persistencyAdvice === 'history-partial' && (
         <div className={s.PersistencyNote} data-testid="cs-start-from-mixed-persistency-note">
           Some of the selected topics are non-persistent and keep no history. Those start from now, whatever is chosen
           here.
+        </div>
+      )}
+      {/* Both directions of the Latest x Guaranteed gate end here: picking Guaranteed while Latest
+          is chosen, and looking at Latest while Guaranteed is chosen. A SAVED combo is never
+          rewritten - it loads as written, this note explains it, and Play yields the server's
+          instant caught-up answer. */}
+      {isLatestReplayGated && (
+        <div className={s.PersistencyNote} data-testid="cs-start-from-latest-guaranteed-note" role="status">
+          Guaranteed replays recorded history - to follow live, use Best effort.
         </div>
       )}
       {(itemSpec.startFrom.type === 'nthMessageAfterEarliest' || itemSpec.startFrom.type === 'nthMessageBeforeLatest') && (
@@ -292,68 +306,45 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           />
         </div>
       )}
-      {itemSpec.startFrom.type === 'approximateDataPosition' && (
+      {itemSpec.startFrom.type === 'approximateEntryPosition' && (
         <div className={s.AdditionalControls}>
           <ApproximateFractionInput
-            testIdPrefix="cs-start-from-data"
+            testIdPrefix="cs-start-from-entry"
+            accessibleName="Approximate data position"
+            startLabel="Earliest"
+            endLabel="New messages"
             fraction={itemSpec.startFrom.fraction}
-            onChange={(fraction) => onSpecChange({ startFrom: { type: 'approximateDataPosition', fraction } })}
+            onChange={(fraction) => onSpecChange({ startFrom: { type: 'approximateEntryPosition', fraction } })}
             disabled={props.disabled}
             isReadOnly={props.isReadOnly}
           />
-          <div className={s.ApproximateFractionNote} data-testid="cs-start-from-data-note">
-            <div>
-              Starts partway into the messages a topic still keeps: 0% is the oldest message still kept. 100% goes
-              past all of them and shows only messages published from now on, exactly like "Latest message" - it is
-              the one percentage that shows nothing that is already there.
-            </div>
-            <div>
-              This counts messages, not time. If most of the messages arrived in the last hour, then 50% lands inside
-              that last hour - use "About % through the time range" to go half way back in time instead.
-            </div>
-            <div>
-              Every topic starts at its own position. If this session covers more than one topic, or a partitioned
-              topic, each topic and each partition jumps to that percentage of its own messages - not of all of them
-              put together.
-            </div>
-            <div>
-              The position is approximate. Pulsar stores messages in batched entries, and the jump is measured in
-              entries, so 75% of the entries is not exactly 75% of the messages - the two drift apart as far as batch
-              sizes varied. That is the trade for staying instant on a huge topic, where "Skip first n messages" has to
-              count every message it skips.
-            </div>
+          <div
+            id="cs-start-from-entry-note"
+            className={s.ApproximateFractionNote}
+            data-testid="cs-start-from-entry-note"
+          >
+            Estimated from retained entries; each topic and partition is positioned independently.
           </div>
         </div>
       )}
-      {itemSpec.startFrom.type === 'approximateTimePosition' && (
+      {itemSpec.startFrom.type === 'approximatePublishTimePosition' && (
         <div className={s.AdditionalControls}>
           <ApproximateFractionInput
-            testIdPrefix="cs-start-from-time"
+            testIdPrefix="cs-start-from-publish-time"
+            accessibleName="Approximate publish-time position"
+            startLabel="Earliest"
+            endLabel="Last publish time"
             fraction={itemSpec.startFrom.fraction}
-            onChange={(fraction) => onSpecChange({ startFrom: { type: 'approximateTimePosition', fraction } })}
+            onChange={(fraction) => onSpecChange({ startFrom: { type: 'approximatePublishTimePosition', fraction } })}
             disabled={props.disabled}
             isReadOnly={props.isReadOnly}
           />
-          <div className={s.ApproximateFractionNote} data-testid="cs-start-from-time-note">
-            <div>
-              Starts partway through the time a topic still covers: 0% is the oldest message still kept, 100% is the
-              newest one. 50% is the middle of that stretch of time, whether one message was published in it or a
-              billion.
-            </div>
-            <div>
-              This measures time, not messages. If most of the messages arrived in the last hour of a month's worth of
-              history, 50% here is about two weeks ago - use "About % through the data" to land half way through the
-              messages instead.
-            </div>
-            <div>
-              A partitioned topic is treated as one topic: the stretch runs from its oldest message to its newest,
-              across every partition, and all of them jump to the same moment. A partition that went quiet early
-              simply has nothing left to show from there. Separate topics still each start at their own moment.
-            </div>
-            <div>
-              The moment is approximate: it is worked out from when messages were published, and that timestamp comes
-              from the machine that sent them.
-            </div>
+          <div
+            id="cs-start-from-publish-time-note"
+            className={s.ApproximateFractionNote}
+            data-testid="cs-start-from-publish-time-note"
+          >
+            Estimated from the first and last retained entries’ publish times; each topic has its own range and its partitions share one cutoff.
           </div>
         </div>
       )}

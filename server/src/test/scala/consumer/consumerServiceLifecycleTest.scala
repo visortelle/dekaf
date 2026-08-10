@@ -94,6 +94,7 @@ object consumerServiceLifecycleTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = pool,
             consumers = Map(topicFqn -> consumer),
+            pauseArbiters = (Map(topicFqn -> consumer)).map((fqn, c) => fqn -> ConsumerPauseArbiter(c)),
             consumerListener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ())),
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )

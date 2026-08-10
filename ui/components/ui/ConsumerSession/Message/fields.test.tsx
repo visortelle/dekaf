@@ -61,4 +61,17 @@ describe('ValueField copies the whole value, not the truncated display', () => {
     fireEvent.click(cell);
     await waitFor(() => expect(clipboardWrites).toEqual([shortValue]));
   });
+
+  it('exposes the copy action to the keyboard as well as the mouse', async () => {
+    const value = 'keyboard-copy';
+    const cell = renderValue(value);
+
+    expect(cell.getAttribute('role')).toBe('button');
+    expect(cell.getAttribute('tabindex')).toBe('0');
+    expect(cell.getAttribute('aria-label')).toBe('Copy Value');
+
+    fireEvent.keyDown(cell, { key: 'Enter' });
+    fireEvent.keyDown(cell, { key: ' ' });
+    await waitFor(() => expect(clipboardWrites).toEqual([value, value]));
+  });
 });

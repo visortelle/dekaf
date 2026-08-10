@@ -71,6 +71,7 @@ object startFromProgressTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = Map.empty,
+            pauseArbiters = Map.empty,
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -217,6 +218,54 @@ object startFromProgressTest extends ZIOSpecDefault:
             val actions = (1 to 4).map(_ => l.decide(topicFqn, canAcknowledge = true))
             assertTrue(actions.count(_ == ConsumerListener.Action.Drop) == 2, l.startFromDiscard.remaining == 0L)
         },
+        test("an ORDERING layer does not mask the latest-n overshoot from the effective counter") {
+            // "Latest n" + a delivery order (the DEFAULT) arms BOTH a per-topic overshoot counter
+            // on the listener AND an ordering-only layer whose own budget is a shared ZERO. The
+            // ordering layer does no dropping, so the zero must not shadow the listener's counter:
+            // `remainingStartFromDiscard` is what suppresses the rate limiter's permit hold while
+            // the overshoot is still being dropped, and reporting 0 there un-suppressed it in
+            // exactly the window the suppression protects.
+            val l = listener()
+            l.startFromDiscard = StartFromDiscard.perTopic(Map(topicFqn -> 3L))
+            l.startFromOrdering = StartFromOrdering.make[HeldMessage](
+                StartFromOrderingPlan.Ordered(
+                    // Best effort carries EMPTY recorded ends - the continuous rules need none.
+                    Vector(
+                        StartFromStream(startFromStreamId("cs-progress-0", topicFqn), EntryPosition.empty),
+                        StartFromStream(startFromStreamId("cs-progress-0", otherTopicFqn), EntryPosition.empty)
+                    ),
+                    _root_.consumer.session_config.MessageDeliveryOrder.BestEffort
+                )
+            )
+            val runner = session(0 -> targetRunner(l))
+
+            val atStart = runner.remainingStartFromDiscard
+            l.decide(topicFqn, canAcknowledge = true)
+
+            assertTrue(
+                atStart == 3L,
+                runner.remainingStartFromDiscard == 2L,
+                // Still NOT user-facing progress: the overshoot is internal, whatever carries it.
+                progressOf(runner).isEmpty
+            ) ?? s"atStart=$atStart remaining=${runner.remainingStartFromDiscard} progress=${progressOf(runner)}"
+        },
+        test("a MERGE-owned skip budget still answers through the effective counter") {
+            // The control for the fix above: when the ordering layer DOES own the budget (a
+            // multi-stream skip-n), its counter is the one doing the dropping and must keep
+            // being the one reported.
+            val l = listener()
+            l.startFromOrdering = StartFromOrdering.make[HeldMessage](
+                StartFromOrderingPlan.GlobalSkip(
+                    4,
+                    Vector(
+                        StartFromStream(startFromStreamId("cs-progress-0", topicFqn), EntryPosition(1L, 9L, -1, 1)),
+                        StartFromStream(startFromStreamId("cs-progress-0", otherTopicFqn), EntryPosition(1L, 9L, -1, 1))
+                    )
+                )
+            )
+            val runner = session(0 -> targetRunner(l))
+            assertTrue(runner.remainingStartFromDiscard == 4L)
+        },
         test("a SKIP-N counter is user-facing progress and is still reported") {
             // The control: the same machinery, armed by "skip the first n", is exactly what the
             // progress API exists for.
@@ -268,15 +317,24 @@ object startFromProgressTest extends ZIOSpecDefault:
             l.startFromDiscard = StartFromDiscard.shared(2)
             val runner = session(0 -> targetRunner(l))
             val observer = RecordingObserver()
+            // Wired like production: sendResponse now refuses an observer that is not the
+            // session's current play stream, so the shape test resumes first.
+            runner.resume(observer, isDebug = false)
             (1 to 2).foreach(_ => l.decide(topicFqn, canAcknowledge = true))
 
             runner.sendResponse(observer, Seq(consumerPb.Message(numMessageProcessed = 5)), Vector.empty)
 
-            assertTrue(observer.progressReports == Vector((2L, 2L, true)), observer.received.head.messages.size == 1)
+            // The resumed listener also pushes real in-flight progress frames as the drops land;
+            // the pinned claim is about the DELIVERED message's frame - the last one out.
+            assertTrue(
+                observer.progressReports.last == (2L, 2L, true),
+                observer.received.last.messages.size == 1
+            )
         },
         test("a delivered message on a session that skipped nothing carries no stats at all") {
             val runner = session(0 -> targetRunner(listener()))
             val observer = RecordingObserver()
+            runner.resume(observer, isDebug = false)
 
             runner.sendResponse(observer, Seq(consumerPb.Message()), Vector.empty)
 
@@ -408,4 +466,154 @@ object startFromProgressTest extends ZIOSpecDefault:
         }
     ) @@ TestAspect.sequential
 
-    def spec = suite(this.getClass.toString)(totalSuite, throttleSuite, sessionProgressSuite, responseSuite, pushSuite)
+    private val stallDisclosureSuite = suite("disclosing a stalled delivery order with no counted skip")(
+        test("a GUARANTEED stall pushes the waiting-streams disclosure although nothing is skipped or delivered") {
+            // H2's exact shape: an ordering-ONLY session (no skip-n) stalls under Guaranteed. Its
+            // budget is a shared ZERO, so `startFromProgress` is None - and the old gate hung the
+            // whole push on it, so no ResumeResponse was ever written: the session sat in state
+            // `running`, indistinguishable from an empty topic. The stall must reach the client
+            // through the same stats channel every response carries, throttled to one message-less
+            // frame per NEW stall warning - never a frame per held message or per sweep tick.
+            //
+            // The full production path is driven: a real GuaranteedOnly merge with an injected
+            // clock, the real listener sweep, the real runner closure, a recording observer. The
+            // runner is PAUSED after resume so the background sweep timer and the delivery pump
+            // stay out of the way - the sweep is driven by hand, deterministically.
+            val clock = new AtomicLong(0L)
+            val streamA = startFromStreamId("cs-progress-0", topicFqn)
+            val streamB = startFromStreamId("cs-progress-0", otherTopicFqn)
+            val merge = GlobalSkipMerge[HeldMessage](
+                streamIds = Vector(streamA, streamB),
+                drainedAtStart = Set.empty,
+                discard = StartFromDiscard.shared(0),
+                nowMs = () => clock.get,
+                policy = OrderingPolicy.GuaranteedOnly
+            )
+            val l = listener()
+            // MID-REPLAY streams: far-future recorded ends, so nothing offered here reads as
+            // finished - the stall being disclosed is a stream that still owes its recorded
+            // range. (Empty ends would mean "nothing to replay", which since the exact-replay
+            // redesign finishes the stream instead of waiting on it.)
+            l.startFromOrdering = new StartFromOrdering[HeldMessage](
+                Some(merge),
+                Map(
+                    streamA -> StartFromStream(streamA, EntryPosition(1L, 1_000_000L, -1, 1)),
+                    streamB -> StartFromStream(streamB, EntryPosition(1L, 1_000_000L, -1, 1))
+                )
+            )
+            val runner = session(0 -> targetRunner(l))
+            val observer = RecordingObserver()
+            runner.resume(observer, isDebug = false)
+            // Cancels the real 250ms sweep timer and pauses the drain - which also short-circuits
+            // the guaranteed pump's pacing check, so the held payloads below are never dereferenced.
+            runner.pause()
+
+            // Stream a speaks; b stays silent. Guaranteed holds a-100 and waits on b, forever.
+            var nextEntryId = 0L
+            def offer(streamFqn: String, orderTime: Long): Unit =
+                nextEntryId += 1
+                l.startFromOrdering.offer(
+                    consumerName = "cs-progress-0",
+                    topicFqn = streamFqn,
+                    orderTime = orderTime,
+                    messageId = new org.apache.pulsar.client.impl.MessageIdImpl(1L, nextEntryId, -1),
+                    // Never delivered in this test (the pump is short-circuited by the paused
+                    // drain), so the payload's consumer and message are never touched.
+                    payload = HeldMessage(null, null, l)
+                )
+                ()
+            offer(topicFqn, 100L)
+            l.sweepStartFromStall() // stamps the blind clock; the warning window has not passed
+            val beforeWarning = observer.received.size
+
+            clock.set(startFromMergeStallWarnMs + 1)
+            l.sweepStartFromStall() // crosses the warn window: the disclosure must go out NOW
+            val atFirstWarning = observer.received.size
+            // The server-side diagnostic knows WHICH stream is waited on; the wire carries only
+            // the count (there is no per-stream proto field).
+            val stalledIds = l.startFromOrdering.stalledStreamIds
+            l.sweepStartFromStall() // still stalled, no NEW warning: the throttle holds the line
+            // A drop-path report while the SAME stall persists (what every latest-n overshoot drop
+            // fires) must not re-push either - the disclosure is once per NEW warning, wherever
+            // the report comes from.
+            l.onStartFromDiscardProgress()
+            val afterQuietSweep = observer.received.size
+
+            // b finally speaks: the stall resolves...
+            offer(otherTopicFqn, 50L)
+            val waitingAfterRecovery = l.startFromOrdering.stalledStreamCount
+            // ...its head is consumed (by hand, through the barrier - no delivery machinery)...
+            l.startFromOrdering.inOrder {
+                l.startFromOrdering.peekGuaranteed()
+                l.startFromOrdering.commitGuaranteed()
+            }
+            // ...and b is silent again: a FRESH stall must disclose again, exactly once.
+            l.sweepStartFromStall() // stamps the new blind clock
+            clock.addAndGet(startFromMergeStallWarnMs + 1)
+            l.sweepStartFromStall()
+
+            val frames = observer.received
+            assertTrue(
+                beforeWarning == 0,
+                atFirstWarning == 1,
+                stalledIds == Vector(streamB),
+                afterQuietSweep == 1,
+                waitingAfterRecovery == 0,
+                frames.size == 2,
+                frames.forall(_.messages.isEmpty),
+                frames.forall(_.consumerStats.exists(stats =>
+                    stats.deliveryOrderWaitingStreams == 1 && stats.deliveryOrderActive && stats.startFromProgress.isEmpty
+                ))
+            ) ?? (s"beforeWarning=$beforeWarning atFirstWarning=$atFirstWarning afterQuietSweep=$afterQuietSweep " +
+                s"frames=${frames.map(f => (f.messages.size, f.consumerStats))}")
+        },
+        test("a client that asked for no stats is not sent the stall disclosure frame") {
+            val clock = new AtomicLong(0L)
+            val streamA = startFromStreamId("cs-progress-0", topicFqn)
+            val streamB = startFromStreamId("cs-progress-0", otherTopicFqn)
+            val merge = GlobalSkipMerge[HeldMessage](
+                streamIds = Vector(streamA, streamB),
+                drainedAtStart = Set.empty,
+                discard = StartFromDiscard.shared(0),
+                nowMs = () => clock.get,
+                policy = OrderingPolicy.GuaranteedOnly
+            )
+            val l = listener()
+            // Mid-replay shape, exactly as the disclosure test above: far-future recorded ends.
+            l.startFromOrdering = new StartFromOrdering[HeldMessage](
+                Some(merge),
+                Map(
+                    streamA -> StartFromStream(streamA, EntryPosition(1L, 1_000_000L, -1, 1)),
+                    streamB -> StartFromStream(streamB, EntryPosition(1L, 1_000_000L, -1, 1))
+                )
+            )
+            val runner = session(0 -> targetRunner(l))
+            val observer = RecordingObserver()
+            runner.resume(observer, isDebug = false, includeConsumerStats = false)
+            runner.pause()
+
+            l.startFromOrdering.offer("cs-progress-0", topicFqn, 100L, new org.apache.pulsar.client.impl.MessageIdImpl(1L, 1L, -1), HeldMessage(null, null, l))
+            l.sweepStartFromStall()
+            clock.set(startFromMergeStallWarnMs + 1)
+            l.sweepStartFromStall()
+
+            assertTrue(observer.received.isEmpty) ??
+                s"a stats-less client received ${observer.received.size} stall frames"
+        },
+        test("the stall diagnostic classifies empty-forever, drained-to-end, and lagging streams") {
+            // The debug log's classification is pure so it is pinned without a broker: a stream
+            // with nothing ever published, a stream the session has read to its end, and a stream
+            // that verifiably holds messages the session has not received yet must each read
+            // differently - the last is the case the guarantee exists for.
+            val end = EntryPosition(1L, 10L, -1, 1)
+            assertTrue(
+                stalledStreamEmptinessNote(None, None).contains("could not be read"),
+                stalledStreamEmptinessNote(Some(EntryPosition.empty), None).contains("no message has ever been published"),
+                stalledStreamEmptinessNote(Some(end), Some(EntryPosition(1L, 10L, -1, 1))).contains("waiting for a NEW message"),
+                stalledStreamEmptinessNote(Some(end), Some(EntryPosition(1L, 4L, -1, 1))).contains("delivery lag"),
+                stalledStreamEmptinessNote(Some(end), None).contains("delivery lag")
+            )
+        }
+    ) @@ TestAspect.sequential
+
+    def spec = suite(this.getClass.toString)(totalSuite, throttleSuite, sessionProgressSuite, responseSuite, pushSuite, stallDisclosureSuite)

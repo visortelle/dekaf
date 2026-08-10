@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import s from './SessionConfiguration.module.css'
@@ -24,6 +24,9 @@ import moveRightIcon from './icons/move-right.svg';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import NumDisplayItemsInput from './NumDisplayItemsInput';
 import { defaultNumDisplayItems } from './display-items';
+import Select from '../../Select/Select';
+import { DeliveryOrderKey, MessageDeliveryOrder } from '../types';
+import { decodeConsumerSessionConfig, describeProblem } from './decode-session-config';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef,
@@ -34,80 +37,9 @@ export type SessionConfigurationProps = {
   libraryBrowserPanel?: Partial<LibraryBrowserPanelProps>
 };
 
-// `/consumer-session?id=` accepts the id of ANY persisted library item, so the value handed to this
-// editor is not guaranteed to be a consumer session config - it can be a foreign item type or an
-// incomplete spec. Reaching into such a spec used to throw during render and, with no error boundary
-// above the route, take the whole app down with it. Hence the tolerant reads below and the shape
-// check before rendering the editor.
-function isConsumerSessionConfigSpec(spec: unknown): spec is ManagedConsumerSessionConfigSpec {
-  const isObject = (v: unknown) => typeof v === 'object' && v !== null;
-
-  if (!isObject(spec)) {
-    return false;
-  }
-
-  const s = spec as Partial<ManagedConsumerSessionConfigSpec>;
-
-  // A val-or-ref field must be the DISCRIMINATED shape, not merely an object: a persisted
-  // `{ startFrom: {} }` passed the object check and then sat in useManagedItemValue forever -
-  // neither a value to render nor a reference to resolve, so the editor showed an endless
-  // spinner. Malformed means broken, and broken must say so.
-  const isValOrRef = (v: unknown): boolean => {
-    if (!isObject(v)) {
-      return false;
-    }
-    const candidate = v as { type?: unknown; val?: unknown; ref?: unknown };
-    if (candidate.type === 'value') {
-      return isObject(candidate.val);
-    }
-    if (candidate.type === 'reference') {
-      return typeof candidate.ref === 'string' && candidate.ref !== '';
-    }
-    return false;
-  };
-
-  // Every field the RUNTIME conversion reads has to be here, not only the ones whose absence threw
-  // during render: a spec that renders but cannot be converted leaves the session with no runtime
-  // config, which used to show as a Play button that started nothing.
-  return Array.isArray(s.targets)
-    && isValOrRef(s.startFrom)
-    && isObject(s.messageFilterChain)
-    && isObject(s.coloringRuleChain)
-    && isObject(s.valueProjectionList)
-    && isObject(s.pauseTriggerChain);
-}
-
-function detectAdvancedConfig(value: ManagedConsumerSessionConfigValOrRef): boolean {
-  if (value.val?.spec?.coloringRuleChain?.val?.spec?.coloringRules?.length) {
-    return true;
-  }
-
-  if (value.val?.spec?.messageFilterChain?.val?.spec?.filters?.length) {
-    return true;
-  }
-
-  if (value.val?.spec?.valueProjectionList?.val?.spec?.projections?.length) {
-    return true;
-  }
-
-  if (value.val?.spec?.numDisplayItems !== undefined) {
-    return true;
-  }
-
-  return false;
-}
-
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const ref = React.useRef<HTMLDivElement>(null);
-  const [isShowAdvanced, setIsShowAdvanced] = useState(detectAdvancedConfig(props.value));
-  const isAdvancedConfig = detectAdvancedConfig(props.value);
-
-  useEffect(() => {
-    if (isAdvancedConfig && !isShowAdvanced) {
-      setIsShowAdvanced(true);
-    }
-  }, [isAdvancedConfig, isShowAdvanced]);
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionConfig>(props.value);
 
@@ -126,9 +58,15 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   }
 
   const item = resolveResult.value;
-  const itemSpec = item?.spec;
 
-  if (!isConsumerSessionConfigSpec(itemSpec)) {
+  // `/consumer-session?id=` accepts the id of ANY persisted library item, so what arrives here is
+  // not guaranteed to be a consumer session config - it can be a foreign item type, a spec written
+  // by another build, or one that was hand-edited. Reaching into such a spec used to throw during
+  // render and, with no error boundary above the route, take the whole app down with it. So the
+  // whole document is decoded before anything is dereferenced, and a failure says WHERE.
+  const decoded = decodeConsumerSessionConfig(item);
+
+  if (!decoded.ok) {
     return (
       <div style={{ margin: '12rem', flex: '1' }}>
         <NothingToShow
@@ -139,6 +77,8 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               {item?.metadata?.type === undefined ? '' : ` (type: ${item.metadata.type})`}
               &nbsp;is not a valid Consumer Session configuration.
               <br />
+              <code data-testid="cs-invalid-config-problem">{describeProblem(decoded.problem)}</code>
+              <br />
               Open a Consumer Session configuration item, or start a new session instead.
             </div>
           )}
@@ -146,6 +86,28 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
       </div>
     );
   }
+
+  const itemSpec = decoded.item.spec;
+
+  // A spec saved before the field existed names no order, and an absent value means the product
+  // default - Best effort - here exactly as it does on the wire and on the server.
+  const deliveryOrder = itemSpec.messageDeliveryOrder ?? 'best-effort';
+  const deliveryOrderTime = itemSpec.deliveryOrderKey ?? 'publish-time';
+
+  const deliveryOrderHelp = deliveryOrder === 'guaranteed'
+    ? 'Replays everything recorded up to Play (of what retention still holds) in exact selected-timestamp ' +
+      'order, then pauses when caught up; Resume replays what was recorded since. Multi-stream sessions ' +
+      'require persistent topics.'
+    : deliveryOrder === 'best-effort'
+      ? 'Merges by the selected timestamp within ~0.75 s. Late messages may appear out of order; none are dropped.'
+      : 'Delivers each topic or partition independently, with no reordering delay.';
+
+  const deliveryOrderTimeHelp = deliveryOrderTime === 'broker-publish-time'
+    ? 'Recorded when the message reaches the broker. Requires broker timestamp entry metadata. ' +
+      'If the cluster does not expose it, the session cannot start; missing values use publish time.'
+    : deliveryOrderTime === 'event-time'
+      ? 'Optional timestamp set by the application. Missing values use publish time and are reported.'
+      : 'Added automatically by the producer; always present.';
 
   const onSpecChange = (spec: ManagedConsumerSessionConfigSpec) => {
     const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, val: { ...item, spec } };
@@ -175,10 +137,6 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                   type: 'value',
                   val: item as ManagedConsumerSessionConfig
                 };
-
-                const isAdvancedConfig = detectAdvancedConfig(newValue);
-                setIsShowAdvanced(isAdvancedConfig);
-
                 props.onChange(newValue);
               }}
               onSave={(item) => props.onChange({
@@ -207,61 +165,109 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             // The start-from modes depend on what the selected topics retain, and the targets that
             // decide that live here.
             targetTopicsPersistency={targetTopicsPersistency(itemSpec.targets, props.libraryContext)}
+            // ...and on the delivery order: Guaranteed is an exact replay of recorded history, so
+            // "Latest message" (a replay of nothing) is gated in the selector, with the note.
+            deliveryOrder={deliveryOrder}
           />
 
-          {!isAdvancedConfig && <Toggle
-            testId="cs-advanced-toggle"
-            value={isShowAdvanced}
-            onChange={v => setIsShowAdvanced(v)}
-            label='Show advanced settings'
-            isReadOnly={props.isReadOnly}
-          />}
-          {isShowAdvanced && (<>
-            <FormItem>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
-                <Toggle
-                  value={itemSpec.numDisplayItems !== undefined}
+          <FormItem>
+            <label htmlFor="cs-delivery-order-select" style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
+              <span>Delivery order</span>
+              <Select<MessageDeliveryOrder>
+                testId="cs-delivery-order"
+                id="cs-delivery-order-select"
+                ariaDescribedBy="cs-delivery-order-help"
+                value={deliveryOrder}
+                onChange={(v) => onSpecChange({
+                  ...itemSpec,
+                  messageDeliveryOrder: v
+                })}
+                list={[
+                  { type: 'item', value: 'guaranteed', title: 'Guaranteed' },
+                  { type: 'item', value: 'best-effort', title: 'Best effort' },
+                  { type: 'item', value: 'as-received', title: 'Fastest' }
+                ]}
+                isReadOnly={props.isReadOnly}
+              />
+            </label>
+            {/* Visible, not hover-only, and ASSOCIATED - the caveat is the contract. */}
+            <div id="cs-delivery-order-help" style={{ fontSize: '12rem', opacity: 0.75, marginTop: '4rem' }}>
+              {deliveryOrderHelp}
+            </div>
+            {deliveryOrder !== 'as-received' && (<>
+              <label
+                htmlFor="cs-delivery-order-key-select"
+                style={{ display: 'flex', alignItems: 'center', gap: '12rem', marginTop: '8rem' }}
+              >
+                <span>Order by</span>
+                <Select<DeliveryOrderKey>
+                  testId="cs-delivery-order-key"
+                  id="cs-delivery-order-key-select"
+                  ariaDescribedBy="cs-delivery-order-key-help"
+                  value={deliveryOrderTime}
                   onChange={(v) => onSpecChange({
                     ...itemSpec,
-                    numDisplayItems: v ? defaultNumDisplayItems : undefined
+                    deliveryOrderKey: v === 'publish-time' ? undefined : v
                   })}
-                  label='Limit num. display messages'
+                  list={[
+                    { type: 'item', value: 'publish-time', title: 'Publish time' },
+                    { type: 'item', value: 'broker-publish-time', title: 'Broker publish time' },
+                    { type: 'item', value: 'event-time', title: 'Event time' }
+                  ]}
                   isReadOnly={props.isReadOnly}
                 />
-                <div style={{ visibility: itemSpec.numDisplayItems === undefined ? 'hidden' : 'visible' }}>
-                  <NumDisplayItemsInput
-                    value={itemSpec.numDisplayItems ?? defaultNumDisplayItems}
-                    onChange={(numDisplayItems) => onSpecChange({ ...itemSpec, numDisplayItems })}
-                    isReadOnly={props.isReadOnly}
-                  />
-                </div>
+              </label>
+              <div id="cs-delivery-order-key-help" style={{ fontSize: '12rem', opacity: 0.75, marginTop: '4rem' }}>
+                {deliveryOrderTimeHelp}
               </div>
-            </FormItem>
+            </>)}
+          </FormItem>
 
-            <FilterChainEditor
-              testId="cs-session-filters"
-              value={itemSpec.messageFilterChain}
-              onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-              libraryContext={props.libraryContext}
-              isReadOnly={props.isReadOnly}
-            />
+          <FormItem>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
+              <Toggle
+                testId="cs-limit-display-items"
+                value={itemSpec.numDisplayItems !== undefined}
+                onChange={(v) => onSpecChange({
+                  ...itemSpec,
+                  numDisplayItems: v ? defaultNumDisplayItems : undefined
+                })}
+                label='Limit num. display messages'
+                isReadOnly={props.isReadOnly}
+              />
+              <div style={{ visibility: itemSpec.numDisplayItems === undefined ? 'hidden' : 'visible' }}>
+                <NumDisplayItemsInput
+                  value={itemSpec.numDisplayItems ?? defaultNumDisplayItems}
+                  onChange={(numDisplayItems) => onSpecChange({ ...itemSpec, numDisplayItems })}
+                  isReadOnly={props.isReadOnly}
+                />
+              </div>
+            </div>
+          </FormItem>
 
-            <ValueProjectionListInput
-              testId="cs-session-projections"
-              value={itemSpec.valueProjectionList}
-              onChange={(v) => onSpecChange({ ...itemSpec, valueProjectionList: v })}
-              libraryContext={props.libraryContext}
-              isReadOnly={props.isReadOnly}
-            />
+          <FilterChainEditor
+            testId="cs-session-filters"
+            value={itemSpec.messageFilterChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+            libraryContext={props.libraryContext}
+            isReadOnly={props.isReadOnly}
+          />
 
-            <ColoringRuleChainInput
-              testId="cs-session-coloring"
-              value={itemSpec.coloringRuleChain}
-              onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
-              libraryContext={props.libraryContext}
-              isReadOnly={props.isReadOnly}
-            />
-          </>)}
+          <ValueProjectionListInput
+            testId="cs-session-projections"
+            value={itemSpec.valueProjectionList}
+            onChange={(v) => onSpecChange({ ...itemSpec, valueProjectionList: v })}
+            libraryContext={props.libraryContext}
+            isReadOnly={props.isReadOnly}
+          />
+
+          <ColoringRuleChainInput
+            testId="cs-session-coloring"
+            value={itemSpec.coloringRuleChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+            libraryContext={props.libraryContext}
+            isReadOnly={props.isReadOnly}
+          />
 
           {/*
           <FormLabel
@@ -326,7 +332,13 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                   )}
                   <DeleteButton
                     testId="cs-target-remove"
-                    title='Remove this Consumer Session Target'
+                    title={itemSpec.targets.length > 1
+                      ? 'Remove this Consumer Session Target'
+                      : 'A session needs at least one target'}
+                    // Removing the last one leaves a session with nothing to consume from. The
+                    // server refuses that config and so does the decoder above, which would swap
+                    // this editor for the invalid-config error with no way back.
+                    disabled={itemSpec.targets.length === 1}
                     onClick={() => {
                       const newTargets = [...itemSpec.targets];
                       newTargets.splice(i, 1);

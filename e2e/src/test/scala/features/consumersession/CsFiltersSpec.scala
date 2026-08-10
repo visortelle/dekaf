@@ -20,7 +20,6 @@ class CsFiltersSpec extends DekafSuite:
     val (t, ns, topic) = fixtures.freshTopicParts()
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     val f = cs.sessionFilterPanel
 
     f.addFilter()
@@ -50,7 +49,6 @@ class CsFiltersSpec extends DekafSuite:
     val (t, ns, topic) = fixtures.freshTopicParts()
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     val f = cs.sessionFilterPanel
 
     f.addFilter()
@@ -71,7 +69,9 @@ class CsFiltersSpec extends DekafSuite:
     cs.setStartFrom("Earliest message")
     cs.play()
     val values = eventually() {
-      val vs = cs.columnValues("value")
+      // Whole-list read: a broken filter that let every skip-* through could push the older keeps
+      // out of the mounted viewport, and a mounted-rows read would then miss the leak.
+      val vs = cs.allColumnValues("value")
       assert(vs.contains("keep-last"), s"sentinel not loaded yet: $vs")
       vs
     }
@@ -119,7 +119,6 @@ class CsFiltersSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     val f = cs.sessionFilterPanel
     f.addFilter()
     f.setOp("string includes")

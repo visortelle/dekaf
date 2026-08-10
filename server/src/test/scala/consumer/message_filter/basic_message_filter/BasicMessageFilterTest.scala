@@ -24,9 +24,8 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
     )
 
     // ONE pool (and therefore one GraalVM Engine) for the whole suite: building an Engine per test
-    // cost ~132 of them. isDebug=false keeps ConsumerSessionContext from console.log-ing every
-    // message into the build output; TestResult.error is populated regardless of the debug flag.
-    // Safe because ZIO Test runs the tests of a suite sequentially.
+    // cost ~132 of them. TestResult.error is populated regardless of the debug flag. Safe because
+    // ZIO Test runs the tests of a suite sequentially.
     private val sessionContextPool = ConsumerSessionContextPool(isDebug = false)
 
     def runTestSpec(spec: TestSpec): Boolean =

@@ -27,6 +27,7 @@ import SessionConfiguration from './SessionConfiguration';
 import { getDefaultManagedItem } from '../../LibraryBrowser/default-library-items';
 import { consumerSessionConfigFromValOrRef } from '../../LibraryBrowser/model/resolved-items-conversions';
 import { defaultNumDisplayItems } from './display-items';
+import { decodeConsumerSessionConfig, describeProblem } from './decode-session-config';
 
 const contextForTopic = (topicPersistency: 'persistent' | 'non-persistent') => ({
   pulsarResource: {
@@ -118,9 +119,270 @@ describe('BUG-4: a malformed persisted consumer session config', () => {
 });
 
 /**
- * The start-from selector reacts to what the session's TARGETS point at, but the targets live here -
- * so the editor has to hand that down. Nothing in the selector's own tests can prove it was passed.
+ * P2.5 - the shape check has to be RECURSIVE.
+ *
+ * `/consumer-session?id=` accepts any persisted library item, and a persisted item is JSON on disk:
+ * written by an older build, hand-edited, truncated, or saved by a build with a different model. A
+ * check that asks only "is targets an array" and "are the four chains objects" lets a whole family
+ * of corrupt items through the front door, where they crash a few frames deeper (`topic.val.metadata.id`)
+ * or sit in `useManagedItemValue` forever - neither a value to render nor a reference to resolve.
+ *
+ * So this is a TABLE, walked at every level of the document: the item, its spec, each val-or-ref
+ * wrapper, each target, and the chains inside a target. Each row asserts the same two things - the
+ * decoder REFUSES and names the offending path, and the editor degrades through the one existing
+ * `cs-invalid-config` path instead of throwing.
  */
+describe('malformed saved items, level by level', () => {
+  /** The default item is Date-free, so a JSON round trip is a faithful deep clone here. */
+  const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+  const base = () => clone(getDefaultManagedItem('consumer-session-config', libraryContext)) as any;
+
+  const corrupt = (mutate: (item: any) => void) => {
+    const item = base();
+    mutate(item);
+    return item;
+  };
+
+  /** A second target, so a row can corrupt one target and leave a sound one beside it. */
+  const withTwoTargets = (mutate: (item: any) => void) => {
+    const item = base();
+    const second = clone(item.spec.targets[0]);
+    second.val.metadata.id = 'second-target';
+    item.spec.targets.push(second);
+    mutate(item);
+    return item;
+  };
+
+  const targetSpec = (item: any, index: number) => item.spec.targets[index].val.spec;
+
+  const cases: [string, any, string][] = [
+    // The item itself.
+    [
+      'a foreign library item type',
+      clone(getDefaultManagedItem('markdown-document', libraryContext)),
+      'metadata.type'
+    ],
+    ['no spec at all', corrupt((item) => delete item.spec), 'spec'],
+    ['a spec that is an array, not an object', corrupt((item) => (item.spec = [])), 'spec'],
+
+    // The config spec's own fields.
+    ['targets missing', corrupt((item) => delete item.spec.targets), 'spec.targets'],
+    ['targets not an array', corrupt((item) => (item.spec.targets = {})), 'spec.targets'],
+    ['targets EMPTY - a session with nothing to consume', corrupt((item) => (item.spec.targets = [])), 'spec.targets'],
+    ['startFrom missing', corrupt((item) => delete item.spec.startFrom), 'spec.startFrom'],
+    ['numDisplayItems stored as text', corrupt((item) => (item.spec.numDisplayItems = '500')), 'spec.numDisplayItems'],
+    [
+      'a delivery order this build does not have',
+      corrupt((item) => (item.spec.messageDeliveryOrder = 'whatever-comes-next')),
+      'spec.messageDeliveryOrder'
+    ],
+
+    // The val-or-ref wrappers.
+    ['a wrapper with no discriminant', corrupt((item) => (item.spec.startFrom = {})), 'spec.startFrom.type'],
+    ['a value wrapper with no val', corrupt((item) => (item.spec.startFrom = { type: 'value' })), 'spec.startFrom.val'],
+    [
+      'a reference wrapper with an empty ref',
+      corrupt((item) => (item.spec.startFrom = { type: 'reference', ref: '' })),
+      'spec.startFrom.ref'
+    ],
+    ['a NULL nested wrapper', corrupt((item) => (item.spec.coloringRuleChain = null)), 'spec.coloringRuleChain'],
+    [
+      'a val-PLUS-reference hybrid',
+      corrupt((item) => (item.spec.valueProjectionList = { ...item.spec.valueProjectionList, ref: 'some-other-item' })),
+      'spec.valueProjectionList'
+    ],
+    [
+      'a chain whose item is of the wrong managed type',
+      corrupt((item) => (item.spec.messageFilterChain.val.metadata.type = 'coloring-rule-chain')),
+      'spec.messageFilterChain.val.metadata.type'
+    ],
+    [
+      'a chain spec missing its own list',
+      corrupt((item) => delete item.spec.messageFilterChain.val.spec.filters),
+      'spec.messageFilterChain.val.spec.filters'
+    ],
+
+    // Into the targets.
+    ['a NULL target', withTwoTargets((item) => (item.spec.targets[1] = null)), 'spec.targets[1]'],
+    ['an empty target object', withTwoTargets((item) => (item.spec.targets[1] = {})), 'spec.targets[1].type'],
+    [
+      'a target wrapper whose val has no metadata',
+      withTwoTargets((item) => delete item.spec.targets[1].val.metadata),
+      'spec.targets[1].val.metadata'
+    ],
+    [
+      'a target holding some other managed item',
+      withTwoTargets((item) => (item.spec.targets[1].val.metadata.type = 'message-filter')),
+      'spec.targets[1].val.metadata.type'
+    ],
+    [
+      'a target flag of the wrong type',
+      withTwoTargets((item) => (targetSpec(item, 1).isEnabled = 'yes')),
+      'spec.targets[1].val.spec.isEnabled'
+    ],
+
+    // Inside one target: consumption mode, deserializer, topic selector, and the three chains.
+    [
+      'a target with no consumption mode',
+      withTwoTargets((item) => delete targetSpec(item, 1).consumptionMode),
+      'spec.targets[1].val.spec.consumptionMode'
+    ],
+    [
+      'a consumption mode this build cannot run',
+      withTwoTargets((item) => (targetSpec(item, 1).consumptionMode.mode = { type: 'read-backwards' })),
+      'spec.targets[1].val.spec.consumptionMode.mode.type'
+    ],
+    [
+      'a deserializer this build cannot run',
+      withTwoTargets((item) => (targetSpec(item, 1).messageValueDeserializer.val.spec.deserializer.deserializer = { type: 'avro' })),
+      'spec.targets[1].val.spec.messageValueDeserializer.val.spec.deserializer.deserializer.type'
+    ],
+    [
+      'a topic selector that is a bare object',
+      withTwoTargets((item) => (targetSpec(item, 1).topicSelector = {})),
+      'spec.targets[1].val.spec.topicSelector.type'
+    ],
+    [
+      'a topic selector kind this build does not have',
+      withTwoTargets((item) => (targetSpec(item, 1).topicSelector.val.spec.topicSelector = { type: 'all-topics' })),
+      'spec.targets[1].val.spec.topicSelector.val.spec.topicSelector.type'
+    ],
+    [
+      'a topic list holding something that is not a topic name',
+      withTwoTargets(
+        (item) =>
+          (targetSpec(item, 1).topicSelector.val.spec.topicSelector = {
+            type: 'multi-topic-selector',
+            topicFqns: ['persistent://t/n/a', 7]
+          })
+      ),
+      'spec.targets[1].val.spec.topicSelector.val.spec.topicSelector.topicFqns[1]'
+    ],
+    [
+      "a target's coloring rule list holding a null",
+      withTwoTargets((item) => (targetSpec(item, 1).coloringRuleChain.val.spec.coloringRules = [null])),
+      'spec.targets[1].val.spec.coloringRuleChain.val.spec.coloringRules[0]'
+    ],
+    [
+      "a target's filter chain mode this build does not have",
+      withTwoTargets((item) => (targetSpec(item, 1).messageFilterChain.val.spec.mode = 'most')),
+      'spec.targets[1].val.spec.messageFilterChain.val.spec.mode'
+    ],
+    [
+      "a target's value projection missing its short name",
+      withTwoTargets((item) => {
+        const projection = clone(getDefaultManagedItem('value-projection', libraryContext)) as any;
+        delete projection.spec.shortName;
+        targetSpec(item, 1).valueProjectionList.val.spec.projections = [{ type: 'value', val: projection }];
+      }),
+      'spec.targets[1].val.spec.valueProjectionList.val.spec.projections[0].val.spec.shortName'
+    ]
+  ];
+
+  it.each(cases)('refuses %s and degrades instead of crashing', (_name, item, path) => {
+    // The decoder refuses it, and names the level it refused at.
+    const decoded = decodeConsumerSessionConfig(item);
+    expect(decoded.ok).toBe(false);
+    expect((decoded as any).problem.path).toBe(path);
+
+    // And the editor degrades through the SAME `cs-invalid-config` path a malformed config
+    // already used - no crash, no endless spinner, no third mechanism.
+    expect(() => renderConfig(item)).not.toThrow();
+
+    const shown = screen.getByTestId('cs-invalid-config');
+    expect(shown.textContent).toContain('not a valid Consumer Session configuration');
+    // The path is the point: "something is wrong somewhere" is not actionable on a config with
+    // several targets and a chain inside each of them.
+    expect(shown.textContent).toContain(path);
+  });
+
+  /**
+   * The other half of a decoder: what it must NOT refuse. A shape check that rejects legitimate
+   * saved items is a worse bug than the one it fixes, because it locks people out of their own
+   * library instead of showing them one broken screen.
+   */
+  const accepted: [string, () => any][] = [
+    ['the item a new session starts from', () => base()],
+    [
+      'a saved config with several targets',
+      () =>
+        withTwoTargets(() => {
+          /* two sound targets, nothing corrupted */
+        })
+    ],
+    [
+      'chains stored as library REFERENCES, not resolved yet',
+      () =>
+        corrupt((item) => {
+          item.spec.messageFilterChain = { type: 'reference', ref: 'shared-filter-chain' };
+          item.spec.coloringRuleChain = { type: 'reference', ref: 'shared-coloring' };
+          item.spec.targets[0] = { type: 'reference', ref: 'shared-target' };
+        })
+    ],
+    [
+      'a reference carrying an unsaved in-browser edit',
+      () =>
+        corrupt((item) => {
+          item.spec.valueProjectionList = { type: 'reference', ref: 'shared-projections', val: item.spec.valueProjectionList.val };
+        })
+    ],
+    [
+      'a start position that names a nested library item',
+      () =>
+        corrupt((item) => {
+          item.spec.startFrom.val.spec.startFrom = {
+            type: 'relativeDateTime',
+            relativeDateTime: {
+              type: 'value',
+              val: {
+                metadata: { id: 'rel-1', name: '', descriptionMarkdown: '', type: 'relative-date-time' },
+                spec: { value: 15, unit: 'minute', isRoundedToUnitStart: false }
+              }
+            }
+          };
+        })
+    ],
+    [
+      'an older spec with no delivery order and no display limit',
+      () =>
+        corrupt((item) => {
+          delete item.spec.messageDeliveryOrder;
+          delete item.spec.numDisplayItems;
+        })
+    ],
+    [
+      'a regex target with a populated topic list beside it',
+      () =>
+        withTwoTargets((item) => {
+          targetSpec(item, 0).topicSelector.val.spec.topicSelector = {
+            type: 'multi-topic-selector',
+            topicFqns: ['persistent://t/n/a', 'persistent://t/n/b']
+          };
+          targetSpec(item, 1).topicSelector.val.spec.topicSelector = {
+            type: 'namespaced-regex-topic-selector',
+            namespaceFqn: 't/n',
+            pattern: '.*',
+            regexSubscriptionMode: 'persistent-only'
+          };
+        })
+    ]
+  ];
+
+  it.each(accepted)('accepts %s', (_name, build) => {
+    const decoded = decodeConsumerSessionConfig(build());
+
+    expect(decoded.ok ? undefined : describeProblem((decoded as any).problem)).toBeUndefined();
+  });
+
+  it('will not let the editor delete its way into the shape it just refused', () => {
+    // The decoder refuses an empty target list, so the editor must not be able to produce one -
+    // otherwise removing the last target replaces the editor with its own error page, for good.
+    renderConfig(base());
+
+    expect((screen.getByTestId('cs-target-remove') as HTMLButtonElement).disabled).toBe(true);
+  });
+});
 /**
  * "Limit num. display messages" is the only thing standing between a long session and a tab that
  * runs out of memory: the session keeps `messages.slice(-limit)` and nothing else bounds it. The
@@ -278,5 +540,223 @@ describe('start-from is told what the targets retain', () => {
     const options = Array.from(screen.getByTestId('cs-start-from').querySelectorAll('option'));
     expect(options.every((o) => !o.disabled)).toBe(true);
     expect(screen.queryByTestId('cs-start-from-non-persistent-note')).toBeNull();
+  });
+});
+
+// Owner decision (2026-08-09, direct instruction): the default is Best effort - supersedes the
+// review-findings P1.1 note that said Guaranteed.
+describe('delivery order', () => {
+  const pbModule = require('../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb');
+  const { consumerSessionConfigToPb, messageDeliveryOrderToPb } = require('../conversions/conversions');
+
+  const renderControlledOrder = (initial = getDefaultManagedItem('consumer-session-config', libraryContext)) => {
+    const Controlled = () => {
+      const [value, setValue] = React.useState<unknown>(() => ({ type: 'value', val: initial }));
+      return (
+        <SessionConfiguration
+          value={value as never}
+          onChange={setValue as never}
+          libraryContext={libraryContext as never}
+        />
+      );
+    };
+
+    render(
+      <SWRConfig value={{ shouldRetryOnError: false, refreshInterval: 0, revalidateOnFocus: false }}>
+        <Controlled />
+      </SWRConfig>
+    );
+  };
+
+  const orderSelect = () => screen.getByTestId('cs-delivery-order') as HTMLSelectElement;
+  const orderHelp = () => document.getElementById('cs-delivery-order-help')?.textContent ?? '';
+  const timeSelect = () => screen.getByTestId('cs-delivery-order-key') as HTMLSelectElement;
+  const timeHelp = () => document.getElementById('cs-delivery-order-key-help')?.textContent ?? '';
+
+  it('a new spec resolves to the Best effort default and serializes it explicitly', () => {
+    // The product default, by owner decision: a new session merges with bounded lateness and
+    // never stalls on a silent stream. Guaranteed remains an explicit choice with its stall
+    // disclosure and one-click switch untouched.
+    const item = getDefaultManagedItem('consumer-session-config', libraryContext);
+    const resolved = consumerSessionConfigFromValOrRef({ type: 'value', val: item } as never, undefined);
+
+    expect(resolved.messageDeliveryOrder).toBe('best-effort');
+    expect(consumerSessionConfigToPb(resolved).getMessageDeliveryOrder())
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+  });
+
+  it('an older spec without the field resolves and serializes as Best effort, like every other absence', () => {
+    // Pre-branch saved sessions carry no field. They inherit the same product default as a new
+    // one - a session that never named an order runs the default, not something it chose.
+    const item = getDefaultManagedItem('consumer-session-config', libraryContext);
+    const legacy = { ...item, spec: { ...item.spec, messageDeliveryOrder: undefined } };
+    const resolved = consumerSessionConfigFromValOrRef({ type: 'value', val: legacy } as never, undefined);
+
+    expect(resolved.messageDeliveryOrder).toBe('best-effort');
+    expect(consumerSessionConfigToPb(resolved).getMessageDeliveryOrder())
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+  });
+
+  it('an absent value at the wire boundary itself serializes as Best effort, the default', () => {
+    // The one mapping Play and the live switch share. Its catch-all branch is what an
+    // unresolved absent value falls into, so the branch has to name the default - and explicit
+    // Guaranteed has to stay untouched next to it.
+    expect(messageDeliveryOrderToPb(undefined))
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+    expect(messageDeliveryOrderToPb('guaranteed'))
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
+  });
+
+  it('an explicit Guaranteed choice survives spec -> resolved config -> protobuf, undisturbed by the default', () => {
+    const item = getDefaultManagedItem('consumer-session-config', libraryContext);
+    const merged = { ...item, spec: { ...item.spec, messageDeliveryOrder: 'guaranteed' } };
+    const resolved = consumerSessionConfigFromValOrRef({ type: 'value', val: merged } as never, undefined);
+
+    expect(resolved.messageDeliveryOrder).toBe('guaranteed');
+    expect(consumerSessionConfigToPb(resolved).getMessageDeliveryOrder())
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
+  });
+
+  it('shows all session settings immediately with Best effort order selected by default', () => {
+    renderConfig(getDefaultManagedItem('consumer-session-config', libraryContext));
+
+    expect(screen.queryByTestId('cs-advanced-toggle')).toBeNull();
+    expect(orderSelect().value).toBe('best-effort');
+    expect(screen.getByText('Limit num. display messages')).toBeTruthy();
+    expect(screen.getByTestId('cs-session-filters')).toBeTruthy();
+    expect(screen.getByTestId('cs-session-projections')).toBeTruthy();
+    expect(screen.getByTestId('cs-session-coloring')).toBeTruthy();
+  });
+
+  it('orders and names the modes as Guaranteed, Best effort, Fastest', () => {
+    renderConfig(getDefaultManagedItem('consumer-session-config', libraryContext));
+
+    expect(Array.from(orderSelect().options).map((option) => option.textContent)).toEqual([
+      'Guaranteed',
+      'Best effort',
+      'Fastest',
+    ]);
+  });
+
+  it('shows distinct help for every mode and hides Order by only for Fastest', () => {
+    renderControlledOrder();
+
+    // The default is Best effort, so the walk starts there.
+    expect(orderHelp()).toContain('within ~0.75 s');
+    expect(orderHelp()).toContain('none are dropped');
+    expect(timeSelect()).toBeTruthy();
+
+    // Re-aimed with the 2026-08-09 replay redesign: Guaranteed's help describes the replay
+    // contract (deliver recorded history exactly, pause at the boundary, Resume extends), not the
+    // old hold-forever wait.
+    fireEvent.change(orderSelect(), { target: { value: 'guaranteed' } });
+    expect(orderHelp()).toContain('Replays everything recorded up to Play');
+    expect(orderHelp()).toContain('pauses when caught up');
+    expect(orderHelp()).toContain('Resume replays what was recorded since');
+    expect(orderHelp()).not.toContain('Waits indefinitely');
+    expect(timeSelect()).toBeTruthy();
+
+    fireEvent.change(orderSelect(), { target: { value: 'as-received' } });
+    expect(orderHelp()).toContain('independently');
+    expect(orderHelp()).toContain('no reordering delay');
+    expect(screen.queryByTestId('cs-delivery-order-key')).toBeNull();
+  });
+
+  it('uses Pulsar timestamp names and explains their fallbacks', () => {
+    renderControlledOrder();
+
+    expect(Array.from(timeSelect().options).map((option) => option.textContent)).toEqual([
+      'Publish time',
+      'Broker publish time',
+      'Event time',
+    ]);
+    expect(timeHelp()).toBe('Added automatically by the producer; always present.');
+
+    fireEvent.change(timeSelect(), { target: { value: 'broker-publish-time' } });
+    expect(timeHelp()).toContain('when the message reaches the broker');
+    expect(timeHelp()).toContain('broker timestamp entry metadata');
+
+    fireEvent.change(timeSelect(), { target: { value: 'event-time' } });
+    expect(timeHelp()).toContain('set by the application');
+    expect(timeHelp()).toContain('use publish time');
+  });
+
+  it('shows a spec without the field as the Best effort default', () => {
+    const item = getDefaultManagedItem('consumer-session-config', libraryContext);
+    renderConfig({ ...item, spec: { ...item.spec, messageDeliveryOrder: undefined } });
+
+    expect(orderSelect().value).toBe('best-effort');
+    expect(orderHelp()).toContain('within ~0.75 s');
+    expect(screen.getByTestId('cs-delivery-order-key')).toBeTruthy();
+  });
+
+  it('shows a saved Guaranteed choice as itself, not as the Best effort default', () => {
+    const item = getDefaultManagedItem('consumer-session-config', libraryContext);
+    const merged = { ...item, spec: { ...item.spec, messageDeliveryOrder: 'guaranteed' } };
+    renderConfig(merged);
+
+    const select = screen.getByTestId('cs-delivery-order') as HTMLSelectElement;
+    expect(select.value).toBe('guaranteed');
+  });
+});
+
+/**
+ * Latest x Guaranteed, approached from the ORDER side: the start-from already says Latest and the
+ * user picks Guaranteed in the delivery-order select. The combination gets the same one-line note
+ * the start-from side shows - and neither field is rewritten from under the user (the M4 lesson):
+ * the order becomes what was just chosen, the start-from stays Latest, and Play on the combo
+ * yields the server's instant caught-up answer.
+ */
+describe('choosing Guaranteed while the start-from is Latest', () => {
+  const renderControlledOrder = (initial: unknown) => {
+    const Controlled = () => {
+      const [value, setValue] = React.useState<unknown>(() => ({ type: 'value', val: initial }));
+      return (
+        <SessionConfiguration
+          value={value as never}
+          onChange={setValue as never}
+          libraryContext={libraryContext as never}
+        />
+      );
+    };
+
+    render(
+      <SWRConfig value={{ shouldRetryOnError: false, refreshInterval: 0, revalidateOnFocus: false }}>
+        <Controlled />
+      </SWRConfig>
+    );
+  };
+
+  const withLatestStartFrom = () => {
+    const item = getDefaultManagedItem('consumer-session-config', libraryContext) as {
+      spec: { startFrom: { val: { spec: { startFrom: unknown } } } };
+    };
+    item.spec.startFrom.val.spec.startFrom = { type: 'latestMessage' };
+    return item;
+  };
+
+  it('shows the note and rewrites neither field', () => {
+    renderControlledOrder(withLatestStartFrom());
+    expect(screen.queryByTestId('cs-start-from-latest-guaranteed-note')).toBeNull();
+
+    fireEvent.change(screen.getByTestId('cs-delivery-order'), { target: { value: 'guaranteed' } });
+
+    // The order is what the user just chose; the start-from is untouched; the note explains the
+    // combination instead of any silent rewrite.
+    expect((screen.getByTestId('cs-delivery-order') as HTMLSelectElement).value).toBe('guaranteed');
+    expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('latestMessage');
+    expect(screen.getByTestId('cs-start-from-latest-guaranteed-note')).toBeTruthy();
+  });
+
+  it('retires the note when the order goes back to Best effort', () => {
+    renderControlledOrder(withLatestStartFrom());
+
+    fireEvent.change(screen.getByTestId('cs-delivery-order'), { target: { value: 'guaranteed' } });
+    expect(screen.getByTestId('cs-start-from-latest-guaranteed-note')).toBeTruthy();
+
+    fireEvent.change(screen.getByTestId('cs-delivery-order'), { target: { value: 'best-effort' } });
+
+    expect(screen.queryByTestId('cs-start-from-latest-guaranteed-note')).toBeNull();
+    expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('latestMessage');
   });
 });

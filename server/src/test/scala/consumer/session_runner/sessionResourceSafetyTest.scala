@@ -133,6 +133,7 @@ object sessionResourceSafetyTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = pool,
             consumers = consumers,
+            pauseArbiters = (consumers).map((fqn, c) => fqn -> ConsumerPauseArbiter(c)),
             consumerListener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ())),
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -406,10 +407,12 @@ object sessionResourceSafetyTest extends ZIOSpecDefault:
                 schemasByTopic = Map.empty,
                 sessionContextPool = pool,
                 consumers = Map.empty,
+                pauseArbiters = Map.empty,
                 consumerListener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ())),
                 stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
             ):
-                override def stop(): Vector[String] = throw new IllegalStateException("the target could not be released at all")
+                override def stop(quarantine: CleanupQuarantine): Vector[String] =
+                    throw new IllegalStateException("the target could not be released at all")
 
             val runner = session("cs-stop-target-throws", pool, Map.empty).copy(targets = Map(7 -> exploding))
 

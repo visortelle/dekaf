@@ -3,11 +3,14 @@ package consumer.session_runner
 import org.apache.pulsar.client.admin.PulsarAdmin
 
 import java.time.ZonedDateTime
+import java.util.concurrent.{Callable, ExecutorCompletionService, Executors, ExecutionException, ThreadFactory, TimeUnit}
+import java.util.concurrent.atomic.AtomicInteger
 import org.apache.pulsar.client.api.{Consumer, PulsarClient, Message as PulsarMessage, MessageId as PulsarMessageId, MessageIdAdv}
 import _root_.topic.{TopicPartitioningType, getTopicPartitioning}
-import _root_.consumer.start_from.{ApproximateDataPosition, ApproximateTimePosition, ConsumerSessionStartFrom, DateTime, DateTimeUnit, EarliestMessage, LatestMessage, MessageId, NthMessageAfterEarliest, NthMessageBeforeLatest, RelativeDateTime}
+import _root_.consumer.start_from.{ApproximateEntryPosition, ApproximatePublishTimePosition, ConsumerSessionStartFrom, DateTime, DateTimeUnit, EarliestMessage, LatestMessage, MessageId, NthMessageAfterEarliest, NthMessageBeforeLatest, RelativeDateTime}
 
 import org.apache.pulsar.client.impl.MessageIdImpl
+import org.apache.pulsar.common.protocol.Markers
 
 import scala.util.{Failure, Success, Try}
 import scala.jdk.CollectionConverters.*
@@ -104,18 +107,38 @@ final case class LogEntry[A](entryId: A, publishTime: Long, messagesInEntry: Int
   * `None` as "this log is exhausted" and seeks to EARLIEST: erasing an operational failure into it
   * turned "the latest 5" into the whole backlog with the session reporting success. See
   * [[isEmptyLogAnswer]] for the measured classification.
+  *
+  * AN ENTRY IS NOT ALWAYS ONE MESSAGE, and not always a message at all: see [[logEntryOf]] for the
+  * two shapes that are neither - a chunk piece (refused) and a server-only marker (counted as
+  * zero).
   */
 def entryFromLatest(adminClient: PulsarAdmin, topicFqn: String)(k: Long): Option[LogEntry[PulsarMessageId]] =
-    brokerAnswer(s"examining entry $k counted back from the end", topicFqn)(adminClient.topics.examineMessage(topicFqn, "latest", k)).map { message =>
-        if isChunkPiece(message) then
-            throw StartFromUnresolvableException(
-                s"Could not resolve the requested start-from position: $topicFqn stores CHUNKED messages (one message split " +
-                    "across several entries), and 'Latest n messages' counts entries - an entry count is not a message count " +
-                    "there. Use a time-based position or 'Skip first n messages', which counts what is actually delivered.",
-                null
-            )
-        LogEntry(entryIdOf(message.getMessageId), message.getPublishTime, messagesInEntryOf(message))
-    }
+    brokerAnswer(s"examining entry $k counted back from the end", topicFqn)(adminClient.topics.examineMessage(topicFqn, "latest", k))
+        .map(message => logEntryOf(topicFqn, message))
+
+/** What the backward walk makes of ONE examined entry, with the broker already out of the way - so
+  * the chunk refusal and the marker rule are both testable with a hand-built message rather than
+  * only against a live topic.
+  *
+  * Two entry shapes are NOT one user message, and they need opposite answers:
+  *
+  *  - A CHUNK PIECE means the topic's entries and its messages have no fixed relationship at all,
+  *    in either direction, so the walk REFUSES ([[isChunkPiece]]).
+  *  - A SERVER-ONLY MARKER is an entry that holds zero messages ([[isServerOnlyMarkerEntry]]), so
+  *    the walk simply counts it as zero and steps past it. Nothing is refused and nothing is
+  *    miscounted: the broker never dispatches a marker, so an entry-level zero is the exact
+  *    delivered count for it.
+  */
+def logEntryOf(topicFqn: String, message: PulsarMessage[Array[Byte]]): LogEntry[PulsarMessageId] =
+    if isChunkPiece(message) then
+        throw StartFromUnresolvableException(
+            s"Could not resolve the requested start-from position: $topicFqn stores CHUNKED messages (one message split " +
+                "across several entries), and 'Latest n messages' counts entries - an entry count is not a message count " +
+                "there. Use a time-based position or 'Skip first n messages', which counts what is actually delivered.",
+            null
+        )
+    val messages = if isServerOnlyMarkerEntry(message) then 0 else messagesInEntryOf(message)
+    LogEntry(entryIdOf(message.getMessageId), message.getPublishTime, messages)
 
 /** Whether this examined message is one CHUNK of a larger logical message.
   *
@@ -129,6 +152,38 @@ def isChunkPiece(message: PulsarMessage[Array[Byte]]): Boolean = message match
         Try {
             val metadata = impl.getMessageBuilder
             metadata != null && metadata.hasNumChunksFromMsg && metadata.getNumChunksFromMsg > 1
+        }.getOrElse(false)
+    case _ => false
+
+/** Whether this examined entry is a SERVER-ONLY MARKER - a transaction commit/abort record or a
+  * replicated-subscription snapshot - rather than a user message.
+  *
+  * SUCH AN ENTRY IS COUNTED BY THE BROKER AND DELIVERED TO NOBODY, which is exactly the asymmetry
+  * every entry-addressed position has to survive. Verified against Pulsar 3.2.1, end to end:
+  *
+  *  - `TopicTransactionBuffer.commitTxn` / `abortTxn` build the marker with
+  *    `Markers.newTxnCommitMarker` / `newTxnAbortMarker` (which set `MessageMetadata.marker_type`)
+  *    and append it with `ManagedLedger.asyncAddEntry`, so it is an ORDINARY entry of the topic's
+  *    own ledger and `getNumberOfEntries` counts it;
+  *  - `PersistentTopicsBase.internalExamineMessageAsync` does no marker filtering whatsoever - it
+  *    hands the entry straight to `generateResponseWithEntry`, which emits the metadata as the
+  *    `X-Pulsar-marker-type` response header, and the admin client's `getMessagesFromHttpResponse`
+  *    parses that header back onto the `MessageMetadata` it hands to `MessageImpl`. So a marker
+  *    IS returned by `examineMessage`, and its type IS readable here;
+  *  - `AbstractBaseDispatcher.filterEntriesForConsumer` drops any entry for which
+  *    `Markers.isServerOnlyMarker` holds (it nulls and releases it) before dispatch, so no consumer
+  *    ever receives one.
+  *
+  * Read behind the same guarded impl cast [[isChunkPiece]] uses, and through Pulsar's own
+  * `Markers.isServerOnlyMarker` so this cannot drift from the definition the dispatcher filters by.
+  * Anything unreadable counts as "not a marker", which leaves the entry counted as one message -
+  * the direction that over-delivers rather than swallows.
+  */
+def isServerOnlyMarkerEntry(message: PulsarMessage[Array[Byte]]): Boolean = message match
+    case impl: org.apache.pulsar.client.impl.MessageImpl[?] =>
+        Try {
+            val metadata = impl.getMessageBuilder
+            metadata != null && Markers.isServerOnlyMarker(metadata)
         }.getOrElse(false)
     case _ => false
 
@@ -215,8 +270,19 @@ enum LatestNSeek[+A]:
   * n. The publish-time tie-break is the same one [[MessageOrderKey]] uses (time, then topic name),
   * so an entry-level cut and a message-level order cannot disagree.
   *
+  * AN ENTRY THAT IS NOT A MESSAGE COSTS A STEP AND NOTHING ELSE. A server-only marker (a
+  * transaction commit/abort record, a replicated-subscription snapshot) occupies a real entry that
+  * `examineMessage` returns and `getNumberOfEntries` counts, but no consumer is ever handed one -
+  * so `entryFromLatest` reports it as ZERO messages ([[logEntryOf]]) and the walk crosses it
+  * without counting it. The walk can therefore never STOP on a marker either: for n > 0, an entry
+  * that adds nothing cannot be the one that reaches n, so the anchor is always a real message
+  * entry (or, on an exhausted log, its oldest entry, which is equally safe to seek to - the broker
+  * filters the marker out of the dispatch). Counting a marker as one message, which is what the
+  * `max 1` floor used to do, made the session hold one message fewer per marker crossed.
+  *
   * PURE: the broker sits behind `entryFromLatest`, so batched / unbatched / uneven / exhausted /
-  * clamped / empty logs, and every interleaving across topics, are testable with a plain lambda.
+  * clamped / empty logs, marker entries, and every interleaving across topics, are testable with a
+  * plain lambda.
   *
   * `entryFromLatest(topic)(k)` must answer with the k-th entry counted back from the end of that
   * topic (k = 1 is the last entry), or `None` once k is past its start.
@@ -345,7 +411,13 @@ def resolveLatestN[A](
                 case None => walking = false
                 case Some(topicFqn) =>
                     val entry = head(topicFqn)
-                    total += (entry.messagesInEntry max 1)
+                    // `max 0` and NOT `max 1`: the floor is only here so a nonsensical negative
+                    // count cannot walk the total backwards. ZERO is a real, verified answer - a
+                    // server-only marker entry (see [[isServerOnlyMarkerEntry]]) holds no messages
+                    // and is never dispatched - and forcing it to one made the walk stop one
+                    // message short for every marker it crossed. `messagesInEntryOf` never returns
+                    // zero, so nothing else is affected.
+                    total += (entry.messagesInEntry max 0)
                     oldestTaken(topicFqn) = entry.entryId
                     lastTaken = Some(topicFqn)
                     head.remove(topicFqn)
@@ -370,14 +442,24 @@ def resolveLatestN[A](
                 // uses), which is exactly "everything after the inspected tail".
                 case None =>
                     head.get(topicFqn) match
-                        case Some(tail) => LatestNSeek.FromEntry(tail.entryId, (tail.messagesInEntry max 1).toLong)
+                        // `max 0` for the same reason the running total uses it: an inspected tail
+                        // that is a marker holds nothing to drop, and dropping one anyway would
+                        // eat the first real message published after it.
+                        case Some(tail) => LatestNSeek.FromEntry(tail.entryId, (tail.messagesInEntry max 0).toLong)
                         // EMPTY when inspected: everything the topic holds at seek time arrived
                         // after the inspection, so all of it is live traffic the session must
                         // show - which is what seeking EARLIEST delivers. "Latest" would race the
                         // same appends the anchor above exists to keep.
                         case None       => LatestNSeek.Everything
                 case Some(entryId) if overshoot > 0 && lastTaken.contains(topicFqn)   => LatestNSeek.FromEntry(entryId, overshoot)
-                case Some(_) if exhausted.contains(topicFqn)                          => LatestNSeek.Everything
+                // An EXHAUSTED contributor keeps its anchor: FromEntry(oldest taken) covers the
+                // same messages a seek-to-earliest would, and - unlike `Everything` - it is
+                // re-verifiable. Mapping it to Everything let retention delete a counted
+                // contribution between resolving and seeking with nobody noticing: the anchor
+                // re-check only inspects FromEntry, so the session succeeded while silently
+                // holding fewer than the n it promised. Everything is reserved for the one case
+                // with genuinely nothing to verify: a topic that held NOTHING when inspected.
+                case Some(entryId) if exhausted.contains(topicFqn)                    => LatestNSeek.FromEntry(entryId, 0L)
                 case Some(entryId)                                                    => LatestNSeek.FromEntry(entryId, 0L))
         }.toMap
 
@@ -418,8 +500,8 @@ def startFromNeedsRetainedHistory(startFrom: ConsumerSessionStartFrom): Boolean 
     // that history is - the entry count for one, the first and last publish times for the other.
     // `examineMessage` answers neither on a non-persistent topic (405), so neither can compute a
     // position there.
-    case _: ApproximateDataPosition  => true
-    case _: ApproximateTimePosition  => true
+    case _: ApproximateEntryPosition       => true
+    case _: ApproximatePublishTimePosition => true
     case _                           => true
 
 /** Why this start-from cannot be honoured on these topics, or `None` if it can.
@@ -506,21 +588,41 @@ def startFromCountRejectionReason(startFrom: ConsumerSessionStartFrom): Option[S
         )
     case _ => None
 
-/** Why 'Latest n messages' cannot be honoured against read-compacted targets, or `None`.
+/** Why a start-from derived from the RAW retained log cannot be honoured against read-compacted
+  * targets, or `None`.
   *
   * Compacted reading changes WHAT IS VISIBLE - only the newest message per key survives before
-  * the compaction horizon - while the walk counts raw STORED entries. The two disagree whenever
-  * a key repeats, so the exact-count promise cannot be kept over a view the walk cannot see.
-  * Skip-n is fine on the same target: it counts what is actually DELIVERED. */
-def latestNReadCompactedRejectionReason(startFrom: ConsumerSessionStartFrom, readCompactedTargetIndexes: Vector[Int]): Option[String] =
-    startFrom match
-        case v: NthMessageBeforeLatest if v.n > 0 && readCompactedTargetIndexes.nonEmpty =>
-            Some(
-                s"Start-from 'Latest n messages' counts STORED entries, but target(s) ${readCompactedTargetIndexes.sorted.mkString(", ")} " +
-                    "read compacted - only the newest message per key is visible there, so the stored count and the visible count " +
-                    "disagree whenever a key repeats. Use a time-based position or 'Latest message', or turn off compacted reading."
-            )
-        case _ => None
+  * the compaction horizon. Latest-n counts raw entries; the entry-percentage mode measures them;
+  * and the publish-time-percentage mode derives its range from their boundary entries. Each can be
+  * arbitrarily unrelated to the compacted view when keys repeat. Skip-n remains valid because it
+  * counts what the consumer actually delivers. */
+def readCompactedStartFromRejectionReason(
+    startFrom: ConsumerSessionStartFrom,
+    readCompactedTargetIndexes: Vector[Int]
+): Option[String] =
+    if readCompactedTargetIndexes.isEmpty then None
+    else
+        val targets = readCompactedTargetIndexes.sorted.mkString(", ")
+        startFrom match
+            case v: NthMessageBeforeLatest if v.n > 0 =>
+                Some(
+                    s"Start-from 'Latest n messages' counts raw stored entries, but target(s) $targets read compacted. " +
+                        "The stored count and visible messages can differ when keys repeat. Use 'Specific time', " +
+                        "'Latest message', or turn off compacted reading."
+                )
+            case _: ApproximateEntryPosition =>
+                Some(
+                    s"Start-from 'Approximate position (% of data)' measures raw stored entries, but target(s) $targets read compacted. " +
+                        "That percentage does not describe the visible compacted messages. Use 'Earliest message', " +
+                        "'Latest message', 'Specific time', or turn off compacted reading."
+                )
+            case _: ApproximatePublishTimePosition =>
+                Some(
+                    s"Start-from 'Approximate position (% of time)' derives its range from the raw retained log, but target(s) " +
+                        s"$targets read compacted. That range does not describe the visible compacted messages. Use " +
+                        "'Earliest message', 'Latest message', 'Specific time', or turn off compacted reading."
+                )
+            case _ => None
 
 /** Why a counted SKIP cannot run over these enabled targets' topic sets, or `None`.
   *
@@ -564,8 +666,8 @@ def latestNAnchorRejectionReason[A](
 def splitByRetainedHistory[A](items: Vector[A], topicOf: A => String): (Vector[A], Vector[A]) =
     items.partition(item => !isNonPersistentTopic(topicOf(item)))
 
-/** Where an [[ApproximateDataPosition]] lands on ONE physical topic. */
-enum ApproximateDataSeek:
+/** Where an [[ApproximateEntryPosition]] lands on ONE physical topic. */
+enum ApproximateEntrySeek:
     /** The very beginning of the retained log. */
     case Earliest
 
@@ -579,58 +681,212 @@ enum ApproximateDataSeek:
       */
     case Entry(entryOrdinal: Long)
 
-/** Reject a fraction that is not one. Shared by both approximate modes, and `what` names the mode
+/** Reject a fraction that is not one. Shared by both approximate modes, and `modeLabel` names the mode
   * that refused it - two modes now carry a fraction, and a session can only be fixed if the error
   * says which control was wrong.
   *
   * NaN needs its own check: every comparison against it is false, so a plain range test would let it
-  * through and it would then floor into an ordinal of 1 (data) or an epoch millisecond of 0 (time).
+  * through and it would then floor into an entry ordinal or timestamp.
   */
-private def requireFraction(fraction: Double, what: String): Unit =
-    if fraction.isNaN then throw new IllegalArgumentException(s"Start-from $what must be a fraction between 0.0 and 1.0, but it was NaN.")
+private def requireFraction(fraction: Double, modeLabel: String): Unit =
+    if fraction.isNaN then
+        throw new IllegalArgumentException(s"Start-from '$modeLabel' must be a fraction between 0.0 and 1.0, but it was NaN.")
     if fraction < 0.0 || fraction > 1.0 then
-        throw new IllegalArgumentException(s"Start-from $what must be a fraction between 0.0 and 1.0, but it was $fraction.")
+        throw new IllegalArgumentException(s"Start-from '$modeLabel' must be a fraction between 0.0 and 1.0, but it was $fraction.")
 
-/** Resolve "start approximately `fraction` of the way through the DATA this topic still holds" into
-  * a position.
+/** Why this start-from's FRACTION is not a fraction, or `None`.
   *
-  * THE ROUNDING RULE: leave `floor(fraction * numberOfEntries)` entries behind, so the 1-based entry
-  * to seek to is that plus one, clamped into `[1, numberOfEntries]`. Rounding DOWN means the
-  * position never overshoots the proportion asked for - 0.5 of 100 entries leaves exactly 50 behind
-  * and starts on entry 51 - and it keeps the mapping monotonic in the fraction.
+  * The same rule [[requireFraction]] enforces, asked at the REQUEST boundary. It is enforced twice
+  * on purpose: deep inside resolution it protects the arithmetic, and here it lets a create refuse
+  * a nonsense fraction as malformed INPUT - the class of error a client can act on - instead of
+  * surfacing it as a resolution failure indistinguishable from a broker that would not answer.
+  * PURE, like every other rejection reason here.
+  */
+def startFromFractionRejectionReason(startFrom: ConsumerSessionStartFrom): Option[String] = startFrom match
+    case v: ApproximateEntryPosition =>
+        Try(requireFraction(v.fraction, "Approximate position (% of data)")).failed.toOption.map(_.getMessage)
+    case v: ApproximatePublishTimePosition =>
+        Try(requireFraction(v.fraction, "Approximate position (% of time)")).failed.toOption.map(_.getMessage)
+    case _ => None
+
+/** One finite budget for resolving either percentage mode. The work is constant in log size but
+  * linear in physical-topic count, so the session-wide stream cap alone is not a latency bound. */
+val approximatePositionResolveBudgetMs: Long = 30_000L
+
+/** Maximum concurrent broker lookups made by ONE percentage-position resolution. This turns a
+  * 2,000-stream session into bounded waves without either 2,000 threads or a serial 4,000-6,000
+  * request create path. */
+val approximatePositionLookupParallelism: Int = 16
+
+/** Maximum concurrent broker lookups made by the WHOLE SERVER, across every session resolving a
+  * position or reading topic positions at once.
   *
-  * THE ENDPOINTS ARE EXACT, and are not entry ordinals at all: 0.0 is `MessageId.earliest` and 1.0
-  * is `MessageId.latest`, so they behave exactly as the "Earliest message" and "Latest message"
-  * modes, including 1.0 showing nothing retained and only what arrives from now on.
+  * The per-call bound above is only a local one: a pool was created per resolution, so N concurrent
+  * creates meant N x 16 worker threads and N x 16 admin requests in flight, with nothing anywhere
+  * saying no. Together with an admission check that did not cover in-flight builds, that is how a
+  * handful of browser tabs turned into hundreds of threads hammering the broker's admin plane. One
+  * shared executor makes the bound global: concurrent resolutions interleave through it instead of
+  * multiplying, and each still keeps its own wall-clock budget and its own cancellation.
+  */
+val approximatePositionLookupGlobalParallelism: Int = 32
+
+private val approximateLookupThreadNumber = AtomicInteger(0)
+private val approximateLookupThreadFactory: ThreadFactory = (runnable: Runnable) =>
+    val thread = Thread(runnable, s"start-from-position-${approximateLookupThreadNumber.incrementAndGet()}")
+    thread.setDaemon(true)
+    thread
+
+/** THE server-wide broker-admin lookup budget - see [[approximatePositionLookupGlobalParallelism]].
+  * Created on first use, so a server nobody has asked for a position owns no threads at all, and
+  * never shut down: it lives for the process exactly as the session maintenance scheduler does. */
+private lazy val approximateLookupExecutor: java.util.concurrent.ExecutorService =
+    Executors.newFixedThreadPool(approximatePositionLookupGlobalParallelism, approximateLookupThreadFactory)
+
+/** How many of the shared budget's workers are running a lookup right now - a test's window onto
+  * the global bound, and what a saturation metric would read. */
+private val approximateLookupWorkersBusy = AtomicInteger(0)
+
+private[session_runner] def approximateLookupWorkersInFlight: Int = approximateLookupWorkersBusy.get
+
+/** Resolve one value per DISTINCT physical topic with bounded concurrency and one wall-clock
+  * deadline for the whole operation.
   *
-  * AN EMPTY TOPIC resolves to Earliest for any interior fraction: there is no backlog to be a
-  * proportion of, and `examineMessage` FAILS on a topic with no entries ("Could not examine messages
-  * due to the total message is zero") rather than answering, so an ordinal must never be asked for.
-  * The session then behaves as "Earliest message" does on an empty topic - it shows what gets
-  * published from now on. 1.0 still means Latest, so the endpoint contract holds even there.
+  * TWO BOUNDS, and the second is the one that protects the server. `parallelism` is how wide THIS
+  * operation may go; [[approximatePositionLookupGlobalParallelism]] is how wide every operation may
+  * go at once, and it is enforced by running every task on one shared executor. A pool per call
+  * bounded nothing server-wide: N concurrent resolutions meant N x 16 threads and N x 16 admin
+  * requests in flight. Tasks are submitted through a sliding window `parallelism` wide, so a single
+  * wide operation cannot monopolise the shared budget either, and concurrent operations interleave
+  * through it rather than multiplying.
   *
-  * ENTRY GRANULARITY, not message granularity - this is WHY the mode is called approximate. Pulsar
-  * has no message-ordinal index unless the operator enables brokerEntryMetadataInterceptors (empty
-  * by default), so the only position that resolves in constant time at any topic size is an entry
-  * ordinal. With batching (the Java producer default) one entry holds many messages, so the position
-  * lands on the START of the entry that covers the requested point - VERIFIED against Pulsar 3.2.1:
-  * 100 messages in 10 entries of 10, fraction 0.5 -> entry 6 -> first delivered b-51, fraction 0.25
-  * -> entry 3 -> first delivered b-21 (the exact message-proportional point would have been b-26).
-  * The fraction is taken over STORED ENTRIES; it diverges from the same fraction over messages
-  * exactly as far as batch sizes varied over the topic's lifetime.
+  * On failure or timeout nothing further is submitted, every task already submitted is cancelled,
+  * and running ones are interrupted. Pulsar's own request timeout remains the backstop for an HTTP
+  * call that does not react to interruption. The interrupt status is cleared at the START of each
+  * task rather than at its end: the workers are SHARED now, so one operation's cancellation must
+  * not be delivered to an unrelated operation's next lookup.
   *
-  * PURE: `numberOfEntries` is a plain argument, so every log size and every rejected input is
-  * testable without a broker.
+  * Package-visible and generic so tests can pin deduplication, concurrency and the deadline without
+  * a broker or a mock PulsarAdmin.
+  */
+def boundedParallelTopicLookup[A](
+    topicFqns: Vector[String],
+    operation: String,
+    lookup: String => A,
+    budgetMs: Long = approximatePositionResolveBudgetMs,
+    parallelism: Int = approximatePositionLookupParallelism,
+    // What the user can DO about a budget that ran out. The start-from modes have somewhere to
+    // send them; other callers of this fan-out do not, and telling a Topic Positions poll to pick
+    // a different start position would be nonsense.
+    remediation: String =
+        "Narrow the topic selector, use 'Earliest message', 'Latest message', or 'Specific time', and retry."
+): Map[String, A] =
+    val topics = topicFqns.distinct
+    if topics.isEmpty then Map.empty
+    else if budgetMs <= 0 then
+        throw StartFromUnresolvableException(
+            s"Could not resolve $operation: its ${budgetMs}ms wall-clock budget was already exhausted. " +
+                "Narrow the topic selector or retry.",
+            null
+        )
+    else
+        require(parallelism > 0, s"parallelism must be positive, got $parallelism")
+        val windowWidth = math.min(parallelism, topics.size)
+        val completed = ExecutorCompletionService[(String, A)](approximateLookupExecutor)
+        val startedAtNanos = System.nanoTime()
+        val budgetNanos = TimeUnit.MILLISECONDS.toNanos(budgetMs)
+        val deadlineNanos =
+            if Long.MaxValue - startedAtNanos < budgetNanos then Long.MaxValue else startedAtNanos + budgetNanos
+
+        val futures = scala.collection.mutable.ArrayBuffer.empty[java.util.concurrent.Future[(String, A)]]
+        var nextToSubmit = 0
+        def submitNext(): Unit =
+            if nextToSubmit < topics.size then
+                val topicFqn = topics(nextToSubmit)
+                nextToSubmit += 1
+                futures += completed.submit(new Callable[(String, A)]:
+                    override def call(): (String, A) =
+                        // A cancelled sibling's interrupt must not land on this task: the worker is
+                        // shared, and its previous occupant may have been interrupted on the way out.
+                        Thread.interrupted()
+                        approximateLookupWorkersBusy.incrementAndGet()
+                        try topicFqn -> lookup(topicFqn)
+                        catch
+                            case err: StartFromUnresolvableException => throw err
+                            case err: Throwable =>
+                                throw StartFromUnresolvableException(
+                                    s"Could not resolve $operation for $topicFqn. ${Option(err.getMessage).getOrElse(err.getClass.getSimpleName)}",
+                                    err
+                                )
+                        finally approximateLookupWorkersBusy.decrementAndGet()
+                )
+                ()
+        (0 until windowWidth).foreach(_ => submitNext())
+
+        def timedOut(): Nothing =
+            throw StartFromUnresolvableException(
+                s"Could not resolve $operation across ${topics.size} physical topic(s) within its ${budgetMs}ms " +
+                    s"wall-clock budget. $remediation",
+                null
+            )
+
+        try
+            val answers = Map.newBuilder[String, A]
+            var remaining = topics.size
+            while remaining > 0 do
+                val waitNanos = deadlineNanos - System.nanoTime()
+                if waitNanos <= 0 then timedOut()
+                val future = completed.poll(waitNanos, TimeUnit.NANOSECONDS)
+                if future == null then timedOut()
+                try answers += future.get()
+                catch
+                    case err: ExecutionException => throw Option(err.getCause).getOrElse(err)
+                remaining -= 1
+                // One out, one in: the window stays exactly as wide as this operation is allowed to be.
+                submitNext()
+            answers.result()
+        catch
+            case err: InterruptedException =>
+                Thread.currentThread.interrupt()
+                throw StartFromUnresolvableException(s"Could not resolve $operation because the request was interrupted.", err)
+        finally
+            // Nothing further is submitted, and what was submitted is cancelled. The executor is
+            // SHARED and therefore never shut down - cancellation is the only thing this operation
+            // is entitled to do to it.
+            nextToSubmit = topics.size
+            futures.foreach(_.cancel(true))
+
+/** Resolve a retained-entry fraction for one physical topic.
+  *
+  * Interior values leave `floor(fraction * numberOfEntries)` entries behind and seek to the next
+  * 1-based entry. This is an ENTRY fraction, not a message percentile: producer batches can put
+  * different numbers of messages in different entries. The exact endpoints use Pulsar's Earliest
+  * and Latest positions and an empty topic falls back to Earliest for interior values.
+  *
+  * SERVER-ONLY MARKERS ARE IN THE DENOMINATOR AND ARE NOT REMOVED - stated plainly rather than
+  * implied to be handled. On a topic that uses transactions or geo-replication, every commit,
+  * abort and replicated-subscription snapshot is a real entry that `getNumberOfEntries` counts
+  * ([[retainedEntryCount]]) and that no consumer is ever handed, so "50%" is 50% of the entries
+  * INCLUDING those. The skew is the marker share of the log: a stream of small transactions can
+  * make it large (a two-message transaction adds one marker per two messages, so 50% of entries is
+  * roughly 50% of messages only because the markers are spread evenly; a topic whose markers
+  * cluster - a long transaction-free warm-up followed by heavy transactional traffic - lands the
+  * position further into the messages than the percentage says). It is NOT detected: finding the
+  * markers means examining entries, which is O(topic) and defeats the point of a mode that costs
+  * one counter read. The modes that are IMMUNE and are the remedy: 'Skip first n messages' counts
+  * what is actually delivered, and every time-based position ('Specific time', 'N units ago',
+  * 'Approximate position (% of time)') is addressed by timestamp and never by count. 'Latest n
+  * messages' is immune too, but for a different reason - it examines the entries it crosses and so
+  * can and does recognise a marker ([[logEntryOf]]).
   *
   * @throws IllegalArgumentException
   *   for NaN, an infinity, or a fraction outside [0.0, 1.0] - see [[requireFraction]].
   */
-def resolveApproximateDataPosition(fraction: Double, numberOfEntries: Long): ApproximateDataSeek =
-    requireFraction(fraction, "approximate data position")
+def resolveApproximateEntryPosition(fraction: Double, numberOfEntries: Long): ApproximateEntrySeek =
+    requireFraction(fraction, "Approximate position (% of data)")
 
-    if fraction <= 0.0 then ApproximateDataSeek.Earliest
-    else if fraction >= 1.0 then ApproximateDataSeek.Latest
-    else if numberOfEntries <= 0 then ApproximateDataSeek.Earliest
+    if fraction <= 0.0 then ApproximateEntrySeek.Earliest
+    else if fraction >= 1.0 then ApproximateEntrySeek.Latest
+    else if numberOfEntries <= 0 then ApproximateEntrySeek.Earliest
     else
         // No clamp needed, and none added: the guards above leave 0 < fraction < 1 and
         // numberOfEntries > 0, so floor(fraction * numberOfEntries) is between 0 and
@@ -638,10 +894,16 @@ def resolveApproximateDataPosition(fraction: Double, numberOfEntries: Long): App
         // range is pinned by test instead - a clamp here would have hidden a rounding change rather
         // than caught it.
         val entriesToLeaveBehind = math.floor(fraction * numberOfEntries).toLong
-        ApproximateDataSeek.Entry(entriesToLeaveBehind + 1)
+        ApproximateEntrySeek.Entry(entriesToLeaveBehind + 1)
 
 /** How many entries `topicFqn` still holds. Entry-addressed, and answered from the managed ledger's
   * own counters, so it costs the same on a topic of ten messages and on one of ten billion.
+  *
+  * ENTRIES, NOT MESSAGES, AND NOT EVEN ONLY USER ENTRIES: `PersistentTopic.getNumberOfEntries`
+  * counts a batched entry once however many messages it holds, and counts server-only marker
+  * entries (transaction commit/abort, replicated-subscription snapshots) that no consumer is ever
+  * handed. Its one caller is the entry-percentage mode, which is approximate by construction - see
+  * [[resolveApproximateEntryPosition]] for exactly what that skews and which modes are immune.
   */
 def retainedEntryCount(adminClient: PulsarAdmin, topicFqn: String): Long =
     adminClient.topics.getInternalStats(topicFqn).numberOfEntries
@@ -661,13 +923,76 @@ def entryFromEarliest(adminClient: PulsarAdmin, topicFqn: String)(entryOrdinal: 
         adminClient.topics.examineMessage(topicFqn, "earliest", entryOrdinal)
     ).map(message => entryIdOf(message.getMessageId))
 
-/** The publish times of the FIRST and LAST messages one physical topic still holds. */
-final case class TopicTimeSpan(firstPublishTimeMs: Long, lastPublishTimeMs: Long)
+/** Resolve one entry-percentage seek per DISTINCT physical topic.
+  *
+  * The endpoints short-circuit before [[boundedParallelTopicLookup]], making 0% and 100% exactly as
+  * cheap and as available as Earliest and Latest. Interior positions are memoised by FQN: duplicate
+  * target consumers still each seek, but they share one broker-derived position and cannot drift
+  * apart while retention or appends move the log.
+  *
+  * THE RETENTION RE-CHECK LOOKS AT THE LOG'S FRONT, NOT AT ITS SIZE. Re-reading the entry COUNT
+  * answers only one of the two ways the log can move under a resolution: a topic that trimmed five
+  * entries off the front and appended five to the tail between the examine and the check has
+  * exactly the count it started with, an entirely different entry at that ordinal, and an anchor id
+  * that has been DELETED - and the count-only check accepted it. Comparing the resolved anchor with
+  * where the log now BEGINS catches that: an anchor older than the first retained entry is gone,
+  * and so is every anchor on a topic that now retains nothing. Both cases fall back to Earliest -
+  * the same answer this function already gives when the examine finds nothing, and the honest one:
+  * everything the topic still holds is newer than the position that was asked for.
+  *
+  * @param earliestRetainedEntryOf
+  *   where the topic's retained log begins RIGHT NOW, or None when it retains nothing.
+  * @param entryIsOlder
+  *   strict entry order - `entryIsOlder(anchor, first)` means the anchor has been trimmed away.
+  */
+def resolveApproximateEntrySeeks[A](
+    fraction: Double,
+    topicFqns: Vector[String],
+    earliest: A,
+    latest: A,
+    retainedEntryCountOf: String => Long,
+    entryFromEarliestOf: String => Long => Option[A],
+    earliestRetainedEntryOf: String => Option[A],
+    entryIsOlder: (A, A) => Boolean,
+    budgetMs: Long = approximatePositionResolveBudgetMs,
+    parallelism: Int = approximatePositionLookupParallelism
+): Map[String, A] =
+    requireFraction(fraction, "Approximate position (% of data)")
+    val topics = topicFqns.distinct
 
-/** Where an [[ApproximateTimePosition]] lands. Unlike [[ApproximateDataSeek]] this is one answer for
+    if fraction <= 0.0 then topics.map(_ -> earliest).toMap
+    else if fraction >= 1.0 then topics.map(_ -> latest).toMap
+    else
+        boundedParallelTopicLookup(
+            topics,
+            operation = "'Approximate position (% of data)'",
+            budgetMs = budgetMs,
+            parallelism = parallelism,
+            lookup = topicFqn =>
+                resolveApproximateEntryPosition(fraction, retainedEntryCountOf(topicFqn)) match
+                    case ApproximateEntrySeek.Earliest => earliest
+                    case ApproximateEntrySeek.Latest   => latest
+                    case ApproximateEntrySeek.Entry(entryOrdinal) =>
+                        entryFromEarliestOf(topicFqn)(entryOrdinal) match
+                            case None => earliest
+                            case Some(answer) =>
+                                // Retention can trim between the count and examine calls. Counting
+                                // from earliest past the new end clamps to newest, so the ordinal
+                                // must still exist - AND the entry it named must still be retained,
+                                // which the count alone cannot say. See the note above.
+                                val ordinalStillExists = retainedEntryCountOf(topicFqn) >= entryOrdinal
+                                val anchorStillRetained =
+                                    earliestRetainedEntryOf(topicFqn).exists(first => !entryIsOlder(answer, first))
+                                if ordinalStillExists && anchorStillRetained then answer else earliest
+        )
+
+/** Publish times observed on one physical topic's first and last retained entries. */
+final case class TopicPublishTimeSpan(firstPublishTimeMs: Long, lastPublishTimeMs: Long)
+
+/** Where an [[ApproximatePublishTimePosition]] lands. Unlike [[ApproximateEntrySeek]] this is one answer for
   * a whole LOGICAL topic: every partition is seeked to the same instant.
   */
-enum ApproximateTimeSeek:
+enum ApproximatePublishTimeSeek:
     /** The very beginning of the retained log. */
     case Earliest
 
@@ -676,71 +1001,43 @@ enum ApproximateTimeSeek:
       */
     case Timestamp(publishTimeMs: Long)
 
-/** Resolve "start approximately `fraction` of the way through the TIME RANGE this topic still
-  * covers" into a position for the WHOLE logical topic.
+/** Resolve a publish-time fraction over a set of physical topics into ONE instant.
   *
-  * THE RANGE is `min(first publish time)` .. `max(last publish time)` taken across every partition
-  * of the topic, and the cutoff is `earliest + floor(fraction * (latest - earliest))`. Every
-  * partition is then seeked to that one instant.
+  * The inexpensive approximation inspects only each physical topic's first and last retained
+  * entries. It interpolates from the smallest observed first-boundary time to the largest observed
+  * last-boundary time, then seeks every topic to that timestamp. It does not scan interior
+  * messages, so producer clock changes can make the observed boundaries differ from the true
+  * minimum and maximum publish times.
   *
-  * WHY MIN/MAX AND NOT A PER-PARTITION QUANTILE. Min/max makes the endpoints exact by construction,
-  * makes the mapping monotonic in the fraction, and makes the answer independent of how many
-  * partitions the topic has - the same range split three ways or six ways resolves identically. It
-  * also avoids the defect the DATA mode has to special-case: an idle partition given its own
-  * proportional cutoff hands back messages from the far past, whereas here it simply has nothing at
-  * or after the topic-wide instant.
+  * THE SET IT IS GIVEN IS THE SESSION'S WHOLE SELECTION, not one logical topic's partitions - see
+  * [[resolveApproximatePublishTimeSeeks]] for why the boundary is drawn there.
   *
-  * THE ENDPOINTS ARE EXACT AND ARE NOT INTERPOLATED. 0.0 is `MessageId.earliest` - the same position
-  * "Earliest message" takes, and the one reading that stays right even if the recorded times are
-  * already stale. 1.0 is the publish time of the LAST message, so 100% still shows something; that
-  * is deliberately unlike the data mode, whose 1.0 means "past the end".
-  *
-  * AN EMPTY TOPIC - one no partition can answer for - resolves to Earliest at EVERY fraction,
-  * including 1.0. `examineMessage` FAILS on a topic with no entries rather than answering, so there
-  * is no range and no last message to be exact about; on a topic holding nothing "the beginning" and
-  * "the end" are the same position, namely whatever arrives next. Partitions that individually hold
-  * nothing are SKIPPED rather than counted as time zero - counting them would drag `earliest` back
-  * to 1970 and put every interior fraction before the real data.
-  *
-  * A TOPIC THAT OCCUPIES ONE INSTANT (first == last, i.e. everything was published inside the same
-  * millisecond) has no interior to interpolate into, so every interior fraction resolves to
-  * Earliest. There is no division anywhere here - the fraction multiplies the span - so this is a
-  * definition rather than a guard against a divide-by-zero: every message shares the one instant, no
-  * position separates them, and "all of it" is the only honest answer. 1.0 still answers with that
-  * instant, which delivers the same set. The same rule covers a range reported BACKWARDS, which a
-  * producer clock that jumped can produce, since publish time is stamped by the producer.
-  *
-  * MILLISECOND GRANULARITY: a timestamp seek cannot separate messages published in the same
-  * millisecond, so the cutoff always lands on a whole millisecond boundary and takes everything
-  * stamped with it.
-  *
-  * PURE: the broker sits behind `timeSpanOf`, so every arrangement - balanced partitions, uneven
-  * ones, an idle one, an empty topic, both endpoints - is testable with a plain lambda. Cost in
-  * production is two admin calls per partition, both O(1) in the size of the topic, and ZERO for
-  * fraction 0.0, which needs no range at all.
+  * 0% uses Earliest without a lookup. Empty or backwards boundary ranges also use Earliest; 100%
+  * seeks to the largest observed last-boundary time. Timestamp seeks are millisecond-granular and
+  * may include several messages with the same timestamp.
   *
   * @throws IllegalArgumentException
   *   for NaN, an infinity, or a fraction outside [0.0, 1.0] - see [[requireFraction]].
   */
-def resolveApproximateTimePosition(
+def resolveApproximatePublishTimePosition(
     fraction: Double,
     partitionFqns: Vector[String],
-    timeSpanOf: String => Option[TopicTimeSpan]
-): ApproximateTimeSeek =
-    requireFraction(fraction, "approximate time position")
+    timeSpanOf: String => Option[TopicPublishTimeSpan]
+): ApproximatePublishTimeSeek =
+    requireFraction(fraction, "Approximate position (% of time)")
 
-    if fraction <= 0.0 then ApproximateTimeSeek.Earliest
+    if fraction <= 0.0 then ApproximatePublishTimeSeek.Earliest
     else
         val spans = partitionFqns.distinct.flatMap(timeSpanOf)
-        if spans.isEmpty then ApproximateTimeSeek.Earliest
+        if spans.isEmpty then ApproximatePublishTimeSeek.Earliest
         else
             val earliest = spans.map(_.firstPublishTimeMs).min
             val latest = spans.map(_.lastPublishTimeMs).max
-            if fraction >= 1.0 then ApproximateTimeSeek.Timestamp(latest)
-            else if latest <= earliest then ApproximateTimeSeek.Earliest
-            else ApproximateTimeSeek.Timestamp(earliest + math.floor(fraction * (latest - earliest)).toLong)
+            if fraction >= 1.0 then ApproximatePublishTimeSeek.Timestamp(latest)
+            else if latest <= earliest then ApproximatePublishTimeSeek.Earliest
+            else ApproximatePublishTimeSeek.Timestamp(earliest + math.floor(fraction * (latest - earliest)).toLong)
 
-/** The publish times of the first and last messages `topicFqn` still holds, or `None` when the
+/** The publish times observed on the first and last retained entries of `topicFqn`, or `None` when the
   * BROKER SAYS it holds nothing - an empty topic, where `examineMessage` fails rather than
   * answering. A non-persistent one (405) is ruled out by the caller before this is reached.
   *
@@ -748,14 +1045,20 @@ def resolveApproximateTimePosition(
   * min(first) .. max(last) across every partition, and a partition silently dropped out of it
   * produced a confident cutoff over a narrower range - a different position, reported as success.
   *
-  * `examineMessage(topic, "latest", 1)` addresses the last ENTRY, and every message of a producer
-  * batch carries that entry's publish time, so the entry's time IS the last message's time.
+  * This is deliberately a boundary lookup, not a scan for the true minimum or maximum timestamp.
+  * Producer clock changes can make interior timestamps fall outside the observed range.
+  *
+  * A boundary entry that is a SERVER-ONLY MARKER is not special-cased and does not need to be: the
+  * result of this lookup is a pair of TIMESTAMPS, and a marker carries an ordinary broker-stamped
+  * publish time from inside the log's own range. The mode built on it seeks by timestamp, so it
+  * never counts anything and cannot be skewed by how many entries are markers - unlike the
+  * entry-percentage mode, which is (see [[resolveApproximateEntryPosition]]).
   */
-def publishTimeSpan(adminClient: PulsarAdmin, topicFqn: String): Option[TopicTimeSpan] =
+def publishTimeSpan(adminClient: PulsarAdmin, topicFqn: String): Option[TopicPublishTimeSpan] =
     for
         first <- brokerAnswer("reading the first retained message", topicFqn)(adminClient.topics.examineMessage(topicFqn, "earliest", 1L))
         last <- brokerAnswer("reading the last retained message", topicFqn)(adminClient.topics.examineMessage(topicFqn, "latest", 1L))
-    yield TopicTimeSpan(first.getPublishTime, last.getPublishTime)
+    yield TopicPublishTimeSpan(first.getPublishTime, last.getPublishTime)
 
 /** The LOGICAL topic a physical one belongs to: a partition's parent topic, or the topic itself.
   *
@@ -768,6 +1071,58 @@ def logicalTopicOf(topicFqn: String): String =
     topicFqn match
         case partitionOf(parent) => parent
         case _                   => topicFqn
+
+/** Group selected physical topics by logical topic, preserving first-seen order and removing
+  * duplicates inside each group. Kept separate from broker lookup so partition grouping is directly
+  * testable and cannot silently regress into one range per partition. */
+def groupPhysicalTopicsByLogicalTopic(topicFqns: Vector[String]): Vector[(String, Vector[String])] =
+    val groups = scala.collection.mutable.LinkedHashMap.empty[String, Vector[String]]
+    topicFqns.distinct.foreach { topicFqn =>
+        val logical = logicalTopicOf(topicFqn)
+        groups.update(logical, groups.getOrElse(logical, Vector.empty) :+ topicFqn)
+    }
+    groups.toVector
+
+/** Resolve the session's publish-time-percentage position: ONE instant, keyed by logical topic so
+  * every caller can look it up the way it already does. Every physical span is looked up at most
+  * once, with bounded concurrency and one deadline, before any caller applies a seek.
+  *
+  * ONE CUTOFF FOR THE WHOLE SELECTION, and that is the point of the mode. The range used to be
+  * pooled per LOGICAL topic, so a session over a one-hour topic and a thirty-day topic answered
+  * "50%" with two wall-clock instants a fortnight apart: each topic began half way through ITS OWN
+  * history, the merged view was a slice of no particular period, and nothing on screen could be
+  * compared with anything else. A history percentage over a set of topics only means something if
+  * the history it is a percentage OF is the set's.
+  *
+  * The ENTRY-percentage mode stays deliberately per physical topic: it answers a different question
+  * - where in each topic's stored data to begin - which has no cross-topic instant to share.
+  *
+  * A topic whose boundaries the broker would not describe (it retains nothing) contributes no
+  * boundary and receives the session's cutoff like every other: dropping out of the range would
+  * narrow it, and being given a different position would reintroduce exactly what this fixes.
+  */
+def resolveApproximatePublishTimeSeeks(
+    fraction: Double,
+    topicFqns: Vector[String],
+    timeSpanOf: String => Option[TopicPublishTimeSpan],
+    budgetMs: Long = approximatePositionResolveBudgetMs,
+    parallelism: Int = approximatePositionLookupParallelism
+): Map[String, ApproximatePublishTimeSeek] =
+    requireFraction(fraction, "Approximate position (% of time)")
+    val groups = groupPhysicalTopicsByLogicalTopic(topicFqns)
+
+    if fraction <= 0.0 then groups.map((logical, _) => logical -> ApproximatePublishTimeSeek.Earliest).toMap
+    else
+        val physicalTopics = groups.flatMap(_._2)
+        val spans = boundedParallelTopicLookup(
+            physicalTopics,
+            operation = "'Approximate position (% of time)'",
+            budgetMs = budgetMs,
+            parallelism = parallelism,
+            lookup = timeSpanOf
+        )
+        val sessionSeek = resolveApproximatePublishTimePosition(fraction, physicalTopics, spans.apply)
+        groups.map((logical, _) => logical -> sessionSeek).toMap
 
 def getIsSingleNonPartitionedTopic(adminClient: PulsarAdmin, topics: Vector[String]): Boolean =
     // `.type` is essential: getTopicPartitioning returns a TopicPartitioning record, and comparing
@@ -982,7 +1337,7 @@ def getMessageByIdMultiTopic(
   *    shows exactly n messages and not n * p, and it starts showing them immediately rather than
   *    waiting for every partition to drain.
   *
-  *  - "About % through the data" ([[ApproximateDataPosition]]): PER PHYSICAL TOPIC, and deliberately
+  *  - "Approximate position (% of data)" ([[ApproximateEntryPosition]]): PER PHYSICAL TOPIC, and deliberately
   *    stays that way. The fraction is resolved against that topic's own entry count and seeked to,
   *    so a session 60% of the way into a 4-partition topic is 60% into each of the four logs, and a
   *    session over several enabled targets is 60% into every topic they resolve to. That is not the
@@ -990,20 +1345,17 @@ def getMessageByIdMultiTopic(
   *    counting modes it cannot be made global cheaply: a count of n can be reached by streaming n
   *    messages and stopping, whereas a FRACTION of the merged stream is only known once the whole of
   *    it has been measured, which is O(topic) at any n. Rounding, endpoints, why the position is
-  *    only approximate, and empty topics: see [[resolveApproximateDataPosition]].
+  *    only approximate, and empty topics: see [[resolveApproximateEntryPosition]].
   *
-  *  - "About % through the time range" ([[ApproximateTimePosition]]): PER LOGICAL TOPIC. The topic's
-  *    partitions are pooled into one publish-time range - the earliest first message to the latest
-  *    last message - and every partition is seeked to the single instant that fraction picks out of
-  *    it. Still per topic and not per session: two enabled targets position against their own
-  *    backlogs, not against a merged view. The seek is BY TIMESTAMP, so it rides the same broker
-  *    path as [[DateTime]] and needs nothing new from the consumer. Endpoints, rounding, empty
-  *    topics and a topic that occupies one instant: see [[resolveApproximateTimePosition]].
+  *  - "Approximate position (% of time)" ([[ApproximatePublishTimePosition]]): PER LOGICAL TOPIC. The topic's
+  *    partitions contribute their first- and last-entry boundary timestamps, and every partition
+  *    is seeked to the single instant selected from that observed range. Still per topic and not
+  *    per session: two enabled targets position against their own backlogs, not against a merged
+  *    view. The seek is BY TIMESTAMP, so it rides the same broker path as [[DateTime]]. Endpoints,
+  *    clock-skew limits and empty topics: see [[resolveApproximatePublishTimePosition]].
   *
-  *    The two approximate modes answer different questions and that is the whole reason they are
-  *    two: on a topic where almost everything arrived in the last hour of a 30-day retention, half
-  *    the MESSAGES are behind you inside that last hour, while half the TIME is behind you fifteen
-  *    days back.
+  *    The two approximate modes answer different questions: one uses retained-entry position and
+  *    the other interpolates between observed publish-time boundaries.
   *
   * NON-PERSISTENT TOPICS keep nothing, so no history position exists on one. If EVERY topic the
   * session resolved to is non-persistent, a history mode is REJECTED up front (see
@@ -1021,7 +1373,12 @@ def handleStartFrom(
     consumers: Vector[Consumer[Array[Byte]]],
     adminClient: PulsarAdmin,
     pulsarClient: PulsarClient,
-    nonPartitionedTopicFqns: Vector[String]
+    nonPartitionedTopicFqns: Vector[String],
+    // The session-level delivery-order choice. It rides on the
+    // start-from plan because the ordering layer is built exactly once, here - a counted skip
+    // keeps its exact merge and simply does not let go of it after the cut; every other mode
+    // gains an order-only layer over the same machinery.
+    deliveryOrdering: consumer.session_config.MessageDeliveryOrder = consumer.session_config.MessageDeliveryOrder.AsReceived
 ): StartFromPlan =
     // Before anything is resumed or seeked: a position that cannot exist on these topics is a
     // validation error, not something to discover halfway through seeking them.
@@ -1051,7 +1408,17 @@ def handleStartFrom(
     // layer is only built for a session that will actually use one.
     val isGlobal = needsGlobalOrdering(startFrom, consumers.size)
     lazy val globalOrdering: StartFromOrderingPlan =
-        if isGlobal then globalOrderingPlanFor(startFrom, startFromStreamsAt(consumers)) else StartFromOrderingPlan.PassThrough
+        if isGlobal then globalOrderingPlanFor(startFrom, startFromStreamsAt(consumers), afterCut = deliveryOrdering)
+        else StartFromOrderingPlan.PassThrough
+
+    // Topics this start-from positions AT THE LIVE EDGE - nothing retained behind the cursor, so
+    // under the GUARANTEED replay they have nothing to replay and their boundary is EMPTY (the
+    // instant-caught-up input). Populated by the branches whose seek decision already knows it
+    // for free: Latest (everything), latest-n (its non-contributing topics), and the approximate
+    // entry position's endpoint fast path. A time-based seek past a topic's end cannot be told
+    // apart without extra broker reads and is deliberately not classified: an idle such stream
+    // holds its replay and is disclosed through the stall machinery instead.
+    val seekedToLiveEdge = scala.collection.mutable.Set.empty[String]
 
     val plan: StartFromPlan = startFrom match
         case _: EarliestMessage =>
@@ -1059,6 +1426,7 @@ def handleStartFrom(
             StartFromPlan(StartFromDiscardPlan.Nothing, StartFromOrderingPlan.PassThrough)
         case _: LatestMessage =>
             historyConsumers.foreach(_.seek(PulsarMessageId.latest))
+            seekedToLiveEdge ++= historyTopicFqns
             StartFromPlan(StartFromDiscardPlan.Nothing, StartFromOrderingPlan.PassThrough)
         case v: NthMessageAfterEarliest =>
             // Seek + discard, NOT examineMessage. examineMessage is ENTRY-addressed and clamps past
@@ -1078,6 +1446,7 @@ def handleStartFrom(
             if v.n <= 0 then
                 // "the last 0 messages" is nothing at all - the same position "Latest message" uses.
                 historyConsumers.foreach(_.seek(PulsarMessageId.latest))
+                seekedToLiveEdge ++= historyTopicFqns
                 StartFromPlan(StartFromDiscardPlan.Nothing, StartFromOrderingPlan.PassThrough)
             else
                 // RESOLVE EVERY TOPIC BEFORE SEEKING ANY OF THEM - the same discipline both
@@ -1096,7 +1465,9 @@ def handleStartFrom(
                     cut.getOrElse(topicFqn, LatestNSeek.Nothing) match
                         // Everything this topic holds is older than the cut. LATEST, not earliest:
                         // seeking a non-contributing partition to the beginning would show all of it.
-                        case LatestNSeek.Nothing    => consumer.seek(PulsarMessageId.latest)
+                        case LatestNSeek.Nothing =>
+                            consumer.seek(PulsarMessageId.latest)
+                            seekedToLiveEdge += topicFqn
                         case LatestNSeek.Everything => consumer.seek(PulsarMessageId.earliest)
                         case LatestNSeek.FromEntry(entryId, discard) =>
                             consumer.seek(entryId)
@@ -1140,58 +1511,77 @@ def handleStartFrom(
             historyConsumers.foreach(_.seek(startAt))
             StartFromPlan(StartFromDiscardPlan.Nothing, StartFromOrderingPlan.PassThrough)
 
-        case v: ApproximateDataPosition =>
-            // Resolve EVERY topic before seeking any of them: a rejected fraction, or a broker that
-            // will not answer, must not leave half the session sitting at a position nobody asked
-            // for. Two admin calls per physical topic, both O(1) in the size of the topic (three
-            // when the recheck below fires).
-            val positions = historyConsumers.map { consumer =>
-                val topicFqn = consumer.getTopic
-                val seekTo = resolveApproximateDataPosition(v.fraction, retainedEntryCount(adminClient, topicFqn)) match
-                    case ApproximateDataSeek.Earliest => PulsarMessageId.earliest
-                    case ApproximateDataSeek.Latest   => PulsarMessageId.latest
-                    case ApproximateDataSeek.Entry(entryOrdinal) =>
-                        // The entry count and the examine are two calls, and retention can trim
-                        // BETWEEN them. `examineMessage(earliest, k)` past the current end silently
-                        // CLAMPS TO THE NEWEST entry - the exact opposite of the contract, which
-                        // promises the earliest fallback when the position is gone. The recheck
-                        // makes the trim detectable: a count now smaller than the ordinal means
-                        // the answer in hand is the clamp, not the position.
-                        entryFromEarliest(adminClient, topicFqn)(entryOrdinal) match
-                            case None => PulsarMessageId.earliest
-                            case Some(answer) =>
-                                if retainedEntryCount(adminClient, topicFqn) < entryOrdinal then PulsarMessageId.earliest
-                                else answer
-                consumer -> seekTo
-            }
-            positions.foreach((consumer, seekTo) => consumer.seek(seekTo))
+        case v: ApproximateEntryPosition =>
+            // Resolve EVERY DISTINCT physical topic before seeking any consumer. Duplicate target
+            // consumers share one answer, and the endpoint fast paths ask the broker nothing.
+            val seeksByPhysicalTopic = resolveApproximateEntrySeeks(
+                fraction = v.fraction,
+                topicFqns = historyConsumers.map(_.getTopic),
+                earliest = PulsarMessageId.earliest,
+                latest = PulsarMessageId.latest,
+                retainedEntryCountOf = retainedEntryCount(adminClient, _),
+                entryFromEarliestOf = entryFromEarliest(adminClient, _),
+                // The same lookup and the same order the latest-n anchor re-check uses - one more
+                // O(1) admin call per interior position, which is what it costs to know that the
+                // entry chosen a moment ago has not been trimmed away since.
+                earliestRetainedEntryOf = earliestRetainedEntryId(adminClient, _),
+                entryIsOlder = latestNEntryIsOlder
+            )
+            historyConsumers.foreach(consumer => consumer.seek(seeksByPhysicalTopic(consumer.getTopic)))
+            // The endpoint fast path answers LATEST for fraction 1.0 (and for an empty topic):
+            // such a topic replays nothing under Guaranteed, and the resolver already said so.
+            seeksByPhysicalTopic.foreach((topicFqn, seekTo) => if seekTo == PulsarMessageId.latest then seekedToLiveEdge += topicFqn)
             StartFromPlan(StartFromDiscardPlan.Nothing, StartFromOrderingPlan.PassThrough)
 
-        case v: ApproximateTimePosition =>
-            // ONE position per LOGICAL topic, so a partitioned topic is a single time range rather
-            // than one range per partition. The lookup is memoised across the group because two
-            // enabled targets may deliver the same physical topic through separate consumers, and
-            // the broker must not be asked the same question twice.
-            val spans = scala.collection.mutable.Map.empty[String, Option[TopicTimeSpan]]
-            def spanOf(topicFqn: String): Option[TopicTimeSpan] =
-                spans.getOrElseUpdate(topicFqn, publishTimeSpan(adminClient, topicFqn))
-
-            // Same resolve-then-seek discipline as the data mode above, and for the same reason.
-            val seeksByTopic = historyConsumers
-                .map(_.getTopic)
-                .distinct
-                .groupBy(logicalTopicOf)
-                .view
-                .mapValues(partitionFqns => resolveApproximateTimePosition(v.fraction, partitionFqns, spanOf))
-                .toMap
+        case v: ApproximatePublishTimePosition =>
+            // ONE bounded, memoised lookup per physical topic; then ONE instant for the whole
+            // session, which every topic seeks to. Every answer exists before any consumer seeks,
+            // preserving all-or-nothing positioning.
+            val seeksByTopic = resolveApproximatePublishTimeSeeks(
+                fraction = v.fraction,
+                topicFqns = historyConsumers.map(_.getTopic),
+                timeSpanOf = publishTimeSpan(adminClient, _)
+            )
 
             historyConsumers.foreach { consumer =>
                 seeksByTopic(logicalTopicOf(consumer.getTopic)) match
-                    case ApproximateTimeSeek.Earliest        => consumer.seek(PulsarMessageId.earliest)
-                    case ApproximateTimeSeek.Timestamp(atMs) => consumer.seek(atMs)
+                    case ApproximatePublishTimeSeek.Earliest        => consumer.seek(PulsarMessageId.earliest)
+                    case ApproximatePublishTimeSeek.Timestamp(atMs) => consumer.seek(atMs)
             }
             StartFromPlan(StartFromDiscardPlan.Nothing, StartFromOrderingPlan.PassThrough)
 
+    // Add continuous delivery ordering for modes that decided no ordering of their own. BEST
+    // EFFORT keeps its old shape: a layer over stream ids with EMPTY ends (no broker calls), and
+    // only when there is something to interleave - a single stream is already in order and stays
+    // on the free pass-through path. GUARANTEED builds its layer at ANY stream count (the replay
+    // boundary, the auto-pause and the caught-up signal live in it) and resolves the REAL
+    // recorded ends - one broker call per topic, except for the streams the seek itself already
+    // proved are at the live edge, whose boundary is empty without asking.
+    val planWithMessageDeliveryOrder =
+        val guaranteed = deliveryOrdering == consumer.session_config.MessageDeliveryOrder.Guaranteed
+        if deliveryOrdering != consumer.session_config.MessageDeliveryOrder.AsReceived
+            && plan.ordering == StartFromOrderingPlan.PassThrough
+            && (consumers.size > 1 || guaranteed)
+        then
+            val orderedStreams =
+                if guaranteed then
+                    // Skip the per-topic end lookups entirely when every stream's boundary is
+                    // already known to be empty - Latest costs no broker call at all.
+                    val boundaryNeeded = consumers.exists(c => !isNonPersistentTopic(c.getTopic) && !seekedToLiveEdge.contains(c.getTopic))
+                    val capturedEnds: Map[String, EntryPosition] =
+                        if boundaryNeeded then startFromStreamsAt(consumers).map(s => s.id -> s.lastAtStart).toMap
+                        else Map.empty
+                    consumers.map { c =>
+                        val id = startFromStreamId(c.getConsumerName, c.getTopic)
+                        val end =
+                            if seekedToLiveEdge.contains(c.getTopic) then EntryPosition.empty
+                            else capturedEnds.getOrElse(id, EntryPosition.empty)
+                        StartFromStream(id, end)
+                    }
+                else consumers.map(c => StartFromStream(startFromStreamId(c.getConsumerName, c.getTopic), EntryPosition.empty))
+            plan.copy(ordering = StartFromOrderingPlan.Ordered(orderedStreams, deliveryOrdering))
+        else plan
+
     // Belt and braces: they should never have been resumed, and the caller resumes them itself.
     consumers.foreach(_.pause())
-    plan
+    planWithMessageDeliveryOrder

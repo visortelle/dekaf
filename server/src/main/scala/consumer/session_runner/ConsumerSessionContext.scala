@@ -87,6 +87,21 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
       """.stripMargin
     )
 
+    // The expression inspector documents `lastMessage` as the latest message seen by the
+    // session. Keep the implementation's private current-message slot as the source of truth for
+    // filters and projections, and expose a read-only live view so the two names cannot drift.
+    // Before the first message the getter deliberately yields `undefined`.
+    context.eval(
+        "js",
+        s"""
+      |Object.defineProperty(globalThis, 'lastMessage', {
+      |  configurable: false,
+      |  enumerable: true,
+      |  get: () => $CurrentMessageVarName
+      |});
+      """.stripMargin
+    )
+
     /** Release the JS context this session held.
       *
       * `close(true)` rather than `close()`: the plain form REFUSES while any thread is inside the
@@ -111,7 +126,6 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
            |  const message = JSON.parse(messageAsJsonOmittingValue);
            |  message.value = JSON.parse(messageValueAsJson);
            |  message.state = $JsonStateVarName;
-           |  console.log(JSON.stringify(message, null, 4));
            |  $CurrentMessageVarName = message;
            |})
            |""".stripMargin

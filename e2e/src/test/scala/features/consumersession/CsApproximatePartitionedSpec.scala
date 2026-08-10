@@ -10,10 +10,10 @@ import org.apache.pulsar.client.api.Message as PulsarMessage
   * answer across the logs" are the same sentence, so neither rule is under test. The production
   * wiring (`handleStartFrom`, the two `Approximate*` branches) differs precisely here:
   *
-  *   - **% through the DATA** resolves EVERY PHYSICAL TOPIC INDEPENDENTLY: each partition leaves
+  *   - **Approximate position (% of data)** resolves EVERY PHYSICAL TOPIC INDEPENDENTLY: each partition leaves
   *     `floor(fraction x its own entry count)` entries behind, so a partition holding two entries
   *     and one holding eight start at different depths.
-  *   - **% through the TIME RANGE** groups the physical topics by their LOGICAL topic, pools
+  *   - **Approximate position (% of time)** groups the physical topics by their LOGICAL topic, pools
   *     `min(first publish time)` .. `max(last publish time)` across the group, and seeks EVERY
   *     partition to that ONE instant - so a partition that went idle early cannot drag the cutoff
   *     backwards, and a partition that only started late is not given a range of its own.
@@ -36,7 +36,7 @@ import org.apache.pulsar.client.api.Message as PulsarMessage
   * it has to tell apart from an operational one. Both modes then have to SKIP it: counting it as
   * time zero would drag the pooled range's start back to 1970 and put every interior fraction before
   * the real data, i.e. turn 50% into Earliest. The pure arithmetic for that rule lives in
-  * `server/.../consumer/session_runner/approximateTimePositionTest`; what only a real broker can
+  * `server/.../consumer/session_runner/approximatePublishTimePositionTest`; what only a real broker can
   * show is that the failure is classified as "this partition holds nothing" and not as "the lookup
   * broke", and that the session still starts.
   *
@@ -90,7 +90,7 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
   )
 
   /** Publish the schedule straight to the partitions, unbatched (one message per broker ENTRY, so
-    * the data mode's entry arithmetic and a message count coincide and the expectation stays
+    * entry-position arithmetic and a message count coincide and the expectation stays
     * readable), with a real gap between groups.
     *
     * Addressing the partitions directly is the only way to control the skew: the parent topic's
@@ -144,8 +144,8 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
     assert(spans.count(_._2 == spans.map(_._2).max) == 1, s"the pooled LATEST is not owned by one partition: $spans")
     perPartition
 
-  /** Where the data mode starts on ONE partition: leave `floor(fraction x entries)` entries behind. */
-  private def dataAnswer(perPartition: Vector[Vector[PulsarMessage[String]]], entriesOf: Int => Long): Vector[String] =
+  /** Where entry position starts on ONE partition: leave `floor(fraction x entries)` entries behind. */
+  private def entryAnswer(perPartition: Vector[Vector[PulsarMessage[String]]], entriesOf: Int => Long): Vector[String] =
     perPartition.zipWithIndex.flatMap { case (msgs, p) =>
       val entries = entriesOf(p)
       assert(entries == msgs.size, s"partition $p: $entries entries for ${msgs.size} unbatched messages")
@@ -154,7 +154,7 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
 
   // -------------------------------------------------------------------------------------------
 
-  test("CS-SF-20: % through the data resolves EACH PARTITION on its own entry count") {
+  test("CS-SF-20: data position resolves EACH PARTITION on its own entry count") {
     val (t, ns, topic, fqn) = fixtures.freshTopicPartsOfKind(kind)
     arrange(fqn)
     val perPartition = arrangedContents(fqn)
@@ -162,7 +162,7 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
     // The contract, applied per physical topic. The entry count comes from the broker even though
     // the fixture is unbatched - the mode is defined over ENTRIES, and reading it back is what keeps
     // that visible (and asserts the fixture really did write one message per entry).
-    val expected = dataAnswer(perPartition, p => fixtures.numberOfEntries(s"$fqn-partition-$p"))
+    val expected = entryAnswer(perPartition, p => fixtures.numberOfEntries(s"$fqn-partition-$p"))
     assert(
       expected.toSet == Set("a-05", "a-06", "a-07", "a-08", "b-03", "b-04", "c-02"),
       s"the arrangement no longer produces the documented per-partition answer: $expected"
@@ -176,8 +176,8 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic, kind.scheme)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("50")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("50")
     cs.play()
     cs.assertState("running")
     // EVERY partition, the empty one included, is really part of this session. Without this the
@@ -188,7 +188,7 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
     assertLoadedExactlyWithCounter(cs, expected)
   }
 
-  test("CS-SF-21: % through the time range pools ONE cutoff across the partitions") {
+  test("CS-SF-21: publish-time position pools ONE cutoff across a logical topic's partitions") {
     val (t, ns, topic, fqn) = fixtures.freshTopicPartsOfKind(kind)
     arrange(fqn)
     val perPartition = arrangedContents(fqn)
@@ -224,8 +224,8 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
     }
     assert(perPartitionAnswer.toSet != expected.toSet, s"a per-partition range gives the same answer here: $perPartitionAnswer")
     // And the sibling mode must not coincide either, or a session that ran the wrong one would pass.
-    val byData = dataAnswer(perPartition, p => perPartition(p).size.toLong)
-    assert(byData.toSet != expected.toSet, s"the data mode gives the same answer here: $byData")
+    val byEntry = entryAnswer(perPartition, p => perPartition(p).size.toLong)
+    assert(byEntry.toSet != expected.toSet, s"the entry mode gives the same answer here: $byEntry")
     // The mistake the EMPTY partition exposes: counting it as time zero rather than skipping it.
     // Its "first publish time" would be the epoch, so the pooled range would start in 1970 and 50%
     // of it lands decades before this topic existed - i.e. the whole topic comes back. Derived, not
@@ -239,8 +239,8 @@ class CsApproximatePartitionedSpec extends StartFromSupport:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic, kind.scheme)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("50")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("50")
     cs.play()
     cs.assertState("running")
     awaitConsumersFlowing(fqn, kind) // including the empty partition - see CS-SF-20

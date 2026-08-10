@@ -16,7 +16,7 @@ import scala.util.Try
   *
   *   - `resolveLatestN` reads it as "the log holds fewer than n messages" and seeks to EARLIEST, so
   *     a transient 500 turned "the latest 5 messages" into the entire backlog;
-  *   - the approximate-data seek reads it as "that entry is gone" and falls back to EARLIEST;
+  *   - the approximate-entry seek reads it as "that entry is gone" and falls back to EARLIEST;
   *   - the approximate-time span reads it as "this partition holds nothing" and computes the cutoff
   *     from only the partitions that happened to answer;
   *   - the global merge reads a failed `getLastMessageIds` as "this stream is already drained" and
@@ -160,9 +160,10 @@ object startFromBrokerFailureTest extends ZIOSpecDefault:
         },
         test("a log genuinely shorter than n still shows all of it") {
             // The control, and the reason the two states cannot simply be merged into a failure:
-            // this is an ordinary, correct outcome that the caller turns into "seek to earliest".
+            // this is an ordinary, correct outcome - anchored at the oldest entry the walk took,
+            // so the retention re-check can later prove the anchor still exists.
             val lookup = walkBackFrom(k => if k > 3 then throw pastStartOfLogError else s"message-$k")
-            assertTrue(resolveOne(5, lookup) == LatestNSeek.Everything)
+            assertTrue(resolveOne(5, lookup) == LatestNSeek.FromEntry("entry-3", 0L))
         },
         test("an empty log maps to EVERYTHING - its whole content at seek time is post-inspection live traffic") {
             // The classifier still answers None (not a failure); the MAPPING is what changed:
@@ -177,31 +178,31 @@ object startFromBrokerFailureTest extends ZIOSpecDefault:
         }
     )
 
-    private val timeSpanSuite = suite("approximate time: a partition that could not be read must not be dropped from the range")(
+    private val timeSpanSuite = suite("approximate publish time: a partition that could not be read must not be dropped from the range")(
         test("A PARTITION THE BROKER COULD NOT READ FAILS THE RESOLUTION") {
             // The range is min(first) .. max(last) across every partition. Silently leaving out the
             // partition that failed produced a confident cutoff over a narrower range - a different
             // position, reported as success.
             val spanOf = (topic: String) =>
                 brokerAnswer("reading the publish-time span", topic) {
-                    if topic == otherTopicFqn then throw serverError else TopicTimeSpan(1_000L, 2_000L)
+                    if topic == otherTopicFqn then throw serverError else TopicPublishTimeSpan(1_000L, 2_000L)
                 }
-            val result = Try(resolveApproximateTimePosition(0.5, Vector(topicFqn, otherTopicFqn), spanOf))
+            val result = Try(resolveApproximatePublishTimePosition(0.5, Vector(topicFqn, otherTopicFqn), spanOf))
             assertTrue(
                 result.isFailure,
                 result.failed.toOption.exists(_.isInstanceOf[StartFromUnresolvableException])
             ) ?? s"the cutoff was computed from only the partitions that answered: $result"
         },
         test("a partition that genuinely holds nothing is still skipped, as it must be") {
-            // An empty partition has no first or last message; counting it would drag the range back
-            // to 1970 and put every interior fraction before the real data.
+            // An empty partition has no retained boundary entry; counting it as time zero would
+            // drag the range back to 1970.
             val spanOf = (topic: String) =>
                 brokerAnswer("reading the publish-time span", topic) {
-                    if topic == otherTopicFqn then throw emptyTopicError else TopicTimeSpan(1_000L, 2_000L)
+                    if topic == otherTopicFqn then throw emptyTopicError else TopicPublishTimeSpan(1_000L, 2_000L)
                 }
             assertTrue(
-                resolveApproximateTimePosition(0.5, Vector(topicFqn, otherTopicFqn), spanOf) ==
-                    ApproximateTimeSeek.Timestamp(1_500L)
+                resolveApproximatePublishTimePosition(0.5, Vector(topicFqn, otherTopicFqn), spanOf) ==
+                    ApproximatePublishTimeSeek.Timestamp(1_500L)
             )
         }
     )

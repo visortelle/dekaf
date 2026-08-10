@@ -60,6 +60,10 @@ def exactNamespaceMatcherToPb(v: ExactNamespaceMatcher): pb.ExactNamespaceMatche
   * IllegalArgumentException is the INVALID_ARGUMENT channel used by the other malformed-input guards
   * in this file. An UNSET regex (the proto default) still converts, so every stored item and every
   * request the UI makes are untouched - nothing writes the field.
+  *
+  * The refusal is for REQUEST data only. For items already ON DISK it made the whole item vanish
+  * from the library, so the scan strips a set regex before converting - see
+  * `resourceMatcherWithoutNamespaceRegex` below.
   */
 def allNamespaceMatcherFromPb(v: pb.AllNamespaceMatcher): AllNamespaceMatcher =
     if v.namespaceRegex.nonEmpty then
@@ -138,3 +142,35 @@ def resourceMatcherToPb(v: ResourceMatcher): pb.ResourceMatcher =
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Namespace(namespaceMatcherToPb(v)))
         case v: TopicMatcher =>
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(v)))
+
+/** READ-path counterpart to the refusal in `allNamespaceMatcherFromPb`: return `v` with any SET
+  * `AllNamespaceMatcher.namespace_regex` cleared, reporting each dropped pattern via `onDrop`.
+  *
+  * A REQUEST carrying the unimplemented field must be refused - accepting it would silently widen
+  * the caller's scope. A STORED item is different: refusing it on the scan path made the whole
+  * item fail to parse and vanish from the library, with only a server-side WARN and no way to
+  * repair it through the product. Dropping the FIELD (never applied by any version that wrote it)
+  * keeps the item loadable and addressable, and `onDrop` lets the caller name the item and the
+  * ignored pattern. The field nests in two places: directly under a namespace matcher, and under
+  * the namespace of either topic matcher variant.
+  */
+def resourceMatcherWithoutNamespaceRegex(v: pb.ResourceMatcher, onDrop: String => Unit): pb.ResourceMatcher =
+    def cleanNamespace(ns: pb.NamespaceMatcher): pb.NamespaceMatcher =
+        ns.matcher match
+            case pb.NamespaceMatcher.Matcher.All(all) if all.namespaceRegex.nonEmpty =>
+                onDrop(all.namespaceRegex)
+                ns.copy(matcher = pb.NamespaceMatcher.Matcher.All(all.copy(namespaceRegex = "")))
+            case _ => ns
+
+    v.matcher match
+        case pb.ResourceMatcher.Matcher.Namespace(ns) =>
+            v.copy(matcher = pb.ResourceMatcher.Matcher.Namespace(cleanNamespace(ns)))
+        case pb.ResourceMatcher.Matcher.Topic(topic) =>
+            val cleaned = topic.matcher match
+                case pb.TopicMatcher.Matcher.Exact(exact) =>
+                    topic.copy(matcher = pb.TopicMatcher.Matcher.Exact(exact.copy(namespace = exact.namespace.map(cleanNamespace))))
+                case pb.TopicMatcher.Matcher.All(all) =>
+                    topic.copy(matcher = pb.TopicMatcher.Matcher.All(all.copy(namespace = all.namespace.map(cleanNamespace))))
+                case _ => topic
+            v.copy(matcher = pb.ResourceMatcher.Matcher.Topic(cleaned))
+        case _ => v

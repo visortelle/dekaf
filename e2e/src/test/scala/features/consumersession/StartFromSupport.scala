@@ -42,13 +42,19 @@ trait StartFromSupport extends DekafSuite:
     * for the whole set (rather than a count) is what makes it non-transient: a missing message keeps
     * polling until the deadline, and an extra one can never satisfy the equality.
     *
-    * What it does NOT prove is that nothing else was loaded: the message table is virtualized, so
-    * off-screen rows are not in `columnValues` at all, and a message arriving after the first
-    * matching poll is never looked at. Prefer [[assertLoadedExactlyWithCounter]], which closes both;
-    * this bare form is for the quadrants where the counter cannot be predicted. */
+    * Rows come from [[ConsumerSessionPage.allColumnValues]], which walks the WHOLE virtualized
+    * list. The mounted-viewport read this used to be built on could only ever see the last
+    * viewport-worth of rows of the auto-scrolled table, so any expectation taller than one
+    * viewport failed on its OLDEST rows (CS-SF-7/9/13/14, all "missing m-01" the moment the
+    * tools pane opened by default and shrank the viewport).
+    *
+    * What it still does NOT prove is that nothing arrives AFTER the first matching poll - the
+    * shape a too-wide start-from produces. Prefer [[assertLoadedExactlyWithCounter]], which closes
+    * that with the toolbar counter; this bare form is for the quadrants where the counter cannot
+    * be predicted. */
   def assertLoadedExactly(cs: ConsumerSessionPage, expected: Seq[String]): Unit =
     val rendered = eventually(timeoutMs = 45000, intervalMs = 400) {
-      val all = cs.columnValues("value")
+      val all = cs.allColumnValues("value")
       val payload = all.filterNot(_.startsWith(HandshakePrefix))
       assert(
         payload.toSet == expected.toSet,
@@ -79,7 +85,7 @@ trait StartFromSupport extends DekafSuite:
     assert(
       settled == total,
       s"the session loaded $settled message(s) once the counter stopped moving, expected $total " +
-        s"(${expected.size} expected + $base already loaded before them). Rendered: ${cs.columnValues("value")}"
+        s"(${expected.size} expected + $base already loaded before them). Rendered: ${cs.allColumnValues("value")}"
     )
 
   /** The loaded counter once it has STOPPED MOVING, i.e. two reads `quietMs` apart that agree.

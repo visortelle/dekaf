@@ -91,7 +91,7 @@ class SuiteFactsSpec extends AnyFunSuite:
     declaredEquals("ignored", countIn("""(^|[^A-Za-z0-9_.`"])ignore\s*\("""), "ignored test(s)")
   }
 
-  test("FACTS-2: the README's `known-bug` count is the number of tagged tests, and the lane is EMPTY") {
+  test("FACTS-2: the README's `known-bug` count is the number of tagged tests, and every tag names an OPEN bug") {
     // Both ways ScalaTest can carry a tag: the FunSuite tag argument this suite uses,
     // `test("name", KnownBug) { ... }`, and the `taggedAs` form the other styles use - the latter
     // with OR without parentheses (`taggedAs KnownBug` is a legal infix call), because either would
@@ -100,10 +100,20 @@ class SuiteFactsSpec extends AnyFunSuite:
     val counts =
       countIn("""(?s)\btest\s*\(\s*"(?:[^"\\]|\\.)*"\s*,\s*KnownBug""") ++ countIn("""taggedAs\s*\(?\s*KnownBug""")
     declaredEquals("known-bug", counts, "tagged test(s)")
+    // The census is pinned BY NAME, not merely by number: a tag is for a bug that is genuinely
+    // OPEN, never a way to take a red test out of the green run - so a stray tag anywhere fails
+    // here, and fixing a listed bug (untagging its regression) shrinks this list in the same
+    // change. Currently EMPTY: the two 2026-08-09 replay-redesign entries (CsDeliveryModesSpec
+    // CS-DM-R3B, the live-edge boundary clobber; CsFlowControlSpec CS-FC-5, whose 2-of-4 red
+    // turned out to be an oracle defect reading a reconnect-reset dispatch counter) were fixed
+    // and untagged the same day, and both regressions run green in the normal lane.
+    val openBugRegressions = Map.empty[String, Int]
+    val census = counts.map((path, n) => path.getFileName.toString -> n).toMap
     assert(
-      total(counts) == 0,
-      s"the KnownBug lane is meant to be empty - a tag is for a bug that is genuinely OPEN, never a way to " +
-        s"take a red test out of the green run. Tagged: ${counts.map(_._1)}"
+      census == openBugRegressions,
+      s"the KnownBug census moved: expected exactly $openBugRegressions, found $census. " +
+        s"A NEW tag needs a genuinely open bug recorded here and in the README; a FIXED bug means untagging " +
+        s"the regression and shrinking this list (and the README marker) in the same change."
     )
   }
 

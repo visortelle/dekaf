@@ -60,7 +60,9 @@ class CsStartFromSpec extends DekafSuite:
     // When the sentinel arrives every post-play message is in, so assert the EXACT loaded set: only
     // the new ones, none of the old - a bare hasCount(3) could pass transiently even if old loaded too.
     val values = eventually() {
-      val vs = cs.columnValues("value")
+      // Whole-list read: a leaked old-* row is older than every new-* one, i.e. the first row the
+      // auto-scrolled virtualized table pushes out of the mounted range.
+      val vs = cs.allColumnValues("value")
       assert(vs.contains("new-last"), s"sentinel not loaded yet: $vs")
       vs
     }

@@ -41,20 +41,29 @@
 
 .Content {
   display: grid;
-  grid-template-columns: 1fr min-content;
+  grid-template-columns: minmax(0, 1fr);
+  /* The inspector tabs have very different intrinsic heights. Keep them inside the session's
+     fixed middle row so switching tabs cannot resize Virtuoso and disturb its scroll position. */
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
   flex: 1;
   overflow: hidden;
 }
 
+.ContentWithMessageDetails {
+  /* Keep a reachable share of the viewport for the table when a preference saved on a large
+     display is restored on a smaller one. The hook still retains the preferred pixel width. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, min(var(--message-details-width), 85%));
+}
+
 .MessageDetails {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   border-left: 1px solid var(--border-color);
-  width: 600rem;
-
-  /* Prevent accidental pages history navigation using touch-pad gestures. */
-  overscroll-behavior-x: contain;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 .CloseMessageDetails {
@@ -84,8 +93,76 @@
   overscroll-behavior-x: contain;
 }
 
+/* The toolbar and anything disclosed under it, as ONE grid child: the session grid declares
+   exactly three rows, so extra direct children would shift the content into the console's row. */
+.Top {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 /* The sticky best-effort banner: a degraded start-from stays disclosed for the session's life. */
 .StartFromDegraded {
+  padding: 6rem 12rem;
+  background: var(--warning-background-color, #fff7e0);
+  color: var(--warning-text-color, #7a5b00);
+  border-bottom: 1rem solid var(--border-color, #e0d5a8);
+  font-size: 12rem;
+}
+
+.StartFromDegradedTopics {
+  margin: 4rem 0;
+  padding-left: 20rem;
+  max-height: 80rem;
+  overflow-y: auto;
+}
+
+/* The banner's affordances: reveal the rest of the bounded list, copy it all, collapse. */
+.StartFromDegradedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rem;
+}
+
+.StartFromDegradedToggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12rem;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The guaranteed replay's boundary pause: reason-differentiated, with its two ways on inline.
+   Info-toned rather than warning-toned - catching up is the mode doing its job. */
+.ReplayCaughtUp {
+  padding: 6rem 12rem;
+  background: var(--surface-color, #eef3ff);
+  border-bottom: 1rem solid var(--border-color, #c9d6f2);
+  font-size: 12rem;
+}
+
+.ReplayCaughtUpActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rem;
+  margin-top: 4rem;
+}
+
+.ReplayCaughtUpButton {
+  background: transparent;
+  border: 1rem solid currentColor;
+  border-radius: 3rem;
+  padding: 0 6rem;
+  font-size: 12rem;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* What a pause costs on topics that retain nothing - shown only while the pause is in effect. */
+.NonPersistentPauseNote {
   padding: 6rem 12rem;
   background: var(--warning-background-color, #fff7e0);
   color: var(--warning-text-color, #7a5b00);

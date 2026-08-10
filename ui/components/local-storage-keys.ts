@@ -4,16 +4,6 @@ export const localStorageKeys = {
   defaultMessageFilterType: "defaultMessageFilterType",
   isHidePartitionedTopics: "isHidePartitionedTopics",
   /**
-   * Whether the consumer session polls the per-topic debug view (the "Topic Positions" tab).
-   *
-   * DELIBERATELY NOT PART OF THE SESSION CONFIG. It is a property of this browser, not of the
-   * session: saving it into a library item would carry one person's debugging preference to
-   * everyone who later opened that session, and would make two otherwise identical sessions
-   * compare as different.
-   *
-   * OFF BY DEFAULT because each refresh costs three admin round trips PER PARTITION.
-   */
-  /**
    * Cap on messages per second a consumer session DELIVERS, browser-wide. 0 = unlimited.
    *
    * Rides each Resume request (like `include_consumer_stats`), NEVER the session config: the
@@ -28,5 +18,9 @@ export const localStorageKeys = {
    * counter - and browser-wide for the same reason as the rate limit above. Re-arms on every
    * resume, so Play works as "load the next n".
    */
-  consumerSessionPauseAfterLoaded: "consumerSessionPauseAfterLoaded"
+  consumerSessionPauseAfterLoaded: "consumerSessionPauseAfterLoaded",
+  /** Whether the browser-wide consumer-session More tools panel is open. */
+  consumerSessionToolsOpen: "consumerSessionToolsOpen",
+  /** The last selected More tools tab. Runtime validation handles tabs removed by newer builds. */
+  consumerSessionToolsTab: "consumerSessionToolsTab"
 } as const;

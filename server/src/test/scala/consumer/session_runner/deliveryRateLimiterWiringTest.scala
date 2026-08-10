@@ -90,7 +90,7 @@ object deliveryRateLimiterWiringTest extends ZIOSpecDefault:
         l
 
     /** A limiter with a hand-cranked timer, wired the way the runner wires it. */
-    private final class ManualWiring(rate: Long, holdPermits: () => Boolean = () => true, releasePermits: () => Unit = () => ()):
+    private final class ManualWiring(rate: Long, holdPermits: () => Boolean = () => true, releasePermits: () => Boolean = () => true):
         private val pending = ArrayBuffer[Runnable]()
         val core = DeliveryRateLimiterCore[HeldMessage](nowMs = () => 0L)
         val limiter = DeliveryRateLimiter[HeldMessage](
@@ -123,6 +123,7 @@ object deliveryRateLimiterWiringTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = consumers,
+            pauseArbiters = (consumers).map((fqn, c) => fqn -> ConsumerPauseArbiter(c)),
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -194,23 +195,153 @@ object deliveryRateLimiterWiringTest extends ZIOSpecDefault:
             assertTrue(recording.handedBack.asScala.toVector == Vector("m2")) &&
             assertTrue(recording.acknowledged.asScala.toVector == Vector("m1", "m3"))
         },
-        test("the permit hold is REFUSED under a closed gate - the user's pause outranks the limiter") {
+        test("a permit release cannot resume a USER-paused session - the User reason still holds") {
+            // The gate-shut REFUSAL this used to pin is gone by design: with per-reason
+            // arbitration the limiter may record its hold any time, because releasing it can
+            // never wake a consumer another owner still holds. What survives - and what actually
+            // protected the user - is pinned here: pause, cycle a permit hold and release, and
+            // the consumer must never see a resume.
             val recording = RecordingConsumer(p0)
             val l = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
             val target = targetRunner(l, Map(p0 -> recording.consumer))
 
-            // Gate closed (never opened): the hold and the release must both refuse to touch the
-            // consumers - a "release" onto a paused session would resume what the user stopped.
+            target.pause() // the user's hold
             target.setPermitHold(true)
             target.setPermitHold(false)
-            val whileClosed = recording.permitCalls.asScala.toVector
 
+            assertTrue(!recording.permitCalls.asScala.toVector.contains("resume")) ??
+                s"calls=${recording.permitCalls.asScala.toVector}"
+        },
+        test("a REFUSED aggregate hold rolls its partial holds back - nothing stays paused for a hold that failed") {
+            // holdPermits aggregates several consumers; one throwing makes the whole answer
+            // false while the others already paused. Without the rollback those partial holds
+            // sat in their arbiters with the limiter believing it owned nothing - paused forever.
+            var holds = 0
+            var releases = 0
+            val pending = ArrayBuffer[Runnable]()
+            var clock = 0L
+            val core = DeliveryRateLimiterCore[String](nowMs = () => clock, payloadBytesOf = _ => 50L * 1024 * 1024)
+            val limiter = DeliveryRateLimiter[String](
+                core = core,
+                schedule = (_, task) => { pending += task; () },
+                process = _ => (),
+                holdPermits = () => { holds += 1; false }, // the aggregate always refuses
+                releasePermits = () => { releases += 1; true }
+            )
+            core.setRate(1000)
+
+            (1 to 3).foreach(i => limiter.offer(s"m$i")) // crosses the byte mark
+            val afterFirstCrossing = (holds, releases)
+            limiter.offer("m4") // still over the mark: the un-set flag lets the next offer retry
+
+            assertTrue(
+                afterFirstCrossing == (1, 1), // refused hold -> immediate rollback release
+                holds == 2, // and the retry happened
+                releases == 2
+            ) ?? s"holds=$holds releases=$releases"
+        },
+        test("a release that FAILS ONCE is retried on its own tick - a drained queue produces no other chance") {
+            var releaseAttempts = 0
+            val pending = ArrayBuffer[(Long, Runnable)]()
+            var clock = 0L
+            val core = DeliveryRateLimiterCore[String](nowMs = () => clock, payloadBytesOf = _ => 50L * 1024 * 1024)
+            val limiter = DeliveryRateLimiter[String](
+                core = core,
+                schedule = (delay, task) => { pending += ((delay, task)); () },
+                process = _ => (),
+                holdPermits = () => true,
+                releasePermits = () => { releaseAttempts += 1; releaseAttempts > 1 } // first release fails
+            )
+            core.setRate(1000)
+            (1 to 3).foreach(i => limiter.offer(s"m$i")) // byte crossing: permits held
+
+            clock += 1000
+            def runAll(): Unit = { val t = pending.toVector; pending.clear(); t.foreach(_._2.run()) }
+            runAll() // the drain empties the queue; the release attempt FAILS; a retry tick is armed
+            val retryArmed = pending.nonEmpty && pending.forall(_._1 == deliveryRateLimitReleaseRetryDelayMs)
+            runAll() // the retry succeeds
+
+            assertTrue(
+                releaseAttempts == 2,
+                retryArmed,
+                core.queuedCount == 0
+            ) ?? s"attempts=$releaseAttempts retryArmed=$retryArmed pending=${pending.size}"
+        },
+        test("WHILE PAUSED, the unlimited inline path is refused - the message queues for the resume") {
+            var processed = 0
+            val pending = ArrayBuffer[Runnable]()
+            val core = DeliveryRateLimiterCore[String](nowMs = () => 0L)
+            val limiter = DeliveryRateLimiter[String](
+                core = core,
+                schedule = (_, task) => { pending += task; () },
+                process = _ => processed += 1,
+                holdPermits = () => true,
+                releasePermits = () => true
+            )
+            // Rate 0 = the unlimited inline path... unless the user has the session paused: a
+            // message arriving between the pause RPC and the consumers actually stopping used to
+            // be processed (and acknowledged) inline - delivery after pause.
+            limiter.pauseDraining()
+            limiter.offer("m1")
+            val processedWhilePaused = processed
+            val queuedWhilePaused = core.queuedCount
+
+            limiter.resumeDraining()
+            val tasks = pending.toVector; pending.clear(); tasks.foreach(_.run())
+
+            assertTrue(
+                processedWhilePaused == 0,
+                queuedWhilePaused == 1,
+                processed == 1
+            ) ?? s"processedWhilePaused=$processedWhilePaused queued=$queuedWhilePaused processed=$processed"
+        },
+        test("QUEUED BYTES hold the permits when the count never would - the fat-message watermark") {
+            // 2000 queued 5 MB payloads is 10 GB the count watermark calls perfectly fine. The
+            // byte watermark is the other half of the same backpressure: three fat payloads must
+            // hold permits, and draining them must let go.
+            var holds = 0
+            var releases = 0
+            val pending = ArrayBuffer[Runnable]()
+            var clock = 0L
+            val core = DeliveryRateLimiterCore[String](nowMs = () => clock, payloadBytesOf = _ => 50L * 1024 * 1024)
+            val limiter = DeliveryRateLimiter[String](
+                core = core,
+                schedule = (_, task) => { pending += task; () },
+                process = _ => (),
+                holdPermits = () => { holds += 1; true },
+                releasePermits = () => { releases += 1; true }
+            )
+            core.setRate(1000) // any non-zero rate forces the queue path
+
+            limiter.offer("a")
+            limiter.offer("b")
+            val holdsAtTwo = holds // 100 MiB queued: still under the 128 MiB mark
+            limiter.offer("c") // 150 MiB: over it, at a count of THREE
+            val holdsAtThree = holds
+
+            clock += 1000
+            val tasks = pending.toVector; pending.clear()
+            tasks.foreach(_.run()) // the drain empties the queue: bytes back under the low mark
+
+            assertTrue(
+                holdsAtTwo == 0,
+                holdsAtThree == 1,
+                holds == 1,
+                releases == 1,
+                core.queuedBytesCount == 0L
+            ) ?? s"holds=$holds releases=$releases queuedBytes=${core.queuedBytesCount}"
+        },
+        test("with no other owner, a permit hold pauses and its release resumes - exactly once each") {
+            val recording = RecordingConsumer(p0)
+            val l = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
+            val target = targetRunner(l, Map(p0 -> recording.consumer))
             l.startAcceptingNewMessages()
+
             target.setPermitHold(true)
             target.setPermitHold(false)
 
-            assertTrue(whileClosed.isEmpty) &&
-            assertTrue(recording.permitCalls.asScala.toVector == Vector("pause", "resume"))
+            assertTrue(recording.permitCalls.asScala.toVector == Vector("pause", "resume")) ??
+                s"calls=${recording.permitCalls.asScala.toVector}"
         },
         test("the runner refuses a hold while start-from counting is in flight, then grants it") {
             val recording = RecordingConsumer(p0)
@@ -292,6 +423,79 @@ object deliveryRateLimiterWiringTest extends ZIOSpecDefault:
             assertTrue(delivered.asScala.toVector == Vector("b1", "a2", "b2")) &&
             assertTrue(c0.acknowledged.asScala.headOption.contains("a1")) &&
             assertTrue(!delivered.asScala.toVector.contains("a1"))
+        },
+        test("GUARANTEED spends no rate token while it is waiting for another topic") {
+            val p1 = "persistent://public/default/rate-limit-wiring-guaranteed-1"
+            val delivered = ConcurrentLinkedQueue[String]()
+            val c0 = RecordingConsumer(p0)
+            val c1 = RecordingConsumer(p1)
+            val l = listener(delivered)
+            l.startFromOrdering = StartFromOrdering.make[HeldMessage](
+                StartFromOrderingPlan.Ordered(
+                    // Far-future recorded ends: these streams are MID-REPLAY - the barrier must
+                    // wait on them, and nothing here is past the boundary.
+                    Vector(
+                        StartFromStream(startFromStreamId(consumerName, p0), EntryPosition(1L, 1_000_000L, -1, 1)),
+                        StartFromStream(startFromStreamId(consumerName, p1), EntryPosition(1L, 1_000_000L, -1, 1))
+                    ),
+                    _root_.consumer.session_config.MessageDeliveryOrder.Guaranteed
+                )
+            )
+            val wiring = ManualWiring(rate = 1)
+            l.deliveryRateLimiter = Some(wiring.limiter)
+
+            // p0 alone is not safe: Guaranteed still waits for p1. That wait must leave the one
+            // initial token untouched, so p0 can be delivered as soon as p1 supplies its head.
+            l.received(c0.consumer, messageOn(p0, "a", 100L, 0L))
+            val beforeP1 = delivered.asScala.toVector
+            l.received(c1.consumer, messageOn(p1, "b", 200L, 0L))
+
+            assertTrue(beforeP1.isEmpty) &&
+            assertTrue(delivered.asScala.toVector == Vector("a")) &&
+            assertTrue(c0.acknowledged.asScala.toVector == Vector("a"))
+        },
+        test("GUARANTEED hands the rate token back when the send fails - the retry is not charged twice") {
+            // rate 1 and a hand clock that never moves: the bucket holds exactly one token, ever.
+            // The first send attempt FAILS (a cancelled client); the head stays in the merge and
+            // the pump's next tick retries it. Without the refund that retry finds an empty
+            // bucket - the failed attempt burned the only token - and the head sits for a full
+            // simulated second on top of the latency the failure already cost.
+            val p1 = "persistent://public/default/rate-limit-wiring-guaranteed-refund-1"
+            val delivered = ConcurrentLinkedQueue[String]()
+            val c0 = RecordingConsumer(p0)
+            val c1 = RecordingConsumer(p1)
+            var failNext = true
+            val l = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = msg =>
+                if failNext then
+                    failNext = false
+                    throw io.grpc.StatusRuntimeException(io.grpc.Status.CANCELLED)
+                delivered.add(msg.getKey)
+                ()
+            ))
+            l.startAcceptingNewMessages()
+            l.startFromOrdering = StartFromOrdering.make[HeldMessage](
+                StartFromOrderingPlan.Ordered(
+                    // Far-future recorded ends: mid-replay streams, nothing past the boundary.
+                    Vector(
+                        StartFromStream(startFromStreamId(consumerName, p0), EntryPosition(1L, 1_000_000L, -1, 1)),
+                        StartFromStream(startFromStreamId(consumerName, p1), EntryPosition(1L, 1_000_000L, -1, 1))
+                    ),
+                    _root_.consumer.session_config.MessageDeliveryOrder.Guaranteed
+                )
+            )
+            val wiring = ManualWiring(rate = 1)
+            l.deliveryRateLimiter = Some(wiring.limiter)
+
+            l.received(c0.consumer, messageOn(p0, "a", 100L, 0L)) // waits on p1
+            l.received(c1.consumer, messageOn(p1, "b", 200L, 0L)) // both heads: the pump tries "a" and the send fails
+            val deliveredAfterFailure = delivered.asScala.toVector
+            l.sweepStartFromStall() // the pump's retry timer - it must find the refunded token
+
+            assertTrue(
+                deliveredAfterFailure.isEmpty, // the failed attempt delivered nothing...
+                delivered.asScala.toVector == Vector("a"), // ...and the retry needed no fresh token
+                c0.acknowledged.asScala.toVector == Vector("a")
+            ) ?? s"afterFailure=$deliveredAfterFailure delivered=${delivered.asScala.toVector}"
         },
         test("resume installs the SHARED limiter on the listener, with the requested rate") {
             val delivered = ConcurrentLinkedQueue[String]()

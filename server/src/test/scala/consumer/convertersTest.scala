@@ -157,6 +157,70 @@ object convertersTest extends ZIOSpecDefault:
                     assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode)) ??
                         s"decoded $decodedJson, expected $jsonToEncode"
         },
+        test("a message that names NO schema version is read with the topic's LATEST schema") {
+            // THE CASE THIS DESERIALIZER IS NAMED FOR. A producer using Schema.BYTES (or an older
+            // client) stamps no schema version, so nothing but the topic's registry says what the
+            // bytes are. The old code answered `bytesToJsonString` here, which renders a JSON
+            // DOCUMENT as an escaped JSON STRING - `{\"id\":1,...}` instead of the object - and
+            // `SchemasByVersion.getLatest`, written for exactly this, was never called from
+            // anywhere. Confirmed end to end by e2e CS-SCH-1 (schema registered through the admin
+            // API, payload produced with Schema.BYTES).
+            val schemaDefinition =
+                """
+                  |{
+                  |  "type": "record",
+                  |  "name": "TestOrder",
+                  |  "fields": [
+                  |    { "name": "id", "type": "int" },
+                  |    { "name": "item", "type": "string" }
+                  |  ]
+                  |}
+                  """.stripMargin
+
+            val schemaInfo = SchemaInfo.builder
+                .`type`(SchemaType.JSON)
+                .schema(schemaDefinition.getBytes)
+                .build
+
+            val jsonToEncode = """{"id":1,"item":"boots"}"""
+            val topicName = "topic-a"
+
+            // No setSchemaVersion: this is what a schema-less producer actually writes.
+            val messageMetadata = new MessageMetadata()
+            val message = MessageImpl.create[Array[Byte]](
+                messageMetadata,
+                java.nio.ByteBuffer.wrap(jsonToEncode.getBytes),
+                Schema.BYTES,
+                topicName
+            )
+
+            val schemasByTopic: SchemasByTopic = Map(topicName -> Map(1L -> schemaInfo))
+
+            converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                case Left(err) => assertNever(s"messageValueToJson failed for the version-less message: $err")
+                case Right(decodedJson) =>
+                    assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode)) ??
+                        s"decoded $decodedJson, expected the OBJECT $jsonToEncode (an escaped string means the raw-bytes fallback ran)"
+        },
+        test("a version-less message on a topic with NO registered schema still reads as raw bytes") {
+            // The other side of the same branch: inferring a schema is only possible when the
+            // registry holds one. With nothing to infer from, the raw-string answer is correct
+            // and must not change.
+            val payload = """{"id":1}"""
+            val message = MessageImpl.create[Array[Byte]](
+                new MessageMetadata(),
+                java.nio.ByteBuffer.wrap(payload.getBytes),
+                Schema.BYTES,
+                "topic-without-schema"
+            )
+
+            converters.messageValueToJson(Map.empty, message, useLatestTopicSchemaDeserializer) match
+                case Left(err) => assertNever(s"messageValueToJson failed for the schema-less topic: $err")
+                case Right(decodedJson) =>
+                    // A JSON string literal - the document as text, quoted and escaped.
+                    assertTrue(parseJson(decodedJson).toOption.exists(_.isString)) ??
+                        s"decoded $decodedJson, expected the raw payload as a JSON string"
+        },
         test("PROTOBUF_NATIVE schema") {
             val protoFileName = "user.proto"
             val protoFileContent =

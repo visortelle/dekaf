@@ -88,6 +88,7 @@ object consumerServiceResumeTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = consumers,
+            pauseArbiters = (consumers).map((fqn, c) => fqn -> ConsumerPauseArbiter(c)),
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -178,16 +179,20 @@ object consumerServiceResumeTest extends ZIOSpecDefault:
             service.resume(consumerPb.ResumeRequest(consumerName = "cs-resume-flags", includeConsumerStats = true), observer)
             val framesAfterCatch = observer.received.size
 
-            // A listener thread still in flight pushes now: the terminal flag must silence it.
-            runner.sendResponse(observer, Seq(consumerPb.Message()), Vector.empty)
+            // A listener thread still in flight pushes now. The terminal flag must silence it -
+            // AND TELL IT SO: silence alone let the healthy target's `deliverNow` read a normal
+            // return as "the client has it" and acknowledge a message no browser ever saw. The
+            // refusal is what routes it back to the broker for redelivery instead.
+            val lateSendRefused = scala.util.Try(runner.sendResponse(observer, Seq(consumerPb.Message()), Vector.empty)).isFailure
 
             assertTrue(
                 framesAfterCatch == 1,
                 observer.received.head.getStatus.code == com.google.rpc.code.Code.FAILED_PRECONDITION.value,
                 observer.completed.get,
+                lateSendRefused,
                 observer.received.size == 1,
                 observer.nextAfterCompleted.get == 0
-            ) ?? (s"framesAfterCatch=$framesAfterCatch total=${observer.received.size} " +
+            ) ?? (s"framesAfterCatch=$framesAfterCatch total=${observer.received.size} lateSendRefused=$lateSendRefused " +
                 s"nextAfterCompleted=${observer.nextAfterCompleted.get} completed=${observer.completed.get}")
         },
         test("RESUMING A SESSION WHOSE STREAM HAS ENDED answers non-OK instead of wiring a dead runner") {

@@ -43,3 +43,45 @@ tr:has(> .Td:hover) {
   left: 285rem;
   z-index: 1;
 }
+
+/* The row-level seam disclosure: this message arrived out of the selected-time order across a
+   pause seam (producer clock skew into the pause window). Sits beside the index so it is visible
+   at any horizontal scroll. */
+.SeamViolationMarker {
+  flex: none;
+  margin-left: 4rem;
+  width: 14rem;
+  height: 14rem;
+  line-height: 12rem;
+  text-align: center;
+  border: 1rem solid currentColor;
+  border-radius: 50%;
+  font-size: 10rem;
+  font-weight: var(--font-weight-bold, bold);
+  color: var(--warning-text-color, #7a5b00);
+  background: var(--warning-background-color, #fff7e0);
+  cursor: help;
+}
+
+/* The delivery-order switch point: a divider band across the first row delivered after
+   "Continue live with Best effort". Data-driven per row (not a DOM insertion at an offset), so it
+   survives scrolling, retention trimming and re-sorting. */
+.OrderSwitchBoundaryTd {
+  border-top: 3rem solid var(--accent-color, #4a72ff) !important;
+}
+
+.OrderSwitchPointBadge {
+  position: absolute;
+  top: -2rem;
+  left: 2rem;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: var(--accent-color, #4a72ff);
+  color: #fff;
+  font-size: 10rem;
+  line-height: 14rem;
+  padding: 0 6rem;
+  border-radius: 3rem;
+  white-space: nowrap;
+  cursor: help;
+}

@@ -6,7 +6,7 @@
 
 - Navigate to a Pulsar topic you're interested in
 - Click the **Consume** button
-- By default, **Consumer Session** starts from the **Latest Message** in the topic. If no producers produce new messages in realtime to the selected topic, switch the **Start From** field to **Earliest Message**
+- By default, **Consumer Session** starts from the **Earliest Message** in the topic, so pressing play shows the data that is already there. On a **non-persistent** topic, which keeps no history at all, it starts from the **Latest Message** instead and the history-based positions are unavailable.
 - Click the **▶** button to start the consumer session.
 
 ![initial consumer session](./img/start-consumer-session.png)
@@ -67,7 +67,7 @@ All the loaded messages data will be erased on the UI. If you want to save the c
 The **Search in Loaded Messages** feature that we used above, may be not enough for precise search and search in Pulsar topics with a lot of messages for the following reasons:
 
 - In case you're searching for a small subset of messages in comparison with all messages in the topic, the network bandwidth may easily became a bottleneck.
-- The amount of messages loaded to your browser simultaneously is limited by RAM available for a single browser tab. By default, the message count limit is `10,000` messages, but you can adjust it in consumer session's **advanced settings** depending on the average message size.
+- The amount of messages loaded to your browser simultaneously is limited by RAM available for a single browser tab. By default, the message count limit is `10,000` messages, but you can adjust it with **Limit num. display messages** in the consumer session settings depending on the average message size.
 
 The **Message Filter** feature solve both mentioned problems. They work on server-side, therefore processed messages that don't pass message filters, aren't being loaded to your browser.
 
@@ -226,7 +226,7 @@ Each consumed message represents a row in the table.
 
 Table has the following columns:
 
-- **#**: Index number of the message in the current view. It is determined by the order in which the message was consumed and delivered to the UI. The order of messages may differ from the **Publish Time** order in case of consuming a partitioning topic or multiple non-partitioned topics.
+- **#**: Index number of the message in the current view. It is determined by the order in which the message was consumed and delivered to the UI. Across a partitioned topic or several topics that depends on the session's delivery order: **Guaranteed** and **Best effort** (the default) merge by the selected timestamp - Guaranteed adds no disorder of its own, while under **Best effort** a message arriving after the reorder window is numbered out of order. **Fastest** delivers each topic and partition independently, so its numbering follows arrival rather than **Publish Time**.
 - **Publish Time**: The timestamp of when the message is published. The timestamp is automatically applied by the producer.
 - **Key**: The key of the message. Messages are optionally tagged with keys, which is useful for features like topic compaction and key-shared subscriptions.
 - **Value**: Value of the message serialized as JSON. It may be inefficient to observe values this way because some values may not fit the column width. To fix that, you can map specific value field to a table column by using **Projections**.

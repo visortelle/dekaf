@@ -22,6 +22,30 @@ import org.apache.pulsar.client.impl.MessageIdImpl
 /** How far this session has read into one physical topic. */
 final case class TopicCursor(messageId: PulsarMessageId, publishTime: Long)
 
+/** The oldest and newest log positions this session has processed from one physical topic.
+  *
+  * Both endpoints move only OUTWARD in Pulsar message-id order. That makes an older redelivery
+  * harmless and keeps the range stable even when producer publish clocks move backwards. When two
+  * observations have the same id (notably non-persistent topics, whose ids may all be `0:0`), the
+  * first observation is retained and the newest observation refreshes `last`.
+  */
+final case class TopicConsumedBounds(first: TopicCursor, last: TopicCursor)
+
+/** Widen consumed bounds with one newly processed message. */
+def widenConsumedBounds(existing: TopicConsumedBounds, incoming: TopicCursor): TopicConsumedBounds =
+    val firstComparison = incoming.messageId.compareTo(existing.first.messageId)
+    val lastComparison = incoming.messageId.compareTo(existing.last.messageId)
+    val first =
+        if firstComparison < 0 then incoming
+        else existing.first
+    val last =
+        if lastComparison > 0 || (lastComparison == 0 && incoming.publishTime != existing.last.publishTime) then incoming
+        else existing.last
+    // A redelivery inside the already-known range is the common no-op case. Reuse the immutable
+    // value instead of allocating another one on the hot listener path.
+    if (first eq existing.first) && (last eq existing.last) then existing
+    else TopicConsumedBounds(first, last)
+
 /** One ledger of a topic's managed ledger, reduced to what an ordinal needs. */
 final case class LedgerSpan(ledgerId: Long, entries: Long)
 
@@ -40,6 +64,7 @@ final case class TopicPositionInputs(
     topicFqn: String,
     first: Option[LogEndpoint],
     last: Option[LogEndpoint],
+    firstConsumed: Option[TopicCursor],
     cursor: Option[TopicCursor],
     ledgers: Vector[LedgerSpan],
     currentLedgerEntries: Long,
@@ -54,6 +79,7 @@ final case class TopicPositionRow(
     topicFqn: String,
     first: Option[LogEndpoint],
     last: Option[LogEndpoint],
+    firstConsumed: Option[TopicCursor],
     cursor: Option[TopicCursor],
     cursorTimeFraction: Option[Double],
     cursorEntryFraction: Option[Double],
@@ -106,7 +132,7 @@ def entryOrdinalOf(ledgers: Vector[LedgerSpan], cursorLedgerId: Long, cursorEntr
   * `None` unless there is a cursor AND both endpoints AND a range with an interior:
   *
   *   - FIRST == LAST - everything the topic holds was published inside one millisecond - has no
-  *     interior to place anything in, and the same rule ApproximateTimePosition follows applies
+  *     interior to place anything in, and the same rule ApproximatePublishTimePosition follows applies
   *     here: no position separates the messages, so no fraction describes one. Reporting 0.0 or 1.0
   *     would both be inventions.
   *   - A RANGE REPORTED BACKWARDS (first > last) is not a range. Publish time is stamped by the
@@ -129,7 +155,7 @@ def cursorTimeFractionOf(first: Option[LogEndpoint], last: Option[LogEndpoint], 
   *
   * ENTRIES, NOT MESSAGES, and the name says so. Pulsar addresses stored data by entry, and a batched
   * entry holds many messages, so this tracks a message-count percentage only as closely as batch
-  * sizes stayed uniform across the topic's life - exactly the approximation ApproximateDataPosition
+  * sizes stayed uniform across the topic's life - exactly the approximation ApproximateEntryPosition
   * documents for the same reason. Calling it "% of messages" would be a number the broker cannot
   * actually produce without a message-ordinal index, which needs an operator opt-in that is off by
   * default in every Pulsar version.
@@ -162,6 +188,7 @@ def buildTopicPositionRow(inputs: TopicPositionInputs): TopicPositionRow =
         topicFqn = inputs.topicFqn,
         first = inputs.first,
         last = inputs.last,
+        firstConsumed = inputs.firstConsumed,
         cursor = inputs.cursor,
         cursorTimeFraction = cursorTimeFractionOf(inputs.first, inputs.last, inputs.cursor),
         cursorEntryFraction = cursorEntryFractionOf(ordinal, inputs.retainedEntries),
@@ -173,31 +200,39 @@ def buildTopicPositionRow(inputs: TopicPositionInputs): TopicPositionRow =
         unavailableReason = inputs.unavailableReason
     )
 
-/** Collapse the per-listener cursor maps of one session into one cursor per topic, keeping the
-  * FURTHEST each topic has been read.
+/** Collapse the per-listener consumed ranges of one session into one range per physical topic.
   *
-  * A session can consume the same topic from more than one target - two targets differing only in
-  * their filters is an ordinary configuration - and each keeps its own listener, so each keeps its
-  * own read position. The table has one row per topic, so the two have to be reconciled, and the
-  * furthest is the only answer that means "how far has this session read".
-  *
-  * Ordered by MESSAGE ID, not by publish time. Publish time is stamped by the producer and can run
-  * backwards between two messages; ledger-and-entry order is the log's own order and cannot.
+  * Overlapping enabled targets may each consume the same topic. The table has one row for that
+  * topic, so its range is the union: the earliest first and furthest last message-id endpoints.
   */
-def furthestCursors(perListener: Iterable[Map[String, TopicCursor]]): Map[String, TopicCursor] =
-    perListener.flatten.foldLeft(Map.empty[String, TopicCursor]) { case (acc, (topicFqn, cursor)) =>
-        val furthest = acc.get(topicFqn) match
-            case Some(existing) if existing.messageId.compareTo(cursor.messageId) >= 0 => existing
-            case _                                                                     => cursor
-        acc.updated(topicFqn, furthest)
+def mergeConsumedBounds(perListener: Iterable[Map[String, TopicConsumedBounds]]): Map[String, TopicConsumedBounds] =
+    perListener.flatten.foldLeft(Map.empty[String, TopicConsumedBounds]) { case (acc, (topicFqn, bounds)) =>
+        val merged = acc.get(topicFqn) match
+            case None => bounds
+            case Some(existing) =>
+                val firstComparison = bounds.first.messageId.compareTo(existing.first.messageId)
+                val lastComparison = bounds.last.messageId.compareTo(existing.last.messageId)
+                // Equal-id tie breakers make aggregation deterministic and useful for
+                // non-persistent topics, whose messages may all carry the same id. They never
+                // reorder distinct persistent log positions by an untrusted producer clock.
+                val first =
+                    if firstComparison < 0 || (firstComparison == 0 && bounds.first.publishTime < existing.first.publishTime)
+                    then bounds.first
+                    else existing.first
+                val last =
+                    if lastComparison > 0 || (lastComparison == 0 && bounds.last.publishTime > existing.last.publishTime)
+                    then bounds.last
+                    else existing.last
+                TopicConsumedBounds(first, last)
+        acc.updated(topicFqn, merged)
     }
 
 /** Put one row on the wire.
   *
   * ABSENT STAYS ABSENT. Every optional here maps to an unset protobuf wrapper rather than to a zero,
   * because the client renders a blank cell for "not known" and a real figure for "known to be zero",
-  * and the two are different answers: a cursor at the very first entry IS 0% through, while a topic
-  * whose cursor has aged out is not.
+  * and the two are different answers: the first of N stored entries has position 1/N, while a topic
+  * whose session position has aged out is not known.
   */
 def topicPositionToPb(row: TopicPositionRow): consumerPb.TopicPosition =
     consumerPb.TopicPosition(
@@ -212,5 +247,96 @@ def topicPositionToPb(row: TopicPositionRow): consumerPb.TopicPosition =
         cursorEntryFraction = row.cursorEntryFraction,
         retainedEntries = row.retainedEntries,
         cursorEntryOrdinal = row.cursorEntryOrdinal,
-        unavailableReason = row.unavailableReason
+        unavailableReason = row.unavailableReason,
+        firstConsumedMessageId = row.firstConsumed.map(c => ByteString.copyFrom(c.messageId.toByteArray)),
+        firstConsumedPublishTime = row.firstConsumed.map(_.publishTime)
     )
+
+/** How many of one session's physical topics the Topic Positions poll may ask the broker about at
+  * once. Deliberately narrower than the start-from position lookups: this one is POLLED, so its
+  * cost recurs for as long as the tab is open, while a position resolution happens once per Play.
+  * Every task still runs on the server-wide budget shared with those lookups
+  * ([[approximatePositionLookupGlobalParallelism]]), so the two cannot multiply. */
+val topicPositionLookupParallelism: Int = 8
+
+/** The wall-clock budget for one scan. Past it the poll answers with what it could not do rather
+  * than holding the broker and the client indefinitely; the tab simply asks again. */
+val topicPositionScanBudgetMs: Long = 20_000
+
+/** How many Topic Positions scans may be in progress across the whole server. Each of these threads
+  * only WAITS - it dispatches the per-topic lookups onto the shared budget and collects them - so
+  * this bounds pile-up, not broker load; the coalescing below already limits a session to one scan
+  * at a time however fast its tab polls. */
+private val topicPositionScanConcurrency: Int = 8
+
+private val topicPositionScanThreadNumber = java.util.concurrent.atomic.AtomicInteger(0)
+
+private lazy val topicPositionScanExecutor: java.util.concurrent.ExecutorService =
+    java.util.concurrent.Executors.newFixedThreadPool(
+        topicPositionScanConcurrency,
+        (runnable: Runnable) =>
+            val thread = Thread(runnable, s"topic-positions-scan-${topicPositionScanThreadNumber.incrementAndGet()}")
+            thread.setDaemon(true)
+            thread
+    )
+
+/** ONE Topic Positions scan per session at a time, however fast its tab polls.
+  *
+  * The tab polls once a second and a session may hold up to 2,000 physical topics, each costing two
+  * `examineMessage` calls plus `getInternalStats`. Run as the RPC used to run them - serially, on
+  * the gRPC thread, before returning an already-completed Future - a single browser could hold a
+  * service thread for a sweep of thousands of admin calls, and every tick started ANOTHER sweep on
+  * top of the one still running. So: the scan leaves the caller's thread, its per-topic lookups go
+  * through the server-wide bounded budget with a wall-clock deadline and cancellation, and a poll
+  * arriving while a scan is in flight JOINS it instead of starting a second one. Joining hands back
+  * an answer at most one scan old, which is exactly what a once-a-second poll of a slow sweep can
+  * honestly show.
+  *
+  * The scan-registry entry is removed BEFORE its promise completes, so the next poll after a scan
+  * finishes always starts a fresh one.
+  */
+final class TopicPositionScanner(
+    parallelism: Int = topicPositionLookupParallelism,
+    budgetMs: Long = topicPositionScanBudgetMs,
+    execute: Runnable => Unit = topicPositionScanExecutor.execute
+):
+    private val inFlight = java.util.concurrent.ConcurrentHashMap[String, scala.concurrent.Future[Vector[TopicPositionRow]]]()
+
+    /** Scans running right now - a test's window, and what a saturation metric would read. */
+    private[consumer] def scansInFlight: Int = inFlight.size
+
+    def scan(
+        sessionName: String,
+        topicFqns: Vector[String],
+        lookup: String => TopicPositionRow
+    ): scala.concurrent.Future[Vector[TopicPositionRow]] =
+        val topics = topicFqns.distinct.sorted
+        if topics.isEmpty then scala.concurrent.Future.successful(Vector.empty)
+        else
+            val promise = scala.concurrent.Promise[Vector[TopicPositionRow]]()
+            val joined = inFlight.putIfAbsent(sessionName, promise.future)
+            if joined != null then joined
+            else
+                val started = scala.util.Try(execute(() =>
+                    val outcome = scala.util.Try {
+                        val rows = boundedParallelTopicLookup(
+                            topics,
+                            operation = s"the topic positions of consumer session $sessionName",
+                            lookup = lookup,
+                            budgetMs = budgetMs,
+                            parallelism = parallelism,
+                            remediation = "Narrow the session's topic selector, or close the Topic Positions tab while it reads."
+                        )
+                        topics.flatMap(rows.get)
+                    }
+                    // Out of the registry FIRST: a caller that sees this promise complete and polls
+                    // again must get a new scan, never a finished one it can never leave.
+                    inFlight.remove(sessionName, promise.future)
+                    promise.complete(outcome)
+                    ()
+                ))
+                started.failed.foreach { err =>
+                    inFlight.remove(sessionName, promise.future)
+                    promise.failure(err)
+                }
+                promise.future

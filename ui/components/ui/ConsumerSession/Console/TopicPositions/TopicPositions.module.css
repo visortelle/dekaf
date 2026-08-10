@@ -16,7 +16,7 @@
   color: var(--error-color, #b00020);
 }
 
-/* The table is wide by nature - eleven columns of ids and timestamps - so it scrolls inside its
+/* The table is wide by nature - fourteen columns of ids, timestamps, and progress - so it scrolls inside its
    own box rather than making the console scroll sideways. The shared Table sizes itself with
    flex (its scroll container is flex: 1), so this wrap must be a flex column with a definite
    height - as a plain block the scroll container collapses to 0 and no rows render. */
@@ -35,8 +35,4 @@
 .Unavailable {
   color: var(--text-color-secondary, #666);
   font-style: italic;
-}
-
-.AggregateLabel {
-  font-weight: 600;
 }

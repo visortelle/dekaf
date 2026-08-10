@@ -87,6 +87,17 @@ final class StartFromDiscard private (
       * than inferring it from what came out. */
     def remaining: Long = shared.map(_.get).getOrElse(perTopic.values.map(_.get).sum)
 
+    /** What this discard still has to drop FROM ONE TOPIC - the per-stream question the delivery
+      * pacer asks before it holds a consumer's permits.
+      *
+      * A SHARED counter answers for every topic and deliberately so: it is one budget over the
+      * merged stream, so any topic can supply its next unit and none of them may be throttled
+      * quiet while it counts. A PER-TOPIC counter answers only for its own topic, which is what
+      * stops one topic's unfinished latest-n correction from suppressing backpressure everywhere.
+      */
+    def remainingFor(topicFqn: NonPartitionedTopicFqn): Long =
+        shared.orElse(perTopic.get(topicFqn)).map(_.get).getOrElse(0L)
+
     /** Whether this counter is the USER'S skip, and so something to report progress for.
       *
       * Only the session-wide counter is: it exists because the user asked to skip the first n

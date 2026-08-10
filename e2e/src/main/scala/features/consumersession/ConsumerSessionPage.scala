@@ -11,13 +11,16 @@ import scala.jdk.CollectionConverters.*
   * Merged surface for both the configuration (CS-2..15) and runtime (CS-16..32) specs. */
 final case class ConsumerSessionPage(page: Page):
   // --- Toolbar / table (pre-existing) ---
-  val playButton: Locator      = page.getByTestId("cs-play")
-  val stopButton: Locator      = page.getByTestId("cs-stop")
-  val toolsButton: Locator     = page.getByTestId("cs-tools")
-  val searchInput: Locator     = page.getByTestId("cs-search")
-  val startFromSelect: Locator = page.getByTestId("cs-start-from")
-  val messages: Locator        = page.getByTestId("cs-message")
-  val messageDetails: Locator  = page.getByTestId("cs-message-details")
+  val playButton: Locator        = page.getByTestId("cs-play")
+  val stopButton: Locator        = page.getByTestId("cs-stop")
+  val toolsButton: Locator       = page.getByTestId("cs-tools")
+  val toolsPanel: Locator        = page.getByTestId("cs-console")
+  val toolsResizeHandle: Locator = page.getByTestId("cs-tools-resize-handle")
+  val toolsCloseButton: Locator  = page.getByTestId("cs-tools-close")
+  val searchInput: Locator       = page.getByTestId("cs-search")
+  val startFromSelect: Locator   = page.getByTestId("cs-start-from")
+  val messages: Locator          = page.getByTestId("cs-message")
+  val messageDetails: Locator    = page.getByTestId("cs-message-details")
 
   // --- Start From additional inputs (CS-2/3) ---
   val startFromN: Locator         = page.getByTestId("cs-start-from-n")
@@ -36,19 +39,16 @@ final case class ConsumerSessionPage(page: Page):
 
   // --- The two approximate modes + persistency advice ---
   // Both render the SAME percent control, so each carries its own test-id prefix; sharing one would
-  // let a test drive "% through the data" while asserting "% through the time range".
-  val startFromDataFraction: Locator       = page.getByTestId("cs-start-from-data-fraction")
-  val startFromDataFractionSlider: Locator = page.getByTestId("cs-start-from-data-fraction-slider")
-  val startFromDataFractionError: Locator  = page.getByTestId("cs-start-from-data-fraction-error")
-  val startFromTimeFraction: Locator       = page.getByTestId("cs-start-from-time-fraction")
-  val startFromTimeFractionSlider: Locator = page.getByTestId("cs-start-from-time-fraction-slider")
-  val startFromTimeFractionError: Locator  = page.getByTestId("cs-start-from-time-fraction-error")
+  // let a test drive the entry position while asserting the publish-time position.
+  val startFromEntryFraction: Locator             = page.getByTestId("cs-start-from-entry-fraction")
+  val startFromEntryFractionSlider: Locator       = page.getByTestId("cs-start-from-entry-fraction-slider")
+  val startFromEntryFractionError: Locator        = page.getByTestId("cs-start-from-entry-fraction-error")
+  val startFromPublishTimeFraction: Locator       = page.getByTestId("cs-start-from-publish-time-fraction")
+  val startFromPublishTimeFractionSlider: Locator = page.getByTestId("cs-start-from-publish-time-fraction-slider")
+  val startFromPublishTimeFractionError: Locator  = page.getByTestId("cs-start-from-publish-time-fraction-error")
   val startFromNonPersistentNote: Locator    = page.getByTestId("cs-start-from-non-persistent-note")
   val startFromMixedPersistencyNote: Locator = page.getByTestId("cs-start-from-mixed-persistency-note")
   val startFromProgress: Locator             = page.getByTestId("cs-start-from-progress")
-
-  // --- Advanced reveal (CS-15) ---
-  val advancedToggle: Locator = page.getByTestId("cs-advanced-toggle")
 
   // --- Session-level editor containers ---
   val sessionFilters: Locator     = page.getByTestId("cs-session-filters")
@@ -72,22 +72,152 @@ final case class ConsumerSessionPage(page: Page):
   val awaitingText: Locator           = page.getByText("Awaiting for new messages...")
 
   // --- Runtime table / details / export (CS-18..29) ---
-  val session: Locator             = page.getByTestId("cs-session")
-  val table: Locator               = page.getByTestId("cs-table")
-  val numFound: Locator            = page.getByTestId("cs-num-found")
-  val loaded: Locator              = page.getByTestId("cs-loaded")
-  val messageDetailsClose: Locator = page.getByTestId("cs-message-details-close")
-  val exportOpen: Locator          = page.getByTestId("cs-export-open")
+  val session: Locator                    = page.getByTestId("cs-session")
+  val table: Locator                      = page.getByTestId("cs-table")
+  /** react-virtuoso owns the actual vertical scroll offset on this child, not on `table`. */
+  val tableScroller: Locator              = table.locator("[data-virtuoso-scroller]").first()
+  val numFound: Locator                   = page.getByTestId("cs-num-found")
+  val loaded: Locator                     = page.getByTestId("cs-loaded")
+  val messageDetailsClose: Locator        = page.getByTestId("cs-message-details-close")
+  val messageDetailsResizeHandle: Locator = page.getByTestId("cs-message-details-resize-handle")
+  val exportOpen: Locator                 = page.getByTestId("cs-export-open")
 
   def th(key: String): Locator   = page.getByTestId(s"cs-th-$key")
   def cell(key: String): Locator = page.getByTestId(s"cs-cell-$key")
   val selectedIndexCell: Locator = page.locator("[data-testid='cs-message'][data-cs-selected='true']")
 
+  /** String cells render JSON-quoted (`"k-1"`); a single surrounding quote pair is stripped. */
+  private def stripRenderedQuotes(v: String): String =
+    if v.length >= 2 && v.startsWith("\"") && v.endsWith("\"") then v.substring(1, v.length - 1) else v
+
   /** The visible values of a message column, in rendered row order (e.g. `columnValues("key")`).
-    * String cells render JSON-quoted (`"k-1"`), so a single surrounding quote pair is stripped. */
+    *
+    * MOUNTED rows only: the table is react-virtuoso, so this sees one viewport-worth of rows and -
+    * on a running session, which auto-scrolls to the bottom every 200ms - specifically the LAST
+    * viewport-worth. Fine for sets that fit a viewport and for emptiness checks; any expectation
+    * that can outgrow a viewport must use [[allColumnValues]] instead (CS-SF-7/9/13/14 failed on
+    * exactly this, all "missing m-01" - the oldest rows had scrolled off the top). */
   def columnValues(key: String): List[String] =
-    cell(key).allInnerTexts().asScala.toList.map(_.trim).map: v =>
-      if v.length >= 2 && v.startsWith("\"") && v.endsWith("\"") then v.substring(1, v.length - 1) else v
+    cell(key).allInnerTexts().asScala.toList.map(_.trim).map(stripRenderedQuotes)
+
+  /** Every value of a message column across the WHOLE virtualized list, not just the mounted
+    * viewport - the scroll-and-collect pattern `CsMergeOrderSpec.deliveredValues` introduced,
+    * shared so every exact-set assertion benefits.
+    *
+    * The entire walk runs inside ONE `page.evaluate`: it steps the virtuoso scroller from the top,
+    * waits two animation frames per step for React to mount the range, and collects
+    * (displayIndex, cell text) pairs keyed by the arrival ordinal so a row is never double-counted
+    * across steps. Unlike `deliveredValues` it does NOT pause the session (callers keep producing
+    * into live sessions afterwards); instead the running-state auto-scroll is treated as a rival:
+    * a step whose position was hijacked (the scroller is not where the walk put it) is detected
+    * and retried, bounded, so the walk terminates either way - at worst the outer polling loop
+    * calls it again. Returned in arrival (displayIndex) order, with the same one-quote-pair strip
+    * `columnValues` applies. Parsed with jackson rather than a regex so payloads containing
+    * brackets, quotes or newlines cannot be silently dropped. */
+  def allColumnValues(key: String): List[String] =
+    val json = page
+      .evaluate(
+        s"""async () => {
+           |  const table = document.querySelector("[data-testid='cs-table']");
+           |  if (!table) return "[]";
+           |  const byOrdinal = new Map();
+           |  const harvest = () => {
+           |    for (const r of table.querySelectorAll("tbody tr")) {
+           |      const ord = r.querySelector("[data-testid='cs-message']");
+           |      const cell = r.querySelector("[data-testid='cs-cell-$key']");
+           |      if (ord && cell) {
+           |        const n = parseInt(ord.innerText.trim(), 10);
+           |        if (!isNaN(n)) byOrdinal.set(n, cell.innerText.trim());
+           |      }
+           |    }
+           |  };
+           |  const result = () => JSON.stringify(Array.from(byOrdinal.entries()));
+           |  harvest();
+           |  const s = table.querySelector("[data-virtuoso-scroller]");
+           |  if (!s || s.scrollHeight <= s.clientHeight + 2) return result();
+           |  const frame = () => new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+           |  let target = 0;
+           |  let guard = 0;
+           |  while (guard < 300) {
+           |    guard += 1;
+           |    s.scrollTop = target;
+           |    await frame();
+           |    const atEnd = target >= s.scrollHeight - s.clientHeight - 2;
+           |    if (Math.abs(s.scrollTop - target) > 2 && !atEnd) continue; // auto-scroll hijacked the step - retry it
+           |    harvest();
+           |    if (atEnd) break;
+           |    target = Math.min(target + s.clientHeight * 0.8, s.scrollHeight - s.clientHeight);
+           |  }
+           |  return result();
+           |}""".stripMargin
+      )
+      .toString
+    ConsumerSessionPage.jsonMapper
+      .readTree(json)
+      .elements()
+      .asScala
+      .map(pair => pair.get(0).asInt() -> pair.get(1).asText())
+      .toList
+      .sortBy(_._1)
+      .map((_, value) => stripRenderedQuotes(value.trim))
+
+  /** EVERY loaded message's value, read out of the app's own bulk export instead of the table.
+    *
+    * [[allColumnValues]] walks the virtualized list a viewport at a time and gives up after 300
+    * steps, which is a few thousand rows on this 1280x800 context - so the exact-set assertions the
+    * high-pressure specs need (tens of thousands of messages) are simply out of its reach. The
+    * export writes the whole retained buffer, not the mounted rows, in one file.
+    *
+    * TWO PREMISES, both enforced rather than assumed, because either one silently truncates the
+    * oracle into something that still looks like a set:
+    *   - the session must NOT be running: while running the app shows (and exports) only the last
+    *     250 messages, so a running export would quietly compare 250 rows and pass;
+    *   - the session's retention (`data-cs-retained`, the `numDisplayItems` limit) must be wide
+    *     enough to still hold everything the test produced - see [[setNumDisplayItems]]. Callers
+    *     assert that themselves against their own expected total, which this cannot know.
+    *
+    * Returned in the table's DISPLAY order (publish time ascending, stable), not arrival order:
+    * this is a SET oracle. Arrival order has its own reader in `CsMergeOrderSpec`. */
+  def exportedValues(): List[String] =
+    assert(
+      state != "running",
+      "exportedValues must be called on a paused/stopped session: a RUNNING session renders and " +
+        "exports only its last 250 messages, so the exported set would silently be a tail"
+    )
+    exportOpen.click()
+    val modal = ExportModal(page)
+    modal.selectFormat("json-value-per-entry")
+    // Generous: the export serializes, zips and downloads the whole retained buffer, which is tens
+    // of thousands of messages in the pressure specs.
+    val download =
+      page.waitForDownload(new Page.WaitForDownloadOptions().setTimeout(120000), () => modal.runButton.click())
+    val zipPath = java.nio.file.Files.createTempFile("cs-exported-values", ".zip")
+    try
+      download.saveAs(zipPath)
+      val zip = new java.util.zip.ZipFile(zipPath.toFile)
+      try
+        zip.entries().asScala
+          .filterNot(_.isDirectory)
+          .map(e => e.getName -> new String(zip.getInputStream(e).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8))
+          .toList
+          // The exporter chunks by size and names each chunk `<first index>-<last index>.json`;
+          // ordering by that first index keeps a multi-chunk export in one sequence.
+          .sortBy((name, _) => ConsumerSessionPage.chunkFirstIndex(name))
+          .flatMap { (name, text) =>
+            val root = ConsumerSessionPage.jsonMapper.readTree(text)
+            assert(root.isArray, s"the exported chunk '$name' is not a JSON array: ${text.take(200)}")
+            root.elements().asScala.toList.map { node =>
+              // The premise the whole comparison rests on: the exporter writes each value as it
+              // reached the browser, and these specs produce STRING payloads, so every entry must
+              // be a JSON string. A payload that stopped being one would otherwise compare as "".
+              assert(node.isTextual, s"an exported value is not a JSON string: ${node.toString.take(200)}")
+              node.asText
+            }
+          }
+      finally zip.close()
+    finally
+      java.nio.file.Files.deleteIfExists(zipPath)
+      modal.close()
 
   /** The rendered (DOM) width of a column header in px - proves a persisted width is actually applied. */
   def columnDomWidth(key: String): Double =
@@ -113,6 +243,13 @@ final case class ConsumerSessionPage(page: Page):
     * rendered row - it rises when the (virtualized) rows actually scroll. */
   def firstRenderedIndex: Int =
     messages.allInnerTexts().asScala.headOption.map(_.trim).flatMap(_.toIntOption).getOrElse(-1)
+
+  /** Pixel position of the virtualized message viewport. This complements `firstRenderedIndex`:
+    * the rendered range can stay the same after a small but still user-visible scroll jump. */
+  def tableScrollTop: Double =
+    tableScroller.evaluate("element => element.scrollTop") match
+      case n: Number => n.doubleValue()
+      case value     => throw new AssertionError(s"message viewport scrollTop is not numeric: $value")
 
   // --- Scoped sub-objects ---
   def sessionFilterPanel: FilterPanel    = FilterPanel(page, sessionFilters)
@@ -160,13 +297,13 @@ final case class ConsumerSessionPage(page: Page):
   def startFromLabels: List[String] = startFromOptions.map(_._1)
   def disabledStartFromLabels: List[String] = startFromOptions.filterNot(_._2).map(_._1)
 
-  /** Start From = "About % through the data", set to `percent` of the messages a topic still holds
+  /** Start From = "Approximate position (% of data)", set to `percent` of the retained broker entries
     * (0-100; the model stores the fraction). */
-  def setStartFromDataPercent(percent: String): Unit = startFromDataFraction.fill(percent)
+  def setStartFromEntryPercent(percent: String): Unit = startFromEntryFraction.fill(percent)
 
-  /** Start From = "About % through the time range", set to `percent` of the time a topic still
-    * covers (0-100; the model stores the fraction). */
-  def setStartFromTimePercent(percent: String): Unit = startFromTimeFraction.fill(percent)
+  /** Start From = "Approximate position (% of time)", set to `percent` between a logical topic's
+    * retained boundary-entry publish times (0-100; the model stores the fraction). */
+  def setStartFromPublishTimePercent(percent: String): Unit = startFromPublishTimeFraction.fill(percent)
 
   /** Start From = "Specific time", set to `at` in the BROWSER's local zone (same machine as the
     * test JVM, so `LocalDateTime.ofInstant(i, ZoneId.systemDefault)` is the right conversion).
@@ -193,7 +330,13 @@ final case class ConsumerSessionPage(page: Page):
     startFromAdditional.locator("input[type='number']").fill(value.toString)
     startFromAdditional.locator("select").selectOption(new SelectOption().setValue(unit))
 
-  def revealAdvanced(): Unit = advancedToggle.click()
+  /** Delivery order: 'Guaranteed', 'Best effort', or 'Fastest'. */
+  def setDeliveryOrder(label: String): Unit =
+    page.getByTestId("cs-delivery-order").selectOption(new SelectOption().setLabel(label))
+
+  /** Order by: 'Publish time', 'Broker publish time', or 'Event time'. Hidden for Fastest. */
+  def setOrderTime(label: String): Unit =
+    page.getByTestId("cs-delivery-order-key").selectOption(new SelectOption().setLabel(label))
   def setDeserializer(label: String): Unit = deserializerSelect.selectOption(new SelectOption().setLabel(label))
   def addTarget(): Unit = addTargetButton.click()
 
@@ -234,8 +377,72 @@ final case class ConsumerSessionPage(page: Page):
     pauseAfterInput.press("Enter")
   def clickFirstMessage(): Unit  = messages.first().click()
   def searchInResults(t: String): Unit = searchInput.fill(t)
-  // Force-click: the button's own "Toggle additional tools" tooltip can overlay it and intercept a normal click.
-  def openTools(): Unit          = toolsButton.click(new Locator.ClickOptions().setForce(true))
+  /** Open without accidentally closing an already-open default/persisted panel. Waiting for the
+    * toolbar first keeps the visibility check from racing the initial React render. */
+  def openTools(): Unit =
+    assertThat(toolsButton).isVisible()
+    if !toolsResizeHandle.isVisible then toggleTools()
+
+  /** Close through the panel's user-facing cross, but remain idempotent for setup/cleanup paths. */
+  def closeTools(): Unit =
+    assertThat(toolsButton).isVisible()
+    if toolsResizeHandle.isVisible then toolsCloseButton.click()
+
+  /** Deliberately invert visibility. Force-click because the button's tooltip can overlap it. */
+  def toggleTools(): Unit = toolsButton.click(new Locator.ClickOptions().setForce(true))
+
+  /** Drag either consumer-session pane handle through the real document-level mouse path used by
+    * the resize hook. Positive x/y moves right/down; negative moves left/up. */
+  private def dragPaneResize(handle: Locator, dx: Int, dy: Int): Unit =
+    val b: BoundingBox = handle.boundingBox()
+    assert(b != null, s"resize handle '${handle}' has no live bounding box")
+    val sx = b.x + b.width / 2
+    val sy = b.y + b.height / 2
+    page.mouse().move(sx, sy)
+    page.mouse().down()
+    page.mouse().move(sx + dx, sy + dy, new Mouse.MoveOptions().setSteps(8))
+    page.mouse().up()
+    // The shared resize primitive batches updates through requestAnimationFrame.
+    page.waitForTimeout(100)
+
+  /** The bottom panel grows when its top edge is dragged up, and shrinks when dragged down. */
+  def resizeToolsBy(dy: Int): Unit = dragPaneResize(toolsResizeHandle, dx = 0, dy = dy)
+
+  /** The right-hand inspector grows when its left edge is dragged left, and shrinks when dragged right. */
+  def resizeMessageDetailsBy(dx: Int): Unit = dragPaneResize(messageDetailsResizeHandle, dx = dx, dy = 0)
+
+  def toolsPanelDomHeight: Double =
+    val b = toolsPanel.boundingBox()
+    if b == null then -1.0 else b.height
+
+  def sessionDomHeight: Double =
+    val b = session.boundingBox()
+    if b == null then -1.0 else b.height
+
+  def tableDomWidth: Double =
+    val b = table.boundingBox()
+    if b == null then -1.0 else b.width
+
+  def messageDetailsDomWidth: Double =
+    val b = messageDetails.boundingBox()
+    if b == null then -1.0 else b.width
+
+  /** Sizes are JSON numbers because the panes use `use-local-storage-state`. */
+  def storedPaneSize(paneId: String): Double =
+    val value = page.evaluate(
+      s"""() => {
+         |  const raw = localStorage.getItem('pane:$paneId:size');
+         |  if (raw === null) return -1;
+         |  const parsed = JSON.parse(raw);
+         |  return typeof parsed === 'number' ? parsed : -1;
+         |}""".stripMargin
+    )
+    value match { case n: Number => n.doubleValue(); case _ => -1.0 }
+
+  def setStoredPaneSize(paneId: String, size: Double): Unit =
+    page.evaluate(
+      s"""() => localStorage.setItem('pane:$paneId:size', JSON.stringify($size))"""
+    )
 
   // --- state (CS-16..19) ---
   def state: String = session.getAttribute("data-cs-state")
@@ -257,6 +464,33 @@ final case class ConsumerSessionPage(page: Page):
   def awaitLoaded(n: Int, timeoutMs: Double = 30000): Unit =
     val expected = java.text.NumberFormat.getIntegerInstance(java.util.Locale.US).format(n.toLong)
     assertThat(loaded).hasText(expected, new LocatorAssertions.HasTextOptions().setTimeout(timeoutMs))
+
+  /** How many messages the session is actually HOLDING, after display retention - a different
+    * number from [[loadedCount]] and read from a different source.
+    *
+    * `cs-loaded` is the SERVER's `numMessageSent`; this is the length of the browser's own message
+    * array, which is capped at the session's `numDisplayItems` limit (10,000 unless the config
+    * raises it). Any exact-set assertion over the whole delivered stream is only meaningful while
+    * these two agree - past the cap the browser has deliberately dropped its oldest rows, and the
+    * exported set is a tail rather than the whole story. */
+  def retainedCount: Int =
+    val raw = session.getAttribute("data-cs-retained")
+    raw.toIntOption.getOrElse(throw new AssertionError(s"data-cs-retained does not read as a number: '$raw'"))
+
+  /** The Session Configuration's "Limit num. display messages" toggle and its number field. */
+  val limitDisplayItemsToggle: Locator = page.getByTestId("cs-limit-display-items")
+  val numDisplayItemsInput: Locator    = page.getByTestId("cs-num-display-items")
+
+  /** Keep at most `n` messages on screen - the session's own `numDisplayItems` retention.
+    *
+    * A test that wants to assert the EXACT set of a large delivery has to raise this: the default
+    * is 10,000 and the browser drops its oldest rows past it, so beyond that the delivered set is
+    * unobservable and only counts remain. The toggle is what reveals the field (it is
+    * `visibility: hidden` while off, so Playwright cannot fill it), and it is idempotent here so a
+    * caller need not know the current state. */
+  def setNumDisplayItems(n: Int): Unit =
+    if limitDisplayItemsToggle.getAttribute("data-checked") != "true" then limitDisplayItemsToggle.click()
+    numDisplayItemsInput.fill(n.toString)
 
   /** The toolbar's loaded counter as a number, right now. Digits only: it is rendered through
     * `numeral(n).format('0,0')`, so a four-figure count carries a thousands separator. */
@@ -320,3 +554,13 @@ final case class ConsumerSessionPage(page: Page):
   def pressKeyOnTable(key: String): Unit =
     page.keyboard().press(key)
     page.waitForTimeout(120)
+
+object ConsumerSessionPage:
+  /** Parses what the full-table harvest returns. jackson-databind is on the compile classpath via
+    * the Pulsar admin client (and version-pinned for tests in build.sbt). */
+  private val jsonMapper = new com.fasterxml.jackson.databind.ObjectMapper()
+
+  /** The first message index in an exported chunk's file name (`<folder>/<first>-<last>.json`), or
+    * `Int.MaxValue` for the exporter's fallback names, which sort last. */
+  private def chunkFirstIndex(entryName: String): Int =
+    entryName.substring(entryName.lastIndexOf('/') + 1).takeWhile(_.isDigit).toIntOption.getOrElse(Int.MaxValue)

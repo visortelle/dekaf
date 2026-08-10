@@ -14,12 +14,12 @@ import java.time.{Instant, LocalDateTime, ZoneId}
   * single-topic fast path in `handleStartFrom` (a message-id seek); `CsStartFromMatrixSpec` crosses
   * the same two counting modes with the rest of the topic matrix.
   *
-  * The two APPROXIMATE modes are both covered below - "% through the data" (CS-SF-11..14) and "%
-  * through the time range" (CS-SF-16..19) - including CS-SF-17, where one topic is asked the same
+  * The two APPROXIMATE modes are both covered below - "Approximate position (% of data)" (CS-SF-11..14) and
+  * "Approximate position (% of time)" (CS-SF-16..19) - including CS-SF-17, where one topic is asked the same
   * "50%" by both and answers differently. Being non-partitioned, these do not exercise what the two
-  * modes do across several physical topics - the data mode resolving each independently, the time
-  * mode pooling one min/max range over them: that is `CsApproximatePartitionedSpec` (CS-SF-20/21),
-  * with the pure arithmetic in `server/.../approximateTimePositionTest`.
+  * modes do across several physical topics - entry position resolving each independently, publish-time
+  * position pooling one min/max range over them: that is `CsApproximatePartitionedSpec` (CS-SF-20/21),
+  * with the pure arithmetic in `server/.../approximatePublishTimePositionTest`.
   *
   * Each test asserts an exact SET, never a row count: "skip the first 5" and "skip the first 50"
   * both produce *a* count, and a virtualized table reaches a transient count for almost any bug.
@@ -189,7 +189,7 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
   }
 
   // -------------------------------------------------------------------------------------------
-  // About % through the DATA  (ApproximateDataPosition)
+  // Approximate position (% of data)  (ApproximateEntryPosition)
   //
   // Deliberately ENTRY-addressed (it has to resolve in constant time at any topic size), so the
   // expectation is derived from the broker's real entry count rather than from the message count -
@@ -198,10 +198,7 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
   // honest: hard-coding message positions would quietly encode the unbatched case as "the" answer.
   // -------------------------------------------------------------------------------------------
 
-  /** Where `percent` of the retained backlog starts, in messages, given how the payload was written.
-    * `floor(fraction * entries)` entries are left behind, and these arrangements put a uniform
-    * number of messages in each entry. */
-  /** The messages expected after positioning `percent` through the DATA of `fqn`.
+  /** The messages expected after positioning `percent` through the retained ENTRIES of `fqn`.
     *
     * `messages` MUST be the values actually produced to `fqn`, in order. It defaults to the shared
     * `payload` because most cells use exactly that - but CS-SF-17 arranges its own set, and the
@@ -211,7 +208,12 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     * it passed by COINCIDENCE, both arrangements happening to hold 12 messages, so the mistake
     * surfaced as a baffling set mismatch instead of naming the real problem.
     */
-  private def expectedFromPercent(fqn: String, percent: Int, messagesPerEntry: Int, messages: Seq[String] = payload): Seq[String] =
+  private def expectedFromEntryPercent(
+      fqn: String,
+      percent: Int,
+      messagesPerEntry: Int,
+      messages: Seq[String] = payload
+  ): Seq[String] =
     val entries = fixtures.numberOfEntries(fqn)
     assert(entries == messages.size / messagesPerEntry, s"unexpected arrangement: $entries entries for ${messages.size} messages")
     // The broker is the oracle for WHICH messages, not just how many. The count check above is too
@@ -222,46 +224,57 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     val entriesLeftBehind = math.floor(percent / 100.0 * entries).toInt
     messages.drop(entriesLeftBehind * messagesPerEntry)
 
-  test("CS-SF-11: % through the data (unbatched) starts the given percentage into the backlog") {
+  test("CS-SF-11: data position (unbatched) starts at the selected entry percentage") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     fixtures.produceUnbatched(fqn, payload) // 12 entries, 1 message each
 
-    val expected = expectedFromPercent(fqn, 50, messagesPerEntry = 1) // m-07 .. m-12
+    val expected = expectedFromEntryPercent(fqn, 50, messagesPerEntry = 1) // m-07 .. m-12
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("50")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("50")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, expected)
   }
 
-  test("CS-SF-12: % through the data (batched) is proportional to ENTRIES, not to messages") {
+  test("CS-SF-12: data position follows ENTRIES even when batch sizes are deliberately uneven") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
-    fixtures.produceBatched(fqn, payload, MessagesPerBatch) // 3 entries, 4 messages each
+    val largeFirstEntry = payload.take(8)
+    val singletonEntry = payload.slice(8, 9)
+    val finalEntry = payload.drop(9)
+    fixtures.produceBatches(fqn, Seq(largeFirstEntry, singletonEntry, finalEntry))
 
-    // 50% of 3 entries leaves 1 entry behind, so this starts at m-05 - NOT at m-07, which is where
-    // the same 50% lands on the same 12 messages written one per entry (CS-SF-11).
-    val expected = expectedFromPercent(fqn, 50, messagesPerEntry = MessagesPerBatch)
-    assert(expected == payload.drop(MessagesPerBatch), s"the entry-addressed expectation moved: $expected")
+    val entries = fixtures.numberOfEntries(fqn)
+    assert(entries == 3, s"the uneven arrangement should contain exactly 3 entries, got $entries")
+    assert(
+      fixtures.readAllMessages(fqn).map(_.getValue) == payload,
+      s"the uneven batches did not preserve message order on $fqn"
+    )
+
+    // 50% of three entries leaves the large first entry behind, so all four messages in the two
+    // remaining entries are delivered. A message-based midpoint would leave only m-07..m-12 and
+    // therefore cannot satisfy this exact set.
+    val expected = singletonEntry ++ finalEntry
+    assert(expected != payload.drop(payload.size / 2), s"entry and message midpoints accidentally coincide: $expected")
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("50")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("50")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, expected)
   }
 
-  test("CS-SF-13: % through the data endpoints - 0% is Earliest, 100% is Latest") {
+  test("CS-SF-13: data position endpoints - 0% is Earliest, 100% is Latest") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     fixtures.produceUnbatched(fqn, payload)
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("0")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("0")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, payload)
@@ -272,8 +285,8 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     fixtures.produceUnbatched(fqn2, payload)
 
     cs.openForTopic(t2, ns2, topic2)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("100")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("100")
     cs.play()
     cs.assertState("running")
     assertThat(cs.awaitingText).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(20000))
@@ -284,15 +297,15 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     assertLoadedExactlyWithCounter(cs, live)
   }
 
-  test("CS-SF-14: % through the data rejects a percentage outside 0-100 without changing the session") {
+  test("CS-SF-14: data position rejects a percentage outside 0-100 without changing the session") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     fixtures.produceUnbatched(fqn, payload)
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("150") // the model stores a fraction in [0, 1]; 150% has no meaning
-    assertThat(cs.startFromDataFractionError).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(10000))
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("150") // the model stores a fraction in [0, 1]; 150% has no meaning
+    assertThat(cs.startFromEntryFractionError).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(10000))
 
     // Play with the rejected text STILL ON SCREEN. This is the whole test: the invalid value must
     // never reach the session, so the run has to come out at the last VALID value - the 50% default.
@@ -308,14 +321,14 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     assert(cs.playButton.isEnabled, "Play is disabled while the fraction is invalid - see the note above")
     cs.play()
     cs.assertState("running")
-    assertLoadedExactlyWithCounter(cs, expectedFromPercent(fqn, 50, messagesPerEntry = 1))
+    assertLoadedExactlyWithCounter(cs, expectedFromEntryPercent(fqn, 50, messagesPerEntry = 1))
 
     // ... and the field is not simply inert: a VALID change on the same control does move the
     // session. Without this leg the assertion above would also hold for a mode that ignored the
     // fraction entirely and always started half way in.
     cs.openForTopic(t, ns, topic)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("0")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("0")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, payload)
@@ -432,10 +445,10 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
   }
 
   // -------------------------------------------------------------------------------------------
-  // About % through the TIME RANGE  (ApproximateTimePosition)
+  // Approximate position (% of time)  (ApproximatePublishTimePosition)
   //
-  // The sibling of "% through the data" above, and the reason both exist: "about half way in" is two
-  // different questions. Where the data mode counts stored entries, this one interpolates between
+  // The sibling of data position above, and the reason both exist: "about half way in" is two
+  // different questions. Where entry position counts stored entries, this one interpolates between
   // the first and last PUBLISH TIMES and seeks to the instant that falls out - so the same 50% lands
   // somewhere else entirely on a topic whose messages did not arrive evenly. CS-SF-17 is that
   // contrast, asserted on one topic with both modes.
@@ -472,13 +485,13 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
   /** The exact messages `percent` of the topic's TIME RANGE must deliver, computed from the broker's
     * publish times: the cutoff is `first + floor(percent/100 * (last - first))` and everything
     * published at or after it is shown. */
-  private def expectedFromTimePercent(times: Map[String, Long], percent: Int): Seq[String] =
+  private def expectedFromPublishTimePercent(times: Map[String, Long], percent: Int): Seq[String] =
     val first = times.values.min
     val last = times.values.max
     val cutoffMs = first + math.floor(percent / 100.0 * (last - first)).toLong
     times.filter((_, publishedAt) => publishedAt >= cutoffMs).keys.toSeq.sorted
 
-  test("CS-SF-16: % through the time range lands proportionally through the ELAPSED TIME") {
+  test("CS-SF-16: publish-time position lands proportionally through ELAPSED TIME") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     // Three groups six seconds apart, so the range is ~12s and both fractions below fall in the
@@ -489,32 +502,32 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     val times = produceSpacedGroups(fqn, Seq(early, middle, late), gapMs = 6000)
 
     // 25% of a 12s range is ~3s in: past the early group, well short of the middle one.
-    val quarter = expectedFromTimePercent(times, 25)
+    val quarter = expectedFromPublishTimePercent(times, 25)
     assert(quarter.toSet == (middle ++ late).toSet, s"25% of the time range resolved to $quarter")
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("25")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("25")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, quarter)
 
     // 75% is ~9s in: past the middle group, short of the late one. A mode that ignored the fraction
     // and always seeked to one end would satisfy one of these two assertions but never both.
-    val threeQuarters = expectedFromTimePercent(times, 75)
+    val threeQuarters = expectedFromPublishTimePercent(times, 75)
     assert(threeQuarters.toSet == late.toSet, s"75% of the time range resolved to $threeQuarters")
 
     cs.openForTopic(t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("75")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("75")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, threeQuarters)
   }
 
-  test("CS-SF-17: at the same 50%, the time mode and the data mode land in different places") {
+  test("CS-SF-17: at the same 50%, publish-time and entry positions land in different places") {
     // THE motivating case, and the whole reason one mode became two. Two messages long ago and then
-    // a burst of ten: half the TIME is back in the empty stretch, while half the MESSAGES is inside
+    // a burst of ten: half the TIME is back in the empty stretch, while half the ENTRIES is inside
     // the burst. One control could not have meant both.
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
@@ -523,60 +536,73 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     val times = produceSpacedGroups(fqn, Seq(old, burst), gapMs = 10000)
 
     // Half of a ~10s range is ~5s in - five seconds after the old pair and five before the burst.
-    val byTime = expectedFromTimePercent(times, 50)
-    assert(byTime.toSet == burst.toSet, s"50% of the time range resolved to $byTime")
+    val byPublishTime = expectedFromPublishTimePercent(times, 50)
+    assert(byPublishTime.toSet == burst.toSet, s"50% of the publish-time range resolved to $byPublishTime")
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("50")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("50")
     cs.play()
     cs.assertState("running")
-    assertLoadedExactlyWithCounter(cs, byTime)
+    assertLoadedExactlyWithCounter(cs, byPublishTime)
 
     // The same 50%, counted over the 12 entries instead: six are left behind, so it starts on the
     // seventh message overall - the fifth of the burst.
-    val byData = expectedFromPercent(fqn, 50, messagesPerEntry = 1, messages = old ++ burst)
-    assert(byData.toSet == burst.drop(4).toSet, s"50% of the data resolved to $byData")
-    assert(byData.size < byTime.size, s"the two modes must not coincide here: data=$byData time=$byTime")
+    val byEntry = expectedFromEntryPercent(fqn, 50, messagesPerEntry = 1, messages = old ++ burst)
+    assert(byEntry.toSet == burst.drop(4).toSet, s"50% of the entries resolved to $byEntry")
+    assert(
+      byEntry.size < byPublishTime.size,
+      s"the two modes must not coincide here: entries=$byEntry publishTime=$byPublishTime"
+    )
 
     cs.openForTopic(t, ns, topic)
-    cs.setStartFrom("About % through the data")
-    cs.setStartFromDataPercent("50")
+    cs.setStartFrom("Approximate position (% of data)")
+    cs.setStartFromEntryPercent("50")
     cs.play()
     cs.assertState("running")
-    assertLoadedExactlyWithCounter(cs, byData)
+    assertLoadedExactlyWithCounter(cs, byEntry)
   }
 
-  test("CS-SF-18: % through the time range endpoints - 0% is everything, 100% is the LAST message") {
-    // Deliberately unlike the data mode, whose 100% means "past the end" and shows nothing: the
-    // time range ends AT the last message, so 100% shows it. The sentinel is produced alone after a
-    // gap so that "the last message" is exactly one message - a timestamp seek cannot separate
-    // messages that share a millisecond.
+  test("CS-SF-18: publish-time endpoints - 0% is everything, 100% includes every final timestamp tie") {
+    // Deliberately unlike entry position, whose 100% means "past the end" and shows nothing: the
+    // time range ends AT the latest publish timestamp. A timestamp seek cannot split messages that
+    // share that timestamp, so the final entry is deliberately a multi-message batch and every
+    // member must be shown.
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     val bulk = (1 to 6).map(i => f"e-$i%02d")
-    val sentinel = Seq("e-last")
-    val times = produceSpacedGroups(fqn, Seq(bulk, sentinel), gapMs = 4000)
+    val finalBatch = Seq("e-last-1", "e-last-2", "e-last-3")
+    fixtures.produceBatches(fqn, Seq(bulk))
+    awaitClockGap(System.currentTimeMillis(), 2000)
+    fixtures.produceBatches(fqn, Seq(finalBatch))
+    val retained = fixtures.readAllMessages(fqn)
+    val times = retained.map(m => m.getValue -> m.getPublishTime).toMap
+    val finalTimes = finalBatch.map(times)
+    assert(finalTimes.distinct.size == 1, s"the final batch does not share one publish timestamp: $finalTimes")
+    assert(
+      bulk.map(times).max < finalTimes.head,
+      s"the final batch is not strictly newer than the bulk: bulk=${bulk.map(times)}, final=$finalTimes"
+    )
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("0")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("0")
     cs.play()
     cs.assertState("running")
-    assertLoadedExactlyWithCounter(cs, bulk ++ sentinel)
+    assertLoadedExactlyWithCounter(cs, bulk ++ finalBatch)
 
-    val atTheEnd = expectedFromTimePercent(times, 100)
-    assert(atTheEnd == sentinel, s"100% of the time range resolved to $atTheEnd")
+    val atTheEnd = expectedFromPublishTimePercent(times, 100)
+    assert(atTheEnd.toSet == finalBatch.toSet, s"100% of the publish-time range resolved to $atTheEnd")
 
     cs.openForTopic(t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("100")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("100")
     cs.play()
     cs.assertState("running")
-    assertLoadedExactlyWithCounter(cs, sentinel)
+    assertLoadedExactlyWithCounter(cs, finalBatch)
   }
 
-  test("CS-SF-19: % through the time range rejects a percentage outside 0-100 without changing the session") {
+  test("CS-SF-19: publish-time position rejects a percentage outside 0-100 without changing the session") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     val early = Seq("t-01", "t-02")
@@ -584,12 +610,12 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     val times = produceSpacedGroups(fqn, Seq(early, late), gapMs = 6000)
 
     val cs = openOn(fqn, t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("150") // the model stores a fraction in [0, 1]; 150% has no meaning
-    // The TIME mode's own error, not the data mode's: the two render the same control, so this is
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("150") // the model stores a fraction in [0, 1]; 150% has no meaning
+    // The publish-time mode's own error, not entry position's: both render the same control, so this is
     // also the check that they are separately addressable in the real DOM.
-    assertThat(cs.startFromTimeFractionError).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(10000))
-    assertThat(cs.startFromDataFraction).hasCount(0)
+    assertThat(cs.startFromPublishTimeFractionError).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(10000))
+    assertThat(cs.startFromEntryFraction).hasCount(0)
 
     // Play with the rejected text STILL ON SCREEN - the same claim CS-SF-14 makes for the data
     // mode, and for the same reason: correcting the field first proves validation recovery, not
@@ -597,18 +623,64 @@ class CsStartFromOutcomesSpec extends StartFromSupport:
     assert(cs.playButton.isEnabled, "Play is disabled while the fraction is invalid - see the note in CS-SF-14")
     cs.play()
     cs.assertState("running")
-    assertLoadedExactlyWithCounter(cs, expectedFromTimePercent(times, 50))
+    assertLoadedExactlyWithCounter(cs, expectedFromPublishTimePercent(times, 50))
 
     // ... and the control is not inert: a valid change does move the session.
-    val atTheEnd = expectedFromTimePercent(times, 100)
+    val atTheEnd = expectedFromPublishTimePercent(times, 100)
     assert(
-      atTheEnd.toSet != expectedFromTimePercent(times, 50).toSet,
+      atTheEnd.toSet != expectedFromPublishTimePercent(times, 50).toSet,
       s"100% and 50% resolve to the same set here, so the second leg proves nothing: $atTheEnd"
     )
     cs.openForTopic(t, ns, topic)
-    cs.setStartFrom("About % through the time range")
-    cs.setStartFromTimePercent("100")
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("100")
     cs.play()
     cs.assertState("running")
     assertLoadedExactlyWithCounter(cs, atTheEnd)
+  }
+
+  test("CS-SF-22: publish-time position resolves ONE cutoff across separate logical topics") {
+    val (tA, nsA, topicA) = fixtures.freshTopicParts()
+    val fqnA = s"persistent://$tA/$nsA/$topicA"
+    val (tB, nsB, topicB) = fixtures.freshTopicParts()
+    val fqnB = s"persistent://$tB/$nsB/$topicB"
+
+    // Re-aimed 2026-08-09. This cell asserted the PRE-P2.15 contract (a range per logical topic)
+    // and had been failing since the session-wide cutoff landed - the implementation, its server
+    // pins ("P2.15: SEPARATE topics share ONE cutoff") and docs/consume/modes-comparison.md all
+    // specify one instant for the whole selection. The old per-topic answer is kept below as the
+    // counterexample this cell now exists to EXCLUDE, so a regression back to it fails here.
+    //
+    // Give A a short early range and B a short late range, with a larger empty gap between them.
+    // At 50%, one range per topic would keep each topic's newer message. The session-wide range
+    // instead lands in the inter-topic gap: it keeps both B messages and drops all of A.
+    fixtures.produceUnbatched(fqnA, Seq("a-old"))
+    awaitClockGap(System.currentTimeMillis(), 1000)
+    fixtures.produceUnbatched(fqnA, Seq("a-new"))
+    awaitClockGap(System.currentTimeMillis(), 3000)
+    fixtures.produceUnbatched(fqnB, Seq("b-old"))
+    awaitClockGap(System.currentTimeMillis(), 1000)
+    fixtures.produceUnbatched(fqnB, Seq("b-new"))
+
+    def publishTimes(fqn: String): Map[String, Long] =
+      fixtures.readAllMessages(fqn).map(message => message.getValue -> message.getPublishTime).toMap
+
+    val timesA = publishTimes(fqnA)
+    val timesB = publishTimes(fqnB)
+    // What the session must do: one range across every selected topic, one cutoff instant.
+    val sessionWide = expectedFromPublishTimePercent(timesA ++ timesB, 50)
+    assert(sessionWide.toSet == Set("b-old", "b-new"), s"the session-wide range resolved to $sessionWide")
+
+    // What it must NOT do: interpolate inside each topic's own history.
+    val perTopic = expectedFromPublishTimePercent(timesA, 50) ++ expectedFromPublishTimePercent(timesB, 50)
+    assert(perTopic.toSet == Set("a-new", "b-new"), s"the per-topic counterexample resolved to $perTopic")
+    assert(sessionWide.toSet != perTopic.toSet, s"session-wide and per-topic answers unexpectedly coincide: $sessionWide")
+
+    val cs = openOn(fqnA, tA, nsA, topicA)
+    cs.setTargetTopicsSpecific(Seq(fqnA, fqnB))
+    cs.setStartFrom("Approximate position (% of time)")
+    cs.setStartFromPublishTimePercent("50")
+    cs.play()
+    cs.assertState("running")
+    assertLoadedExactlyWithCounter(cs, sessionWide)
   }

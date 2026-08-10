@@ -1,5 +1,5 @@
 /**
- * Both "About % through the data" and "About % through the time range" store a FRACTION in [0, 1]
+ * Both approximate position modes store a FRACTION in [0, 1]
  * (the protobuf contract), but a percentage is the natural thing to put in front of a user. These
  * two functions are the whole conversion, and the only place the 0-100 range is enforced on the way
  * in - the server rejects a fraction outside [0.0, 1.0] outright, so an invalid percent must never

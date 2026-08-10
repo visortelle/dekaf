@@ -28,6 +28,11 @@ const renderToolbar = (sessionState: SessionState = 'new') => {
           messagesProcessed={0}
           messagesLoadedPerSecond={{ prev: 0, now: 0 }}
           messagesProcessedPerSecond={{ prev: 0, now: 0 }}
+          orderingLateDeliveries={0}
+          orderingActive={false}
+          orderingWaitingStreams={0}
+          orderKeyFallbacks={0}
+          replaySeamViolations={0}
           onToggleConsoleClick={jest.fn()}
           searchInResults=""
           onSearchInResultsChange={jest.fn()}

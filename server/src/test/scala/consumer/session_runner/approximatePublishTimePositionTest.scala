@@ -4,16 +4,12 @@ import zio.test.*
 
 import scala.collection.mutable
 import scala.util.Try
+import java.util.concurrent.atomic.AtomicInteger
 
-/** "Start approximately this far through the TIME RANGE this topic covers" ([[ApproximateTimePosition]]).
+/** "Start approximately this far through the PUBLISH-TIME RANGE this topic covers" ([[ApproximatePublishTimePosition]]).
   *
-  * The sibling of "about % through the data", and the reason the two are separate modes: on a topic
-  * where almost every message arrived in the last hour of a 30-day retention, half the MESSAGES are
-  * behind you somewhere inside that last hour, while half the TIME is behind you fifteen days back.
-  * Both are legitimate questions; one control cannot answer both.
-  *
-  * THE CONTRACT, per LOGICAL topic: `earliest` is the MINIMUM first-message publish time over the
-  * topic's partitions, `latest` the MAXIMUM last-message publish time over them, and the cutoff is
+  * The contract is per logical topic: `earliest` is the minimum observed first-entry publish time
+  * over its partitions, `latest` the maximum observed last-entry publish time, and the cutoff is
   * `earliest + fraction * (latest - earliest)`. Every partition is seeked to that one instant.
   * Min/max rather than a per-partition quantile is what makes the endpoints exact by construction,
   * the mapping monotonic, and the answer independent of how many partitions the topic has.
@@ -23,18 +19,18 @@ import scala.util.Try
   * instant, both endpoints - is driven with a plain function and no broker. The live-broker
   * counterpart is `CsStartFromOutcomesSpec` CS-SF-16..19.
   */
-object approximateTimePositionTest extends ZIOSpecDefault:
+object approximatePublishTimePositionTest extends ZIOSpecDefault:
 
-    import ApproximateTimeSeek.*
+    import ApproximatePublishTimeSeek.*
 
     /** A topic whose partitions are named `p0`, `p1`, ... with the spans given. */
-    private def topic(spans: (String, (Long, Long))*): (Vector[String], String => Option[TopicTimeSpan]) =
+    private def topic(spans: (String, (Long, Long))*): (Vector[String], String => Option[TopicPublishTimeSpan]) =
         val byName = spans.toMap
-        (spans.map(_._1).toVector, name => byName.get(name).map((first, last) => TopicTimeSpan(first, last)))
+        (spans.map(_._1).toVector, name => byName.get(name).map((first, last) => TopicPublishTimeSpan(first, last)))
 
-    private def resolve(fraction: Double, spans: (String, (Long, Long))*): ApproximateTimeSeek =
+    private def resolve(fraction: Double, spans: (String, (Long, Long))*): ApproximatePublishTimeSeek =
         val (partitions, lookup) = topic(spans*)
-        resolveApproximateTimePosition(fraction, partitions, lookup)
+        resolveApproximatePublishTimePosition(fraction, partitions, lookup)
 
     private def rejected(fraction: Double): Option[String] =
         Try(resolve(fraction, "p0" -> (1000L, 2000L))).failed.toOption.map(_.getMessage)
@@ -49,9 +45,9 @@ object approximateTimePositionTest extends ZIOSpecDefault:
             // computed from a stale reading would silently skip the head of the log.
             assertTrue(resolve(0.0, single*) == Earliest)
         },
-        test("1.0 is the last message: the seek is to its exact publish time") {
-            // NOT "past the end", which is what 1.0 means in the data mode. The time mode's high
-            // endpoint is the last message itself, so 100% still shows something.
+        test("1.0 seeks to the observed last-entry publish-time boundary") {
+            // NOT "past the end", which is what 1.0 means in the entry mode. The publish-time mode's high
+            // endpoint is a timestamp seek and can include every message sharing that millisecond.
             assertTrue(resolve(1.0, single*) == Timestamp(2000L))
         },
         test("the endpoints are exact - never derived by interpolating to the ends") {
@@ -63,19 +59,19 @@ object approximateTimePositionTest extends ZIOSpecDefault:
                 resolve(1.0, spread*) == Timestamp(1_700_000_086_400_000L)
             )
         },
-        test("1.0 takes the LAST message of the whole topic, over every partition") {
+        test("1.0 uses the largest observed last-entry time across the topic's partitions") {
             assertTrue(resolve(1.0, "p0" -> (1000L, 5000L), "p1" -> (2000L, 9000L)) == Timestamp(9000L))
         },
         test("0.0 answers without asking the broker anything at all") {
             // The earliest end needs no time range, so it must not pay for one: two admin calls per
             // partition is the cost this endpoint gets to skip.
             val asked = mutable.ListBuffer.empty[String]
-            val seek = resolveApproximateTimePosition(
+            val seek = resolveApproximatePublishTimePosition(
                 0.0,
                 Vector("p0", "p1", "p2"),
                 name =>
                     asked += name
-                    Some(TopicTimeSpan(1000L, 2000L))
+                    Some(TopicPublishTimeSpan(1000L, 2000L))
             )
             assertTrue(seek == Earliest, asked.isEmpty) ?? s"0.0 looked up $asked"
         }
@@ -102,7 +98,7 @@ object approximateTimePositionTest extends ZIOSpecDefault:
             // p1 stopped receiving at 1100 while p0 ran on to 9000. A per-partition quantile would
             // give p1 a cutoff near its own middle and hand back messages from the far past; taking
             // the topic's own min/max puts both partitions at the same instant, and the idle one
-            // simply has nothing at or after it. This is the defect the data mode has to live with
+            // simply has nothing at or after it. This is a limitation the entry mode has to live with
             // and this mode is defined to avoid.
             assertTrue(resolve(0.5, "p0" -> (1000L, 9000L), "p1" -> (1000L, 1100L)) == Timestamp(5000L))
         },
@@ -147,10 +143,10 @@ object approximateTimePositionTest extends ZIOSpecDefault:
                 resolve(0.1, "p0" -> (start, start + thirtyDays)) == Timestamp(start + thirtyDays / 10)
             )
         },
-        test("the skew a data-proportional position would show is exactly what this mode removes") {
+        test("message density does not change the publish-time interpolation") {
             // The motivating topic: a month of retention in which almost everything arrived in the
             // final hour. 50% of the TIME RANGE is 15 days back, whatever the message density is -
-            // that is the whole reason this mode exists next to the data one.
+            // that is the whole reason this mode exists next to the entry-position mode.
             val start = 1_700_000_000_000L
             val thirtyDays = 30L * 24 * 60 * 60 * 1000
             val fifteenDays = thirtyDays / 2
@@ -164,22 +160,22 @@ object approximateTimePositionTest extends ZIOSpecDefault:
             // there is no range at all. Seeking to earliest is what "Earliest message" does on an
             // empty topic - the session shows whatever is published from now on.
             val (partitions, _) = topic("p0" -> (0L, 0L))
-            val nothing = resolveApproximateTimePosition(0.5, partitions, _ => None)
+            val nothing = resolveApproximatePublishTimePosition(0.5, partitions, _ => None)
             assertTrue(nothing == Earliest)
         },
         test("an empty topic resolves to the beginning at EVERY fraction, including 1.0") {
-            // There is no last message to be exact about, and on a topic holding nothing "the
+            // There is no last-entry boundary to inspect, and on a topic holding nothing "the
             // beginning" and "the end" are the same position: whatever arrives next.
             val fractions = Vector(0.0, 0.25, 0.5, 0.75, 1.0)
-            val seeks = fractions.map(f => resolveApproximateTimePosition(f, Vector("p0"), _ => None))
+            val seeks = fractions.map(f => resolveApproximatePublishTimePosition(f, Vector("p0"), _ => None))
             assertTrue(seeks.forall(_ == Earliest)) ?? s"an empty topic resolved to $seeks"
         },
         test("partitions that hold nothing are skipped, not counted as time zero") {
             // A partitioned topic where only some partitions were written to: an unanswerable
             // partition contributing 0 to the minimum would drag `earliest` back to 1970 and make
-            // every interior fraction land before the real data.
+            // every interior fraction land before the retained messages.
             val (partitions, lookup) = topic("p0" -> (4000L, 8000L))
-            val withEmpties = resolveApproximateTimePosition(0.5, partitions ++ Vector("p1", "p2"), lookup)
+            val withEmpties = resolveApproximatePublishTimePosition(0.5, partitions ++ Vector("p1", "p2"), lookup)
             assertTrue(withEmpties == Timestamp(6000L))
         },
         test("a topic that occupies ONE instant starts from the beginning for any interior fraction") {
@@ -194,7 +190,7 @@ object approximateTimePositionTest extends ZIOSpecDefault:
             )
         },
         test("a topic that occupies one instant still answers 1.0 with that instant") {
-            // The last message is at 1500 and a seek to 1500 delivers it, so the high endpoint
+            // The observed last-entry time is 1500 and a seek to 1500 delivers it, so the high endpoint
             // stays exact even with no range. Everything else published in that same millisecond
             // comes too: a timestamp seek is millisecond-granular and cannot separate them.
             assertTrue(resolve(1.0, "p0" -> (1500L, 1500L)) == Timestamp(1500L))
@@ -206,7 +202,7 @@ object approximateTimePositionTest extends ZIOSpecDefault:
                 resolve(1.0, "p0" -> (1500L, 1500L)) == Timestamp(1500L)
             )
         },
-        test("a range reported backwards by a producer's clock does not resolve to a cutoff past the data") {
+        test("a range reported backwards by a producer's clock falls back to the beginning") {
             // publishTime is stamped by the PRODUCER, so a clock that jumped backwards mid-topic can
             // report a first later than the last. There is no interior to interpolate, and a cutoff
             // taken from either end could hide messages, so the beginning is the only safe answer.
@@ -223,8 +219,8 @@ object approximateTimePositionTest extends ZIOSpecDefault:
             val below = rejected(-0.5)
             val above = rejected(1.5)
             assertTrue(
-                below.exists(m => m.contains("-0.5") && m.contains("0.0") && m.contains("1.0")),
-                above.exists(m => m.contains("1.5") && m.contains("0.0") && m.contains("1.0"))
+                below.exists(m => m.contains("Approximate position (% of time)") && m.contains("-0.5") && m.contains("0.0") && m.contains("1.0")),
+                above.exists(m => m.contains("Approximate position (% of time)") && m.contains("1.5") && m.contains("0.0") && m.contains("1.0"))
             ) ?? s"out-of-range fractions must be rejected clearly, got: $below / $above"
         },
         test("the message says which of the two modes refused it") {
@@ -232,7 +228,7 @@ object approximateTimePositionTest extends ZIOSpecDefault:
             // one that rejected it.
             val message = rejected(1.5)
             assertTrue(message.exists(m => m.contains("time") && !m.contains("data"))) ??
-                s"the rejection must name the time mode, got: $message"
+                s"the rejection must name the publish-time mode, got: $message"
         },
         test("infinities are rejected") {
             assertTrue(rejected(Double.PositiveInfinity).isDefined, rejected(Double.NegativeInfinity).isDefined)
@@ -242,4 +238,99 @@ object approximateTimePositionTest extends ZIOSpecDefault:
         }
     )
 
-    def spec = suite(this.getClass.toString)(endpointsSuite, interpolationSuite, degenerateSuite, rejectionSuite)
+    private val groupingSuite = suite("logical-topic grouping and bounded span lookup")(
+        test("partitions group under one logical topic while separate topics stay separate") {
+            val orders = "persistent://public/default/orders"
+            val audit = "persistent://public/default/audit"
+            val grouped = groupPhysicalTopicsByLogicalTopic(
+                Vector(s"$orders-partition-0", audit, s"$orders-partition-1", s"$orders-partition-0", audit)
+            )
+            assertTrue(
+                grouped == Vector(
+                    orders -> Vector(s"$orders-partition-0", s"$orders-partition-1"),
+                    audit -> Vector(audit)
+                )
+            )
+        },
+        test("0% groups topics but performs zero publish-time span lookups") {
+            val calls = AtomicInteger(0)
+            val orders = "persistent://public/default/orders"
+            val seeks = resolveApproximatePublishTimeSeeks(
+                fraction = 0.0,
+                topicFqns = Vector(s"$orders-partition-0", s"$orders-partition-1"),
+                timeSpanOf = _ =>
+                    calls.incrementAndGet()
+                    throw AssertionError("0% looked up a publish-time span")
+            )
+            assertTrue(calls.get == 0, seeks == Map(orders -> Earliest))
+        },
+        test("P2.15: SEPARATE topics share ONE cutoff - the session's history window is comparable") {
+            // The whole point of a "% of time" position on a multi-topic session: the user asked to
+            // start half way through the history they are looking at, and there is only one such
+            // history. Interpolating per LOGICAL topic answered a different wall-clock instant for
+            // each one, so a 50% session over a one-hour topic and a thirty-day topic began at two
+            // moments a fortnight apart and the merged view was a slice of nothing in particular.
+            val orders = "persistent://public/default/orders"
+            val audit = "persistent://public/default/audit"
+            val spans = Map(
+                s"$orders-partition-0" -> TopicPublishTimeSpan(1_000L, 2_000L),
+                s"$orders-partition-1" -> TopicPublishTimeSpan(1_500L, 3_000L),
+                audit -> TopicPublishTimeSpan(10_000L, 20_000L)
+            )
+            val seeks = resolveApproximatePublishTimeSeeks(
+                fraction = 0.5,
+                topicFqns = Vector(s"$orders-partition-0", s"$orders-partition-1", audit),
+                timeSpanOf = spans.get
+            )
+
+            // Pooled across every selected physical topic: 1_000 .. 20_000, so 50% is 10_500.
+            assertTrue(
+                seeks == Map(orders -> Timestamp(10_500L), audit -> Timestamp(10_500L))
+            ) ?? s"seeks=$seeks"
+        },
+        test("P2.15: 100% is the LATEST boundary seen anywhere in the session, not per topic") {
+            val orders = "persistent://public/default/orders"
+            val audit = "persistent://public/default/audit"
+            val spans = Map(
+                orders -> TopicPublishTimeSpan(1_000L, 2_000L),
+                audit -> TopicPublishTimeSpan(10_000L, 20_000L)
+            )
+            val seeks = resolveApproximatePublishTimeSeeks(
+                fraction = 1.0,
+                topicFqns = Vector(orders, audit),
+                timeSpanOf = spans.get
+            )
+            assertTrue(seeks == Map(orders -> Timestamp(20_000L), audit -> Timestamp(20_000L))) ?? s"seeks=$seeks"
+        },
+        test("P2.15: a topic the broker could not describe does not narrow the session's range") {
+            // `publishTimeSpan` answers None only for a topic that holds nothing. Such a topic
+            // contributes no boundary and gets the session's cutoff like everything else.
+            val orders = "persistent://public/default/orders"
+            val empty = "persistent://public/default/empty"
+            val spans = Map(orders -> TopicPublishTimeSpan(1_000L, 3_000L))
+            val seeks = resolveApproximatePublishTimeSeeks(
+                fraction = 0.5,
+                topicFqns = Vector(orders, empty),
+                timeSpanOf = spans.get
+            )
+            assertTrue(seeks == Map(orders -> Timestamp(2_000L), empty -> Timestamp(2_000L))) ?? s"seeks=$seeks"
+        },
+        test("duplicate target consumers read each physical publish-time span once") {
+            val calls = AtomicInteger(0)
+            val orders = "persistent://public/default/orders"
+            val p0 = s"$orders-partition-0"
+            val p1 = s"$orders-partition-1"
+            val seeks = resolveApproximatePublishTimeSeeks(
+                fraction = 0.5,
+                topicFqns = Vector(p0, p0, p1, p0, p1),
+                timeSpanOf = topic =>
+                    calls.incrementAndGet()
+                    Option.when(topic == p0)(TopicPublishTimeSpan(1_000L, 2_000L))
+                        .orElse(Some(TopicPublishTimeSpan(1_500L, 3_000L))),
+                parallelism = 2
+            )
+            assertTrue(calls.get == 2, seeks == Map(orders -> Timestamp(2_000L)))
+        }
+    )
+
+    def spec = suite(this.getClass.toString)(endpointsSuite, interpolationSuite, degenerateSuite, rejectionSuite, groupingSuite)

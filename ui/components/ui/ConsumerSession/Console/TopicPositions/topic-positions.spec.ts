@@ -5,9 +5,9 @@
  * The Topic Positions row model and its formatters.
  *
  * The behaviour worth pinning is the one distinction the whole view rests on: ABSENT is not ZERO. A
- * cursor on the first retained entry really is 0% through; a cursor whose ledger has aged out knows
- * nothing about where it is. Rendering both as "0.0%" would invent the second, and every unset
- * protobuf wrapper is a chance to do exactly that.
+ * known publish-time position can really be 0%; a session position whose ledger has aged out is
+ * unknown. Rendering both as "0.0%" would invent the second, and every unset protobuf wrapper is a
+ * chance to do exactly that.
  */
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import {
@@ -15,11 +15,13 @@ import {
   allTopicsLabel,
   behindMsOf,
   formatDurationMs,
+  entriesAfterCursorOf,
   makePositionsLoader,
   TopicPositionRow,
   formatEntryCount,
   formatFraction,
   formatTimestamp,
+  timestampIso,
   noValue,
   topicPositionFromPb
 } from './topic-positions';
@@ -31,7 +33,7 @@ describe('formatFraction', () => {
     expect(formatFraction(1)).toBe('100.0%');
   });
 
-  it('renders a genuine ZERO as 0.0%, because a cursor at the first entry IS at the start', () => {
+  it('renders a genuine ZERO as 0.0%, for example at the start of a publish-time range', () => {
     expect(formatFraction(0)).toBe('0.0%');
   });
 
@@ -54,6 +56,13 @@ describe('formatTimestamp', () => {
   it('renders UNKNOWN as the placeholder - an empty topic has no first message', () => {
     expect(formatTimestamp(undefined)).toBe(noValue);
     expect(formatTimestamp(NaN)).toBe(noValue);
+    expect(formatTimestamp(Number.MAX_VALUE)).toBe(noValue);
+  });
+
+  it('provides ISO-8601 as the locale-independent copy value', () => {
+    expect(timestampIso(0)).toBe('1970-01-01T00:00:00.000Z');
+    expect(timestampIso(undefined)).toBeUndefined();
+    expect(timestampIso(Number.MAX_VALUE)).toBeUndefined();
   });
 });
 
@@ -65,6 +74,22 @@ describe('formatEntryCount', () => {
   it('needs BOTH halves - an ordinal with no denominator says nothing', () => {
     expect(formatEntryCount(50, undefined)).toBe(noValue);
     expect(formatEntryCount(undefined, 100)).toBe(noValue);
+  });
+});
+
+describe('entriesAfterCursorOf', () => {
+  it('subtracts the retained-log ordinal from the current retained count', () => {
+    expect(entriesAfterCursorOf({ cursorEntryOrdinal: 40, retainedEntries: 100 })).toBe(60);
+  });
+
+  it('clamps a stale denominator at zero instead of displaying a negative backlog', () => {
+    expect(entriesAfterCursorOf({ cursorEntryOrdinal: 150, retainedEntries: 100 })).toBe(0);
+  });
+
+  it('stays unknown unless both finite readings exist', () => {
+    expect(entriesAfterCursorOf({ cursorEntryOrdinal: undefined, retainedEntries: 100 })).toBeUndefined();
+    expect(entriesAfterCursorOf({ cursorEntryOrdinal: 10, retainedEntries: undefined })).toBeUndefined();
+    expect(entriesAfterCursorOf({ cursorEntryOrdinal: Infinity, retainedEntries: 100 })).toBeUndefined();
   });
 });
 
@@ -82,6 +107,10 @@ describe('topicPositionFromPb', () => {
     expect(row.firstPublishTime).toBeUndefined();
     expect(row.lastMessageId).toBeUndefined();
     expect(row.lastPublishTime).toBeUndefined();
+    expect(row.firstConsumedMessageId).toBeUndefined();
+    expect(row.firstConsumedPublishTime).toBeUndefined();
+    expect(row.lastConsumedMessageId).toBeUndefined();
+    expect(row.lastConsumedPublishTime).toBeUndefined();
     expect(row.cursorMessageId).toBeUndefined();
     expect(row.cursorPublishTime).toBeUndefined();
     expect(row.cursorTimeFraction).toBeUndefined();
@@ -106,8 +135,8 @@ describe('topicPositionFromPb', () => {
     expect(formatFraction(row.cursorTimeFraction)).toBe('0.0%');
   });
 
-  it('reads the endpoints, the cursor and both progress figures when they are all present', () => {
-    const { BytesValue, DoubleValue, Int64Value, StringValue } = require('google-protobuf/google/protobuf/wrappers_pb');
+  it('reads the retained endpoints, consumed bounds and both progress figures when present', () => {
+    const { BytesValue, DoubleValue, Int64Value } = require('google-protobuf/google/protobuf/wrappers_pb');
     const position = new pb.TopicPosition();
     position.setTopicFqn('persistent://t/n/topic');
 
@@ -118,6 +147,22 @@ describe('topicPositionFromPb', () => {
     const firstTime = new Int64Value();
     firstTime.setValue(1000);
     position.setFirstPublishTime(firstTime);
+
+    const firstConsumedId = new BytesValue();
+    firstConsumedId.setValue(new Uint8Array([3, 4]));
+    position.setFirstConsumedMessageId(firstConsumedId);
+
+    const firstConsumedTime = new Int64Value();
+    firstConsumedTime.setValue(1200);
+    position.setFirstConsumedPublishTime(firstConsumedTime);
+
+    const lastConsumedId = new BytesValue();
+    lastConsumedId.setValue(new Uint8Array([5, 6]));
+    position.setCursorMessageId(lastConsumedId);
+
+    const lastConsumedTime = new Int64Value();
+    lastConsumedTime.setValue(1800);
+    position.setCursorPublishTime(lastConsumedTime);
 
     const timeFraction = new DoubleValue();
     timeFraction.setValue(0.5);
@@ -135,6 +180,14 @@ describe('topicPositionFromPb', () => {
 
     expect(row.firstMessageId).toBeDefined();
     expect(row.firstPublishTime).toBe(1000);
+    expect(row.firstConsumedMessageId).toBe('03 04');
+    expect(row.firstConsumedPublishTime).toBe(1200);
+    // The existing cursor wire fields are the furthest processed message. Keep the cursor
+    // aliases too: progress and lag still use the same position.
+    expect(row.lastConsumedMessageId).toBe('05 06');
+    expect(row.lastConsumedPublishTime).toBe(1800);
+    expect(row.cursorMessageId).toBe('05 06');
+    expect(row.cursorPublishTime).toBe(1800);
     expect(row.cursorTimeFraction).toBe(0.5);
     expect(formatEntryCount(row.cursorEntryOrdinal, row.retainedEntries)).toBe('50 / 100');
   });
@@ -189,8 +242,30 @@ describe('aggregateRow - the "All topics" line', () => {
   const row = (over: Partial<TopicPositionRow>): TopicPositionRow => ({ topicFqn: 't', ...over });
 
   it('takes the global time range, the WORST lag, and the summed entries', () => {
-    const a = row({ topicFqn: 'a', firstPublishTime: 1000, lastPublishTime: 9000, cursorPublishTime: 8000, cursorEntryOrdinal: 90, retainedEntries: 100 });
-    const b = row({ topicFqn: 'b', firstPublishTime: 2000, lastPublishTime: 10_000, cursorPublishTime: 4000, cursorEntryOrdinal: 10, retainedEntries: 100 });
+    const a = row({
+      topicFqn: 'a',
+      firstPublishTime: 1000,
+      lastPublishTime: 9000,
+      firstConsumedMessageId: '01',
+      firstConsumedPublishTime: 1500,
+      lastConsumedMessageId: '02',
+      lastConsumedPublishTime: 8000,
+      cursorPublishTime: 8000,
+      cursorEntryOrdinal: 90,
+      retainedEntries: 100
+    });
+    const b = row({
+      topicFqn: 'b',
+      firstPublishTime: 2000,
+      lastPublishTime: 10_000,
+      firstConsumedMessageId: '03',
+      firstConsumedPublishTime: 2500,
+      lastConsumedMessageId: '04',
+      lastConsumedPublishTime: 4000,
+      cursorPublishTime: 4000,
+      cursorEntryOrdinal: 10,
+      retainedEntries: 100
+    });
 
     const all = aggregateRow([a, b]);
 
@@ -198,6 +273,10 @@ describe('aggregateRow - the "All topics" line', () => {
     expect(all?.isAggregate).toBe(true);
     expect(all?.firstPublishTime).toBe(1000);
     expect(all?.lastPublishTime).toBe(10_000);
+    expect(all?.firstConsumedMessageId).toBeUndefined();
+    expect(all?.firstConsumedPublishTime).toBe(1500);
+    expect(all?.lastConsumedMessageId).toBeUndefined();
+    expect(all?.lastConsumedPublishTime).toBe(8000);
     // b is 6000ms behind (10000-4000), a only 1000ms (9000-8000... vs global last: a is 2000
     // behind the GLOBAL newest) - the aggregate answers with the WORST: 6000.
     expect(behindMsOf(all!)).toBe(6000);
@@ -210,14 +289,33 @@ describe('aggregateRow - the "All topics" line', () => {
     expect(aggregateRow([row({ topicFqn: 'only' })])).toBeUndefined();
   });
 
-  it('unavailable rows contribute NOTHING, not zeros', () => {
-    const ok1 = row({ topicFqn: 'a', firstPublishTime: 1000, lastPublishTime: 2000 });
-    const ok2 = row({ topicFqn: 'b', firstPublishTime: 1500, lastPublishTime: 3000 });
-    const refused = row({ topicFqn: 'np', unavailableReason: 'non-persistent' });
+  it('unavailable rows contribute consumed facts, but not unavailable retained endpoints', () => {
+    const ok1 = row({
+      topicFqn: 'a',
+      firstPublishTime: 1000,
+      lastPublishTime: 2000,
+      firstConsumedPublishTime: 1200,
+      lastConsumedPublishTime: 1800
+    });
+    const ok2 = row({
+      topicFqn: 'b',
+      firstPublishTime: 1500,
+      lastPublishTime: 3000,
+      firstConsumedPublishTime: 1600,
+      lastConsumedPublishTime: 2500
+    });
+    const refused = row({
+      topicFqn: 'np',
+      unavailableReason: 'non-persistent',
+      firstConsumedPublishTime: 500,
+      lastConsumedPublishTime: 4000
+    });
 
     const all = aggregateRow([ok1, ok2, refused]);
     expect(all?.firstPublishTime).toBe(1000);
     expect(all?.lastPublishTime).toBe(3000);
+    expect(all?.firstConsumedPublishTime).toBe(500);
+    expect(all?.lastConsumedPublishTime).toBe(4000);
   });
 
   it('a topic with no cursor leaves the aggregate positions unknown rather than guessed', () => {
@@ -228,12 +326,27 @@ describe('aggregateRow - the "All topics" line', () => {
     expect(all?.cursorTimeFraction).toBeUndefined();
     expect(behindMsOf(all!)).toBeUndefined();
   });
+
+  it('does not fabricate aggregate lag from another topic when a retained endpoint is missing', () => {
+    const complete = row({ topicFqn: 'a', lastPublishTime: 10_000, cursorPublishTime: 9000 });
+    const missingEndpoint = row({ topicFqn: 'b', cursorPublishTime: 1000 });
+
+    const all = aggregateRow([complete, missingEndpoint]);
+
+    // Combining b's cursor with a's endpoint would claim 9 seconds of lag even though b's own
+    // endpoint is unknown. The aggregate must stay blank until every readable topic is comparable.
+    expect(all?.cursorPublishTime).toBeUndefined();
+    expect(behindMsOf(all!)).toBeUndefined();
+  });
 });
 
 describe('makePositionsLoader - what the polling Table is allowed to see', () => {
   const okRow = (fqn: string): TopicPositionRow => ({ topicFqn: fqn, firstPublishTime: 1, lastPublishTime: 2 });
   const OK = 0;
   const FAILED_PRECONDITION = 9;
+  const onSessionGone = jest.fn();
+
+  beforeEach(() => onSessionGone.mockReset());
 
   it('success replaces last-good and prepends the aggregate for multi-topic sessions', async () => {
     const onError = jest.fn();
@@ -241,6 +354,7 @@ describe('makePositionsLoader - what the polling Table is allowed to see', () =>
       okCode: OK,
       failedPreconditionCode: FAILED_PRECONDITION,
       onError,
+      onSessionGone,
       fetch: async () => ({ code: OK, message: '', rows: [okRow('a'), okRow('b')] })
     });
 
@@ -256,6 +370,7 @@ describe('makePositionsLoader - what the polling Table is allowed to see', () =>
       okCode: OK,
       failedPreconditionCode: FAILED_PRECONDITION,
       onError,
+      onSessionGone,
       fetch: async () => {
         if (fail) {
           throw new Error('connection refused');
@@ -279,6 +394,7 @@ describe('makePositionsLoader - what the polling Table is allowed to see', () =>
       okCode: OK,
       failedPreconditionCode: FAILED_PRECONDITION,
       onError,
+      onSessionGone,
       fetch: async () =>
         mode === 'ok'
           ? { code: OK, message: '', rows: [okRow('a'), okRow('b')] }
@@ -301,6 +417,7 @@ describe('makePositionsLoader - what the polling Table is allowed to see', () =>
       okCode: OK,
       failedPreconditionCode: FAILED_PRECONDITION,
       onError,
+      onSessionGone,
       fetch: async () =>
         gone
           ? { code: FAILED_PRECONDITION, message: 'no such session', rows: [] }
@@ -308,8 +425,29 @@ describe('makePositionsLoader - what the polling Table is allowed to see', () =>
     });
 
     await loader();
+    expect(onSessionGone).not.toHaveBeenCalled();
     gone = true;
     expect(await loader()).toEqual([]);
     expect(onError).toHaveBeenLastCalledWith(undefined);
+    // TERMINAL, and said so with the server's own words. Without this signal the caller cannot
+    // tell "the session is over" from "the session has no topics", and polls a dead session.
+    expect(onSessionGone).toHaveBeenCalledWith('no such session');
+  });
+
+  it.each([
+    ['an OK answer with no topics at all', { code: OK, message: '', rows: [] as TopicPositionRow[] }],
+    ['a broker failure', { code: 2, message: 'the broker fell over', rows: [] as TopicPositionRow[] }]
+  ])('does not call it the end of the session for %s', async (_name, reply) => {
+    const loader = makePositionsLoader({
+      okCode: OK,
+      failedPreconditionCode: FAILED_PRECONDITION,
+      onError: jest.fn(),
+      onSessionGone,
+      fetch: async () => reply
+    });
+
+    await loader();
+
+    expect(onSessionGone).not.toHaveBeenCalled();
   });
 });

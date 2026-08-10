@@ -33,8 +33,8 @@ object nonPersistentTopicsTest extends ZIOSpecDefault:
         MessageId(messageIdBytes = Array[Byte](8, 1)),
         DateTime(dateTime = Instant.ofEpochSecond(1_700_000_000L)),
         RelativeDateTime(value = 1, unit = DateTimeUnit.Hour, isRoundedToUnitStart = false),
-        ApproximateDataPosition(fraction = 0.5),
-        ApproximateTimePosition(fraction = 0.5)
+        ApproximateEntryPosition(fraction = 0.5),
+        ApproximatePublishTimePosition(fraction = 0.5)
     )
 
     private val detectionSuite = suite("detecting a topic with no history")(

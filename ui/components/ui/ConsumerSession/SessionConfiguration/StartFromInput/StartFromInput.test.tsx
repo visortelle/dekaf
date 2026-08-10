@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  * @jest-environment-options {"customExportConditions": ["node"]}
  *
- * The two approximate start-from modes - "About % through the data" and "About % through the time
- * range" - their selector branches, and the percent control each one edits.
+ * The two approximate start-from modes, their selector branches, and the percent control each one
+ * edits.
  *
  * The percent control is the piece Playwright can drive but cannot judge: the model stores a
  * FRACTION in [0, 1] while the user edits a PERCENT in [0, 100], so every keystroke crosses a
@@ -11,8 +11,8 @@
  * rejects a fraction outside [0.0, 1.0] outright).
  *
  * Both modes render the SAME control with different test ids, so the per-mode suite below runs
- * twice. The ids are what keep them apart: a shared one would let a test drive the data control and
- * assert the time one without noticing.
+ * twice. The ids are what keep them apart: a shared one would let a test drive the entry control and
+ * assert the publish-time one without noticing.
  *
  * mermaid/nanoid are ESM-only and jest does not transform node_modules; both are pulled in far away
  * through the library browser panel that every managed-item editor renders.
@@ -47,7 +47,11 @@ const startFromItem = (startFrom: unknown) => ({
 
 // The same SWR settings the app installs - without them the data hooks in the library panel keep a
 // retry timer alive past the jsdom teardown.
-const renderInput = (startFrom: unknown, targetTopicsPersistency?: { hasPersistent: boolean; hasNonPersistent: boolean }) => {
+const renderInput = (
+  startFrom: unknown,
+  targetTopicsPersistency?: { hasPersistent: boolean; hasNonPersistent: boolean },
+  deliveryOrder?: 'guaranteed' | 'best-effort' | 'as-received'
+) => {
   const onChange = jest.fn();
   render(
     <SWRConfig value={{ shouldRetryOnError: false, refreshInterval: 0, revalidateOnFocus: false }}>
@@ -56,6 +60,7 @@ const renderInput = (startFrom: unknown, targetTopicsPersistency?: { hasPersiste
         onChange={onChange}
         libraryContext={libraryContext}
         targetTopicsPersistency={targetTopicsPersistency}
+        deliveryOrder={deliveryOrder}
       />
     </SWRConfig>
   );
@@ -157,8 +162,8 @@ describe('the start-from mode selector', () => {
     renderInput({ type: 'latestMessage' });
 
     const values = Array.from(screen.getByTestId('cs-start-from').querySelectorAll('option')).map((o) => o.value);
-    expect(values).toContain('approximateDataPosition');
-    expect(values).toContain('approximateTimePosition');
+    expect(values).toContain('approximateEntryPosition');
+    expect(values).toContain('approximatePublishTimePosition');
     // The seven pre-existing modes must survive the addition.
     expect(values).toEqual(
       expect.arrayContaining([
@@ -181,13 +186,13 @@ describe('the start-from mode selector', () => {
     const byValue = Object.fromEntries(
       Array.from(screen.getByTestId('cs-start-from').querySelectorAll('option')).map((o) => [o.value, o.textContent])
     );
-    expect(byValue.approximateDataPosition).toBe('About % through the data');
-    expect(byValue.approximateTimePosition).toBe('About % through the time range');
+    expect(byValue.approximateEntryPosition).toBe('Approximate position (% of data)');
+    expect(byValue.approximatePublishTimePosition).toBe('Approximate position (% of time)');
   });
 
   it.each([
-    ['approximateDataPosition'],
-    ['approximateTimePosition'],
+    ['approximateEntryPosition'],
+    ['approximatePublishTimePosition'],
   ])('builds a %s spec when the mode is picked', (mode) => {
     const onChange = renderInput({ type: 'latestMessage' });
 
@@ -210,14 +215,28 @@ describe('the start-from mode selector', () => {
 
 /** The two modes and the test-id prefix each one's controls carry. */
 const approximateModes = [
-  ['approximateDataPosition', 'cs-start-from-data'],
-  ['approximateTimePosition', 'cs-start-from-time'],
+  ['approximateEntryPosition', 'cs-start-from-entry'],
+  ['approximatePublishTimePosition', 'cs-start-from-publish-time'],
 ] as const;
+
+const approximateModeUi = {
+  approximateEntryPosition: {
+    accessibleName: 'Approximate data position',
+    help: 'Estimated from retained entries; each topic and partition is positioned independently.',
+    endLabel: 'New messages',
+  },
+  approximatePublishTimePosition: {
+    accessibleName: 'Approximate publish-time position',
+    help: 'Estimated from the first and last retained entries’ publish times; each topic has its own range and its partitions share one cutoff.',
+    endLabel: 'Last publish time',
+  },
+} as const;
 
 describe.each(approximateModes)('the percent control for %s', (mode, prefix) => {
   const fractionInput = () => screen.getByTestId(`${prefix}-fraction`);
   const slider = () => screen.getByTestId(`${prefix}-fraction-slider`);
   const error = () => screen.queryByTestId(`${prefix}-fraction-error`);
+  const ui = approximateModeUi[mode];
 
   it('shows the stored fraction as a percent in both the number input and the slider', () => {
     renderInput({ type: mode, fraction: 0.6 });
@@ -225,6 +244,28 @@ describe.each(approximateModes)('the percent control for %s', (mode, prefix) => 
     expect((fractionInput() as HTMLInputElement).value).toBe('60');
     expect((slider() as HTMLInputElement).value).toBe('60');
     expect(error()).toBeNull();
+  });
+
+  it('gives both controls semantic names and associates the concise help', () => {
+    renderInput({ type: mode, fraction: 0.6 });
+
+    const exactPercentage = screen.getByRole('spinbutton', { name: `${ui.accessibleName} percentage` });
+    const coarseSlider = screen.getByRole('slider', { name: `${ui.accessibleName} slider` });
+    const note = screen.getByTestId(`${prefix}-note`);
+    const endpoints = document.getElementById(`${prefix}-endpoints`)!;
+
+    expect(note.textContent).toBe(ui.help);
+    expect(exactPercentage.getAttribute('aria-describedby')).toBe(`${note.id} ${endpoints.id}`);
+    expect(coarseSlider.getAttribute('aria-describedby')).toBe(`${note.id} ${endpoints.id}`);
+    expect(exactPercentage.getAttribute('aria-invalid')).toBe('false');
+    expect(coarseSlider.getAttribute('aria-invalid')).toBe('false');
+  });
+
+  it('shows the endpoint meanings without repeating the old explanatory paragraphs', () => {
+    renderInput({ type: mode, fraction: 0.6 });
+
+    expect(screen.getByText('0% · Earliest')).toBeTruthy();
+    expect(screen.getByText(`100% · ${ui.endLabel}`)).toBeTruthy();
   });
 
   it('commits a typed percent as a fraction', () => {
@@ -252,6 +293,20 @@ describe.each(approximateModes)('the percent control for %s', (mode, prefix) => 
     expect(onChange).not.toHaveBeenCalled();
     // The refused text stays visible so the user can correct it.
     expect((fractionInput() as HTMLInputElement).value).toBe('150');
+  });
+
+  it('exposes an invalid value and its error to assistive technology', () => {
+    renderInput({ type: mode, fraction: 0.6 });
+
+    fireEvent.change(fractionInput(), { target: { value: '150' } });
+
+    const exactPercentage = screen.getByRole('spinbutton', { name: `${ui.accessibleName} percentage` });
+    const coarseSlider = screen.getByRole('slider', { name: `${ui.accessibleName} slider` });
+    const alert = screen.getByRole('alert');
+    expect(exactPercentage.getAttribute('aria-invalid')).toBe('true');
+    expect(coarseSlider.getAttribute('aria-invalid')).toBe('true');
+    expect(exactPercentage.getAttribute('aria-describedby')).toContain(alert.id);
+    expect(coarseSlider.getAttribute('aria-describedby')).toContain(alert.id);
   });
 
   it('refuses a negative percent', () => {
@@ -331,144 +386,31 @@ describe('the two percent controls are not the same control', () => {
   // They render identically and store the same shape, so the ONLY thing keeping them apart in the
   // DOM is the test-id prefix. If both instances shared one id, every per-mode test above would
   // still pass while a Playwright spec silently drove the wrong mode.
-  it('renders only the data control for the data mode', () => {
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
+  it('renders only the entry control for the entry mode', () => {
+    renderInput({ type: 'approximateEntryPosition', fraction: 0.6 });
 
-    expect(screen.getByTestId('cs-start-from-data-fraction')).toBeTruthy();
-    expect(screen.getByTestId('cs-start-from-data-note')).toBeTruthy();
-    expect(screen.queryByTestId('cs-start-from-time-fraction')).toBeNull();
-    expect(screen.queryByTestId('cs-start-from-time-note')).toBeNull();
+    expect(screen.getByTestId('cs-start-from-entry-fraction')).toBeTruthy();
+    expect(screen.getByTestId('cs-start-from-entry-note')).toBeTruthy();
+    expect(screen.queryByTestId('cs-start-from-publish-time-fraction')).toBeNull();
+    expect(screen.queryByTestId('cs-start-from-publish-time-note')).toBeNull();
   });
 
-  it('renders only the time control for the time mode', () => {
-    renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
+  it('renders only the publish-time control for the publish-time mode', () => {
+    renderInput({ type: 'approximatePublishTimePosition', fraction: 0.6 });
 
-    expect(screen.getByTestId('cs-start-from-time-fraction')).toBeTruthy();
-    expect(screen.getByTestId('cs-start-from-time-note')).toBeTruthy();
-    expect(screen.queryByTestId('cs-start-from-data-fraction')).toBeNull();
-    expect(screen.queryByTestId('cs-start-from-data-note')).toBeNull();
+    expect(screen.getByTestId('cs-start-from-publish-time-fraction')).toBeTruthy();
+    expect(screen.getByTestId('cs-start-from-publish-time-note')).toBeTruthy();
+    expect(screen.queryByTestId('cs-start-from-entry-fraction')).toBeNull();
+    expect(screen.queryByTestId('cs-start-from-entry-note')).toBeNull();
   });
 
   it('keeps the mode when the percentage is edited, rather than falling back to the other one', () => {
     // The onChange handler rebuilds the whole start-from, so it has to re-state its own `type`.
-    const onChange = renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
+    const onChange = renderInput({ type: 'approximatePublishTimePosition', fraction: 0.6 });
 
-    fireEvent.change(screen.getByTestId('cs-start-from-time-fraction'), { target: { value: '20' } });
+    fireEvent.change(screen.getByTestId('cs-start-from-publish-time-fraction'), { target: { value: '20' } });
 
-    expect(lastStartFrom(onChange)).toEqual({ type: 'approximateTimePosition', fraction: 0.2 });
-  });
-});
-
-/**
- * The data mode resolves PER PHYSICAL TOPIC and lands on an entry rather than on a message. Both are
- * deliberate and both are invisible from the control itself - a percentage box gives no hint that
- * "50%" means 50% of EACH log, nor that the jump is measured in batched entries. The explanation
- * under the control is the only place the user is told, so it is pinned here.
- */
-describe('what the "% through the data" note tells the user', () => {
-  const noteText = () => screen.getByTestId('cs-start-from-data-note').textContent ?? '';
-
-  it('says each topic and each partition starts at its own position', () => {
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
-
-    const note = noteText();
-    expect(note).toMatch(/partition/i);
-    expect(note).toMatch(/each|every/i);
-    expect(note).toMatch(/its own position|own position/i);
-  });
-
-  it('says the percentage is not of the topics combined', () => {
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
-
-    // Without this the reader can reasonably assume "50%" means 50% of one merged stream, which is
-    // the position the session does NOT take.
-    expect(noteText()).toMatch(/not of all of them|not of the (topics )?combined|rather than of all/i);
-  });
-
-  it('says the position is approximate, and why - entries are batches, so a % of entries is not that % of messages', () => {
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
-
-    const note = noteText();
-    expect(note).toMatch(/approximate/i);
-    expect(note).toMatch(/entries/i);
-    expect(note).toMatch(/batch/i);
-    expect(note).toMatch(/not exactly/i);
-  });
-
-  it('describes 100% as the server actually resolves it: past everything retained', () => {
-    // 1.0 in this mode is MessageId.latest - the same position "Latest message" takes, showing
-    // nothing that is retained and only what arrives from now on. Calling it "the newest message"
-    // promises the last message in the topic, which is what the TIME mode's 100% gives; here it
-    // delivers an apparently empty session, and the note was the only place to find out.
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
-
-    const note = noteText();
-    expect(note).toMatch(/100%/);
-    expect(note).toMatch(/from now on|only new messages|nothing that is still kept|past (the )?(newest|everything)/i);
-    expect(note).not.toMatch(/100% is the\s+newest\b(?!.*from now)/i);
-  });
-
-  it('points at the time mode as the other reading of "half way in"', () => {
-    // The two labels differ by three words, so the note is where a reader who picked the wrong one
-    // finds out. Without it the modes are only distinguishable by guessing.
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
-
-    expect(noteText()).toMatch(/About % through the time range/);
-  });
-
-  it('stays in the reader\'s terms, not Pulsar internals', () => {
-    renderInput({ type: 'approximateDataPosition', fraction: 0.6 });
-
-    expect(noteText()).not.toMatch(/examineMessage|ordinal|brokerEntryMetadata|managed ?ledger/i);
-  });
-});
-
-/**
- * The time mode's two surprises are the mirror image: the percentage is of ELAPSED TIME rather than
- * of messages, and a partitioned topic is pooled into ONE range instead of being positioned
- * partition by partition. Neither is visible from a percentage box either.
- */
-describe('what the "% through the time range" note tells the user', () => {
-  const noteText = () => screen.getByTestId('cs-start-from-time-note').textContent ?? '';
-
-  it('says the percentage is of time, not of messages', () => {
-    renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
-
-    const note = noteText();
-    expect(note).toMatch(/time/i);
-    expect(note).toMatch(/not messages|not of messages|rather than messages|measures time, not messages/i);
-  });
-
-  it('points at the data mode as the other reading of "half way in"', () => {
-    renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
-
-    expect(noteText()).toMatch(/About % through the data/);
-  });
-
-  it('says a partitioned topic is treated as ONE range, unlike the data mode', () => {
-    // This is the substantive difference between the two modes' scopes, and getting it wrong costs
-    // the user a session pointed somewhere they did not ask for.
-    renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
-
-    const note = noteText();
-    expect(note).toMatch(/partition/i);
-    expect(note).toMatch(/one topic|same moment|across every partition/i);
-  });
-
-  it('says the timestamp comes from the sending machine', () => {
-    // publishTime is the producer's clock, so the position is only as good as that clock. Saying so
-    // is the difference between "approximate" and "wrong".
-    renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
-
-    const note = noteText();
-    expect(note).toMatch(/approximate/i);
-    expect(note).toMatch(/machine that sent|producer|sending machine/i);
-  });
-
-  it('stays in the reader\'s terms, not Pulsar internals', () => {
-    renderInput({ type: 'approximateTimePosition', fraction: 0.6 });
-
-    expect(noteText()).not.toMatch(/examineMessage|publishTime|ledger|epoch|millisecond/i);
+    expect(lastStartFrom(onChange)).toEqual({ type: 'approximatePublishTimePosition', fraction: 0.2 });
   });
 });
 
@@ -724,8 +666,8 @@ describe('a read-only start-from', () => {
   });
 
   it.each([
-    ['approximateDataPosition', 'cs-start-from-data'],
-    ['approximateTimePosition', 'cs-start-from-time'],
+    ['approximateEntryPosition', 'cs-start-from-entry'],
+    ['approximatePublishTimePosition', 'cs-start-from-publish-time'],
   ])('does not let the %s percentage be edited', (mode, prefix) => {
     renderReadOnly({ type: mode, fraction: 0.6 });
 
@@ -763,8 +705,8 @@ describe('non-persistent targets', () => {
       nthMessageBeforeLatest: false,
       // Both approximate modes are history-dependent: one needs the topic's entry count, the other
       // its first and last publish times, and a non-persistent topic answers neither.
-      approximateDataPosition: false,
-      approximateTimePosition: false,
+      approximateEntryPosition: false,
+      approximatePublishTimePosition: false,
     });
   });
 
@@ -784,17 +726,56 @@ describe('non-persistent targets', () => {
     expect(note.textContent).not.toMatch(/examineMessage|405|broker/i);
   });
 
-  it('falls back to Latest when the selected mode became unusable', () => {
-    // The user had picked a history mode, then pointed the session at a non-persistent topic.
+  it('does not rewrite an unusable mode - it says the session will run from latest instead', () => {
+    // The user had picked a history mode, then pointed the session at a non-persistent topic. The
+    // old behaviour overwrote the stored start-from with the live tail, with no notice and no
+    // undo - flipping the target back re-enabled the modes but the parameters were gone. The
+    // stored value now belongs to the user: nothing is written, the substitution happens at
+    // session-conversion time (effectiveStartFrom), and this note names it.
     const onChange = renderInput({ type: 'nthMessageAfterEarliest', n: 5 }, nonPersistentOnly);
 
-    expect(lastStartFrom(onChange)).toEqual({ type: 'latestMessage' });
+    expect(onChange).not.toHaveBeenCalled();
+    // The selector still shows the configured mode (disabled, with the general note saying why).
+    expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('nthMessageAfterEarliest');
+
+    const note = screen.getByTestId('cs-start-from-inapplicable-note');
+    expect(note.textContent).toMatch(/latest message/i);
+    expect(note.textContent).toMatch(/unchanged/i);
   });
 
-  it('leaves an already-valid selection alone', () => {
+  it('never mutates a REFERENCED item into a local val-plus-reference state', () => {
+    // The old rewrite spread `{...props.value, val: ...}`, which for a reference kept
+    // `type: 'reference'` while planting a diverging local `val` - the session then disagreed
+    // with the library item it named, and not even durably (references persist by ref alone).
+    // The reference shape below is exactly what the app holds after resolving a library item.
+    const onChange = jest.fn();
+    render(
+      <SWRConfig value={{ shouldRetryOnError: false, refreshInterval: 0, revalidateOnFocus: false }}>
+        <StartFromInput
+          value={{
+            type: 'reference',
+            ref: 'sf-1',
+            val: {
+              metadata: { id: 'sf-1', name: 'saved', descriptionMarkdown: '', type: 'consumer-session-start-from' },
+              spec: { startFrom: { type: 'nthMessageAfterEarliest', n: 5 } },
+            },
+          } as never}
+          onChange={onChange}
+          libraryContext={libraryContext}
+          targetTopicsPersistency={nonPersistentOnly}
+        />
+      </SWRConfig>
+    );
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByTestId('cs-start-from-inapplicable-note')).toBeTruthy();
+  });
+
+  it('leaves an already-valid selection alone, with no substitution note', () => {
     const onChange = renderInput({ type: 'latestMessage' }, nonPersistentOnly);
 
     expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('cs-start-from-inapplicable-note')).toBeNull();
   });
 
   it('keeps every mode when the selection is mixed, and says the non-persistent parts start from now', () => {
@@ -803,8 +784,10 @@ describe('non-persistent targets', () => {
     expect(Object.values(modeOptions()).every((enabled) => enabled)).toBe(true);
     expect(screen.getByTestId('cs-start-from-mixed-persistency-note').textContent).toMatch(/non-persistent/i);
     expect(screen.queryByTestId('cs-start-from-non-persistent-note')).toBeNull();
-    // A mixed selection is legal - nothing may be rewritten under the user.
+    // A mixed selection is legal - nothing may be rewritten under the user, and no substitution
+    // is claimed either: history modes really run on the persistent part.
     expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('cs-start-from-inapplicable-note')).toBeNull();
   });
 
   it('says nothing at all when every selected topic retains history', () => {
@@ -821,6 +804,62 @@ describe('non-persistent targets', () => {
     expect(Object.values(modeOptions()).every((enabled) => enabled)).toBe(true);
     expect(screen.queryByTestId('cs-start-from-non-persistent-note')).toBeNull();
     expect(screen.queryByTestId('cs-start-from-mixed-persistency-note')).toBeNull();
+  });
+});
+
+/**
+ * Latest x Guaranteed (owner decision, 2026-08-09): Guaranteed is an exact replay of recorded
+ * history, and "Latest message" selects a replay of nothing - so the option is DISABLED while
+ * Guaranteed is chosen, with a note saying why, through the same disabled-option-plus-note
+ * mechanism the non-persistent gating uses. A SAVED Latest x Guaranteed combo is never rewritten
+ * (the M4 lesson): it loads as written, shows the note, and Play yields the server's instant
+ * caught-up answer.
+ */
+describe('Latest under a Guaranteed delivery order', () => {
+  const note = () => screen.queryByTestId('cs-start-from-latest-guaranteed-note');
+
+  it('disables Latest while the order is Guaranteed, keeping every other mode available', () => {
+    renderInput({ type: 'earliestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'guaranteed');
+
+    const options = modeOptions();
+    expect(options.latestMessage).toBe(false);
+    // Only Latest is the replay-of-nothing; everything history-based stays selectable.
+    expect(options.earliestMessage).toBe(true);
+    expect(options.nthMessageAfterEarliest).toBe(true);
+    expect(options.dateTime).toBe(true);
+  });
+
+  it('says why in one line, naming the live alternative', () => {
+    renderInput({ type: 'earliestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'guaranteed');
+
+    expect(note()).toBeTruthy();
+    expect(note()!.textContent).toMatch(/Guaranteed replays recorded history/i);
+    expect(note()!.textContent).toMatch(/Best effort/);
+  });
+
+  it('keeps a saved Latest x Guaranteed combo exactly as written - shown and noted, never rewritten', () => {
+    const onChange = renderInput({ type: 'latestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'guaranteed');
+
+    // Nothing is written back: the stored value belongs to the user (the M4 lesson), and Play on
+    // this combo simply yields the server's instant caught-up banner.
+    expect(onChange).not.toHaveBeenCalled();
+    expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('latestMessage');
+    expect(note()).toBeTruthy();
+  });
+
+  it('leaves Latest available under Best effort, with no note', () => {
+    renderInput({ type: 'latestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'best-effort');
+
+    expect(modeOptions().latestMessage).toBe(true);
+    expect(note()).toBeNull();
+  });
+
+  it('keeps Latest selectable when nothing retains history - the one mode such topics have', () => {
+    // Non-persistent x Guaranteed is legal (an empty replay announces caught-up instantly), and
+    // Latest is the ONLY selectable mode there - disabling it too would leave no option at all.
+    renderInput({ type: 'latestMessage' }, nonPersistentOnly, 'guaranteed');
+
+    expect(modeOptions().latestMessage).toBe(true);
   });
 });
 

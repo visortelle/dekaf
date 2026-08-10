@@ -1,8 +1,8 @@
 package consumer.session_runner
 
 import _root_.consumer.start_from.{
-    ApproximateDataPosition,
-    ApproximateTimePosition,
+    ApproximateEntryPosition,
+    ApproximatePublishTimePosition,
     ConsumerSessionStartFrom,
     DateTime,
     DateTimeUnit,
@@ -97,8 +97,8 @@ object startFromCountValidationTest extends ZIOSpecDefault:
                 DateTime(dateTime = java.time.Instant.EPOCH),
                 RelativeDateTime(value = 1, unit = DateTimeUnit.Hour, isRoundedToUnitStart = false),
                 MessageId(messageIdBytes = Array.empty),
-                ApproximateDataPosition(fraction = 0.6),
-                ApproximateTimePosition(fraction = 0.6)
+                ApproximateEntryPosition(fraction = 0.6),
+                ApproximatePublishTimePosition(fraction = 0.6)
             )
             val wronglyRefused = countless.filter(mode => reason(mode).isDefined)
             assertTrue(wronglyRefused.isEmpty) ?? s"${wronglyRefused.map(_.getClass.getSimpleName)}"
@@ -183,22 +183,40 @@ object startFromCountValidationTest extends ZIOSpecDefault:
         }
     )
 
-    /** Target-aware refusals: sessions whose counted mode cannot MEAN what it promises on these
+    /** Target-aware refusals: sessions whose retained-log-derived mode cannot mean what it promises on these
       * targets are refused at creation, with the reason naming what to change. */
-    private val targetAwareSuite = suite("target-aware refusals for the counted modes")(
+    private val targetAwareSuite = suite("target-aware refusals for retained-log-derived modes")(
         test("latest-n is refused when any enabled target reads COMPACTED") {
-            val refused = latestNReadCompactedRejectionReason(NthMessageBeforeLatest(n = 3), readCompactedTargetIndexes = Vector(1))
-            val fine = latestNReadCompactedRejectionReason(NthMessageBeforeLatest(n = 3), readCompactedTargetIndexes = Vector.empty)
+            val refused = readCompactedStartFromRejectionReason(NthMessageBeforeLatest(n = 3), readCompactedTargetIndexes = Vector(1))
+            val fine = readCompactedStartFromRejectionReason(NthMessageBeforeLatest(n = 3), readCompactedTargetIndexes = Vector.empty)
             assertTrue(
                 refused.exists(_.contains("compacted")),
                 refused.exists(_.contains("1")),
                 fine.isEmpty
             ) ?? s"refused=$refused fine=$fine"
         },
-        test("latest-0 and other modes pass whatever the targets read - there is nothing to count") {
+        test("both percentage modes are refused because their raw-log positions do not describe a compacted view") {
+            val targetIndexes = Vector(4, 1)
+            val entry = readCompactedStartFromRejectionReason(ApproximateEntryPosition(0.5), targetIndexes)
+            val publishTime = readCompactedStartFromRejectionReason(ApproximatePublishTimePosition(0.5), targetIndexes)
             assertTrue(
-                latestNReadCompactedRejectionReason(NthMessageBeforeLatest(n = 0), Vector(0)).isEmpty,
-                latestNReadCompactedRejectionReason(NthMessageAfterEarliest(n = 5), Vector(0)).isEmpty
+                entry.exists(message => message.contains("Approximate position (% of data)") && message.contains("1, 4") && message.contains("raw stored entries")),
+                publishTime.exists(message =>
+                    message.contains("Approximate position (% of time)") && message.contains("1, 4") && message.contains("raw retained log")
+                )
+            ) ?? s"entry=$entry publishTime=$publishTime"
+        },
+        test("latest-0 and delivery-counted skip remain valid on a compacted view") {
+            assertTrue(
+                readCompactedStartFromRejectionReason(NthMessageBeforeLatest(n = 0), Vector(0)).isEmpty,
+                readCompactedStartFromRejectionReason(NthMessageAfterEarliest(n = 5), Vector(0)).isEmpty
+            )
+        },
+        test("without a read-compacted target no mode is refused") {
+            assertTrue(
+                readCompactedStartFromRejectionReason(ApproximateEntryPosition(0.5), Vector.empty).isEmpty,
+                readCompactedStartFromRejectionReason(ApproximatePublishTimePosition(0.5), Vector.empty).isEmpty,
+                readCompactedStartFromRejectionReason(NthMessageBeforeLatest(n = 3), Vector.empty).isEmpty
             )
         },
         test("skip-n is refused when two enabled targets share a physical topic, and the reason NAMES it") {
@@ -242,6 +260,16 @@ object startFromCountValidationTest extends ZIOSpecDefault:
                 intact.isEmpty,
                 emptied.isDefined // retains nothing at all: the anchor is gone by definition
             ) ?? s"trimmed=$trimmed intact=$intact emptied=$emptied"
+        },
+        test("an EXHAUSTED CONTRIBUTOR's trimmed anchor is caught - it is FromEntry now, never Everything") {
+            // The escape this closes: a topic whose whole backlog was counted resolved to
+            // `Everything`, the re-check only inspected FromEntry, and retention deleting that
+            // topic's contribution between resolving and seeking silently shrank the result
+            // below the promised n. Exhausted contributors now carry their oldest-entry anchor,
+            // so the same trim is refused like any other.
+            val cut = Map("persistent://t/ns/exhausted" -> LatestNSeek.FromEntry(1L, 0L))
+            val trimmed = latestNAnchorRejectionReason[Long](cut, _ => None, (a, b) => a < b)
+            assertTrue(trimmed.exists(_.contains("retention removed")))
         },
         test("EVERYTHING and NOTHING cuts need no anchor - only FromEntry is re-checked") {
             val cut = Map(

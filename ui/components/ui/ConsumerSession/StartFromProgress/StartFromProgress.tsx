@@ -7,12 +7,6 @@ export type StartFromSkipProgress = {
   messagesToSkip: number;
 };
 
-/**
- * Below this many messages a skip resolves quickly enough that a progress panel would be pure noise,
- * so nothing is shown. Above it the skip takes real time and the session would otherwise look frozen.
- */
-export const startFromProgressDisplayThreshold = 1000000;
-
 const formatCount = (n: number) => n.toLocaleString('en-US');
 
 export type StartFromProgressProps = {
@@ -52,7 +46,7 @@ const StartFromProgress: React.FC<StartFromProgressProps> = ({ progress }) => {
       </div>
       <div className={s.Hint}>
         Skipping an exact number of messages means counting them one by one, so a large skip takes a while.
-        "About % through the data" reaches roughly the same place immediately.
+        For an immediate estimate, use Approximate position (% of data); it is based on retained entries, not message count.
       </div>
     </div>
   );

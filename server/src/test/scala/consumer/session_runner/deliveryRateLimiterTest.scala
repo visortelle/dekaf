@@ -39,7 +39,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
             schedule = (delayMs, task) => { scheduledDelays += delayMs; pending += task },
             process = i => { if throwOn.contains(i) then throw RuntimeException(s"boom on $i"); processed += i; () },
             holdPermits = () => { holdCalls += 1; holdAnswers.next() },
-            releasePermits = () => { releaseCalls += 1 }
+            releasePermits = () => { releaseCalls += 1; true }
         )
         core.setRate(initialRate)
 
@@ -56,14 +56,27 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // A session capped at 100/s that begins with "latest 50" paints all 50 immediately -
                 // the user asked for exactly those. The cap shapes what follows, not the first paint.
                 val m = ManualCore(100)
-                (1 to 500).foreach(m.core.offer)
+                (1 to 500).foreach(i => m.core.offer(i))
                 val first = m.core.beginDrain()
                 m.core.finishDrain()
                 assertTrue(first == (1 to 100).toVector)
             },
+            test("a returned delivery token refills the bucket by one, never past its size") {
+                // The guaranteed pump's failed-send refund: the send never happened, so the
+                // token it acquired must come back - and an over-refund must clamp at the
+                // bucket, exactly like requeueFront's refund on the queued path.
+                val m = ManualCore(1)
+                val first = m.core.tryAcquireDeliveryToken()
+                val exhausted = m.core.tryAcquireDeliveryToken()
+                m.core.returnDeliveryToken()
+                m.core.returnDeliveryToken() // a second refund must not bank a second token
+                val afterRefund = m.core.tryAcquireDeliveryToken()
+                val clamped = m.core.tryAcquireDeliveryToken()
+                assertTrue(first, !exhausted, afterRefund, !clamped)
+            },
             test("the sustained rate is EXACT: each elapsed second earns exactly the rate") {
                 val m = ManualCore(100)
-                (1 to 500).foreach(m.core.offer)
+                (1 to 500).foreach(i => m.core.offer(i))
                 m.core.beginDrain(); m.core.finishDrain() // the initial burst of 100
 
                 val perSecond = (1 to 4).map { _ =>
@@ -82,7 +95,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // A minute of silence, then a flood: the bucket is capped at the rate, so the first
                 // drain answers with 100, not with 6000 saved-up tokens.
                 m.clock += 60_000
-                (1 to 300).foreach(m.core.offer)
+                (1 to 300).foreach(i => m.core.offer(i))
                 val batch = m.core.beginDrain()
                 assertTrue(batch.size == 100)
             },
@@ -95,7 +108,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // would run concurrently with it and could overtake the batch into the session's
                 // stateful filters.
                 val m = ManualCore(5)
-                (2 to 4).foreach(m.core.offer)
+                (2 to 4).foreach(i => m.core.offer(i))
                 val batch = m.core.beginDrain()
                 m.core.setRate(0)
                 val duringDrain = m.core.offer(5)
@@ -108,7 +121,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // The backlog exists because the rate was JUST lowered to 0 with messages queued: the
                 // flush must stay ordered, so new offers join the queue until it has drained.
                 val m = ManualCore(100)
-                (1 to 150).foreach(m.core.offer)
+                (1 to 150).foreach(i => m.core.offer(i))
                 m.core.setRate(0)
                 val outcome = m.core.offer(151)
                 val flush = m.core.beginDrain()
@@ -135,7 +148,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // timers, so the wait is floored and the batch grows to match - the tokens keep
                 // accruing while asleep, so the floor costs no throughput.
                 val fast = ManualCore(100)
-                (1 to 200).foreach(fast.core.offer)
+                (1 to 200).foreach(i => fast.core.offer(i))
                 fast.core.beginDrain()
                 val fastNext = fast.core.finishDrain().rescheduleAfterMs
 
@@ -152,7 +165,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // A fat bucket must not hold the drainer - and with it the session's single JS
                 // context - for an unbounded stretch.
                 val m = ManualCore(10_000)
-                (1 to 2000).foreach(m.core.offer)
+                (1 to 2000).foreach(i => m.core.offer(i))
                 val batch = m.core.beginDrain()
                 val next = m.core.finishDrain().rescheduleAfterMs
                 assertTrue(batch.size == deliveryRateLimitMaxDrainBatch) && assertTrue(next.contains(0L))
@@ -161,19 +174,19 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
         suite("the wrapper's side effects")(
             test("under a limit, nothing is processed at offer time; the drain releases FIFO") {
                 val m = ManualLimiter(100)
-                (1 to 5).foreach(m.limiter.offer)
+                (1 to 5).foreach(m.limiter.offer(_))
                 val beforeTick = m.processed.toVector
                 m.runPending()
                 assertTrue(beforeTick.isEmpty) && assertTrue(m.processed.toVector == (1 to 5).toVector)
             },
             test("unlimited passes straight through on the calling thread") {
                 val m = ManualLimiter(0)
-                (1 to 5).foreach(m.limiter.offer)
+                (1 to 5).foreach(m.limiter.offer(_))
                 assertTrue(m.processed.toVector == (1 to 5).toVector) && assertTrue(!m.hasPending)
             },
             test("the permit hold fires ONCE at the high watermark and releases ONCE at the low") {
                 val m = ManualLimiter(1_000_000)
-                (1 to deliveryRateLimitHoldPermitsAboveQueued + 50).foreach(m.limiter.offer)
+                (1 to deliveryRateLimitHoldPermitsAboveQueued + 50).foreach(m.limiter.offer(_))
                 val holdsAfterCrossing = m.holdCalls
                 // Drain it down; the bucket is huge, so only the per-tick cap bounds each batch.
                 while m.core.queuedCount > 0 do m.runPending()
@@ -187,14 +200,14 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                 // refusal's reason has passed, the very next crossing offer must re-assert the hold,
                 // not believe a stale flag.
                 val m = ManualLimiter(1_000_000, holdAnswers = Iterator(false, true))
-                (1 to deliveryRateLimitHoldPermitsAboveQueued).foreach(m.limiter.offer)
+                (1 to deliveryRateLimitHoldPermitsAboveQueued).foreach(m.limiter.offer(_))
                 val afterRefusal = m.holdCalls
                 m.limiter.offer(0)
                 assertTrue(afterRefusal == 1) && assertTrue(m.holdCalls == 2)
             },
             test("a user pause stops the drain; resume re-arms it; the backlog survives both") {
                 val m = ManualLimiter(100)
-                (1 to 5).foreach(m.limiter.offer)
+                (1 to 5).foreach(m.limiter.offer(_))
                 m.limiter.pauseDraining()
                 m.runPending() // the tick that was already armed fires into the pause and must no-op
                 val processedWhilePaused = m.processed.toVector
@@ -205,24 +218,27 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
             test("a throwing delivery costs exactly itself") {
                 val m = ManualLimiter(100)
                 m.throwOn = Set(2)
-                (1 to 3).foreach(m.limiter.offer)
+                (1 to 3).foreach(m.limiter.offer(_))
                 m.runPending()
                 assertTrue(m.processed.toVector == Vector(1, 3))
             },
             test("stop clears the backlog for good - re-arming afterwards delivers nothing") {
                 val m = ManualLimiter(100)
-                (1 to 5).foreach(m.limiter.offer)
+                (1 to 5).foreach(m.limiter.offer(_))
                 m.limiter.stop()
                 m.limiter.resumeDraining()
                 m.runPending()
                 assertTrue(m.processed.isEmpty) && assertTrue(m.core.queuedCount == 0)
             },
-            test("an external resume resets the held flag so the next crossing re-asserts it") {
+            test("the held flag stays set until the limiter itself releases - nobody can stomp it any more") {
+                // The old contract reset the flag on a user resume, because a user resume used to
+                // wake every consumer wholesale. Holds now land on per-consumer pause ARBITERS
+                // (reason Limiter), which a user resume cannot release - so the flag stays
+                // truthful on its own, and a second crossing must NOT re-call the hold hook.
                 val m = ManualLimiter(1_000_000)
-                (1 to deliveryRateLimitHoldPermitsAboveQueued).foreach(m.limiter.offer)
-                m.limiter.onConsumersExternallyResumed()
+                (1 to deliveryRateLimitHoldPermitsAboveQueued).foreach(m.limiter.offer(_))
                 m.limiter.offer(0)
-                assertTrue(m.holdCalls == 2)
+                assertTrue(m.holdCalls == 1)
             }
         ),
         suite("the delivery budget's machinery")(
@@ -234,7 +250,7 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
             },
             test("requeueFront puts the unprocessed tail back AT THE HEAD, order intact, tokens refunded") {
                 val m = ManualCore(10)
-                (1 to 10).foreach(m.core.offer)
+                (1 to 10).foreach(i => m.core.offer(i))
                 val batch = m.core.beginDrain() // takes all 10, spends all 10 tokens
                 m.core.finishDrain()
                 // Pretend the budget stopped after 3: the remaining 7 go back untouched.
@@ -261,11 +277,11 @@ object deliveryRateLimiterTest extends ZIOSpecDefault:
                         if deliveredCount == stopAt then limiterHolder.head.pauseDraining()
                     },
                     holdPermits = () => true,
-                    releasePermits = () => ()
+                    releasePermits = () => true
                 )
                 limiterHolder += limiter
                 core.setRate(100)
-                (1 to 10).foreach(limiter.offer)
+                (1 to 10).foreach(limiter.offer(_))
                 pending.toVector.foreach(_.run()); pending.clear()
 
                 val afterStop = processed.toVector

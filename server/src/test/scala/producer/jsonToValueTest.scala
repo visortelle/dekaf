@@ -11,13 +11,13 @@ import _root_.schema.avro
 import java.nio.charset.StandardCharsets
 import io.circe.parser.parse as parseJson
 
-/* Tests for `producer.jsonToValue` — the WRITE path that turns a JSON payload from the
+/* Tests for `producer.jsonToValue` - the WRITE path that turns a JSON payload from the
  * producer UI into the wire bytes for a topic's schema. It is the mirror of the READ path
  * covered by `conversions.primitiveConvTest`, so wherever possible the corresponding
  * `primitiveConv` decoder is used as the oracle for a round-trip.
  *
  * `jsonToValue` is a pure function over its arguments (no shared/singleton state), so the
- * default parallel execution of ZIO Test suites is safe here — no `TestAspect.sequential`.
+ * default parallel execution of ZIO Test suites is safe here - no `TestAspect.sequential`.
  */
 object jsonToValueTest extends ZIOSpecDefault {
 
@@ -61,7 +61,7 @@ object jsonToValueTest extends ZIOSpecDefault {
         },
         test("INT8 rejects out-of-range and unparseable input") {
             // Out-of-range is caught by the explicit Byte.MinValue/MaxValue guard
-            // (ProducerServiceImpl.scala:190) — this one is a real, non-vacuous check.
+            // (ProducerServiceImpl.scala:190) - this one is a real, non-vacuous check.
             val rejected = List("128", "-128000", "-129", "1.5", "0x2a", "abc", "true", " 42", "42 ", "+42", "")
 
             val failures = rejected.filterNot(json => encode(SchemaType.INT8, json).isLeft)
@@ -119,7 +119,7 @@ object jsonToValueTest extends ZIOSpecDefault {
             assertTrue(failures.isEmpty)
         },
         test("INT32 rejects out-of-range and unparseable input") {
-            // NOTE: the explicit range guard at ProducerServiceImpl.scala:211 is VACUOUS —
+            // NOTE: the explicit range guard at ProducerServiceImpl.scala:211 is VACUOUS -
             // `n` is already an Int, so `n > Int.MaxValue || n < Int.MinValue` can never hold.
             // Out-of-range input is nonetheless rejected, because Guava's Ints.tryParse returns
             // null on overflow. The observable contract is therefore still fail-closed; only the
@@ -222,7 +222,7 @@ object jsonToValueTest extends ZIOSpecDefault {
         test("FLOAT rejects infinities and values that overflow the float range") {
             // The bound check at ProducerServiceImpl.scala:231 is a symmetric magnitude bound
             // (Scala's Float.MinValue is -Float.MaxValue), so the only values it can reject are
-            // the infinities — including inputs that parse INTO an infinity, e.g. "1e39".
+            // the infinities - including inputs that parse INTO an infinity, e.g. "1e39".
             val rejected = List("Infinity", "-Infinity", "1e39", "-1e39")
 
             val failures = rejected.filterNot(json => encode(SchemaType.FLOAT, json).isLeft)
@@ -230,7 +230,7 @@ object jsonToValueTest extends ZIOSpecDefault {
         },
         // REGRESSION (fixed 2026-07-25) - FLOAT used to accept NaN. The guard at ProducerServiceImpl.scala:231
         // (`n > MaxValue || n < MinValue`) is always false for NaN, so NaN slips past the very
-        // check that rejects both infinities and is encoded as 0x7fc00000 onto the topic —
+        // check that rejects both infinities and is encoded as 0x7fc00000 onto the topic -
         // even though `NaN` is not valid JSON and this is the JSON message format.
         test("FLOAT rejects NaN") {
             val rejected = List("NaN", "-NaN")
@@ -318,7 +318,7 @@ object jsonToValueTest extends ZIOSpecDefault {
             // payload (ProducerServiceImpl.scala:177-181) rather than parsing JSON like STRING
             // does. It happens to accept exactly the canonical JSON boolean literals, but it is
             // stricter than JSON: " true" and "true\n" are valid JSON booleans and are rejected.
-            // Fail-closed, so documented rather than flagged as a defect — but the two branches
+            // Fail-closed, so documented rather than flagged as a defect - but the two branches
             // of the same endpoint disagree about what "JSON" means.
             val rejected = List("True", "TRUE", "\"true\"", " true", "true ", "true\n", "1", "0", "yes", "on", "null", "")
 
@@ -408,7 +408,7 @@ object jsonToValueTest extends ZIOSpecDefault {
         test("NONE stays permissive and forwards raw bytes byte-for-byte") {
             // Deliberately NOT tightened: SchemaType.NONE means "no schema", so the payload is
             // opaque bytes that may legitimately not be JSON at all.
-            val payloads = List("""{"a":1}""", "[1,2,3]", "null", "", "not json at all", """{"a":}""", " raw")
+            val payloads = List("""{"a":1}""", "[1,2,3]", "null", "", "not json at all", """{"a":}""", "\u0000\u0001raw")
 
             val failures = payloads.filterNot(p => passesThrough(SchemaType.NONE, p))
             assertTrue(failures.isEmpty)

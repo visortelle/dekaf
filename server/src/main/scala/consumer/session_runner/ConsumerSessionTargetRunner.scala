@@ -25,19 +25,31 @@ case class ConsumerSessionTargetRunner(
     schemasByTopic: SchemasByTopic,
     sessionContextPool: ConsumerSessionContextPool,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
+    // One arbiter per consumer: user pause, merge flow control and the delivery pacer all hold
+    // and release through these, never through consumer.pause()/resume() directly - see
+    // [[ConsumerPauseArbiter]] for the stomping this ended.
+    val pauseArbiters: Map[NonPartitionedTopicFqn, ConsumerPauseArbiter],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
 ) {
+    /** @param admitDelivery
+      *   what the SESSION says about this delivery attempt before this target does anything for
+      *   it. It carries the play-generation gate - which has to be asked HERE, in front of the
+      *   first mutation, not in the session callback at the end - and the re-send of a response a
+      *   previous attempt already prepared for the same message. See [[DeliveryAdmission]].
+      */
     def resume(
         onNext: (
             msg: Option[ConsumerSessionMessage],
             sessionContext: ConsumerSessionContext,
             stats: ConsumerSessionTargetStats,
-            errors: Vector[String]
+            errors: Vector[String],
+            deliveryKey: Option[DeliveryKey]
         ) => Unit,
         isDebug: Boolean,
         incrementNumMessageProcessed: () => Unit,
-        onStartFromDiscardProgress: () => Unit
+        onStartFromDiscardProgress: () => Unit,
+        admitDelivery: Option[DeliveryKey] => DeliveryAdmission
     ): Unit =
         val listener = consumerListener
         val targetMessageHandler = listener.targetMessageHandler
@@ -48,95 +60,150 @@ case class ConsumerSessionTargetRunner(
         listener.onStartFromDiscardProgress = onStartFromDiscardProgress
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
-            // Both counters are atomic because these two lines run OUTSIDE the per-message context
-            // lease below, on one listener thread per partition. Kept here rather than moved inside
-            // the lease so that a message failing to deserialize still counts as processed.
-            stats.messageProcessed.incrementAndGet()
-            incrementNumMessageProcessed()
+            val deliveryKey = ConsumerSessionTargetRunner.deliveryKeyOf(msg)
+            admitDelivery(deliveryKey) match
+                // A HANDLER FROM A SUPERSEDED PLAY: a listener thread still mid-flight across a
+                // second Play, or across a Stop or a stream ended by a failed resume. It must
+                // touch NOTHING - not the counters, not the JS context, not the user's stateful
+                // filters - because the message is coming back and the play that is actually
+                // current will process it properly. Throwing routes it to the caller's failure
+                // path, which hands it back for redelivery.
+                case DeliveryAdmission.Superseded =>
+                    throw new IllegalStateException("This play was superseded; the message is handed back for redelivery.")
 
-            // Deliberately OUTSIDE the lease below. Deserialization is a pure function of the
-            // message, the session's schemas and the configured deserializer - it touches no JS -
-            // and it is the expensive part of handling a message. Holding the session's single JS
-            // context across it would make every partition decode in single file for no reason.
-            val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
-            val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
-            val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
+                // THE RETRY OF A FAILED SEND: the session re-sent what the first attempt had
+                // already prepared, so this pipeline must not run a second time for it.
+                case DeliveryAdmission.Replayed => ()
 
-            // ONE lease for the WHOLE message, not one per JS call - and it deliberately spans the
-            // `onNext` callback, because the session-level filter chain, coloring rules, value
-            // projections and `getState` all run in there, off the SAME current message this thread
-            // just set. Pulsar delivers each partition on its own listener thread and they all share
-            // this context; a lease per call would still let another partition's message overwrite
-            // `globalThis.__dekaf_currentMessage` midway through this one.
-            sessionContextPool.withNextContext { sessionContext =>
-                boundary:
-                    sessionContext.setCurrentMessage(messageJson, messageValueToJsonResult)
-
-                    val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
-                        targetConfig.messageFilterChain
-                    )
-
-                    val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
-
-                    if !messageFilterChainResult.isOk then
-                        onNext(
-                            msg = None,
-                            sessionContext = sessionContext,
-                            stats = stats,
-                            errors = if isDebug then messageFilterChainErrors else Vector.empty
-                        )
-                        boundary.break()
-
-                    val coloringRuleChainResult: Vector[ChainTestResult] = if targetConfig.coloringRuleChain.isEnabled then
-                        targetConfig.coloringRuleChain.coloringRules
-                            .filter(_.isEnabled)
-                            .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
-                    else
-                        Vector.empty
-
-                    val valueProjectionListResult: Vector[ValueProjectionResult] = if targetConfig.valueProjectionList.isEnabled then
-                        targetConfig.valueProjectionList.projections
-                            .filter(_.isEnabled)
-                            .map(_.project(sessionContext.context))
-                    else
-                        Vector.empty
-
-                    var msgToSend = if messageFilterChainResult.isOk then
-                        Some(consumerSessionMessage)
-                    else
-                        None
-
-                    val errors: Vector[String] =
-                        if isDebug then
-                            val serializationErrors = messageValueToJsonResult match
-                                case Left(err) => Vector(err.getMessage)
-                                case _         => Vector.empty
-                            val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
-                            serializationErrors ++ messageFilterChainErrors ++ coloringRuleChainErrors
-                        else Vector.empty
-
-                    msgToSend = msgToSend.map(m =>
-                        m.copy(
-                            messagePb = m.messagePb
-                                .withSessionTargetIndex(targetIndex)
-                                .withDebugStdout(sessionContext.getStdout)
-                                .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
-                                .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
-                                .withSessionTargetValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
-                        )
-                    )
-
-                    onNext(
-                        msg = msgToSend,
-                        sessionContext = sessionContext,
-                        stats = stats,
-                        errors = errors
-                    )
-            }
+                case DeliveryAdmission.Prepare => deliverPrepared(msg, deliveryKey, onNext, isDebug, incrementNumMessageProcessed)
 
         permitLock.synchronized {
             listener.startAcceptingNewMessages()
-            consumers.foreach((_, consumer) => consumer.resume())
+            // Release the USER's hold AND the replay-boundary hold - a Resume extends the replay
+            // boundary (the runner re-captured it before this walk), so a past-end racer's pause
+            // and the auto-pause at caught-up both lift with it. A merge- or limiter-held
+            // consumer stays paused until its own owner lets go - resuming it here is exactly
+            // the stomp the arbiter ended. EVERY consumer is attempted; a client call that
+            // throws is aggregated and rethrown, because a session that claims to be running
+            // with a dead consumer must fail the resume loudly (the service turns this into the
+            // terminal gate).
+            val failures = pauseArbiters.toVector.flatMap { (topicFqn, arbiter) =>
+                val userReleased = arbiter.release(PauseReason.User)
+                val boundaryReleased = arbiter.release(PauseReason.Boundary)
+                Option.when(!(userReleased && boundaryReleased))(topicFqn)
+            }
+            if failures.nonEmpty then
+                throw new RuntimeException(s"Some consumers could not be resumed: ${failures.mkString(", ")}")
+        }
+
+    /** The target's half of ONE delivery attempt: count it, deserialize it, and run the target's
+      * JavaScript over it before handing it to the session callback. Everything in here is
+      * stateful and none of it is repeatable, which is why the admission above stands in front. */
+    private def deliverPrepared(
+        msg: Message[Array[Byte]],
+        deliveryKey: Option[DeliveryKey],
+        onNext: (
+            msg: Option[ConsumerSessionMessage],
+            sessionContext: ConsumerSessionContext,
+            stats: ConsumerSessionTargetStats,
+            errors: Vector[String],
+            deliveryKey: Option[DeliveryKey]
+        ) => Unit,
+        isDebug: Boolean,
+        incrementNumMessageProcessed: () => Unit
+    ): Unit =
+        // Both counters are atomic because these two lines run OUTSIDE the per-message context
+        // lease below, on one listener thread per partition. Kept here rather than moved inside
+        // the lease so that a message failing to deserialize still counts as processed.
+        stats.messageProcessed.incrementAndGet()
+        incrementNumMessageProcessed()
+
+        // Deliberately OUTSIDE the lease below. Deserialization is a pure function of the
+        // message, the session's schemas and the configured deserializer - it touches no JS -
+        // and it is the expensive part of handling a message. Holding the session's single JS
+        // context across it would make every partition decode in single file for no reason.
+        val consumerSessionMessage = converters.serializeMessage(schemasByTopic, msg, targetConfig.messageValueDeserializer)
+        val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
+        val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
+
+        // ONE lease for the WHOLE message, not one per JS call - and it deliberately spans the
+        // `onNext` callback, because the session-level filter chain, coloring rules, value
+        // projections and `getState` all run in there, off the SAME current message this thread
+        // just set. Pulsar delivers each partition on its own listener thread and they all share
+        // this context; a lease per call would still let another partition's message overwrite
+        // `globalThis.__dekaf_currentMessage` midway through this one.
+        sessionContextPool.withNextContext { sessionContext =>
+            boundary:
+                sessionContext.setCurrentMessage(messageJson, messageValueToJsonResult)
+
+                val messageFilterChainResult: ChainTestResult = sessionContext.testMessageFilterChain(
+                    targetConfig.messageFilterChain
+                )
+
+                val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
+
+                if !messageFilterChainResult.isOk then
+                    onNext(
+                        msg = None,
+                        sessionContext = sessionContext,
+                        stats = stats,
+                        errors = if isDebug then messageFilterChainErrors else Vector.empty,
+                        deliveryKey = deliveryKey
+                    )
+                    boundary.break()
+
+                val coloringRuleChainResult: Vector[ChainTestResult] = if targetConfig.coloringRuleChain.isEnabled then
+                    targetConfig.coloringRuleChain.coloringRules
+                        .filter(_.isEnabled)
+                        .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain))
+                else
+                    Vector.empty
+
+                val valueProjectionListResult: Vector[ValueProjectionResult] = if targetConfig.valueProjectionList.isEnabled then
+                    targetConfig.valueProjectionList.projections
+                        .filter(_.isEnabled)
+                        .map(_.project(sessionContext.context))
+                else
+                    Vector.empty
+
+                var msgToSend = if messageFilterChainResult.isOk then
+                    Some(consumerSessionMessage)
+                else
+                    None
+
+                val errors: Vector[String] =
+                    if isDebug then
+                        val serializationErrors = messageValueToJsonResult match
+                            case Left(err) => Vector(err.getMessage)
+                            case _         => Vector.empty
+                        val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
+                        serializationErrors ++ messageFilterChainErrors ++ coloringRuleChainErrors
+                    else Vector.empty
+
+                msgToSend = msgToSend.map(m =>
+                    m.copy(
+                        messagePb = m.messagePb
+                            .withSessionTargetIndex(targetIndex)
+                            .withDebugStdout(sessionContext.getStdout)
+                            .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
+                            .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                            .withSessionTargetValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
+                            // GUARANTEED replay only: the barrier decided this delivery undercuts
+                            // an already-emitted order key (a resume-seam skew or a source-log
+                            // inversion) - the row is on screen out of order, LOUDLY. Serialized
+                            // by the ordering lock every guaranteed delivery runs under; false on
+                            // every other path.
+                            .withReplaySeamViolation(consumerListener.replaySeamFlagPending)
+                    )
+                )
+
+                onNext(
+                    msg = msgToSend,
+                    sessionContext = sessionContext,
+                    stats = stats,
+                    errors = errors,
+                    deliveryKey = deliveryKey
+                )
         }
 
     /** Serializes every touch of the consumers' pause/resume state: the user's pause and resume,
@@ -161,9 +228,23 @@ case class ConsumerSessionTargetRunner(
       * Refused outright while the gate is shut - the user's pause outranks the pacer, and a hold
       * "released" onto a paused session must not resume its consumers.
       */
-    def setPermitHold(hold: Boolean): Unit = permitLock.synchronized {
-        if consumerListener.isAcceptingNewMessages then
-            consumers.foreach((_, consumer) => if hold then consumer.pause() else consumer.resume())
+    /** `appliesTo` selects WHICH of this target's streams the hold covers. A hold is per stream
+      * because a counted start-from can still be waiting for one particular topic's next message
+      * while its peers are the ones flooding: holding all of them (or, as it used to be, none of
+      * them) is what let one stuck stream disable the whole session's backpressure. A RELEASE
+      * always covers everything - the default - so nothing can be left behind by a hold that
+      * covered a different set.
+      */
+    def setPermitHold(hold: Boolean, appliesTo: NonPartitionedTopicFqn => Boolean = _ => true): Boolean = permitLock.synchronized {
+        // EVERY selected consumer is attempted, and the hold is recorded even while the user has
+        // the session paused: with per-reason arbitration a release onto a paused session cannot
+        // resume anything (the User reason still holds), so the old gate-shut refusal is no
+        // longer needed to protect the pause - and recording keeps the pacer's books honest.
+        val results = pauseArbiters.toVector.collect {
+            case (topicFqn, arbiter) if appliesTo(topicFqn) =>
+                if hold then arbiter.hold(PauseReason.Limiter) else arbiter.release(PauseReason.Limiter)
+        }
+        results.forall(identity)
     }
 
     /** GATE FIRST, CONSUMERS SECOND, and the order is the point.
@@ -180,7 +261,15 @@ case class ConsumerSessionTargetRunner(
       */
     def pause(): Unit = permitLock.synchronized {
         consumerListener.stopAcceptingNewMessages()
-        consumers.foreach((_, consumer) => consumer.pause())
+        // EVERY consumer is attempted: one mid-close consumer throwing must not leave the rest
+        // delivering into a gate that is already shut (they would cycle as nacks) while the
+        // caller believes nothing was paused. Failures are aggregated and thrown AFTER the
+        // session has reached the safest state this call can produce.
+        val failures = pauseArbiters.toVector.flatMap { (topicFqn, arbiter) =>
+            Option.when(!arbiter.hold(PauseReason.User))(topicFqn)
+        }
+        if failures.nonEmpty then
+            throw new RuntimeException(s"Some consumers could not be paused (their pause is still recorded): ${failures.mkString(", ")}")
     }
 
     /** Release this target's consumers, and answer with what could not be released.
@@ -198,19 +287,56 @@ case class ConsumerSessionTargetRunner(
       * away, so a consumer that refused to close - still connected, still holding its listener
       * thread - was invisible: `deleteConsumer` answered OK and nothing said the consumer was still
       * there.
+      *
+      * AND A CONSUMER THAT COULD NOT BE RELEASED IS KEPT, not forgotten. The map used to be cleared
+      * unconditionally, so a consumer that was mid-reconnect at that instant - the ordinary reason
+      * either call fails - kept its subscription and its listener thread for the life of the
+      * process with nothing anywhere holding a handle to it: this runner is discarded by its caller
+      * a moment later. It stays in `consumers` (so a repeated stop retries it) and goes into
+      * `quarantine`, which is what actually retries it once this runner is gone.
+      *
+      * @param quarantine
+      *   where un-released consumers are retained. A parameter with the production default only so
+      *   a test can drive the retry without touching the process-wide one.
       */
-    def stop(): Vector[String] =
-        val failures = consumers.toVector.flatMap { (topicFqn, consumer) =>
+    def stop(quarantine: CleanupQuarantine = consumerCleanupQuarantine): Vector[String] =
+        val outcomes = consumers.toVector.map { (topicFqn, consumer) =>
             val unsubscribed = Try(consumer.unsubscribe()).failed.toOption.map(err => s"$topicFqn: could not unsubscribe. ${err.getMessage}")
             val closed = Try(consumer.close()).failed.toOption.map(err => s"$topicFqn: could not close the consumer. ${err.getMessage}")
-            unsubscribed.toVector ++ closed.toVector
+            val failures = unsubscribed.toVector ++ closed.toVector
+            if failures.nonEmpty then
+                quarantine.quarantine(
+                    s"consumer session $sessionLabel on $topicFqn",
+                    () =>
+                        // BOTH again on retry, and in the same order: the unsubscribe may have been
+                        // the half that failed, and closing without it would leave the subscription.
+                        consumer.unsubscribe()
+                        consumer.close()
+                )
+            (topicFqn, consumer, failures)
         }
-        consumers = Map.empty
-        failures
+        // Only what really was released is forgotten.
+        consumers = outcomes.collect { case (topicFqn, consumer, failures) if failures.nonEmpty => topicFqn -> consumer }.toMap
+        outcomes.flatMap(_._3)
+
+    /** How this target names itself in cleanup diagnostics. The consumer name is
+      * `${sessionName}-${targetIndex}`, so the first consumer's name identifies the session without
+      * this runner having to carry the session name separately. */
+    private def sessionLabel: String =
+        consumers.values.headOption.flatMap(consumer => Option(consumer.getConsumerName)).getOrElse(s"target $targetIndex")
 }
 
 object ConsumerSessionTargetRunner:
     val logger: Logger = Logger(getClass.getName)
+
+    /** This message's identity for the session's single-attempt delivery memo, or None when it has
+      * none that can be trusted. Every message on a NON-PERSISTENT topic arrives as ledger 0,
+      * entry 0 - measured against a real broker - so a key there would name the next unrelated
+      * message of the topic instead of this one; nothing on such a topic is ever redelivered
+      * either, so there is no retry for a memo to serve. Same identity rule as the failed-ack and
+      * decided-batch registries in [[ConsumerListener]]. */
+    private[session_runner] def deliveryKeyOf(msg: Message[Array[Byte]]): Option[DeliveryKey] =
+        Option(msg.getTopicName).filterNot(isNonPersistentTopic).map(topicFqn => (topicFqn, msg.getMessageId))
 
     /** The most physical topics one target may resolve to. Generous - a session at this size is
       * already hard to use interactively - but a bound: past it, setup time, per-topic consumers
@@ -223,23 +349,18 @@ object ConsumerSessionTargetRunner:
         targetConfig: ConsumerSessionTarget,
         sessionContextPool: ConsumerSessionContextPool,
         schemasByTopic: SchemasByTopic,
-        adminClient: PulsarAdmin,
-        pulsarClient: PulsarClient
+        pulsarClient: PulsarClient,
+        // Resolved - and ADMITTED - by the session builder before any consumer exists anywhere:
+        // the session-total stream cap and the merge-mode prefetch budget are session-wide facts
+        // no single target can compute, and resolving here used to mean a session could
+        // subscribe hundreds of consumers only to be refused by a total it was always going to
+        // exceed.
+        nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
+        // Computed by the caller from the WHOLE session's stream count: the racing default for
+        // as-received sessions, the shared prefetch budget for best-effort-ordered ones.
+        receiverQueueSize: Int
     ): ConsumerSessionTargetRunner =
         Try {
-            val nonPartitionedTopicFqns = targetConfig.topicSelector.getNonPartitionedTopics(adminClient = adminClient)
-            // A hard admission guard, checked BEFORE any consumer exists. A namespaced-regex
-            // selector can match a whole namespace; past this many physical topics the session
-            // would spend its life subscribing (one consumer, subscription and receiver queue per
-            // topic) and every counted mode's per-message work scales with the count - refusing
-            // loudly beats grinding into a session nobody can use.
-            if nonPartitionedTopicFqns.size > maxTopicsPerTarget then
-                throw new RuntimeException(
-                    s"Target $targetIndex resolves to ${nonPartitionedTopicFqns.size} physical topics, more than the $maxTopicsPerTarget " +
-                        "one session can handle. Narrow the topic selector (a tighter regex, or specific topics) or split the work " +
-                        "across several sessions."
-                )
-            val receiverQueueSize = receiverQueueSizeFor(nonPartitionedTopicFqns.size)
             val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
 
             // ALL OR NOTHING. Subscribing in a plain `map` meant a topic that failed part-way
@@ -264,8 +385,17 @@ object ConsumerSessionTargetRunner:
                         case Left(err) =>
                             throw new RuntimeException(s"Failed to build consumer for topic $topicFqn. $err")
                 ,
-                release = (_, consumer) => consumer.close()
+                release = (_, consumer) => consumer.close(),
+                // A consumer that will not close during the unwind is exactly the one nothing else
+                // can ever reach: this partly-built map is never returned.
+                onReleaseFailure = (entry, _) =>
+                    consumerCleanupQuarantine.quarantine(s"consumer session $sessionName-$targetIndex on ${entry._1}", () => entry._2.close())
             ).toMap
+
+            val pauseArbiters = consumers.map((topicFqn, consumer) => topicFqn -> ConsumerPauseArbiter(consumer))
+            // The merge's flow-control hooks hold and release through the same arbiters, keyed by
+            // the stream id the ordering layer uses.
+            listener.pauseArbiters = pauseArbiters.map((topicFqn, arbiter) => startFromStreamId(s"$sessionName-$targetIndex", topicFqn) -> arbiter)
 
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
@@ -273,6 +403,7 @@ object ConsumerSessionTargetRunner:
                 sessionContextPool = sessionContextPool,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
+                pauseArbiters = pauseArbiters,
                 consumerListener = listener,
                 schemasByTopic = schemasByTopic,
                 stats = ConsumerSessionTargetStats(

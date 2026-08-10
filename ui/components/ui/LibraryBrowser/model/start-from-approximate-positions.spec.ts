@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  * @jest-environment-options {"customExportConditions": ["node"]}
  *
- * The two approximate start-from modes - "about % through the data" and "about % through the time
- * range" - each have to survive four separate hand-written mappings: the library spec <-> protobuf
+ * The entry-position and publish-time-position modes each have to survive four separate hand-written
+ * mappings: the library spec <-> protobuf
  * pair (persisted saved sessions), the managed-item -> runtime conversion, and the runtime ->
  * protobuf conversion that actually reaches the server. Each one is a `switch` over the mode union;
  * a missing branch there is either a thrown "Unknown ..." at runtime or a setting that is silently
@@ -29,7 +29,7 @@ import {
 import { consumerSessionStartFromFromValOrRef } from './resolved-items-conversions';
 import { startFromFromPb, startFromToPb } from '../../ConsumerSession/conversions/conversions';
 
-type Mode = 'approximateDataPosition' | 'approximateTimePosition';
+type Mode = 'approximateEntryPosition' | 'approximatePublishTimePosition';
 
 const managedSpec = (type: Mode, fraction: number) => ({ startFrom: { type, fraction } as const });
 
@@ -40,17 +40,17 @@ const managedSpec = (type: Mode, fraction: number) => ({ startFrom: { type, frac
 
 /** The library oneof case each mode must occupy. */
 const managedExpectedCase = {
-  approximateDataPosition: pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_DATA_POSITION,
-  approximateTimePosition: pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_TIME_POSITION,
+  approximateEntryPosition: pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_ENTRY_POSITION,
+  approximatePublishTimePosition: pb.ManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_APPROXIMATE_PUBLISH_TIME_POSITION,
 } satisfies Record<Mode, unknown>;
 
 /** The same, for the runtime start-from that reaches the server. */
 const runtimeExpectedCase = {
-  approximateDataPosition: consumerPb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_DATA_POSITION,
-  approximateTimePosition: consumerPb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_TIME_POSITION,
+  approximateEntryPosition: consumerPb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_ENTRY_POSITION,
+  approximatePublishTimePosition: consumerPb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_PUBLISH_TIME_POSITION,
 } satisfies Record<Mode, unknown>;
 
-const modes: Mode[] = ['approximateDataPosition', 'approximateTimePosition'];
+const modes: Mode[] = ['approximateEntryPosition', 'approximatePublishTimePosition'];
 
 describe.each(modes)('%s: library spec <-> protobuf', (mode) => {
   it('round-trips through the persisted library representation, in its OWN oneof case', () => {
@@ -60,9 +60,9 @@ describe.each(modes)('%s: library spec <-> protobuf', (mode) => {
     // and read back as "Unknown ManagedConsumerSessionStartFromSpec", and the OTHER mode's case
     // would read back as the wrong mode with the right number.
     expect(specPb.getStartFromCase()).toBe(managedExpectedCase[mode]);
-    const fraction = mode === 'approximateDataPosition'
-      ? specPb.getStartFromApproximateDataPosition()?.getFraction()
-      : specPb.getStartFromApproximateTimePosition()?.getFraction();
+    const fraction = mode === 'approximateEntryPosition'
+      ? specPb.getStartFromApproximateEntryPosition()?.getFraction()
+      : specPb.getStartFromApproximatePublishTimePosition()?.getFraction();
     expect(fraction).toBe(0.6);
 
     expect(managedConsumerSessionStartFromSpecFromPb(specPb)).toEqual(managedSpec(mode, 0.6));
@@ -106,9 +106,9 @@ describe.each(modes)('%s: runtime start-from <-> protobuf', (mode) => {
     const startFromPb = startFromToPb({ type: mode, fraction: 0.6 });
 
     expect(startFromPb.getStartFromCase()).toBe(runtimeExpectedCase[mode]);
-    const fraction = mode === 'approximateDataPosition'
-      ? startFromPb.getStartFromApproximateDataPosition()?.getFraction()
-      : startFromPb.getStartFromApproximateTimePosition()?.getFraction();
+    const fraction = mode === 'approximateEntryPosition'
+      ? startFromPb.getStartFromApproximateEntryPosition()?.getFraction()
+      : startFromPb.getStartFromApproximatePublishTimePosition()?.getFraction();
     expect(fraction).toBe(0.6);
   });
 
@@ -124,14 +124,14 @@ describe('the two modes are not interchangeable', () => {
   it('sets a different wire field for each, at both layers', () => {
     // Stated as an inequality as well, so that a future edit which points both mappings at one field
     // fails here even if each mode's own round trip is self-consistent.
-    expect(runtimeExpectedCase.approximateDataPosition).not.toBe(runtimeExpectedCase.approximateTimePosition);
-    expect(managedExpectedCase.approximateDataPosition).not.toBe(managedExpectedCase.approximateTimePosition);
+    expect(runtimeExpectedCase.approximateEntryPosition).not.toBe(runtimeExpectedCase.approximatePublishTimePosition);
+    expect(managedExpectedCase.approximateEntryPosition).not.toBe(managedExpectedCase.approximatePublishTimePosition);
 
-    const dataPb = startFromToPb({ type: 'approximateDataPosition', fraction: 0.6 });
-    const timePb = startFromToPb({ type: 'approximateTimePosition', fraction: 0.6 });
-    expect(dataPb.getStartFromCase()).not.toBe(timePb.getStartFromCase());
+    const entryPb = startFromToPb({ type: 'approximateEntryPosition', fraction: 0.6 });
+    const publishTimePb = startFromToPb({ type: 'approximatePublishTimePosition', fraction: 0.6 });
+    expect(entryPb.getStartFromCase()).not.toBe(publishTimePb.getStartFromCase());
     // ...and neither one leaves a value in the other's field.
-    expect(dataPb.getStartFromApproximateTimePosition()).toBeUndefined();
-    expect(timePb.getStartFromApproximateDataPosition()).toBeUndefined();
+    expect(entryPb.getStartFromApproximatePublishTimePosition()).toBeUndefined();
+    expect(publishTimePb.getStartFromApproximateEntryPosition()).toBeUndefined();
   });
 });

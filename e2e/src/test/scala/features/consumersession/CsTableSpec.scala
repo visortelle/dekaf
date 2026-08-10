@@ -145,4 +145,3 @@ class CsTableSpec extends DekafSuite:
     val stored = page.evaluate("() => localStorage.getItem('table:consumer-session-messages:column-order') || ''").toString
     assert(stored.contains("topic"), s"expected a persisted message-column order, got '$stored'")
   }
-

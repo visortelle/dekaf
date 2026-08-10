@@ -132,6 +132,7 @@ object sessionContextConcurrencyTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = pool,
             consumers = Map.empty,
+            pauseArbiters = Map.empty,
             consumerListener = listener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -197,7 +198,7 @@ object sessionContextConcurrencyTest extends ZIOSpecDefault:
         val consoleResults = new ConcurrentLinkedQueue[String]()
 
         runner.resume(
-            onNext = (msg, _, _, errors) =>
+            onNext = (msg, _, _, errors, _) =>
                 errors.foreach(jsErrors.add)
                 msg match
                     case Some(m) => nOf(m).foreach(retained.add)
@@ -205,7 +206,8 @@ object sessionContextConcurrencyTest extends ZIOSpecDefault:
             ,
             isDebug = true,
             incrementNumMessageProcessed = () => session.incrementNumMessageProcessed(),
-            onStartFromDiscardProgress = () => ()
+            onStartFromDiscardProgress = () => (),
+            admitDelivery = _ => DeliveryAdmission.Prepare
         )
 
         val start = new CountDownLatch(1)
@@ -362,13 +364,16 @@ object sessionContextConcurrencyTest extends ZIOSpecDefault:
                 s"expected $expected, counted ${session.numMessageProcessed} (lost ${expected - session.numMessageProcessed})"
         },
         test("every delivered message is counted, on every partition thread") {
-            // Both counters are incremented BEFORE the context lease, so they are the one part of
-            // the handler that still runs fully concurrently - one listener thread per partition.
-            // As plain `var Long`s the read-modify-write updates were lost and a partitioned session
-            // under-reported, shipping the wrong number to the browser on every pb.Message.
+            // Scope, stated honestly: this asserts the counters are RIGHT end to end - reached
+            // through the real handler, on one listener thread per partition, and counting EVERY
+            // delivered message. It does NOT pin their atomicity, and it must not be read as doing
+            // so: making the increments a plain read-modify-write leaves this test GREEN, because
+            // the JS lease immediately downstream throttles arrivals so the threads rarely collide
+            // in the pre-lease window. The test above contends on the counter directly and is what
+            // actually catches lost updates.
             //
-            // Counting is deliberately independent of filtering: `evenOnly` drops half the messages,
-            // and both counters must still see ALL of them.
+            // What this one does cover that the other cannot: counting is independent of filtering.
+            // `evenOnly` drops half the messages, and both counters must still see ALL of them.
             val partitions = 4
             val perPartition = 250
             val total = partitions * perPartition

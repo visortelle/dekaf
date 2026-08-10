@@ -29,6 +29,14 @@ describe('StartFromProgress', () => {
     expect(bar.getAttribute('max')).toBe('10000000');
   });
 
+  it('does not present entry position as an equivalent message-count position', () => {
+    render(<StartFromProgress progress={{ messagesSkipped: 2_500_000, messagesToSkip: 10_000_000 }} />);
+
+    const panel = screen.getByTestId('cs-start-from-progress');
+    expect(panel.textContent).toContain('based on retained entries, not message count');
+    expect(panel.textContent).not.toContain('roughly the same place');
+  });
+
   it('exposes the raw counts for e2e, so a test does not have to parse prose', () => {
     render(<StartFromProgress progress={{ messagesSkipped: 3_000_000, messagesToSkip: 4_000_000 }} />);
 

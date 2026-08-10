@@ -104,6 +104,7 @@ object deliveryBudgetTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = consumers,
+            pauseArbiters = (consumers).map((fqn, c) => fqn -> ConsumerPauseArbiter(c)),
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )

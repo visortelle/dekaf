@@ -5,7 +5,7 @@ import io.circe.generic.auto.*
 import _root_.schema.{avro, protobufnative}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import _root_.consumer.deserializer.Deserializer
-import _root_.consumer.session_runner.{MessageAsJsonOmittingValue, MessageValueAsJson, SchemasByTopic}
+import _root_.consumer.session_runner.{MessageAsJsonOmittingValue, MessageValueAsJson, SchemasByTopic, SchemasByVersion}
 import org.apache.pulsar.common.schema.SchemaType
 import org.apache.pulsar.client.api.Message
 import _root_.conversions.primitiveConv.*
@@ -42,14 +42,20 @@ object UseLatestTopicSchema:
             case Some(v) => bytesToInt64(v).toOption
             case None    => None
 
-        val schemaInfo =
-            if msgSchemaVersion.isEmpty
-            then return Right(bytesToJsonString(msgData))
-            else schemasByVersion.get.get(msgSchemaVersion.get) match
-                case Some(si) => si
-                case None     => return Right(bytesToJsonString(msgData))
+        // The schema the MESSAGE names, when the registry holds that version: always the most
+        // faithful way to read that particular message, and unchanged behaviour.
+        val exactSchema = msgSchemaVersion.flatMap(schemasByVersion.get.get)
 
-        schemaInfo.getType match
+        // Otherwise the topic's LATEST registered schema - the case this deserializer is NAMED
+        // for. A producer using Schema.BYTES (or an older client) stamps no schema version, so
+        // only the registry says what the bytes are; falling straight through to
+        // `bytesToJsonString` rendered a JSON document as an escaped JSON STRING instead of the
+        // object. `SchemasByVersion.getLatest` was written for this and had no caller.
+        val schemaInfo = exactSchema.orElse(SchemasByVersion.getLatest(schemasByVersion.get)) match
+            case Some(si) => si
+            case None     => return Right(bytesToJsonString(msgData))
+
+        val decoded = schemaInfo.getType match
             case SchemaType.AVRO => avro.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
             case SchemaType.JSON =>
                 msgData match
@@ -70,3 +76,11 @@ object UseLatestTopicSchema:
 //            case SchemaType.BYTES => the message schema version is empty in this case and is handled in the code above
 //            case SchemaType.NONE => the message schema version is empty in this case and is handled in the code above
             case _ => Left(new Exception("Can't convert bytes to json"))
+
+        // A schema the message did not name is an INFERENCE, so it must never turn a readable
+        // payload into an error: if decoding under the latest schema fails, keep the raw-string
+        // answer this path used to give unconditionally. A schema the message DID name is the
+        // message's own truth, and its failures stay visible.
+        if exactSchema.isEmpty && decoded.isLeft
+        then Right(bytesToJsonString(msgData))
+        else decoded

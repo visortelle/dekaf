@@ -6,16 +6,17 @@ import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import { createDeadline } from '../../../../../proto-utils/proto-utils';
 import { SessionState } from '../../types';
 import Table, { Columns, ColumnsConfig } from '../../../Table/Table';
+import Field from '../../Message/Field/Field';
 import {
   TopicPositionRow,
-  allTopicsLabel,
   behindMsOf,
+  entriesAfterCursorOf,
   formatDurationMs,
   formatEntryCount,
   formatFraction,
   formatTimestamp,
   makePositionsLoader,
-  noValue,
+  timestampIso,
   topicPositionFromPb
 } from './topic-positions';
 import s from './TopicPositions.module.css';
@@ -33,16 +34,19 @@ type ColumnKey =
   | 'firstPublished'
   | 'lastMessage'
   | 'lastPublished'
+  | 'firstConsumedMessage'
+  | 'firstConsumedPublished'
+  // Keep the original persisted column key: this cursor is the last-consumed high-water mark.
   | 'cursorMessage'
+  | 'lastConsumedPublished'
   | 'behind'
   | 'timeFraction'
   | 'entryFraction'
   | 'entriesRead'
   | 'entriesLeft';
 
-/** Comparators here are plain and direction-blind; keeping the aggregate row on top under every
-  * sort is the Table's job (`pinFirst`) - a comparator cannot do it, because 'desc' is the
-  * reverse of the sorted array and would flip any comparator-based pin to the bottom. */
+/** Comparators here are plain and direction-blind. The Table applies direction, missing-last, and
+  * aggregate pinning as separate ordering rules so none of them can accidentally invert another. */
 const byRow = (
   compare: (a: TopicPositionRow, b: TopicPositionRow) => number
 ) => (a: { data: TopicPositionRow }, b: { data: TopicPositionRow }): number => compare(a.data, b.data);
@@ -51,7 +55,8 @@ const compareNumbers = (a: number | undefined, b: number | undefined): number =>
   if (a === undefined && b === undefined) {
     return 0;
   }
-  // Unknown sorts last, so the rows with a real reading cluster at the top.
+  // Missing values are partitioned by Column.isSortValueMissing before this comparator runs. The
+  // fallback still makes the function total if it is reused without that predicate.
   if (a === undefined) {
     return 1;
   }
@@ -63,7 +68,64 @@ const compareNumbers = (a: number | undefined, b: number | undefined): number =>
 
 const isAggregateRow = (row: TopicPositionRow): boolean => row.isAggregate === true;
 
-const mono = (v: string | undefined) => <span className={s.Id}>{v ?? noValue}</span>;
+const naturalTopicCompare = (a: string, b: string): number =>
+  a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }) || a.localeCompare(b);
+
+const isKnownNumber = (value: number | undefined): value is number =>
+  value !== undefined && Number.isFinite(value);
+
+const missingNumber = (
+  valueOf: (row: TopicPositionRow) => number | undefined
+) => (entry: { data: TopicPositionRow }): boolean => !isKnownNumber(valueOf(entry.data));
+
+type CellValue = string | React.ReactElement | undefined;
+
+const aggregateCellStyle: React.CSSProperties = {
+  fontWeight: 'var(--font-weight-bold)'
+};
+
+/** Reuse the consumer message table's copy interaction and raw/display conventions. Topic
+  * Positions refreshes every second, so its cells deliberately use the native raw-value title
+  * instead of registering thousands of changing react-tooltip anchors. */
+const copyableCell = (
+  isAggregate: boolean,
+  title: string,
+  value: CellValue,
+  rawValue: string | undefined
+): React.ReactElement => {
+  const field = (
+    <Field
+      title={title}
+      value={rawValue === undefined ? undefined : value}
+      rawValue={rawValue}
+      tooltip={undefined}
+      isShowTooltips={false}
+    />
+  );
+
+  return isAggregate ? (
+    <div data-testid="topic-positions-aggregate-cell" style={aggregateCellStyle}>
+      {field}
+    </div>
+  ) : field;
+};
+
+const topicCell = (row: TopicPositionRow): React.ReactElement =>
+  copyableCell(
+    isAggregateRow(row),
+    'Topic / partition',
+    row.topicFqn,
+    row.topicFqn
+  );
+
+const messageIdCell = (isAggregate: boolean, title: string, value: string | undefined): React.ReactElement =>
+  copyableCell(isAggregate, title, value === undefined ? undefined : <span className={s.Id}>{value}</span>, value?.replace(/\s/g, ''));
+
+const timestampCell = (isAggregate: boolean, title: string, value: number | undefined): React.ReactElement =>
+  copyableCell(isAggregate, title, isKnownNumber(value) ? formatTimestamp(value) : undefined, timestampIso(value));
+
+const numberCell = (isAggregate: boolean, title: string, display: string, value: number | undefined): React.ReactElement =>
+  copyableCell(isAggregate, title, isKnownNumber(value) ? display : undefined, isKnownNumber(value) ? String(value) : undefined);
 
 const TopicPositions: React.FC<TopicPositionsProps> = (props) => {
   const { consumerServiceClient } = GrpcClient.useContext();
@@ -79,7 +141,21 @@ const TopicPositions: React.FC<TopicPositionsProps> = (props) => {
   // records its read position unconditionally either way - and its name wrongly implied the
   // HISTORY started when it was ticked.)
   const isSessionStarted = props.sessionState !== 'new' && props.sessionState !== 'initializing';
-  const isPolling = props.isVisible && isSessionStarted;
+
+  // A THIRD gate, and the only terminal one: the server answered FAILED_PRECONDITION, meaning the
+  // session it was asked about is gone. Polling has to STOP - the old behavior read that answer as
+  // "no rows" and went on scanning a session that does not exist, once a second, for as long as
+  // the tab stayed open, behind a blank table indistinguishable from a session with no topics.
+  const [sessionGone, setSessionGone] = React.useState<{ message?: string } | undefined>(undefined);
+
+  // Cleared wherever a NEW session can begin. ConsumerSession keeps one generated consumer name
+  // for its whole lifetime, so Stop/Play reuses it: without the reset on the way through 'new'
+  // (isSessionStarted false), the tab would stay dead for the rest of the page's life.
+  React.useEffect(() => {
+    setSessionGone(undefined);
+  }, [props.consumerName, isSessionStarted]);
+
+  const isPolling = props.isVisible && isSessionStarted && sessionGone === undefined;
 
   // One loader per consumer name, so its last-good memory dies with the session it belongs to.
   const loader = React.useMemo(
@@ -88,6 +164,7 @@ const TopicPositions: React.FC<TopicPositionsProps> = (props) => {
         okCode: Code.OK,
         failedPreconditionCode: Code.FAILED_PRECONDITION,
         onError: setLoadError,
+        onSessionGone: (message) => setSessionGone({ message }),
         fetch: async () => {
           const req = new pb.GetTopicPositionsRequest();
           req.setConsumerName(props.consumerName);
@@ -105,111 +182,259 @@ const TopicPositions: React.FC<TopicPositionsProps> = (props) => {
   );
 
   const columns: Columns<ColumnKey, TopicPositionRow, unknown> = React.useMemo(() => {
-    // Consumption columns first - how far the session got is what this tab is FOR - then the
-    // topic's own endpoints. The user can drag any non-sticky column into any order; this is
-    // only where they start.
+    // Put progress in the first viewport, followed by the consumed bounds and retained-log
+    // context. Exact entry figures lead the approximate producer-clock figures. IDs sit beside
+    // their timestamps but after them: they are exact and copyable, yet harder to scan. Any
+    // non-sticky column can still be dragged elsewhere.
     const defaultConfig: ColumnsConfig<ColumnKey> = [
       { columnKey: 'topic', visibility: 'visible', width: 390, stickyTo: 'left' },
-      { columnKey: 'entriesRead', visibility: 'visible', width: 130 },
-      { columnKey: 'entriesLeft', visibility: 'visible', width: 100 },
-      { columnKey: 'entryFraction', visibility: 'visible', width: 100 },
-      { columnKey: 'behind', visibility: 'visible', width: 90 },
-      { columnKey: 'timeFraction', visibility: 'visible', width: 110 },
-      { columnKey: 'firstMessage', visibility: 'visible', width: 150 },
-      { columnKey: 'firstPublished', visibility: 'visible', width: 150 },
-      { columnKey: 'lastMessage', visibility: 'visible', width: 150 },
-      { columnKey: 'lastPublished', visibility: 'visible', width: 150 },
-      { columnKey: 'cursorMessage', visibility: 'visible', width: 150 }
+      { columnKey: 'entriesRead', visibility: 'visible', width: 170 },
+      { columnKey: 'entriesLeft', visibility: 'visible', width: 150 },
+      { columnKey: 'entryFraction', visibility: 'visible', width: 190 },
+      { columnKey: 'behind', visibility: 'visible', width: 130 },
+      { columnKey: 'timeFraction', visibility: 'visible', width: 200 },
+      { columnKey: 'firstConsumedPublished', visibility: 'visible', width: 190 },
+      { columnKey: 'firstConsumedMessage', visibility: 'visible', width: 160 },
+      { columnKey: 'lastConsumedPublished', visibility: 'visible', width: 190 },
+      { columnKey: 'cursorMessage', visibility: 'visible', width: 160 },
+      { columnKey: 'firstPublished', visibility: 'visible', width: 190 },
+      { columnKey: 'firstMessage', visibility: 'visible', width: 160 },
+      { columnKey: 'lastPublished', visibility: 'visible', width: 190 },
+      { columnKey: 'lastMessage', visibility: 'visible', width: 160 }
     ];
 
-    // A refused topic (non-persistent: the broker cannot examine it) says WHY in its first data
-    // cell and stays blank elsewhere.
-    const orReason = (row: TopicPositionRow, render: () => React.ReactNode): React.ReactNode =>
-      row.unavailableReason !== undefined
-        ? <span className={s.Unavailable} data-testid="topic-positions-unavailable">{row.unavailableReason}</span>
-        : render();
+    const retainedValue = (row: TopicPositionRow, value: number | undefined): number | undefined =>
+      row.unavailableReason === undefined ? value : undefined;
 
     return {
       defaultConfig,
       columns: {
         topic: {
-          title: 'Topic',
-          render: (row) => (
-            <span className={row.isAggregate ? s.AggregateLabel : undefined} title={row.topicFqn}>{row.topicFqn}</span>
-          ),
-          sortFn: byRow((a, b) => a.topicFqn.localeCompare(b.topicFqn))
+          title: 'Topic / partition',
+          render: topicCell,
+          sortFn: byRow((a, b) => naturalTopicCompare(a.topicFqn, b.topicFqn))
         },
         firstMessage: {
-          title: 'First message',
-          render: (row) => orReason(row, () => mono(row.firstMessageId)),
-          sortFn: byRow((a, b) => (a.firstMessageId ?? '').localeCompare(b.firstMessageId ?? ''))
+          title: 'Earliest stored message ID',
+          // Serialized IDs do not have a meaningful cross-topic ordering. Keep this exact value
+          // copyable, but do not offer a misleading lexicographic sort.
+          render: (row) =>
+            row.unavailableReason === undefined
+              ? messageIdCell(isAggregateRow(row), 'Earliest stored message ID', row.firstMessageId)
+              : copyableCell(
+                  isAggregateRow(row),
+                  'Unavailable reason',
+                  <span className={s.Unavailable} data-testid="topic-positions-unavailable">{row.unavailableReason}</span>,
+                  row.unavailableReason
+                )
         },
         firstPublished: {
-          title: 'First published',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : formatTimestamp(row.firstPublishTime)),
-          sortFn: byRow((a, b) => compareNumbers(a.firstPublishTime, b.firstPublishTime))
+          title: 'Earliest stored publish time',
+          render: (row) => timestampCell(isAggregateRow(row), 'Earliest stored publish time', retainedValue(row, row.firstPublishTime)),
+          sortFn: byRow((a, b) => compareNumbers(retainedValue(a, a.firstPublishTime), retainedValue(b, b.firstPublishTime))),
+          isSortValueMissing: missingNumber((row) => retainedValue(row, row.firstPublishTime))
         },
         lastMessage: {
-          title: 'Last message',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : mono(row.lastMessageId)),
-          sortFn: byRow((a, b) => (a.lastMessageId ?? '').localeCompare(b.lastMessageId ?? ''))
+          title: 'Latest stored message ID',
+          render: (row) =>
+            messageIdCell(
+              isAggregateRow(row),
+              'Latest stored message ID',
+              row.unavailableReason === undefined ? row.lastMessageId : undefined
+            )
         },
         lastPublished: {
-          title: 'Last published',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : formatTimestamp(row.lastPublishTime)),
-          sortFn: byRow((a, b) => compareNumbers(a.lastPublishTime, b.lastPublishTime))
+          title: 'Latest stored publish time',
+          render: (row) => timestampCell(isAggregateRow(row), 'Latest stored publish time', retainedValue(row, row.lastPublishTime)),
+          sortFn: byRow((a, b) => compareNumbers(retainedValue(a, a.lastPublishTime), retainedValue(b, b.lastPublishTime))),
+          isSortValueMissing: missingNumber((row) => retainedValue(row, row.lastPublishTime))
+        },
+        firstConsumedMessage: {
+          title: 'Earliest processed message ID',
+          // Processed bounds are session-local. They stay valid even when the broker cannot expose
+          // stored endpoints (for example, a non-persistent topic).
+          render: (row) => messageIdCell(isAggregateRow(row), 'Earliest processed message ID', row.firstConsumedMessageId)
+        },
+        firstConsumedPublished: {
+          title: 'Earliest processed publish time',
+          render: (row) => timestampCell(isAggregateRow(row), 'Earliest processed publish time', row.firstConsumedPublishTime),
+          sortFn: byRow((a, b) => compareNumbers(a.firstConsumedPublishTime, b.firstConsumedPublishTime)),
+          isSortValueMissing: missingNumber((row) => row.firstConsumedPublishTime)
         },
         cursorMessage: {
-          title: 'Message under cursor',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : mono(row.cursorMessageId)),
-          sortFn: byRow((a, b) => (a.cursorMessageId ?? '').localeCompare(b.cursorMessageId ?? ''))
+          title: 'Furthest processed message ID',
+          render: (row) => messageIdCell(isAggregateRow(row), 'Furthest processed message ID', row.lastConsumedMessageId)
+        },
+        lastConsumedPublished: {
+          title: 'Furthest processed publish time',
+          render: (row) => timestampCell(isAggregateRow(row), 'Furthest processed publish time', row.lastConsumedPublishTime),
+          sortFn: byRow((a, b) => compareNumbers(a.lastConsumedPublishTime, b.lastConsumedPublishTime)),
+          isSortValueMissing: missingNumber((row) => row.lastConsumedPublishTime)
         },
         behind: {
-          title: 'Behind',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : formatDurationMs(behindMsOf(row))),
-          sortFn: byRow((a, b) => compareNumbers(behindMsOf(a), behindMsOf(b)))
-        },
-        timeFraction: {
-          title: '% of time range',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : formatFraction(row.cursorTimeFraction)),
-          sortFn: byRow((a, b) => compareNumbers(a.cursorTimeFraction, b.cursorTimeFraction))
-        },
-        entryFraction: {
-          title: '% of entries',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : formatFraction(row.cursorEntryFraction)),
-          sortFn: byRow((a, b) => compareNumbers(a.cursorEntryFraction, b.cursorEntryFraction))
-        },
-        entriesRead: {
-          title: 'Entries read',
-          render: (row) => (row.unavailableReason !== undefined ? noValue : formatEntryCount(row.cursorEntryOrdinal, row.retainedEntries)),
-          sortFn: byRow((a, b) => compareNumbers(a.cursorEntryOrdinal, b.cursorEntryOrdinal))
-        },
-        entriesLeft: {
-          title: 'Entries left',
-          render: (row) =>
-            row.unavailableReason !== undefined || row.cursorEntryOrdinal === undefined || row.retainedEntries === undefined
-              ? noValue
-              : (row.retainedEntries - row.cursorEntryOrdinal).toLocaleString(),
+          title: 'Publish-time gap',
+          render: (row) => {
+            const value = row.unavailableReason === undefined ? behindMsOf(row) : undefined;
+            return numberCell(isAggregateRow(row), 'Publish-time gap', formatDurationMs(value), value);
+          },
           sortFn: byRow((a, b) =>
             compareNumbers(
-              a.cursorEntryOrdinal !== undefined && a.retainedEntries !== undefined ? a.retainedEntries - a.cursorEntryOrdinal : undefined,
-              b.cursorEntryOrdinal !== undefined && b.retainedEntries !== undefined ? b.retainedEntries - b.cursorEntryOrdinal : undefined
+              a.unavailableReason === undefined ? behindMsOf(a) : undefined,
+              b.unavailableReason === undefined ? behindMsOf(b) : undefined
             )
-          )
+          ),
+          isSortValueMissing: missingNumber((row) => row.unavailableReason === undefined ? behindMsOf(row) : undefined)
+        },
+        timeFraction: {
+          title: 'Publish-time position (%)',
+          render: (row) => {
+            const value = retainedValue(row, row.cursorTimeFraction);
+            return numberCell(isAggregateRow(row), 'Publish-time position (%)', formatFraction(value), value);
+          },
+          sortFn: byRow((a, b) =>
+            compareNumbers(retainedValue(a, a.cursorTimeFraction), retainedValue(b, b.cursorTimeFraction))
+          ),
+          isSortValueMissing: missingNumber((row) => retainedValue(row, row.cursorTimeFraction))
+        },
+        entryFraction: {
+          title: 'Stored entry position (%)',
+          render: (row) => {
+            const value = retainedValue(row, row.cursorEntryFraction);
+            return numberCell(isAggregateRow(row), 'Stored entry position (%)', formatFraction(value), value);
+          },
+          sortFn: byRow((a, b) =>
+            compareNumbers(retainedValue(a, a.cursorEntryFraction), retainedValue(b, b.cursorEntryFraction))
+          ),
+          isSortValueMissing: missingNumber((row) => retainedValue(row, row.cursorEntryFraction))
+        },
+        entriesRead: {
+          title: 'Stored entry position',
+          render: (row) => {
+            const ordinal = retainedValue(row, row.cursorEntryOrdinal);
+            const retained = retainedValue(row, row.retainedEntries);
+            const raw = isKnownNumber(ordinal) && isKnownNumber(retained) ? `${ordinal} / ${retained}` : undefined;
+            return copyableCell(
+              isAggregateRow(row),
+              'Stored entry position',
+              raw === undefined ? undefined : formatEntryCount(ordinal, retained),
+              raw
+            );
+          },
+          sortFn: byRow((a, b) => compareNumbers(a.cursorEntryOrdinal, b.cursorEntryOrdinal)),
+          isSortValueMissing: ({ data: row }) =>
+            row.unavailableReason !== undefined || !isKnownNumber(row.cursorEntryOrdinal) || !isKnownNumber(row.retainedEntries)
+        },
+        entriesLeft: {
+          title: 'Stored entries after position',
+          render: (row) => {
+            const value = row.unavailableReason === undefined ? entriesAfterCursorOf(row) : undefined;
+            return numberCell(
+              isAggregateRow(row),
+              'Stored entries after position',
+              isKnownNumber(value) ? value.toLocaleString() : '',
+              value
+            );
+          },
+          sortFn: byRow((a, b) =>
+            compareNumbers(
+              a.unavailableReason === undefined ? entriesAfterCursorOf(a) : undefined,
+              b.unavailableReason === undefined ? entriesAfterCursorOf(b) : undefined
+            )
+          ),
+          isSortValueMissing: missingNumber((row) => row.unavailableReason === undefined ? entriesAfterCursorOf(row) : undefined)
         }
       },
       help: {
-        behind: (
+        topic: (
           <span>
-            How far the session's read position trails the newest message, in wall-clock time - the consumer-lag
-            clock. Large means lagging; small on a quiet topic just means no traffic.
+            A non-partitioned topic or one partition of a partitioned topic. “All topics” is a Dekaf session summary.
+            Numeric partition suffixes sort naturally, so partition-2 comes before partition-10.
           </span>
         ),
-        timeFraction: <span>Where the cursor sits between the first and last publish times.</span>,
+        firstConsumedMessage: (
+          <span>
+            The lowest message-ID position processed by this Dekaf session. It includes counted start-mode discards and
+            messages hidden by session filters; messages bypassed by a broker seek are not observed. Older redeliveries
+            can move it backward. Message IDs are not ordered across topics; “All topics” has no aggregate ID.
+          </span>
+        ),
+        firstConsumedPublished: (
+          <span>
+            Pulsar publish time on “Earliest processed message ID”. The producer client sets it; it is not event time or
+            the time Dekaf received the message. “All topics” shows the earliest per-topic value.
+          </span>
+        ),
+        cursorMessage: (
+          <span>
+            The highest message-ID position processed by this Dekaf session. Older redeliveries do not move it backward.
+            It is not a Pulsar subscription cursor or backlog. Message IDs are not ordered across topics; “All topics”
+            has no aggregate ID.
+          </span>
+        ),
+        lastConsumedPublished: (
+          <span>
+            Pulsar publish time on “Furthest processed message ID”. It need not be the latest observed timestamp when a
+            producer clock moves backward. “All topics” shows the latest per-topic value.
+          </span>
+        ),
+        behind: (
+          <span>
+            Latest stored publish time minus the publish time at the furthest processed position, clamped at zero. This
+            approximate gap is not subscription backlog or wall-clock delay; producer clock skew and non-atomic refreshes
+            can distort it. “All topics” shows the worst readable topic only when all have both values.
+          </span>
+        ),
+        entriesRead: (
+          <span>
+            The furthest processed message's 1-based entry position and the topic's current stored-entry count. This is a
+            storage position, not how many entries the session read or a subscription backlog. One producer batch is one
+            entry. On read-compacted targets it still describes the original topic. Separate snapshots can briefly make
+            the position exceed the total.
+          </span>
+        ),
+        entriesLeft: (
+          <span>
+            Current stored entries after the furthest processed position, clamped at zero. This is not subscription
+            backlog. It is blank when the ledger containing that position is no longer stored or inspection is unavailable.
+          </span>
+        ),
         entryFraction: (
           <span>
-            The share of STORED ENTRIES already consumed. A batched entry holds many messages, so this tracks
-            message count only as closely as batch sizes stayed uniform.
+            Stored entry position divided by the current stored-entry count. It is not the percentage consumed or a
+            message percentage; one producer batch is one entry. On read-compacted targets it still describes the original
+            topic. “All topics” uses summed positions and counts when every readable topic is known.
+          </span>
+        ),
+        timeFraction: (
+          <span>
+            Publish time at the furthest processed position within the earliest-to-latest stored publish-time range.
+            Producer clocks need not be monotonic, so this is approximate and can be blank. “All topics” uses the combined
+            stored range and earliest session position when every readable topic has one.
+          </span>
+        ),
+        firstPublished: (
+          <span>
+            Pulsar publish time of the earliest currently stored entry at the latest refresh. It is not necessarily the
+            earliest timestamp in the topic. “All topics” shows the minimum across readable topics.
+          </span>
+        ),
+        firstMessage: (
+          <span>
+            Entry-level Pulsar message ID of the earliest currently stored entry; the batch index is omitted. Backlog,
+            expiry, and retention can move it forward. Dekaf does not order message IDs across topics. If inspection is
+            unavailable, this cell shows the broker reason.
+          </span>
+        ),
+        lastPublished: (
+          <span>
+            Pulsar publish time of the latest currently stored entry at the latest refresh. It is not necessarily the
+            latest timestamp in the topic. “All topics” shows the maximum across readable topics.
+          </span>
+        ),
+        lastMessage: (
+          <span>
+            Entry-level Pulsar message ID of the latest currently stored entry; the batch index is omitted. Dekaf does not
+            order message IDs across topics; use a publish-time column for cross-topic chronology.
           </span>
         )
       }
@@ -220,7 +445,15 @@ const TopicPositions: React.FC<TopicPositionsProps> = (props) => {
     <div className={s.TopicPositions} data-testid="topic-positions">
       {!isSessionStarted && (
         <div className={s.Empty} data-testid="topic-positions-not-started">
-          Start the session to see where each topic begins and ends, and how far it has read.
+          Start the session to see each topic's stored range and session position.
+        </div>
+      )}
+
+      {isSessionStarted && sessionGone !== undefined && (
+        <div className={s.Empty} data-testid="topic-positions-session-gone">
+          This consumer session has ended, so its positions stopped updating.
+          {sessionGone.message === undefined ? '' : ` ${sessionGone.message}.`}
+          &nbsp;Start the session again to see them.
         </div>
       )}
 

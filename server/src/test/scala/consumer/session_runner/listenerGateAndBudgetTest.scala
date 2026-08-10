@@ -110,6 +110,7 @@ object listenerGateAndBudgetTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = Map(p0 -> consumer),
+            pauseArbiters = (Map(p0 -> consumer)).map((fqn, c) => fqn -> ConsumerPauseArbiter(c)),
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )

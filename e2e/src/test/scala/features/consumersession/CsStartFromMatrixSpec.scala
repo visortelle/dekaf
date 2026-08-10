@@ -122,7 +122,9 @@ class CsStartFromMatrixSpec extends StartFromSupport:
         val live = Seq("live-1", "live-2", "live-last")
         produceAs(Produce.Unbatched, fqn, live)
         assertLoadedExactly(cs, live)
-        val rendered = cs.columnValues("value")
+        // Full-list read: leaked history would be OLDER than the live rows, i.e. exactly what the
+        // auto-scrolled table unmounts first.
+        val rendered = cs.allColumnValues("value")
         assert(
           !rendered.exists(_.startsWith("m-")),
           s"a non-persistent topic answered a counting Start-From with retained history: $rendered"

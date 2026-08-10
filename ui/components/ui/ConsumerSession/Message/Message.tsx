@@ -18,6 +18,10 @@ export type MessageProps = {
   getColumnWidth: (key: MessageColumnKey) => number,
   /** The reorderable columns in render order (index and publishTime stay fixed in front). */
   columnOrder: MessageColumnKey[],
+  /** This row is the first one delivered after the delivery-order switch (the caught-up banner's
+   * "Continue live with Best effort"): rows above it are the exact replay, rows below follow live
+   * traffic in the bounded reorder window. The row carries the divider band that says so. */
+  isOrderSwitchBoundary?: boolean,
   onClick: React.MouseEventHandler<HTMLTableCellElement>
 };
 
@@ -52,11 +56,16 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
     sessionContextState: <SessionContextStateJsonField isShowTooltips={props.isShowTooltips} message={props.message} />,
   };
 
+  // The divider band rides every cell of the boundary row, so the line spans the table wherever
+  // it is scrolled to; the labeled badge itself sits on the sticky publish-time cell.
+  const boundaryClass = props.isOrderSwitchBoundary ? s.OrderSwitchBoundaryTd : '';
+
   const fieldTd = (columnKey: MessageColumnKey) => (
     <Td
       key={columnKey}
       testId={columnKey === 'value' ? 'cs-message-value' : undefined}
       width={`${props.getColumnWidth(columnKey)}px`}
+      className={boundaryClass}
       onClick={onClick}
       coloring={props.coloring}
       isSelected={isSelected}
@@ -71,22 +80,45 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         key="index"
         testId="cs-message"
         width="36rem"
-        className={s.IndexField}
+        className={`${s.IndexField} ${boundaryClass}`}
         onClick={onClick}
         coloring={props.coloring}
         isSelected={isSelected}
       >
         {props.message.displayIndex}
+        {/* The guaranteed replay delivered this row out of order - loudly flagged, never
+            silently (the session chip carries the running count). */}
+        {props.message.replaySeamViolation && (
+          <span
+            className={s.SeamViolationMarker}
+            data-testid="cs-seam-violation-marker"
+            title="Arrived out of order: a producer clock wrote an earlier timestamp into the pause window, or the source log itself stores an inversion."
+          >
+            !
+          </span>
+        )}
       </Td>
 
       <Td
         key="publishTime"
         width={`${props.getColumnWidth('publishTime')}px`}
-        className={s.PublishTimeField}
+        className={`${s.PublishTimeField} ${boundaryClass}`}
         onClick={onClick}
         coloring={props.coloring}
         isSelected={isSelected}
       >
+        {props.isOrderSwitchBoundary && (
+          <span
+            className={s.OrderSwitchPointBadge}
+            data-testid="cs-order-switch-point"
+            title={
+              'The delivery order switched to Best effort at this point. Rows above are the exact replay of ' +
+              'recorded history; rows below follow live traffic within the bounded reorder window.'
+            }
+          >
+            Best effort from here
+          </span>
+        )}
         <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
 

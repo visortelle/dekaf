@@ -3,7 +3,7 @@
  * changed underneath it, and what one drag does to the list. The DOM half (drag events on the
  * shared Table's headers) is pinned end to end; these are the rules it applies.
  */
-import { moveColumnBefore, reconcileColumnOrder } from './useColumnOrder';
+import { moveColumnTo, reconcileColumnOrder } from './useColumnOrder';
 
 describe('reconcileColumnOrder', () => {
   const defaults = ['a', 'b', 'c', 'd'];
@@ -34,27 +34,37 @@ describe('reconcileColumnOrder', () => {
   });
 });
 
-describe('moveColumnBefore', () => {
+describe('moveColumnTo', () => {
   const order = ['a', 'b', 'c', 'd'];
 
-  it('moves the dragged column immediately before the target', () => {
-    expect(moveColumnBefore(order, 'd', 'b')).toEqual(['a', 'd', 'b', 'c']);
+  // One drop = "put the dragged column where the target is". Dropping on an EARLIER column pushes
+  // the target back, dropping on a LATER one pulls it forward - so the dragged column always ends
+  // up at the index the target had, and every position is reachable by some drop. The whole header
+  // is the drop target and it highlights as one, which is what makes that the reading.
+  it('takes the position of a target to its LEFT', () => {
+    expect(moveColumnTo(order, 'd', 'b')).toEqual(['a', 'd', 'b', 'c']);
   });
 
-  it('moves forward too - dropping on a later column', () => {
-    expect(moveColumnBefore(order, 'a', 'd')).toEqual(['b', 'c', 'a', 'd']);
+  it('takes the position of a target to its RIGHT', () => {
+    expect(moveColumnTo(order, 'a', 'c')).toEqual(['b', 'c', 'a', 'd']);
   });
 
-  it("'end' puts the dragged column last", () => {
-    expect(moveColumnBefore(order, 'b', 'end')).toEqual(['a', 'c', 'd', 'b']);
+  // The position the old "always insert before the target" rule could not express: there is no
+  // header to the right of the last one, so nothing could ever be dropped past it.
+  it('dropping on the LAST column puts the dragged column last', () => {
+    expect(moveColumnTo(order, 'a', 'd')).toEqual(['b', 'c', 'd', 'a']);
+  });
+
+  it('dropping on the FIRST column puts the dragged column first', () => {
+    expect(moveColumnTo(order, 'c', 'a')).toEqual(['c', 'a', 'b', 'd']);
   });
 
   it('dropping a column on itself changes nothing', () => {
-    expect(moveColumnBefore(order, 'c', 'c')).toEqual(order);
+    expect(moveColumnTo(order, 'c', 'c')).toEqual(order);
   });
 
   it('an unknown dragged or target key changes nothing', () => {
-    expect(moveColumnBefore(order, 'x' as never, 'b')).toEqual(order);
-    expect(moveColumnBefore(order, 'b', 'x' as never)).toEqual(order);
+    expect(moveColumnTo(order, 'x' as never, 'b')).toEqual(order);
+    expect(moveColumnTo(order, 'b', 'x' as never)).toEqual(order);
   });
 });

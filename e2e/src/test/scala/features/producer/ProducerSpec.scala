@@ -16,7 +16,8 @@ class ProducerSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.openTools() // open the console (force-click; its tooltip can overlay the button)
+    cs.openTools()
+    page.getByTestId("console-tab-produce").click()
 
     // A first Pulsar op may raise the credentials onboarding modal - dismiss it.
     page.waitForTimeout(500)

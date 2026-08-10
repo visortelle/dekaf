@@ -45,6 +45,13 @@
   margin: 0;
 }
 
+.ApproximateFractionEndpoints {
+  display: flex;
+  justify-content: space-between;
+  color: grey;
+  font-size: x-small;
+}
+
 .ApproximateFractionValue {
   display: flex;
   align-items: center;

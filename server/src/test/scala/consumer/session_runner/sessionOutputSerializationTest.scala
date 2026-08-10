@@ -110,6 +110,7 @@ object sessionOutputSerializationTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = Map.empty,
+            pauseArbiters = Map.empty,
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -158,6 +159,7 @@ object sessionOutputSerializationTest extends ZIOSpecDefault:
             // could be on its way out from another.
             val runner = session(ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ())))
             val observer = UnsafeObserver()
+            runner.resume(observer, isDebug = false)
             val threads = 8
             val perThread = 400
             val start = CountDownLatch(1)
@@ -303,6 +305,7 @@ object sessionOutputSerializationTest extends ZIOSpecDefault:
             val reached = CountDownLatch(1)
             val runner = session(GatedProgressListener(gate, reached))
             val observer = SequencedObserver()
+            runner.resume(observer, isDebug = false)
 
             val older = worker("pulsar-listener-stale")(runner.sendResponse(observer, Seq.empty, Vector.empty))
             older.start()
@@ -326,19 +329,24 @@ object sessionOutputSerializationTest extends ZIOSpecDefault:
                 progress.drop(firstComplete).forall(_.complete)
             ) ?? s"progress frames in the order the client saw them: ${progress.map(p => s"${p.messagesSkipped}/${p.messagesToSkip} complete=${p.complete}")}"
         },
-        test("NO RESPONSE REACHES THE CLIENT AFTER THE STREAM HAS BEEN COMPLETED") {
+        test("NO RESPONSE REACHES THE CLIENT AFTER THE STREAM HAS BEEN COMPLETED, and the send SAYS SO") {
             // `stop` called `onCompleted` with no terminal gate at all, so any listener thread still
             // in flight - or any later push - called `onNext` on a finished stream. Real gRPC throws
             // there; the browser sees a stream that ended and then spoke again.
+            //
+            // Not writing is only half the contract. The gate used to swallow the send and return
+            // NORMALLY, and its caller reads a normal return as "the client has it" and
+            // acknowledges - so a delivery in flight across the end of the stream was consumed off
+            // the broker and shown to nobody. A send carrying a message must FAIL.
             val runner = session(ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ())))
             val observer = SequencedObserver()
             runner.resume(observer, isDebug = false)
 
             runner.stop()
-            runner.sendResponse(observer, Seq(consumerPb.Message(numMessageProcessed = 1L)), Vector.empty)
+            val refused = scala.util.Try(runner.sendResponse(observer, Seq(consumerPb.Message(numMessageProcessed = 1L)), Vector.empty)).isFailure
 
-            assertTrue(observer.completed.get, observer.nextAfterCompleted.get == 0) ??
-                s"${observer.nextAfterCompleted.get} responses were written after the stream was completed"
+            assertTrue(observer.completed.get, refused, observer.nextAfterCompleted.get == 0) ??
+                s"refused=$refused; ${observer.nextAfterCompleted.get} responses were written after the stream was completed"
         },
         test("THE STREAM IS NOT COMPLETED WHILE A RESPONSE IS STILL BEING WRITTEN") {
             // `onCompleted` was called outside the send lock, so it could interleave with an
@@ -413,32 +421,129 @@ object sessionOutputSerializationTest extends ZIOSpecDefault:
                 consumerP1.acknowledged.asScala.toVector == Vector("b1")
             ) ?? s"escaped=${escaped.asScala.toVector} processed=${processed.asScala.toVector}"
         },
+        test("the ordering lock is NOT held across the client write - a blocked client cannot park the merge") {
+            // The limiter's own file states the invariant: offers under the session's ordering
+            // lock are an ENQUEUE, "so a Pulsar listener thread is never parked and the global
+            // merge is never starved into its silent-stream give-up". The default unlimited path
+            // (rate 0) used to break exactly that: `offer` answered processNow and ran the whole
+            // delivery - JS lease, gRPC write - inline on the offering thread, ordering lock
+            // held. One backpressured client then parked every listener thread AND the sweep.
+            //
+            // Wired like production: an Ordered(BestEffort) layer - the DEFAULT session shape -
+            // and a limiter at rate 0 whose drain runs on its own timer thread. The client write
+            // BLOCKS on a latch; the merge must remain fully usable meanwhile, and the delivery
+            // order must still be exactly the merge's decision order.
+            val delivered = ConcurrentLinkedQueue[String]()
+            val writeEntered = CountDownLatch(1)
+            val writeRelease = CountDownLatch(1)
+            val allDelivered = CountDownLatch(3)
+            val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = msg =>
+                if msg.getKey == "b1" then
+                    writeEntered.countDown()
+                    writeRelease.await(60, TimeUnit.SECONDS)
+                delivered.add(msg.getKey)
+                allDelivered.countDown()
+                ()
+            ))
+            listener.startAcceptingNewMessages()
+            listener.startFromOrdering = StartFromOrdering.make[HeldMessage](
+                StartFromOrderingPlan.Ordered(
+                    // Best effort carries EMPTY recorded ends - the continuous rules need none.
+                    Vector(
+                        StartFromStream(startFromStreamId(consumerName, p0), EntryPosition.empty),
+                        StartFromStream(startFromStreamId(consumerName, p1), EntryPosition.empty)
+                    ),
+                    _root_.consumer.session_config.MessageDeliveryOrder.BestEffort
+                )
+            )
+            val drainExecutor = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(runnable => {
+                val t = Thread(runnable, "delivery-rate-limit-lock-test")
+                t.setDaemon(true)
+                t
+            })
+            val limiter = DeliveryRateLimiter[HeldMessage](
+                core = DeliveryRateLimiterCore[HeldMessage](nowMs = () => java.lang.System.nanoTime() / 1_000_000L),
+                schedule = (delayMs, task) => { drainExecutor.schedule(task, delayMs, TimeUnit.MILLISECONDS); () },
+                process = held => held.listener.deliverNow(held),
+                holdPermits = () => true,
+                releasePermits = () => true
+            )
+            listener.deliveryRateLimiter = Some(limiter)
+
+            val consumerP0 = RecordingConsumer(p0)
+            val consumerP1 = RecordingConsumer(p1)
+
+            // a1 is held (p1 has not spoken); b1's offer resolves b1 itself for delivery.
+            listener.received(consumerP0.consumer, message(p0, "a1", 100L, 0L))
+            val offeringThread = worker("pulsar-listener-p1")(
+                listener.received(consumerP1.consumer, message(p1, "b1", 50L, 0L))
+            )
+            offeringThread.start()
+            // The write is genuinely in flight (and blocked)...
+            val writeInFlight = writeEntered.await(30, TimeUnit.SECONDS)
+            // ...and the OFFERING thread has already returned: the write does not ride it.
+            offeringThread.join(10_000)
+            val offeringThreadFree = !offeringThread.isAlive
+            // The merge stays fully usable while the client is wedged - another partition's
+            // offer needs the ordering lock and must not park behind the write.
+            val laterOffer = worker("pulsar-listener-p0")(
+                listener.received(consumerP0.consumer, message(p0, "a2", 200L, 1L))
+            )
+            laterOffer.start()
+            laterOffer.join(10_000)
+            val mergeUsableDuringWrite = !laterOffer.isAlive
+
+            writeRelease.countDown()
+            // p1 speaking past both held messages releases them; the queue's FIFO order must be
+            // exactly the merge's decision order - b1, a1, a2 - with b2 still held.
+            listener.received(consumerP1.consumer, message(p1, "b2", 300L, 1L))
+            val everythingArrived = allDelivered.await(30, TimeUnit.SECONDS)
+
+            assertTrue(
+                writeInFlight,
+                offeringThreadFree,
+                mergeUsableDuringWrite,
+                everythingArrived,
+                delivered.asScala.toVector == Vector("b1", "a1", "a2"),
+                consumerP1.acknowledged.asScala.toVector == Vector("b1"),
+                consumerP0.acknowledged.asScala.toVector == Vector("a1", "a2")
+            ) ?? (s"writeInFlight=$writeInFlight offeringThreadFree=$offeringThreadFree " +
+                s"mergeUsableDuringWrite=$mergeUsableDuringWrite delivered=${delivered.asScala.toVector}")
+        },
         test("a pass-through session is NOT serialized - the ordinary path pays nothing") {
             // The lock exists to preserve an order the merge decided. A session with no merge
             // decided no order, so taking a session-wide lock per message there would serialize
             // every partition's deserialization for nothing.
+            //
+            // DETERMINISTIC, not statistical: thread A parks INSIDE `inOrder` until thread B has
+            // ALSO entered it. Lock-free, B walks straight in and releases A - overlap proven.
+            // Under any session-wide lock B can never enter while A is inside, the await times
+            // out, and the test fails - it cannot pass by a lucky scheduling and cannot flake on
+            // a single-core runner the way "count how often four spinning threads overlapped"
+            // could.
             val ordering = StartFromOrdering.passThrough[String]
-            val inside = AtomicInteger(0)
-            val concurrent = AtomicInteger(0)
-            val start = CountDownLatch(1)
-            val workers = Vector.tabulate(4) { i =>
-                worker(s"pass-through-$i") {
-                    start.await()
-                    var k = 0
-                    while k < 200 do
-                        ordering.inOrder {
-                            if inside.incrementAndGet() > 1 then concurrent.incrementAndGet()
-                            Thread.`yield`()
-                            inside.decrementAndGet()
-                        }
-                        k += 1
+            val firstInside = CountDownLatch(1)
+            val secondEntered = CountDownLatch(1)
+            val overlapped = AtomicBoolean(false)
+
+            val first = worker("pass-through-first") {
+                ordering.inOrder {
+                    firstInside.countDown()
+                    overlapped.set(secondEntered.await(30, TimeUnit.SECONDS))
                 }
             }
-            workers.foreach(_.start())
-            start.countDown()
-            workers.foreach(_.join(60_000))
+            val second = worker("pass-through-second") {
+                firstInside.await(30, TimeUnit.SECONDS)
+                ordering.inOrder {
+                    secondEntered.countDown()
+                }
+            }
+            first.start()
+            second.start()
+            first.join(60_000)
+            second.join(60_000)
 
-            assertTrue(concurrent.get > 0) ??
+            assertTrue(overlapped.get) ??
                 "a pass-through ordering layer took a session-wide lock it has no order to protect"
         }
     )

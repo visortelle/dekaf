@@ -40,7 +40,6 @@ class CsProjectionColoringSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     cs.addProjection()
     cs.projectionLabel.first().fill("MyCol")
     // Project the message KEY rather than the default (the whole value). The target select has no
@@ -72,7 +71,6 @@ class CsProjectionColoringSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     cs.addColoringRule()                       // default rule = empty filter chain (matches all)
 
     cs.coloringBg.first().click()              // open the "Pick a Color" modal
@@ -95,7 +93,6 @@ class CsProjectionColoringSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
 
     // Session rule -> red.
     cs.addColoringRule()
@@ -146,18 +143,16 @@ class CsProjectionColoringSpec extends DekafSuite:
     assert(cs.columnValues("value") == List("apple"), s"JSON rendering was ${cs.columnValues("value")}")
   }
 
-  test("CS-15: the Advanced reveal is one-way (once revealed, stays)") {
+  test("CS-15: all session settings are visible without an advanced disclosure") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
 
-    assertThat(cs.advancedToggle).isVisible(vis)
-    assertThat(cs.sessionFilters).hasCount(0, count(0))
-
-    cs.revealAdvanced()
+    assertThat(page.getByTestId("cs-advanced-toggle")).hasCount(0, count(0))
+    assertThat(page.getByText("Show advanced settings")).hasCount(0, count(0))
+    assertThat(page.getByTestId("cs-delivery-order")).isVisible(vis)
+    assertThat(page.getByText("Limit num. display messages")).isVisible(vis)
     assertThat(cs.sessionFilters).isVisible(vis)
-
-    cs.sessionFilterPanel.addFilter()                    // adds advanced config -> reveal locks on
-    assertThat(cs.advancedToggle).hasCount(0, count(0))  // toggle is gone
-    assertThat(cs.sessionFilters).isVisible(vis)         // advanced section stays
+    assertThat(cs.sessionProjections).isVisible(vis)
+    assertThat(cs.sessionColoring).isVisible(vis)
   }

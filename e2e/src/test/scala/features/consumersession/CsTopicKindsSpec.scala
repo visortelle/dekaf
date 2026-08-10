@@ -94,7 +94,9 @@ class CsTopicKindsSpec extends StartFromSupport:
       val payload = Seq("tk-1", "tk-2", "tk-3", "tk-last") // "tk-last" is produced last
       produce(fqn, payload)
       assertLoadedExactlyWithCounter(cs, payload, base)
-      val rendered = cs.columnValues("value")
+      // The whole virtualized list, not the mounted viewport: a leaked OLD row is the oldest on
+      // screen and is exactly what the auto-scrolled table pushes out of the mounted range first.
+      val rendered = cs.allColumnValues("value")
       assert(
         !rendered.exists(_.startsWith(OldPrefix)),
         s"Start From = Latest delivered a message published before the session started: $rendered"
@@ -154,7 +156,7 @@ class CsTopicKindsSpec extends StartFromSupport:
         //
         // The one residual assumption is that six blocking sends land in six distinct milliseconds -
         // if two shared one, the global order between their partitions would be decided by the
-        // ordering key's tie-break rather than by produce order. A blocking send costs a broker round
+        // merge tie-break rather than by produce order. A blocking send costs a broker round
         // trip, and this ran green six times running, so it is stated rather than defended here.
         // `CsStartFromMatrixSpec` CS-SFM-3 covers the same contract without the assumption: it spaces
         // its publishes and derives the expectation from the broker's own publish times.
@@ -199,8 +201,8 @@ class CsTopicKindsSpec extends StartFromSupport:
             // Both approximate modes need a history to be a proportion OF: one asks the broker for
             // the topic's entry count, the other for its first and last publish times, and
             // examineMessage answers neither on a non-persistent topic.
-            "About % through the data",
-            "About % through the time range"
+            "Approximate position (% of data)",
+            "Approximate position (% of time)"
           ),
           s"disabled modes on a non-persistent topic were: ${cs.disabledStartFromLabels}"
         )
@@ -217,7 +219,9 @@ class CsTopicKindsSpec extends StartFromSupport:
         val live = Seq("new-1", "new-2", "new-last")
         produce(fqn, live)
         assertLoadedExactlyWithCounter(cs, live, base)
-        val rendered = cs.columnValues("value")
+        // Full-list read for the same reason as CS-TK-2: a leaked OLD row scrolls out of the
+        // mounted viewport first.
+        val rendered = cs.allColumnValues("value")
         assert(!rendered.exists(_.startsWith(OldPrefix)), s"a non-persistent topic retained a pre-produced message: $rendered")
       }
   }

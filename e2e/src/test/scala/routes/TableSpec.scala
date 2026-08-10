@@ -148,4 +148,3 @@ class TableSpec extends DekafSuite:
     val reloaded = columnKeys()
     assert(reloaded == after, s"the order must survive a reload: before=$after after=$reloaded")
   }
-

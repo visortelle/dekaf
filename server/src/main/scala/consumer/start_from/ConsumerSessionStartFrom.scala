@@ -7,7 +7,7 @@ import com.google.protobuf.timestamp.Timestamp
 import java.time.Instant
 
 type ConsumerSessionStartFrom = EarliestMessage | LatestMessage | NthMessageAfterEarliest | NthMessageBeforeLatest | MessageId | DateTime |
-    RelativeDateTime | ApproximateDataPosition | ApproximateTimePosition
+    RelativeDateTime | ApproximateEntryPosition | ApproximatePublishTimePosition
 
 /** A UNION type, so these matches are NOT checked for exhaustiveness: a mode missing from either
   * direction compiles fine and throws at runtime, surfacing as a generic failure on saving or
@@ -24,8 +24,8 @@ object ConsumerSessionStartFrom:
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)               => MessageId.fromPb(v)
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v)                => DateTime.fromPb(v)
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(v)        => RelativeDateTime.fromPb(v)
-            case pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateDataPosition(v) => ApproximateDataPosition.fromPb(v)
-            case pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateTimePosition(v) => ApproximateTimePosition.fromPb(v)
+            case pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateEntryPosition(v) => ApproximateEntryPosition.fromPb(v)
+            case pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximatePublishTimePosition(v) => ApproximatePublishTimePosition.fromPb(v)
             case _ => throw IllegalArgumentException("Unknown ConsumerSessionStartFrom type.")
 
     def toPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom =
@@ -53,12 +53,12 @@ object ConsumerSessionStartFrom:
             // The two approximate modes carry the SAME payload - one double - so a branch that
             // reached for the other one's oneof case would still round-trip a fraction and look
             // right; the only symptom would be a session positioned by the wrong rule.
-            case v: ApproximateDataPosition =>
+            case v: ApproximateEntryPosition =>
                 pb.ConsumerSessionStartFrom(startFrom =
-                    pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateDataPosition(ApproximateDataPosition.toPb(v))
+                    pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateEntryPosition(ApproximateEntryPosition.toPb(v))
                 )
-            case v: ApproximateTimePosition =>
+            case v: ApproximatePublishTimePosition =>
                 pb.ConsumerSessionStartFrom(startFrom =
-                    pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateTimePosition(ApproximateTimePosition.toPb(v))
+                    pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximatePublishTimePosition(ApproximatePublishTimePosition.toPb(v))
                 )
             case _ => throw IllegalArgumentException("Unknown ConsumerSessionStartFrom type.")

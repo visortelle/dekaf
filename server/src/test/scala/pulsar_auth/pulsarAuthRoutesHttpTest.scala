@@ -46,6 +46,12 @@ object pulsarAuthRoutesHttpTest extends ZIOSpecDefault:
         /** The attribute segment - everything the browser enforces. */
         def attributes: String = setCookie.getOrElse("").dropWhile(_ != ';')
 
+        /** The attribute TOKENS, from splitting the whole header the way a browser does. Unlike
+          * `attributes.contains(...)`, asserting this list exactly surfaces an injected `;` in the
+          * value - the smuggled attribute (and the JSON tail) show up as extra elements. */
+        def attributeList: List[String] =
+            setCookie.getOrElse("").split(";", -1).toList.map(_.trim).drop(1).filter(_.nonEmpty)
+
         def parsedAuth: Either[Throwable, PulsarAuth] =
             parsePulsarAuthCookie(Some(cookieHeader.stripPrefix("pulsar_auth=")))
 
@@ -98,6 +104,34 @@ object pulsarAuthRoutesHttpTest extends ZIOSpecDefault:
                     !response.attributes.contains("SameSite"),
                     !response.attributes.contains("Secure")
                 ) ?? s"Set-Cookie: ${response.setCookie}"
+            }
+        },
+        test("a hostile authPluginClassName in the add body cannot inject Set-Cookie attributes or corrupt the credential") {
+            // REGRESSION (HIGH) - `authPluginClassName` arrives as free text in the add BODY (only
+            // the {credentialsName} path segment is charset-validated) and was interpolated raw
+            // into the Set-Cookie header; JSON does not escape `;`. So this body truncated the
+            // stored cookie at the `;` (every later request failed to parse - silent credential
+            // corruption) and `Domain=evil.example` became a real attribute of a server-emitted
+            // cookie. The whole JSON value is URL-encoded now; this drives the actual attack
+            // surface end to end: hostile body in, header out, cookie back in through real Jetty.
+            val hostileClassName = "org.x.Auth; Domain=evil.example"
+            val hostileJson = s"""{"type":"authParamsString","authPluginClassName":"$hostileClassName","authParams":"token:secret"}"""
+            serve() { base =>
+                for
+                    added <- post(base, "/pulsar-auth/add/prod", hostileJson)
+                    reused <- post(base, "/pulsar-auth/use/prod", cookie = Some(added.cookieHeader))
+                yield assertTrue(
+                    added.status == 200,
+                    // exactly the server's own attributes - in particular no Domain
+                    added.attributeList == List("Path=/", "HttpOnly", "Max-Age=31536000"),
+                    // the credential survives the full round trip un-truncated
+                    reused.status == 200,
+                    reused.parsedAuth.map(_.credentials.get("prod")) == Right(Some(AuthParamsStringCredentials(
+                        `type` = "authParamsString",
+                        authPluginClassName = hostileClassName,
+                        authParams = "token:secret"
+                    )))
+                ) ?? s"added=${added.setCookie} reused=${reused.setCookie}"
             }
         },
         test("a credential with + and % in authParams survives a full HTTP cookie round trip") {

@@ -14,7 +14,15 @@ import _root_.consumer.session_target.consumption_mode.modes.RegularConsumptionM
 import _root_.consumer.session_target.topic_selector.{MultiTopicSelector, TopicSelector}
 import _root_.consumer.start_from.EarliestMessage
 import _root_.consumer.value_projections.ValueProjectionList
+import org.apache.pulsar.client.api.{Consumer, Message as PulsarMessage, Schema}
+import org.apache.pulsar.client.impl.{MessageIdImpl, MessageImpl}
+import org.apache.pulsar.common.api.proto.MessageMetadata
 import zio.test.*
+
+import java.lang.reflect.{InvocationHandler, Method, Proxy}
+import java.nio.ByteBuffer
+import java.util.concurrent.{CompletableFuture, ConcurrentLinkedQueue}
+import scala.jdk.CollectionConverters.*
 
 /** The start-from discard must be applied EXACTLY ONCE, at session start.
   *
@@ -58,6 +66,7 @@ object startFromDiscardOnceTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = Map.empty,
+            pauseArbiters = Map.empty,
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -65,7 +74,13 @@ object startFromDiscardOnceTest extends ZIOSpecDefault:
     /** Drives the production `resume` with no-op callbacks - the same call `ConsumerSessionRunner`
       * makes on every play. */
     private def resume(runner: ConsumerSessionTargetRunner): Unit =
-        runner.resume(onNext = (_, _, _, _) => (), isDebug = false, incrementNumMessageProcessed = () => (), onStartFromDiscardProgress = () => ())
+        runner.resume(
+            onNext = (_, _, _, _, _) => (),
+            isDebug = false,
+            incrementNumMessageProcessed = () => (),
+            onStartFromDiscardProgress = () => (),
+            admitDelivery = _ => DeliveryAdmission.Prepare
+        )
 
     /** How the listener would treat `count` consecutively delivered messages. */
     private def deliver(l: ConsumerListener, count: Int): Vector[ConsumerListener.Action] =
@@ -201,6 +216,114 @@ object startFromDiscardOnceTest extends ZIOSpecDefault:
             deliver(secondListener, 2)
 
             assertTrue(atStart == 4L, session.remainingStartFromDiscard == 1L)
+        },
+        test("the MERGE-owned skip budget survives pause/resume: no re-arm, no double count, no gate leak") {
+            // The branch's MAIN path. On a multi-stream skip-n the listener's own discard is NONE
+            // and the budget lives inside the global merge (`handleStartFrom` arms
+            // StartFromDiscardPlan.Nothing + GlobalSkip) - so every exactly-once case above
+            // drives the WRONG counter for it. Three claims, each of which held only by
+            // inspection until now: a pause/resume cycle leaves the merge's budget untouched
+            // (resume never touches `startFromOrdering`), a message the closed gate rejects
+            // never reaches the merge and so cannot consume the budget, and after the cycle the
+            // skip still drops exactly the globally-first n - the same SET a pause-free run
+            // would have dropped.
+            val consumerName = "cs-discard-once-0"
+            val p0 = "persistent://public/default/discard-once-p0"
+            val p1 = "persistent://public/default/discard-once-p1"
+
+            final class RecordingConsumer(topicFqn: String):
+                val acknowledged = ConcurrentLinkedQueue[String]()
+                val handedBack = ConcurrentLinkedQueue[String]()
+                val consumer: Consumer[Array[Byte]] =
+                    val handler = new InvocationHandler:
+                        override def invoke(proxy: Object, method: Method, args: Array[Object]): Object =
+                            method.getName match
+                                case "getTopic"        => topicFqn
+                                case "getConsumerName" => consumerName
+                                case "isConnected"     => java.lang.Boolean.TRUE
+                                case "acknowledgeAsync" =>
+                                    acknowledged.add(args(0).asInstanceOf[PulsarMessage[Array[Byte]]].getKey)
+                                    CompletableFuture.completedFuture(null)
+                                case "negativeAcknowledge" =>
+                                    handedBack.add(args(0).asInstanceOf[PulsarMessage[Array[Byte]]].getKey)
+                                    null
+                                case "equals"   => java.lang.Boolean.valueOf(proxy eq args(0))
+                                case "hashCode" => java.lang.Integer.valueOf(topicFqn.hashCode)
+                                case "toString" => s"proxy-consumer($topicFqn)"
+                                case _          => null
+                    Proxy
+                        .newProxyInstance(getClass.getClassLoader, Array[Class[?]](classOf[Consumer[Array[Byte]]]), handler)
+                        .asInstanceOf[Consumer[Array[Byte]]]
+
+            def message(topicFqn: String, key: String, publishTime: Long, entryId: Long): MessageImpl[Array[Byte]] =
+                val md = new MessageMetadata()
+                md.setPublishTime(publishTime)
+                md.setPartitionKey(key)
+                val msg = MessageImpl.create[Array[Byte]](md, ByteBuffer.wrap(s"""{"k":"$key"}""".getBytes("UTF-8")), Schema.BYTES, topicFqn)
+                msg.setMessageId(new MessageIdImpl(1L, entryId, -1))
+                msg
+
+            val delivered = ConcurrentLinkedQueue[String]()
+            val l = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = msg => { delivered.add(msg.getKey); () }))
+            // The production resume rewires the target handler onto the full pipeline; this test
+            // asserts on the raw delivery SET, so the recorder is reinstalled after each resume.
+            def recordDeliveries(): Unit =
+                l.targetMessageHandler.onNext = msg => { delivered.add(msg.getKey); () }
+            // The listener-owned counter stays NONE - the merge owns the budget.
+            val armed = StartFromOrdering.make[HeldMessage](
+                StartFromOrderingPlan.GlobalSkip(
+                    3,
+                    Vector(
+                        StartFromStream(startFromStreamId(consumerName, p0), EntryPosition(1L, 9L, -1, 1)),
+                        StartFromStream(startFromStreamId(consumerName, p1), EntryPosition(1L, 9L, -1, 1))
+                    )
+                )
+            )
+            l.startFromOrdering = armed
+            val runner = targetRunner(l, Vector(p0, p1))
+            val c0 = RecordingConsumer(p0)
+            val c1 = RecordingConsumer(p1)
+
+            resume(runner)
+            recordDeliveries()
+            // Publish times interleave the streams: the globally-first 3 are a1(10), b1(20), a2(30).
+            l.received(c0.consumer, message(p0, "a1", 10L, 0L)) // held: p1 is blind
+            l.received(c1.consumer, message(p1, "b1", 20L, 0L)) // resolves: drop a1; p0 blind
+            l.received(c0.consumer, message(p0, "a2", 30L, 1L)) // resolves: drop b1; p1 blind
+            val remainingMidSkip = l.effectiveDiscard.remaining
+
+            runner.pause()
+            // The closed gate rejects b2 BEFORE the merge ever sees it: handed back, budget intact.
+            l.received(c1.consumer, message(p1, "b2", 40L, 1L))
+            val remainingWhilePaused = l.effectiveDiscard.remaining
+            val handedBackWhilePaused = c1.handedBack.asScala.toVector
+
+            resume(runner)
+            recordDeliveries()
+            val sameOrderingAfterResume = l.startFromOrdering eq armed
+            val remainingAfterResume = l.effectiveDiscard.remaining
+
+            // The broker redelivers the rejected b2; the skip finishes on a2 and b2 is the first
+            // message the user sees, then the inert merge passes a3 straight through.
+            l.received(c1.consumer, message(p1, "b2", 40L, 1L))
+            l.received(c0.consumer, message(p0, "a3", 50L, 2L))
+
+            assertTrue(
+                remainingMidSkip == 1L,
+                remainingWhilePaused == 1L, // the gate leak would have burned the last unit here
+                handedBackWhilePaused == Vector("b2"),
+                sameOrderingAfterResume, // resume must not re-arm (or swap) the ordering layer
+                remainingAfterResume == 1L, // and must not refill or spend the budget
+                // The cut is EXACTLY the globally-first 3 by publish time - a1, b1, a2 - however
+                // the pause interleaved; b2 and a3 are what the user sees, in order.
+                delivered.asScala.toVector == Vector("b2", "a3"),
+                c0.acknowledged.asScala.toVector == Vector("a1", "a2", "a3"),
+                c1.acknowledged.asScala.toVector == Vector("b1", "b2"),
+                l.effectiveDiscard.remaining == 0L,
+                l.startFromDiscard.remaining == 0L // the listener-owned counter never took part
+            ) ?? (s"midSkip=$remainingMidSkip paused=$remainingWhilePaused afterResume=$remainingAfterResume " +
+                s"delivered=${delivered.asScala.toVector} acked0=${c0.acknowledged.asScala.toVector} " +
+                s"acked1=${c1.acknowledged.asScala.toVector}")
         },
         test("a session sums per-topic counters across its targets") {
             val firstListener = listener()

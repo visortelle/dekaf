@@ -23,6 +23,27 @@ def receiverQueueSizeFor(topicCount: Int): Int =
     val even = receiverQueueBudgetPerTarget / (topicCount max 1)
     even.max(receiverQueueMin).min(receiverQueueMax)
 
+/** The session-wide prefetch budget while a delivery-order merge is active, and its clamps.
+  *
+  * The merge's own watermarks bound what IT holds, but `consumer.pause()` cannot un-prefetch:
+  * everything already in a receiver queue is still delivered after a pause, so an ordered
+  * session's real memory exposure is prefetch PLUS merge holds PLUS the delivery limiter's
+  * queue. This budget makes the prefetch term a TRUE CEILING: it divides across the session's
+  * ACTUAL stream total (resolved before anything subscribes), and the floor is ONE - at the
+  * admitted maximum of 2,000 streams every consumer still gets 2 slots, so no admitted topology
+  * can exceed the budget through the floor (the old floor of 10 turned "5,000" into 20,000 at
+  * that width). The whole-session bound is then: <= 5,000 prefetched messages, <= 10,000 / 256
+  * MiB merge-held, <= 2,000 / 128 MiB limiter-queued, plus one in-flight send per stream. */
+val mergeReceiverQueueBudgetPerSession: Int = 5_000
+val mergeReceiverQueueMin: Int = 1
+val mergeReceiverQueueMax: Int = 500
+
+/** The per-consumer receiver queue for a BEST-EFFORT-ORDERED session: the session budget divided
+  * across the session's total resolved streams. */
+def mergeReceiverQueueSizeFor(totalSessionStreams: Int): Int =
+    val even = mergeReceiverQueueBudgetPerSession / (totalSessionStreams max 1)
+    even.max(mergeReceiverQueueMin).min(mergeReceiverQueueMax)
+
 def buildConsumer(
     pulsarClient: PulsarClient,
     consumerName: String,

@@ -29,7 +29,8 @@ jest.mock('../../app/contexts/GrpcClient/GrpcClient', () => ({
 }));
 
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
 import ConsumerSession from './ConsumerSession';
 import { getDefaultManagedItem } from '../LibraryBrowser/default-library-items';
@@ -40,10 +41,12 @@ import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
 import {
   CreateConsumerResponse,
   DeleteConsumerResponse,
+  GetTopicPositionsResponse,
   Message,
   PauseResponse,
   ResumeResponse,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { localStorageKeys } from '../../local-storage-keys';
 
 const topicContext = (topicPersistency: 'persistent' | 'non-persistent') => ({
   pulsarResource: {
@@ -101,6 +104,12 @@ type HarnessOptions = {
    * That window is where Stop, a hidden tab and an unload all have to behave.
    */
   deferCreate?: boolean;
+  /**
+   * Hold every Pause open until `settlePauses()`. A Pause is not instant - it closes the intake and
+   * waits for the consumers - and the tab can come back inside that window, which is where the
+   * client's intent and the server's actual state can come apart.
+   */
+  deferPause?: boolean;
 };
 
 const makeHarness = (options: HarnessOptions = {}) => {
@@ -112,6 +121,7 @@ const makeHarness = (options: HarnessOptions = {}) => {
   const resumeOptions: any[] = [];
   const notifiedErrors: string[] = [];
   const heldCreates: (() => void)[] = [];
+  const heldPauses: (() => void)[] = [];
 
   const consumerServiceClient = {
     createConsumer: (req: unknown) => {
@@ -143,11 +153,19 @@ const makeHarness = (options: HarnessOptions = {}) => {
       const res = new PauseResponse();
       const s = options.pauseWith ?? { code: Code.OK, message: '' };
       res.setStatus(status(s.code, s.message));
-      return Promise.resolve(res);
+      if (!options.deferPause) {
+        return Promise.resolve(res);
+      }
+      return new Promise((resolve) => heldPauses.push(() => resolve(res)));
     },
     deleteConsumer: (req: unknown) => {
       deleteConsumerRequests.push(req);
       return Promise.resolve(new DeleteConsumerResponse());
+    },
+    getTopicPositions: () => {
+      const res = new GetTopicPositionsResponse();
+      res.setStatus(status(Code.OK, ''));
+      return Promise.resolve(res);
     },
     // The target editor asks for the topics a selector resolves to; nothing here depends on it.
     resolveTopicSelector: () => Promise.reject(new Error('not used by these tests')),
@@ -179,6 +197,12 @@ const makeHarness = (options: HarnessOptions = {}) => {
     settleCreates: async () => {
       await act(async () => {
         heldCreates.splice(0).forEach((resolve) => resolve());
+      });
+    },
+    /** The Pause the server was still performing finally answers. */
+    settlePauses: async () => {
+      await act(async () => {
+        heldPauses.splice(0).forEach((resolve) => resolve());
       });
     },
   };
@@ -670,6 +694,66 @@ describe('the tab being hidden', () => {
     expect(sessionState()).toBe('running');
   });
 
+  /**
+   * The window between "Pause sent" and "Pause answered". A Pause is not instant on the server, and
+   * a tab can be hidden and shown again inside that window - alt-tab, a notification, a screen
+   * lock.
+   *
+   * Abandoning the in-flight Pause's response and sending a Resume immediately does NOT make the
+   * server agree: the per-session lifecycle lock is not FIFO, so a Resume sent second can be
+   * granted first and the older Pause then lands last. The session ends up paused on the server
+   * while the client says Running - and nothing further arrives to correct it, because a paused
+   * consumer sends nothing.
+   *
+   * So the client serializes its own intent: the return is recorded, and the Resume goes out only
+   * once the Pause it would race has settled.
+   */
+  it('does not race a Resume against a Pause the server has not answered yet', async () => {
+    const harness = makeHarness({ deferPause: true });
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+    await startSession();
+    expect(harness.resumeRequests).toHaveLength(1);
+
+    await setTabHidden(true);
+    expect(harness.pauseRequests).toHaveLength(1);
+    // The server is still pausing: nothing has confirmed it yet.
+    expect(sessionState()).toBe('pausing');
+
+    await setTabHidden(false);
+
+    // The intent is recorded, not sent: a second Resume here is the one that can overtake the
+    // Pause on the wire and leave the server paused underneath a Running session.
+    expect(harness.resumeRequests).toHaveLength(1);
+
+    await harness.settlePauses();
+
+    // With the Pause settled the operations can no longer cross, so the session resumes - and what
+    // it shows now is what the server is really doing.
+    expect(harness.resumeRequests).toHaveLength(2);
+    expect(sessionState()).toBe('running');
+  });
+
+  it('stays paused when the tab is hidden again before the Pause settles', async () => {
+    // The recorded return is withdrawn by the tab going away again: the last thing the user did is
+    // still "leave", and the Pause already in flight is exactly what that wants.
+    const harness = makeHarness({ deferPause: true });
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+    await startSession();
+
+    await setTabHidden(true);
+    await setTabHidden(false);
+    await setTabHidden(true);
+    await harness.settlePauses();
+
+    expect(sessionState()).toBe('paused');
+    expect(harness.resumeRequests).toHaveLength(1);
+
+    // ...and the ordinary return still resumes it, from a Pause that has settled.
+    await setTabHidden(false);
+    expect(sessionState()).toBe('running');
+    expect(harness.resumeRequests).toHaveLength(2);
+  });
+
   it('leaves a session the user paused paused when the tab comes back', async () => {
     // Coming back must not restart something the USER stopped - only what the hidden tab stopped.
     const harness = makeHarness();
@@ -837,6 +921,50 @@ describe('the unload cleanup', () => {
   });
 });
 
+describe('the browser-wide More tools visibility', () => {
+  afterEach(() => {
+    cleanup();
+    window.localStorage.clear();
+  });
+
+  it('is open by default and remembers close and reopen across remounts', async () => {
+    window.localStorage.clear();
+    makeHarness();
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+
+    expect(screen.getByTestId('cs-tools-resize-handle')).toBeInTheDocument();
+    expect(window.localStorage.getItem(localStorageKeys.consumerSessionToolsOpen)).toBe('true');
+
+    fireEvent.click(screen.getByTestId('cs-tools-close'));
+    expect(screen.queryByTestId('cs-tools-resize-handle')).toBeNull();
+    expect(window.localStorage.getItem(localStorageKeys.consumerSessionToolsOpen)).toBe('false');
+
+    cleanup();
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+    expect(screen.queryByTestId('cs-tools-resize-handle')).toBeNull();
+
+    fireEvent.click(screen.getByTestId('cs-tools'));
+    expect(screen.getByTestId('cs-tools-resize-handle')).toBeInTheDocument();
+    expect(window.localStorage.getItem(localStorageKeys.consumerSessionToolsOpen)).toBe('true');
+
+    cleanup();
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+    expect(screen.getByTestId('cs-tools-resize-handle')).toBeInTheDocument();
+  });
+
+  it('falls back open and heals a malformed saved visibility value', async () => {
+    window.localStorage.setItem(localStorageKeys.consumerSessionToolsOpen, JSON.stringify('not-a-boolean'));
+    makeHarness();
+
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+
+    expect(screen.getByTestId('cs-tools-resize-handle')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(window.localStorage.getItem(localStorageKeys.consumerSessionToolsOpen)).toBe('true');
+    });
+  });
+});
+
 describe('the browser-wide delivery controls', () => {
   // Both live in localStorage and must be scrubbed, or one test's setting becomes the next
   // test's surprise.
@@ -958,5 +1086,70 @@ describe('the browser-wide delivery controls', () => {
 
     expect(harness.pauseRequests).toHaveLength(0);
     expect(sessionState()).toBe('running');
+  });
+});
+
+/**
+ * What a pause COSTS, said where the pause happened.
+ *
+ * A paused session hands its prefetched messages back to the broker and picks them up again on
+ * resume - on a PERSISTENT topic. A non-persistent topic keeps no log at all, so whatever is
+ * published while the session is paused exists nowhere afterwards: resuming shows only what comes
+ * next. The session used to present both cases identically, so a user watching a non-persistent
+ * topic could pause believing the pause was free.
+ *
+ * The disclosure is the paused state's own, not a permanent caveat: it appears when a pause is
+ * actually in effect over topics that cannot retain anything, and nowhere else.
+ */
+describe('pausing a session that reads non-persistent topics', () => {
+  const note = () => screen.queryByTestId('cs-paused-non-persistent-note');
+
+  it('says the paused gap is not recoverable', async () => {
+    makeHarness();
+    await renderSession(defaultConfig(topicContext('non-persistent')), topicContext('non-persistent'));
+    await startSession();
+
+    await clickPlay();
+    expect(sessionState()).toBe('paused');
+
+    // Both halves have to be on screen: WHICH property of the topics causes it, and WHAT it costs.
+    // Either alone reads as a description of a paused session rather than as a warning.
+    expect(note()).toBeInTheDocument();
+    expect(note()!.textContent).toMatch(/non-persistent/i);
+    expect(note()!.textContent).toMatch(/paused/i);
+  });
+
+  it('says nothing while the session is running - a running session misses nothing', async () => {
+    makeHarness();
+    await renderSession(defaultConfig(topicContext('non-persistent')), topicContext('non-persistent'));
+    await startSession();
+
+    expect(note()).not.toBeInTheDocument();
+  });
+
+  it('does not claim it on a persistent topic, where the pause really does lose nothing', async () => {
+    // The counterpart that keeps the warning meaningful: a disclosure shown on every pause is
+    // noise, and noise is what gets ignored on the one topic where it matters.
+    makeHarness();
+    await renderSession(defaultConfig(topicContext('persistent')), topicContext('persistent'));
+    await startSession();
+
+    await clickPlay();
+    expect(sessionState()).toBe('paused');
+
+    expect(note()).not.toBeInTheDocument();
+  });
+
+  it('retires the disclosure when the session resumes', async () => {
+    makeHarness();
+    await renderSession(defaultConfig(topicContext('non-persistent')), topicContext('non-persistent'));
+    await startSession();
+
+    await clickPlay();
+    expect(note()).toBeInTheDocument();
+
+    await clickPlay();
+    expect(sessionState()).toBe('running');
+    expect(note()).not.toBeInTheDocument();
   });
 });

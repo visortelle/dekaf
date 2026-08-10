@@ -148,7 +148,17 @@ def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
 
             decode[PulsarAuth](v) match
                 case Left(err) =>
-                    logger.warn(s"Unable to parse cookie: ${err.getMessage}")
+                    // The circe message must stay OUT of the log: for malformed JSON, jawn's
+                    // message quotes the raw input at the failure offset (`expected : got
+                    // '"eyJhb...'`), and a decode failure's message carries the cursor path -
+                    // i.e. the credential names. The input here is the credential cookie
+                    // (tokens, private keys), so log only the failure kind and position.
+                    val safeDetail = err match
+                        case ParsingFailure(_, cause: org.typelevel.jawn.ParseException) =>
+                            s"not valid JSON (line ${cause.line}, column ${cause.col})"
+                        case _: ParsingFailure  => "not valid JSON"
+                        case _: DecodingFailure => "valid JSON, but not a valid PulsarAuth document"
+                    logger.warn(s"Unable to parse cookie: $safeDetail")
                     Left(new Exception(s"Unable to parse pulsar_auth cookie."))
                 case Right(pulsarAuth) => Right(
                         pulsarAuth
@@ -165,31 +175,27 @@ def pulsarAuthToCookie(
     cookieSecure: Option[Boolean] = config.cookieSecure,
     cookieSameSite: Option[String] = config.cookieSameSite
 ): String =
-    val pulsarAuthWithoutEncodingMetadata = pulsarAuth.copy(
-        credentials = pulsarAuth.credentials.map((name, credentials) =>
-            credentials match
-                case cr: OAuth2Credentials => (
-                        name,
-                        cr.copy(
-                            issuerUrl = URLEncoder.encode(cr.issuerUrl, UTF_8),
-                            privateKey = URLEncoder.encode(cr.privateKey, UTF_8),
-                            audience = cr.audience.map(audience => URLEncoder.encode(audience, UTF_8)),
-                            scope = cr.scope.map(scope => URLEncoder.encode(scope, UTF_8))
-                        )
-                    )
-                // parsePulsarAuthCookie URL-DECODES the whole cookie value, so anything written
-                // raw comes back mangled: a `+` in authParams turned into a space and `%xx` was
-                // eaten. authParams carries tokens/passwords, so encode it like the OAuth2 fields.
-                case cr: AuthParamsStringCredentials => (
-                        name,
-                        cr.copy(authParams = URLEncoder.encode(cr.authParams, UTF_8))
-                    )
-                case _ => (name, credentials)
-        )
-    )
-
     val cookieName = "pulsar_auth"
-    val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
+
+    // The ENTIRE serialized JSON is URL-encoded here, exactly once; parsePulsarAuthCookie
+    // URL-decodes the whole value exactly once. A lossless pair, with no raw remainder that
+    // could terminate the header value.
+    //
+    // The previous scheme encoded individual FIELDS (the OAuth2 fields and authParams) and wrote
+    // the surrounding JSON raw - but JSON does not escape `;`, and two strings travel here that
+    // are not charset-validated anywhere: `authPluginClassName` (free text from the
+    // /pulsar-auth/add BODY; only the name path segment is validated) and the credential NAMES
+    // (parsePulsarAuthCookie accepts any keys from a hand-crafted cookie, and
+    // setCookieAndSuccess echoes them back). A `;` in either truncated the stored cookie at the
+    // browser - the next request failed to parse, a silent credential corruption - and promoted
+    // the remainder to REAL cookie attributes (`Domain=evil.example`). setCookieAndSuccess also
+    // re-injects the operator-configured Default credentials into every response, so one bad
+    // configured value rewrote the Set-Cookie header for every user.
+    //
+    // Legacy cookies written by the per-field scheme still parse: the read path is unchanged,
+    // and a legacy value is raw JSON whose only `%xx`/`+` sequences sit inside the fields the
+    // old writer encoded - one whole-value decode yields exactly what the old reader saw.
+    val cookieValue = URLEncoder.encode(pulsarAuth.asJson.noSpaces, UTF_8)
 
     val cookiePath = publicBaseUrl.map {
         java.net.URI.create(_).getPath match

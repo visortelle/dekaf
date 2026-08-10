@@ -2,11 +2,11 @@ package library
 
 import zio.test.*
 import com.tools.teal.pulsar.ui.library.v1.library as pb
+import com.tools.teal.pulsar.ui.library.v1.resource_matchers as pbm
 import _root_.library.managed_items.{ManagedMarkdownDocument, ManagedMarkdownDocumentSpec}
 import scala.util.Try
 import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.read.ListAppender
 import org.slf4j.LoggerFactory
 import scala.jdk.CollectionConverters.*
 
@@ -26,9 +26,9 @@ object libraryScanTest extends ZIOSpecDefault {
     private def tenantContext(tenant: String): ResourceMatcher =
         ResourceMatcher(matcher = TenantMatcher(matcher = ExactTenantMatcher(tenant = tenant)))
 
-    private def markdownItem(id: String): LibraryItem =
+    private def markdownItem(id: String, contexts: Vector[ResourceMatcher] = Vector(tenantContext("t1"))): LibraryItem =
         LibraryItem(
-            metadata = LibraryItemMetadata(updatedAt = "2026-07-25T00:00:00Z", availableForContexts = Vector(tenantContext("t1"))),
+            metadata = LibraryItemMetadata(updatedAt = "2026-07-25T00:00:00Z", availableForContexts = contexts),
             spec = ManagedMarkdownDocument(
                 metadata = ManagedItemMetadata(
                     `type` = ManagedItemType.MarkdownDocument,
@@ -62,14 +62,24 @@ object libraryScanTest extends ZIOSpecDefault {
             case l: LogbackLogger => l
             case other           => throw new IllegalStateException(s"Expected a logback logger, got ${other.getClass.getName}")
 
+    /** A THREAD-SAFE capture appender. Logback's own ListAppender backs onto a plain ArrayList,
+      * and the "library.Library" logger is shared: suites running in parallel append to it while
+      * this helper snapshots, which threw ConcurrentModificationException out of the FIXTURE and
+      * failed the test before its assertion ever ran - rarely, and only in full-suite runs. */
+    private final class QueueAppender extends ch.qos.logback.core.AppenderBase[ILoggingEvent]:
+        val events = new java.util.concurrent.ConcurrentLinkedQueue[ILoggingEvent]()
+        override def append(event: ILoggingEvent): Unit =
+            events.add(event)
+            ()
+
     private def withCapturedLibraryLogs[A](body: => A): (A, List[ILoggingEvent]) =
         val logbackLogger = libraryLogbackLogger()
-        val appender = new ListAppender[ILoggingEvent]()
+        val appender = new QueueAppender()
         appender.start()
         logbackLogger.addAppender(appender)
         try
             val result = body
-            (result, appender.list.asScala.toList)
+            (result, appender.events.asScala.toList)
         finally
             logbackLogger.detachAppender(appender)
             appender.stop()
@@ -229,6 +239,90 @@ object libraryScanTest extends ZIOSpecDefault {
             val notDeletable = surfaced.filterNot(id => Try(library.deleteItem(id)).isSuccess)
 
             assertTrue(surfaced == List("dddddd"), notDeletable.isEmpty)
+        },
+        test("a stored item carrying the unimplemented namespace_regex still loads - the field is dropped with a warning") {
+            // REGRESSION - `allNamespaceMatcherFromPb` REFUSES a set `namespace_regex`, which is
+            // right for REQUEST data (accepting it would silently WIDEN the caller's scope). But
+            // the same conversion runs on every stored item during scan(), where refusing made the
+            // whole ITEM fail to parse: it silently vanished from the library with only a server
+            // WARN and no way to repair it through the product. A stored item is not a request -
+            // the scan must drop the FIELD (never applied by any version that wrote it) and keep
+            // the ITEM, naming the file and the ignored pattern.
+            val tenantPb = pbm.TenantMatcher(matcher = pbm.TenantMatcher.Matcher.Exact(pbm.ExactTenantMatcher(tenant = "t1")))
+            def allNsPb(regex: String) = pbm.NamespaceMatcher(matcher =
+                pbm.NamespaceMatcher.Matcher.All(pbm.AllNamespaceMatcher(tenant = Some(tenantPb), namespaceRegex = regex))
+            )
+            // the field can sit directly under a namespace matcher or nested under a topic matcher
+            val directWithRegex = pbm.ResourceMatcher(matcher = pbm.ResourceMatcher.Matcher.Namespace(allNsPb("audit-.*")))
+            val nestedWithRegex = pbm.ResourceMatcher(matcher =
+                pbm.ResourceMatcher.Matcher.Topic(
+                    pbm.TopicMatcher(matcher = pbm.TopicMatcher.Matcher.All(pbm.AllTopicMatcher(namespace = Some(allNsPb("billing-.*")))))
+                )
+            )
+
+            // what the item must load AS: the same matchers with the regex field dropped
+            val tenantModel = TenantMatcher(matcher = ExactTenantMatcher(tenant = "t1"))
+            val expected = markdownItem(
+                "nsregexitem1",
+                contexts = Vector(
+                    ResourceMatcher(matcher = NamespaceMatcher(matcher = AllNamespaceMatcher(tenant = tenantModel))),
+                    ResourceMatcher(matcher =
+                        TopicMatcher(matcher = AllTopicMatcher(namespace = NamespaceMatcher(matcher = AllNamespaceMatcher(tenant = tenantModel))))
+                    )
+                )
+            )
+            val cleanPb = LibraryItem.toPb(expected)
+            val poisonedPb = cleanPb.copy(metadata = cleanPb.metadata.map(_.copy(availableForContexts = Seq(directWithRegex, nestedWithRegex))))
+
+            val root = tempDir()
+            os.write(root / "nsregexitem1.binpb", poisonedPb.toByteArray)
+            os.write(root / "nsregexcontrol1.binpb", itemBytes(markdownItem("nsregexcontrol1"))) // control
+
+            val (library, logs) = withCapturedLibraryLogs(Library.createAndRefreshDb(root.toString))
+            val warnings = logs.filter(_.getLevel == Level.WARN).map(_.getFormattedMessage)
+
+            assertTrue(
+                // the ITEM survives, with the FIELD dropped in both matcher positions
+                library.getItemById("nsregexitem1").contains(expected),
+                library.getItemById("nsregexcontrol1").isDefined,
+                library.size == 2,
+                // and not silently: a WARN names the file and each ignored pattern
+                warnings.exists(m => m.contains("nsregexitem1") && m.contains("audit-.*")),
+                warnings.exists(m => m.contains("nsregexitem1") && m.contains("billing-.*")),
+                // the WRITE path stays strict: the same bytes are still refused as request data
+                // (saveLibraryItem converts the request with this exact call before writing)
+                Try(LibraryItem.fromPb(poisonedPb)).failed.toOption.exists(_.isInstanceOf[IllegalArgumentException])
+            ) ?? s"warnings=${warnings.mkString("|")}"
+        },
+        test("mutations mark their lock-held directory rescan as blocking for the execution context") {
+            // REGRESSION - writeItem/deleteItem do O(N) file I/O (a rescan of the whole library
+            // dir) inside the process-global mutation lock, and LibraryServiceImpl binds on
+            // ExecutionContext.global - a bounded ForkJoinPool that only spawns compensation
+            // threads for blocking it is TOLD about via scala.concurrent.blocking{}. Unmarked, a
+            // slow disk plus a contended lock starves unrelated compute tasks pool-wide.
+            // BlockContext is the seam blocking{} reports to, so a recording context is the direct
+            // oracle: at least one blocking-marked region must cover each mutation.
+            import scala.concurrent.{BlockContext, CanAwait}
+            val root = tempDir()
+            val library = Library.createAndRefreshDb(root.toString)
+            val blockOnCalls = new java.util.concurrent.atomic.AtomicInteger(0)
+            val recording = new BlockContext:
+                override def blockOn[T](thunk: => T)(implicit permission: CanAwait): T =
+                    blockOnCalls.incrementAndGet()
+                    thunk
+
+            BlockContext.withBlockContext(recording)(library.writeItem(markdownItem("blockmark1")))
+            val afterWrite = blockOnCalls.get()
+            BlockContext.withBlockContext(recording)(library.deleteItem("blockmark1"))
+            val afterDelete = blockOnCalls.get()
+
+            assertTrue(
+                afterWrite >= 1, // the write (including its rescan) ran inside a blocking-marked region
+                afterDelete > afterWrite, // and so did the delete
+                // the marker changed reporting, not behavior
+                library.getItemById("blockmark1").isEmpty,
+                library.size == 0
+            ) ?? s"afterWrite=$afterWrite afterDelete=$afterDelete"
         },
         test("deleteItem removes the file and drops the item from the db") {
             val root = tempDir()

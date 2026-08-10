@@ -10,6 +10,8 @@
  * possibly-persistent, so an unresolved reference or an open-ended regex leaves every mode enabled.
  */
 import {
+  effectiveStartFrom,
+  historyDependentStartFromTypes,
   isNonPersistentTopicFqn,
   startFromPersistencyAdvice,
   targetTopicsPersistency,
@@ -166,5 +168,56 @@ describe('startFromPersistencyAdvice', () => {
     expect(startFromPersistencyAdvice({ hasPersistent: false, hasNonPersistent: true })).toBe('history-unavailable');
     expect(startFromPersistencyAdvice({ hasPersistent: true, hasNonPersistent: true })).toBe('history-partial');
     expect(startFromPersistencyAdvice({ hasPersistent: true, hasNonPersistent: false })).toBe('none');
+  });
+});
+
+/**
+ * The session-local substitution that replaced the old in-place rewrite: when nothing selected
+ * retains history and the configured mode needs one, the RUNTIME config runs from the live tail
+ * while the stored configuration keeps exactly what the user wrote. These tests pin the decision;
+ * the non-rewriting itself is pinned in StartFromInput.test.tsx, and the substituted request in
+ * ConsumerSession.test.ts.
+ */
+describe('effectiveStartFrom', () => {
+  const nonPersistentOnly = [target(multi('non-persistent://public/default/t'))];
+  const persistentOnly = [target(multi('persistent://public/default/t'))];
+  const mixed = [target(multi('persistent://public/default/a', 'non-persistent://public/default/b'))];
+  const context = topicContext('persistent');
+  const substitute = (startFrom: unknown, targets: unknown[], ctx: unknown = context) =>
+    effectiveStartFrom(startFrom as never, targets as never, ctx as never);
+
+  it('substitutes the live tail when a history mode meets a history-less selection', () => {
+    expect(substitute({ type: 'nthMessageAfterEarliest', n: 5 }, nonPersistentOnly)).toEqual({ type: 'latestMessage' });
+  });
+
+  it('substitutes for EVERY history-dependent mode - the same set the selector disables', () => {
+    // One shared list drives both the disabled options and this substitution; if a future mode
+    // joins the selector without joining the list, this loop will not catch it - the selector
+    // tests will - but a mode in the list must never slip through here.
+    historyDependentStartFromTypes.forEach((type) => {
+      expect(substitute({ type }, nonPersistentOnly)).toEqual({ type: 'latestMessage' });
+    });
+  });
+
+  it('returns the very same object when the mode is the live tail already', () => {
+    // Identity, not just equality: the caller uses it to keep the converted config untouched.
+    const startFrom = { type: 'latestMessage' };
+    expect(substitute(startFrom, nonPersistentOnly)).toBe(startFrom);
+  });
+
+  it('leaves a history mode alone when the selection retains history', () => {
+    const startFrom = { type: 'nthMessageAfterEarliest', n: 5 };
+    expect(substitute(startFrom, persistentOnly)).toBe(startFrom);
+  });
+
+  it('leaves a mixed selection alone - history modes are legal there', () => {
+    const startFrom = { type: 'earliestMessage' };
+    expect(substitute(startFrom, mixed)).toBe(startFrom);
+  });
+
+  it('never substitutes on a guess - the unresolvable counts as possibly-persistent', () => {
+    const startFrom = { type: 'dateTime', dateTime: new Date(0) };
+    expect(substitute(startFrom, [])).toBe(startFrom);
+    expect(substitute(startFrom, [{ type: 'reference', ref: 'some-id' }])).toBe(startFrom);
   });
 });

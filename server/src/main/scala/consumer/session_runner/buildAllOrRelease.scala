@@ -12,19 +12,39 @@ import scala.util.Try
   * The session appeared to fail while its consumers went on holding subscriptions until the process
   * ended.
   *
-  * The original failure is what propagates. A release that fails on the way out is swallowed
-  * DELIBERATELY: it is a second failure while handling the first, and reporting it instead would
-  * replace the cause with a consequence.
+  * The original failure is what propagates: a release that fails on the way out is a second failure
+  * while handling the first, and REPLACING the cause with a consequence would hide why the build
+  * failed at all. It is not DISCARDED, though, which is what used to happen - it rides along as a
+  * SUPPRESSED cause, so the one exception the caller sees says both what went wrong and what was
+  * left behind, and the resource itself is handed to `onReleaseFailure` so something still holds a
+  * handle to it. Swallowing both meant a consumer that refused to close kept its subscription, its
+  * connection and its listener thread with nothing anywhere able to reach it again.
   *
-  * PURE: `build` and `release` are plain functions, so the partial-failure path is driven with
-  * lambdas and no broker.
+  * PURE: `build`, `release` and `onReleaseFailure` are plain functions, so the partial-failure path
+  * is driven with lambdas and no broker.
+  *
+  * @param onReleaseFailure
+  *   what to do with a resource whose release failed. The default does nothing - callers that
+  *   have nowhere to put it are no worse off than before; the session paths pass a quarantine.
   */
-def buildAllOrRelease[A, R](inputs: Vector[A], build: A => R, release: R => Unit): Vector[R] =
+def buildAllOrRelease[A, R](
+    inputs: Vector[A],
+    build: A => R,
+    release: R => Unit,
+    onReleaseFailure: (R, Throwable) => Unit = (_: R, _: Throwable) => ()
+): Vector[R] =
     val built = Vector.newBuilder[R]
     try
         inputs.foreach(input => built += build(input))
         built.result()
     catch
         case err: Throwable =>
-            built.result().foreach(resource => Try(release(resource)))
+            built.result().foreach { resource =>
+                Try(release(resource)).failed.foreach { releaseErr =>
+                    // Guarded: `addSuppressed` throws if handed the exception it is being added to,
+                    // and nothing about a cleanup path may introduce a new way to fail.
+                    Try(err.addSuppressed(releaseErr))
+                    Try(onReleaseFailure(resource, releaseErr))
+                }
+            }
             throw err

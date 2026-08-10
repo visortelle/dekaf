@@ -12,7 +12,7 @@ import _root_.consumer.session_target.ConsumerSessionTarget
 import _root_.consumer.session_target.consumption_mode.ConsumerSessionTargetConsumptionMode
 import _root_.consumer.session_target.consumption_mode.modes.RegularConsumptionMode
 import _root_.consumer.session_target.topic_selector.{MultiTopicSelector, TopicSelector}
-import _root_.consumer.start_from.{ConsumerSessionStartFrom, DateTime, DateTimeUnit, EarliestMessage, LatestMessage, MessageId, NthMessageAfterEarliest, NthMessageBeforeLatest, ApproximateDataPosition, ApproximateTimePosition, RelativeDateTime}
+import _root_.consumer.start_from.{ConsumerSessionStartFrom, DateTime, DateTimeUnit, EarliestMessage, LatestMessage, MessageId, NthMessageAfterEarliest, NthMessageBeforeLatest, ApproximateEntryPosition, ApproximatePublishTimePosition, RelativeDateTime}
 import _root_.consumer.value_projections.ValueProjectionList
 import org.apache.pulsar.client.impl.MessageIdImpl
 import zio.test.*
@@ -82,13 +82,13 @@ object startFromOrderingTest extends ZIOSpecDefault:
                 !needsGlobalOrdering(NthMessageAfterEarliest(n = -3), streamCount = 4)
             )
         },
-        test("APPROXIMATE POSITION stays per partition, and every exact-seek mode gets nothing") {
+        test("percentage positions resolve before delivery and do not request a merge layer") {
             // Deliberate, not an oversight: a count of n is reached by streaming n messages and
             // stopping, but a proportion of the merged stream is only known once all of it has been
             // measured, which is O(topic) at any n.
             val exactSeekModes: Vector[ConsumerSessionStartFrom] = Vector(
-                ApproximateDataPosition(fraction = 0.6),
-                ApproximateTimePosition(fraction = 0.6),
+                ApproximateEntryPosition(fraction = 0.6),
+                ApproximatePublishTimePosition(fraction = 0.6),
                 EarliestMessage(),
                 LatestMessage(),
                 DateTime(dateTime = java.time.Instant.EPOCH),
@@ -113,8 +113,8 @@ object startFromOrderingTest extends ZIOSpecDefault:
             assertTrue(
                 globalOrderingPlanFor(NthMessageAfterEarliest(n = 7), oneStream) == StartFromOrderingPlan.PassThrough,
                 globalOrderingPlanFor(NthMessageBeforeLatest(n = 7), oneStream) == StartFromOrderingPlan.PassThrough,
-                globalOrderingPlanFor(ApproximateDataPosition(fraction = 0.6), twoStreams) == StartFromOrderingPlan.PassThrough,
-                globalOrderingPlanFor(ApproximateTimePosition(fraction = 0.6), twoStreams) == StartFromOrderingPlan.PassThrough,
+                globalOrderingPlanFor(ApproximateEntryPosition(fraction = 0.6), twoStreams) == StartFromOrderingPlan.PassThrough,
+                globalOrderingPlanFor(ApproximatePublishTimePosition(fraction = 0.6), twoStreams) == StartFromOrderingPlan.PassThrough,
                 globalOrderingPlanFor(EarliestMessage(), twoStreams) == StartFromOrderingPlan.PassThrough
             )
         }
@@ -236,6 +236,7 @@ object startFromOrderingTest extends ZIOSpecDefault:
             schemasByTopic = Map.empty,
             sessionContextPool = ConsumerSessionContextPool(),
             consumers = Map.empty,
+            pauseArbiters = Map.empty,
             consumerListener = consumerListener,
             stats = ConsumerSessionTargetStats(messageProcessed = AtomicLong(0))
         )
@@ -327,9 +328,21 @@ object startFromOrderingTest extends ZIOSpecDefault:
             val armed = skipOrdering(3)
             l.startFromOrdering = armed
             val runner = targetRunner(l)
-            runner.resume(onNext = (_, _, _, _) => (), isDebug = false, incrementNumMessageProcessed = () => (), onStartFromDiscardProgress = () => ())
+            runner.resume(
+                onNext = (_, _, _, _, _) => (),
+                isDebug = false,
+                incrementNumMessageProcessed = () => (),
+                onStartFromDiscardProgress = () => (),
+                admitDelivery = _ => DeliveryAdmission.Prepare
+            )
             runner.pause()
-            runner.resume(onNext = (_, _, _, _) => (), isDebug = false, incrementNumMessageProcessed = () => (), onStartFromDiscardProgress = () => ())
+            runner.resume(
+                onNext = (_, _, _, _, _) => (),
+                isDebug = false,
+                incrementNumMessageProcessed = () => (),
+                onStartFromDiscardProgress = () => (),
+                admitDelivery = _ => DeliveryAdmission.Prepare
+            )
             assertTrue(l.startFromOrdering eq armed)
         },
         test("a merge partway through a skip stays partway through it across a pause") {
@@ -340,7 +353,13 @@ object startFromOrderingTest extends ZIOSpecDefault:
             ordering.progressDiscard.foreach(_.claim(p0))
             ordering.progressDiscard.foreach(_.claim(p0))
             runner.pause()
-            runner.resume(onNext = (_, _, _, _) => (), isDebug = false, incrementNumMessageProcessed = () => (), onStartFromDiscardProgress = () => ())
+            runner.resume(
+                onNext = (_, _, _, _, _) => (),
+                isDebug = false,
+                incrementNumMessageProcessed = () => (),
+                onStartFromDiscardProgress = () => (),
+                admitDelivery = _ => DeliveryAdmission.Prepare
+            )
             assertTrue(l.progressDiscard.remaining == 3L, l.progressDiscard.total == 5L)
         }
     ) @@ TestAspect.sequential
@@ -351,8 +370,12 @@ object startFromOrderingTest extends ZIOSpecDefault:
       * counts never cross the 1000-message watermark.
       */
     private val flowControlWiringSuite = suite("the desired-paused set reaches the consumer hooks")(
-        test("pause fires past the watermark, resume fires at the cut, and re-assertion heals an external resume") {
+        test("pause fires ONCE at the watermark (transitions only), and resume fires at the cut") {
             // Two real streams: p1 never delivers (blind), p0 crosses the per-stream watermark.
+            // The hooks land on per-consumer pause arbiters in production, so external resumes
+            // cannot stomp a hold any more - which is what lets the reconcile apply DIFFS: one
+            // pause call at the crossing, however many thousand offers follow, one resume at the
+            // cut. The call counts pin exactly that.
             val ordering = StartFromOrdering.make[String](
                 StartFromOrderingPlan.GlobalSkip(
                     1,
@@ -362,39 +385,68 @@ object startFromOrderingTest extends ZIOSpecDefault:
             var p0Paused = 0
             var p0Resumed = 0
             var p1Paused = 0
-            ordering.registerStreamPauseHooks(startFromStreamId(consumerName, p0), () => p0Paused += 1, () => p0Resumed += 1)
-            ordering.registerStreamPauseHooks(startFromStreamId(otherConsumerName, p1), () => p1Paused += 1, () => ())
+            ordering.registerStreamPauseHooks(startFromStreamId(consumerName, p0), () => { p0Paused += 1; true }, () => { p0Resumed += 1; true })
+            ordering.registerStreamPauseHooks(startFromStreamId(otherConsumerName, p1), () => { p1Paused += 1; true }, () => true)
 
-            // Cross the production per-stream watermark (1000) while p1 stays silent.
-            (1L to (startFromMergePauseStreamAt + 5L)).foreach { i =>
+            // Cross the production per-stream watermark (1000) while p1 stays silent, then keep
+            // going: the extra offers must not produce extra pause calls.
+            (1L to (startFromMergePauseStreamAt + 50L)).foreach { i =>
                 ordering.deliver(consumerName, p0, 100L + i, i, s"a$i")
+                ordering.reconcileFlowControl()
             }
-            ordering.reconcileFlowControl()
             val pausedAtWatermark = p0Paused
             val blindNeverPaused = p1Paused
 
-            // An EXTERNAL wholesale resume (user resume, or the rate limiter releasing its permit
-            // hold) wakes every consumer behind this layer's back. The bookkeeping reset models
-            // the runner's call; even without it, the next reconcile re-asserts the pause.
-            ordering.resetAppliedFlowControl()
-            ordering.reconcileFlowControl()
-            val pausedAgainAfterExternalResume = p0Paused
-
-            // p1 finally speaks: older than everything held, at its backlog end... its end is
-            // entry 5000, so this message does NOT end its backlog - the budget's exhaustion is
-            // what releases everything (skip 1: the drop finishes the merge).
+            // p1 finally speaks with the globally-oldest message: the budget's only unit is spent
+            // on it and everything held drains - the cut releases the pause.
             val atCut = ordering.deliver(otherConsumerName, p1, 1L, 0, "b1")
             ordering.settleIfDone()
             ordering.reconcileFlowControl()
 
             assertTrue(
-                pausedAtWatermark >= 1,
+                pausedAtWatermark == 1, // TRANSITIONS only - not one call per offer past the mark
                 blindNeverPaused == 0,
-                pausedAgainAfterExternalResume > pausedAtWatermark, // the drift self-heals
                 atCut.head == ("b1" -> StartFromOutcome.Drop),
-                atCut.count(_._2 == StartFromOutcome.Deliver) == (startFromMergePauseStreamAt + 5).toInt,
-                p0Resumed >= 1 // the cut released the pause
-            ) ?? s"pausedAtWatermark=$pausedAtWatermark again=$pausedAgainAfterExternalResume resumed=$p0Resumed p1Paused=$p1Paused atCutHead=${atCut.headOption}"
+                atCut.count(_._2 == StartFromOutcome.Deliver) == (startFromMergePauseStreamAt + 50).toInt,
+                p0Resumed >= 1
+            ) ?? s"pausedAtWatermark=$pausedAtWatermark resumed=$p0Resumed p1Paused=$p1Paused atCutHead=${atCut.headOption}"
+        },
+        test("a pause that FAILS once is retried until it takes - the books never say what did not happen") {
+            // The client call behind a hook can throw (a consumer mid-reconnect answers false
+            // through its arbiter). Recording the transition anyway meant no retry ever came: the
+            // stream kept delivering into a merge that believed it was paused. Success-only
+            // bookkeeping turns every later reconcile - each handled batch, each sweep tick -
+            // into the retry.
+            val ordering = StartFromOrdering.make[String](
+                StartFromOrderingPlan.GlobalSkip(
+                    1,
+                    Vector(stream(consumerName, p0, 5_000), stream(otherConsumerName, p1, 5_000))
+                )
+            )
+            var pauseAttempts = 0
+            var resumeAttempts = 0
+            ordering.registerStreamPauseHooks(
+                startFromStreamId(consumerName, p0),
+                // The FIRST attempt fails; every later one succeeds.
+                pause = () => { pauseAttempts += 1; pauseAttempts > 1 },
+                resume = () => { resumeAttempts += 1; true }
+            )
+            ordering.registerStreamPauseHooks(startFromStreamId(otherConsumerName, p1), () => true, () => true)
+
+            (1L to (startFromMergePauseStreamAt + 1L)).foreach { i =>
+                ordering.deliver(consumerName, p0, 100L + i, i, s"a$i")
+            }
+            ordering.reconcileFlowControl() // attempt 1: refused, must NOT be recorded as applied
+            val attemptsAfterFailure = pauseAttempts
+            ordering.reconcileFlowControl() // the retry: nothing changed but the books were honest
+            val attemptsAfterRetry = pauseAttempts
+            ordering.reconcileFlowControl() // applied now - no further calls
+            assertTrue(
+                attemptsAfterFailure == 1,
+                attemptsAfterRetry == 2,
+                pauseAttempts == 2,
+                resumeAttempts == 0
+            ) ?? s"pauseAttempts=$pauseAttempts resumeAttempts=$resumeAttempts"
         }
     )
 

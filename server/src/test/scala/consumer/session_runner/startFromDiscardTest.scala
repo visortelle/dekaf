@@ -86,9 +86,11 @@ object startFromDiscardTest extends ZIOSpecDefault:
             val (lookup, _) = logFromLatest(10, 10)
             assertTrue(resolveOne(1, lookup) == LatestNSeek.FromEntry("entry-1", 9L))
         },
-        test("a log shorter than n shows all of it") {
+        test("a log shorter than n shows all of it - anchored at its oldest entry, re-verifiably") {
+            // FromEntry(oldest, 0) covers the same messages a seek-to-earliest would, and unlike
+            // `Everything` the retention re-check can later prove the anchor still exists.
             val (lookup, _) = logFromLatest(10, 10, 10)
-            assertTrue(resolveOne(100, lookup) == LatestNSeek.Everything)
+            assertTrue(resolveOne(100, lookup) == LatestNSeek.FromEntry("entry-3", 0L))
         },
         test("an empty log maps to EVERYTHING - all it will ever hold is post-inspection live traffic") {
             // Empty when inspected means whatever exists at seek time arrived AFTER the inspection;
@@ -106,14 +108,14 @@ object startFromDiscardTest extends ZIOSpecDefault:
             // exactly 3 lookups - but a single concurrent append produces that same first repeat (the
             // moving anchor), so treating it as exhaustion was the whole-backlog bug. A clamp is now
             // told apart by ONE VERIFICATION LOOKUP at the k that produced the last accepted entry -
-            // a clamped end never moves, a grown end answers newer - so it is still `Everything`,
-            // one lookup later than the old first-repeat guard.
+            // a clamped end never moves, a grown end answers newer - so the topic still resolves
+            // as exhausted (anchored at its oldest entry), one lookup later than the old guard.
             val (lookup, lookups) = clampingLogFromLatest(3, 3)
             assertTrue(
-                resolveOne(100, lookup) == LatestNSeek.Everything,
+                resolveOne(100, lookup) == LatestNSeek.FromEntry("entry-2", 0L),
                 lookups() > 3,
                 lookups() <= maxLatestNReanchorSteps + 4
-            ) ?? s"resolved to Everything after ${lookups()} lookups (bound $maxLatestNReanchorSteps)"
+            ) ?? s"resolved after ${lookups()} lookups (bound $maxLatestNReanchorSteps)"
         },
         test("a clamping broker still resolves exactly when the log does hold n messages") {
             val (lookup, _) = clampingLogFromLatest(3, 4, 50)

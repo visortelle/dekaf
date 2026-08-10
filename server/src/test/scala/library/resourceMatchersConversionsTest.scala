@@ -14,7 +14,9 @@ import scala.util.Try
   * The proto has no regex matcher variant - the shape vocabulary is exactly
   * instance | tenant{exact,all} | namespace{exact,all} | topic{exact,all}, enumerated below.
   * (`AllNamespaceMatcher.namespace_regex` is a declared proto FIELD with no model counterpart -
-  * setting it is rejected rather than ignored; pinned by its own two tests.)
+  * setting it is rejected rather than ignored; pinned by its own two tests. The disk-read path is
+  * the one exception: `Library.scan` strips a set regex before converting, so a stored ITEM keeps
+  * loading - pinned in libraryScanTest.)
   *
   * No shared mutable state, so the default parallel test execution is safe here.
   */
@@ -193,11 +195,13 @@ object resourceMatchersConversionsTest extends ZIOSpecDefault {
             )
         },
         test("an unset namespace_regex still converts - the rejection is scoped to the field being SET") {
-            // The rejection reaches the disk-read path too (LibraryItemMetadata.fromPb runs on every
-            // stored item), so it must be inert for the default value. Nothing writes the field: the
-            // UI never sets it, and decoding all 329 items in the dogfooding data dir with
-            // `protoc --decode` found zero occurrences. Refusing a SET regex therefore breaks no
-            // existing reader; refusing an unset one would make every library item unreadable.
+            // This conversion runs on every stored item (LibraryItemMetadata.fromPb), so it must be
+            // inert for the default value - refusing an UNSET regex would make every library item
+            // unreadable. Nothing writes the field: the UI never sets it, and decoding all 329 items
+            // in the dogfooding data dir with `protoc --decode` found zero occurrences. (A SET regex
+            // on the disk-read path is handled BEFORE this conversion - Library.scan strips it and
+            // keeps the item; libraryScanTest pins that. The refusal above stays load-bearing for
+            // request data: list/count contexts and saveLibraryItem.)
             val allNamespaces = pb.AllNamespaceMatcher(tenant = Some(tenantMatcherToPb(tenantAll)))
             val expected = AllNamespaceMatcher(tenant = tenantAll)
 

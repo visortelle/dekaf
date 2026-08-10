@@ -23,6 +23,7 @@ object topicPositionsTest extends ZIOSpecDefault:
         topicFqn = "persistent://t/n/topic",
         first = None,
         last = None,
+        firstConsumed = None,
         cursor = None,
         ledgers = Vector.empty,
         currentLedgerEntries = 0,
@@ -76,7 +77,7 @@ object topicPositionsTest extends ZIOSpecDefault:
             },
             test("a topic occupying ONE INSTANT has no interior, so no fraction describes it") {
                 // first == last: no position separates the messages. 0.0 and 1.0 would both be
-                // inventions - the same rule ApproximateTimePosition follows.
+                // inventions - the same rule ApproximatePublishTimePosition follows.
                 val f = cursorTimeFractionOf(Some(endpoint(1000)), Some(endpoint(1000)), Some(cursorAt(1000)))
                 assertTrue(f.isEmpty)
             },
@@ -150,11 +151,28 @@ object topicPositionsTest extends ZIOSpecDefault:
                 assertTrue(row.unavailableReason.contains("non-persistent topic")) &&
                 assertTrue(row.retainedEntries.isEmpty)
             },
+            test("an UNAVAILABLE retained log still carries session-local consumed bounds") {
+                val firstConsumed = cursorAt(1200, ledger = 1, entry = 3)
+                val lastConsumed = cursorAt(1800, ledger = 1, entry = 9)
+                val row = buildTopicPositionRow(
+                    inputs.copy(
+                        firstConsumed = Some(firstConsumed),
+                        cursor = Some(lastConsumed),
+                        unavailableReason = Some("non-persistent topic")
+                    )
+                )
+
+                assertTrue(row.firstConsumed.contains(firstConsumed)) &&
+                assertTrue(row.cursor.contains(lastConsumed)) &&
+                assertTrue(row.retainedEntries.isEmpty)
+            },
             test("a fully populated row carries both fractions and the ordinal") {
+                val firstConsumed = cursorAt(1100, ledger = 1, entry = 9)
                 val row = buildTopicPositionRow(
                     inputs.copy(
                         first = Some(endpoint(1000, ledger = 1, entry = 0)),
                         last = Some(endpoint(2000, ledger = 1, entry = 99)),
+                        firstConsumed = Some(firstConsumed),
                         cursor = Some(cursorAt(1500, ledger = 1, entry = 49)),
                         ledgers = Vector(LedgerSpan(1, 0)),
                         currentLedgerEntries = 100,
@@ -162,9 +180,23 @@ object topicPositionsTest extends ZIOSpecDefault:
                     )
                 )
                 assertTrue(row.cursorTimeFraction.contains(0.5)) &&
+                assertTrue(row.firstConsumed.contains(firstConsumed)) &&
                 assertTrue(row.cursorEntryOrdinal.contains(50L)) &&
                 assertTrue(row.cursorEntryFraction.contains(0.5)) &&
-                assertTrue(row.retainedEntries.contains(100L))
+                assertTrue(row.retainedEntries.contains(100L)) &&
+                {
+                    val serialized = topicPositionToPb(row)
+                    assertTrue(serialized.firstConsumedMessageId.exists(_.toByteArray.sameElements(firstConsumed.messageId.toByteArray))) &&
+                    assertTrue(serialized.firstConsumedPublishTime.contains(1100L)) &&
+                    assertTrue(serialized.cursorPublishTime.contains(1500L))
+                }
+            },
+            test("unset consumed bounds stay absent on the wire") {
+                val serialized = topicPositionToPb(buildTopicPositionRow(inputs))
+                assertTrue(serialized.firstConsumedMessageId.isEmpty) &&
+                assertTrue(serialized.firstConsumedPublishTime.isEmpty) &&
+                assertTrue(serialized.cursorMessageId.isEmpty) &&
+                assertTrue(serialized.cursorPublishTime.isEmpty)
             }
         )
     )

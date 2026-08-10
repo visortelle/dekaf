@@ -9,11 +9,15 @@ export type ApproximateFractionInputProps = {
   fraction: number;
   onChange: (fraction: number) => void;
   /**
-   * Test-id prefix identifying WHICH mode this instance is editing, e.g. `cs-start-from-data` ->
-   * `cs-start-from-data-fraction`. Both modes render the same control, so one shared id would let a
-   * test drive one and assert the other.
+   * Test-id prefix identifying which mode this instance is editing. Both modes render the same
+   * control, so one shared id would let a test drive one and assert the other.
    */
   testIdPrefix: string;
+  /** Plain-language name shared by the slider and exact percentage field. */
+  accessibleName: string;
+  /** Labels shown below the two ends of the slider. */
+  startLabel: string;
+  endLabel: string;
   disabled?: boolean;
   isReadOnly?: boolean;
 };
@@ -49,6 +53,11 @@ const ApproximateFractionInput: React.FC<ApproximateFractionInputProps> = (props
 
   const isInvalid = fractionFromPercent(draft) === undefined;
   const sliderPercent = Number(percentFromFraction(props.fraction)) || 0;
+  const helpId = `${props.testIdPrefix}-note`;
+  const endpointsId = `${props.testIdPrefix}-endpoints`;
+  const errorId = `${props.testIdPrefix}-fraction-error`;
+  const descriptionIds = `${helpId} ${endpointsId}`;
+  const describedBy = isInvalid ? `${descriptionIds} ${errorId}` : descriptionIds;
 
   return (
     <div className={s.ApproximateFraction}>
@@ -60,9 +69,16 @@ const ApproximateFractionInput: React.FC<ApproximateFractionInputProps> = (props
         max={100}
         step={1}
         value={sliderPercent}
+        aria-label={`${props.accessibleName} slider`}
+        aria-describedby={describedBy}
+        aria-invalid={isInvalid}
         disabled={props.disabled || props.isReadOnly}
         onChange={(e) => props.onChange(fractionFromPercent(e.target.value) ?? props.fraction)}
       />
+      <div id={endpointsId} className={s.ApproximateFractionEndpoints}>
+        <span>0% · {props.startLabel}</span>
+        <span>100% · {props.endLabel}</span>
+      </div>
       <div className={s.ApproximateFractionValue}>
         <Input
           testId={`${props.testIdPrefix}-fraction`}
@@ -70,14 +86,27 @@ const ApproximateFractionInput: React.FC<ApproximateFractionInputProps> = (props
           type="number"
           onChange={onDraftChange}
           isError={isInvalid}
-          inputProps={{ disabled: props.disabled, min: 0, max: 100, step: 'any' }}
+          inputProps={{
+            disabled: props.disabled,
+            min: 0,
+            max: 100,
+            step: 'any',
+            'aria-label': `${props.accessibleName} percentage`,
+            'aria-describedby': describedBy,
+            'aria-invalid': isInvalid
+          }}
           placeholder="0-100"
           isReadOnly={props.isReadOnly}
         />
         <div className={s.ApproximateFractionUnit}>%</div>
       </div>
       {isInvalid && (
-        <div className={s.ApproximateFractionError} data-testid={`${props.testIdPrefix}-fraction-error`}>
+        <div
+          id={errorId}
+          className={s.ApproximateFractionError}
+          data-testid={errorId}
+          role="alert"
+        >
           {/* A refused entry does not undo the last valid one, so Play would start from THAT while
               the box shows something else. Saying which percentage that is turns a silent
               difference into a visible one. */}

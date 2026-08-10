@@ -13,8 +13,11 @@ import zio.test.*
   *
   * The two algorithms differ, and the memory profile is the reason. Skip-N is a streaming k-way
   * merge holding ONE message per topic, because n has deliberately no cap and buffering n messages
-  * would let a typed number exhaust the heap. Latest-N is a bounded top-n heap of exactly n, because
-  * the last n cannot be known until every partition has been read to its end.
+  * would let a typed number exhaust the heap. Latest-N buffers NOTHING at all: its cut is resolved
+  * from entry METADATA before delivery begins (`resolveLatestN` walks backward from each topic's
+  * end), so every consumer simply starts in the right place - the bounded top-n heap it once was
+  * is gone, and with it the only start-from path whose memory grew with a number the user typed.
+  * The `latestSuite` below pins the resolver.
   *
   * Everything here is driven with plain values through the pure state machines: no broker, and no
   * mock.
@@ -29,7 +32,7 @@ object globalStartFromTest extends ZIOSpecDefault:
     private final case class Arrival(streamId: String, key: MessageOrderKey, atBacklogEnd: Boolean, value: String)
 
     private def at(publishTime: Long, topicFqn: String, entryId: Long, batchIndex: Int = -1): MessageOrderKey =
-        MessageOrderKey(publishTime = publishTime, topicFqn = topicFqn, ledgerId = 1L, entryId = entryId, batchIndex = batchIndex)
+        MessageOrderKey(orderTime = publishTime, topicFqn = topicFqn, ledgerId = 1L, entryId = entryId, batchIndex = batchIndex)
 
     /** A partition's whole backlog: entry ids run 0..k-1 and the LAST message is flagged as the end
       * of the pre-existing backlog, exactly as the runtime flags it.
@@ -471,9 +474,13 @@ object globalStartFromTest extends ZIOSpecDefault:
                 cut(3, mixed) == Map(p1 -> LatestNSeek.FromEntry(s"$p1#1", 9L), p2 -> LatestNSeek.FromEntry(s"$p2#2", 0L))
             ) ?? s"${cut(3, mixed)}"
         },
-        test("a session holding fewer than n messages shows all of it") {
+        test("a session holding fewer than n messages shows all of it - each topic anchored, not Everything") {
+            // Exhausted CONTRIBUTORS keep their oldest-entry anchor so the retention re-check
+            // covers them; `Everything` is reserved for a topic that held nothing when inspected.
             val small = Map(p0 -> unbatched(10L), p1 -> unbatched(20L))
-            assertTrue(cut(50, small) == Map(p0 -> LatestNSeek.Everything, p1 -> LatestNSeek.Everything))
+            assertTrue(
+                cut(50, small) == Map(p0 -> LatestNSeek.FromEntry(s"$p0#1", 0L), p1 -> LatestNSeek.FromEntry(s"$p1#1", 0L))
+            ) ?? s"${cut(50, small)}"
         },
         test("an empty partition contributes nothing and cannot hold the cut back") {
             // The heap had to wait for every partition to reach its recorded end before it could
@@ -511,7 +518,7 @@ object globalStartFromTest extends ZIOSpecDefault:
                     Some(LogEntry(s"$topicFqn#$clamped", 100L - clamped, 3))
             val resolved = resolveLatestN(100, Vector(p0), clamping, olderByHashOrdinal)
             assertTrue(
-                resolved == Map(p0 -> LatestNSeek.Everything),
+                resolved == Map(p0 -> LatestNSeek.FromEntry(s"$p0#2", 0L)),
                 lookups > 3,
                 lookups <= maxLatestNReanchorSteps + 4
             ) ?? s"resolved=$resolved lookups=$lookups (bound $maxLatestNReanchorSteps)"
@@ -713,7 +720,7 @@ object globalStartFromTest extends ZIOSpecDefault:
             // Two asked for: p1's only entry, then p0's newest. Exactly two messages, whatever the
             // clocks did.
             assertTrue(
-                cut(2, reversed) == Map(p0 -> LatestNSeek.FromEntry(s"$p0#1", 0L), p1 -> LatestNSeek.Everything)
+                cut(2, reversed) == Map(p0 -> LatestNSeek.FromEntry(s"$p0#1", 0L), p1 -> LatestNSeek.FromEntry(s"$p1#1", 0L))
             ) ?? s"${cut(2, reversed)}"
         }
     )
@@ -1025,7 +1032,10 @@ object globalStartFromTest extends ZIOSpecDefault:
       * exactly "offered before".
       */
     private val duplicateSuite = suite("a redelivered duplicate never spends a second budget unit")(
-        test("a duplicate of a message still HELD is acknowledged without a claim") {
+        test("a duplicate of a message still HELD is handed back - no claim, and no acknowledgment either") {
+            // Acknowledging the copy was the loss path: the ack burned the message id, so an
+            // original whose DELIVERY later failed could never be redelivered. The copy is
+            // requeued instead; the broker's backoff retries it until the original settles.
             val discard = StartFromDiscard.shared(2)
             val merge = GlobalSkipMerge[String](Vector(p0, p1), Set.empty, discard)
             val first = merge.offer(p0, at(10, p0, 0), atBacklogEnd = false, "a1")
@@ -1033,12 +1043,16 @@ object globalStartFromTest extends ZIOSpecDefault:
             val resolved = merge.offer(p1, at(5, p1, 0), atBacklogEnd = true, "b1")
             assertTrue(
                 first.isEmpty,
-                copy == Vector("a1-copy" -> StartFromOutcome.Drop), // shown to nobody, acknowledged, claimed from NOTHING
+                copy == Vector("a1-copy" -> StartFromOutcome.Requeue), // decided NOTHING - handed back
                 resolved == Vector("b1" -> StartFromOutcome.Drop, "a1" -> StartFromOutcome.Drop),
                 discard.remaining == 0L // exactly two claims: b1 and a1 - the copy spent nothing
             ) ?? s"copy=$copy resolved=$resolved remaining=${discard.remaining}"
         },
-        test("a duplicate of a message already DECIDED is acknowledged without a claim") {
+        test("a duplicate of a message already DECIDED is handed back without a claim") {
+            // Requeue is safe here too: a successfully acknowledged original produces no more
+            // copies, and one whose ACK failed is finalized by the listener's paperwork check
+            // before the merge is ever asked - so a copy reaching this arm always still has an
+            // open fate somewhere downstream, and deciding nothing is the only safe answer.
             val discard = StartFromDiscard.shared(2)
             val merge = GlobalSkipMerge[String](Vector(p0), Set.empty, discard)
             val dropped = merge.offer(p0, at(10, p0, 0), atBacklogEnd = false, "a1")
@@ -1046,7 +1060,7 @@ object globalStartFromTest extends ZIOSpecDefault:
             val next = merge.offer(p0, at(20, p0, 1), atBacklogEnd = true, "a2")
             assertTrue(
                 dropped == Vector("a1" -> StartFromOutcome.Drop),
-                copy == Vector("a1-copy" -> StartFromOutcome.Drop),
+                copy == Vector("a1-copy" -> StartFromOutcome.Requeue),
                 next == Vector("a2" -> StartFromOutcome.Drop),
                 discard.remaining == 0L // exactly two claims: a1 and a2, never the copy
             ) ?? s"dropped=$dropped copy=$copy next=$next remaining=${discard.remaining}"

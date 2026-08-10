@@ -22,6 +22,7 @@ import SmallButton from '../SmallButton/SmallButton';
 import refreshIcon from './refresh.svg';
 import NoData from '../NoData/NoData';
 import { tooltipId } from '../Tooltip/Tooltip';
+import { sortTableData } from './sorting';
 
 import { TableFilterDescriptor, TableFilterValue } from './filters/types';
 import filterIcon from './filter.svg';
@@ -59,6 +60,9 @@ export type Column<DE, LD> = {
   title: ReactNode,
   render: (data: DE, lazyData?: LD) => ReactNode,
   sortFn?: (a: { data: DE, lazyData: LD | undefined }, b: { data: DE, lazyData: LD | undefined }) => number,
+  /** Marks rows whose rendered sort value is absent. Missing rows stay after populated rows in
+    * both directions; unlike encoding absence in sortFn, this is not inverted by descending sort. */
+  isSortValueMissing?: (entry: { data: DE, lazyData: LD | undefined }) => boolean,
   filter?: {
     descriptor: TableFilterDescriptor,
     testFn: (data: DE, lazyData: LD | undefined, filterValue: TableFilterValue) => boolean,
@@ -124,7 +128,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   // into any order, and the order is remembered per table like the widths are.
   const stickyConfig = visibleConfig.filter(column => column.stickyTo === 'left');
   const reorderableConfig = visibleConfig.filter(column => column.stickyTo !== 'left');
-  const { order: columnOrder, moveBefore: moveColumn } = useColumnOrder<CK>(
+  const { order: columnOrder, moveColumn } = useColumnOrder<CK>(
     props.tableId,
     reorderableConfig.map(column => column.columnKey)
   );
@@ -381,15 +385,22 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     };
 
     if (sort.type === 'by-single-column') {
-      const sortFn = props.columns.columns[sort.column]!.sortFn;
-      const sorted = sortFn ?
-        dataToSort.sort((a, b) => sortFn(
-          { data: a, lazyData: lazyData[props.getId(a)] },
-          { data: b, lazyData: lazyData[props.getId(b)] })
-        ) :
-        dataToSort;
+      const column = props.columns.columns[sort.column]!;
+      const sortFn = column.sortFn;
+      const entryOf = (dataEntry: DE) => ({ data: dataEntry, lazyData: lazyData[props.getId(dataEntry)] });
+      if (sortFn === undefined) {
+        return pin(dataToSort);
+      }
 
-      return pin(sort.direction === 'asc' ? sorted : [...sorted].reverse());
+      return sortTableData({
+        data: dataToSort,
+        direction: sort.direction,
+        sortFn,
+        entryOf,
+        isSortValueMissing: column.isSortValueMissing,
+        // The synthetic summary is pinned only after column ordering.
+        pinFirst: props.pinFirst
+      });
     }
 
     return pin(data);
