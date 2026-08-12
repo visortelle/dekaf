@@ -92,22 +92,22 @@ class CsMergeOrderSpec extends DekafSuite:
     if values.nonEmpty then fixtures.produceRoundRobin(Seq(fqnA, fqnB), values)
     (fqnA, fqnB, (tA, nsA, topicA))
 
-  test("CS-MO-0: a new consumer session defaults to Best effort ordering by publish time") {
-    // Owner decision (2026-08-09, direct instruction): the default is Best effort - supersedes
-    // the review-findings P1.1 note that said Guaranteed. The default merges with bounded
-    // lateness and never stalls on a silent stream; Guaranteed stays an explicit choice - an
-    // EXACT REPLAY that delivers everything recorded up to Play and then auto-pauses caught-up
-    // (`cs-replay-caught-up`). CsDeliveryModesSpec pins what each mode means across every
-    // liveness state, and CS-MO-G1/G2 pin the replay's order and chunk rule on the merge shapes.
-    // This test pins only WHAT the default is; every other ordering spec selects its mode
-    // explicitly through the control, so this is the single line a future default change should
-    // touch.
+  test("CS-MO-0: a new consumer session defaults to Guaranteed ordering by publish time") {
+    // Owner decision (2026-08-11, direct instruction): the default is Guaranteed - the THIRD move
+    // of this default (the plan file's decision log is the record), superseding the 2026-08-09
+    // Best effort default. The default is an EXACT REPLAY that delivers everything recorded up to
+    // Play and then auto-pauses caught-up (`cs-replay-caught-up`); Best effort stays the explicit
+    // choice for live following. CsDeliveryModesSpec pins what each mode means across every
+    // liveness state. This cell reads the config through openForTopicDefaults - the ONE
+    // navigation that leaves the configuration untouched, because the shared openForTopic pins
+    // Best effort for the generic feature lanes (see its comment). A future default change
+    // touches this cell and that pin, nothing else.
     val (t, ns, topic) = fixtures.freshTopicParts()
     val cs = ConsumerSessionPage(page)
 
-    cs.openForTopic(t, ns, topic)
+    cs.openForTopicDefaults(t, ns, topic)
 
-    assertThat(page.getByTestId("cs-delivery-order")).hasValue("best-effort")
+    assertThat(page.getByTestId("cs-delivery-order")).hasValue("guaranteed")
     assertThat(page.getByTestId("cs-delivery-order-key")).hasValue("publish-time")
   }
 
@@ -117,7 +117,7 @@ class CsMergeOrderSpec extends DekafSuite:
     // empty by definition, so Play answers with the instant caught-up pause (observed 2026-08-09:
     // the old "runs live and delivers" expectation failed with the session already 'paused').
     // Pinned through the control rather than inherited: whatever the session default is (today
-    // it is Best effort, CS-MO-0), this cell is about the explicit selection.
+    // it is Guaranteed, CS-MO-0), this cell is about the explicit selection.
     val (t, ns, topic, fqn) = fixtures.freshTopicPartsOfKind(fixtures.TopicKind.NonPersistentNonPartitioned)
     val cs = ConsumerSessionPage(page)
 
@@ -154,10 +154,9 @@ class CsMergeOrderSpec extends DekafSuite:
 
     val delivered = deliveredValues(values.size)
     assert(delivered == values.toList, s"delivered order was $delivered, expected ${values.toList}")
-    // The mode announces itself: the toolbar chip is on for a best-effort-ordered session, and an
-    // ordered run confesses no late deliveries.
-    assertThat(page.getByTestId("cs-order-chip")).isVisible()
-    assertThat(page.getByTestId("cs-order-late")).not().isVisible()
+    // An ordered run confesses nothing: no out-of-order warning mark beside the loaded count.
+    // (The always-on mode chip was removed 2026-08-11; ordered delivery itself is asserted above.)
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
   }
 
   test("CS-MO-2: the live tail comes out ordered too - the reorder grace at work") {
@@ -215,8 +214,8 @@ class CsMergeOrderSpec extends DekafSuite:
 
     val delivered = deliveredValues(values.size)
     assert(delivered.sorted == values.toList, s"every message must arrive exactly once, got $delivered")
-    // No chip for Fastest: the ordering layer is off, so nothing announces it.
-    assertThat(page.getByTestId("cs-order-chip")).not().isVisible()
+    // Fastest orders nothing and therefore warns of nothing.
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
   }
 
   test("CS-MO-5: LATEST-N with merge - the metadata-resolved cut composes with ordered delivery") {
@@ -287,11 +286,8 @@ class CsMergeOrderSpec extends DekafSuite:
 
     val delivered = deliveredValues(values.size)
     assert(delivered == values.toList, s"delivered $delivered, expected ${values.toList}")
-    assertThat(page.getByTestId("cs-order-chip")).isVisible()
-    assert(
-      page.getByTestId("cs-order-chip").textContent().contains("Replaying history - exact order"),
-      "the chip must name the replay"
-    )
+    // (The replay's announcement is the caught-up banner asserted above; the always-on chip
+    // label was removed 2026-08-11.)
     cs.stop()
   }
 
@@ -379,7 +375,6 @@ class CsMergeOrderSpec extends DekafSuite:
     val delivered = deliveredValues(merged.size)
     val expectedDelivered = merged.map(_._3).toList
     assert(delivered == expectedDelivered, s"delivered order was $delivered, expected $expectedDelivered")
-    assertThat(page.getByTestId("cs-order-chip")).isVisible()
     cs.stop()
   }
 
@@ -418,7 +413,8 @@ class CsMergeOrderSpec extends DekafSuite:
     val delivered = deliveredValues(produced.size)
     val expected = (0 until 6).map(i => f"e-$i%02d").toList // ascending EVENT time
     assert(delivered == expected, s"delivered $delivered, expected event-time order $expected")
-    assert(page.getByTestId("cs-order-chip").textContent().contains("Event time"), "the chip must name the time")
+    // (The chip that used to name the selected time was removed 2026-08-11 with the always-on
+    // mode label; the event-time ORDER asserted above is the contract.)
   }
 
   test("CS-MO-K2: BROKER publish time on a broker without entry metadata is refused with the remediation") {
@@ -454,7 +450,7 @@ class CsMergeOrderSpec extends DekafSuite:
     cs.play()
     cs.awaitLoaded(5)
 
-    assertThat(page.getByTestId("cs-order-chip")).not().isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
   }
 
   test("CS-MO-7: LOAD - 20 partitions, 40,000 messages through the merge, delivered completely and on time") {
@@ -476,7 +472,6 @@ class CsMergeOrderSpec extends DekafSuite:
     cs.awaitLoaded(40000, timeoutMs = 120000)
 
     assert(cs.loadedCount == 40000, s"every message must arrive, got ${cs.loadedCount}")
-    assertThat(page.getByTestId("cs-order-chip")).isVisible()
     assert(cs.state == "running", s"the session must still be healthy, got '${cs.state}'")
     cs.stop()
   }

@@ -5,7 +5,8 @@ import { ConsumerSessionConfig, MessageDescriptor, SessionState } from '../types
 import { Coloring } from '../coloring';
 import { getValueProjectionTds, ValueProjectionTh } from '../value-projections/value-projections-utils';
 import { Td } from './Td';
-import { MessageColumnKey } from '../message-columns';
+import { tooltipId } from '../../Tooltip/Tooltip';
+import { MessageColumnKey, ReorderableMessageColumnKey } from '../message-columns';
 
 export type MessageProps = {
   isShowTooltips: boolean;
@@ -17,9 +18,9 @@ export type MessageProps = {
   valueProjectionThs: ValueProjectionTh[],
   getColumnWidth: (key: MessageColumnKey) => number,
   /** The reorderable columns in render order (index and publishTime stay fixed in front). */
-  columnOrder: MessageColumnKey[],
+  columnOrder: ReorderableMessageColumnKey[],
   /** This row is the first one delivered after the delivery-order switch (the caught-up banner's
-   * "Continue live with Best effort"): rows above it are the exact replay, rows below follow live
+   * "Switch to Best effort and follow live"): rows above it are the exact replay, rows below follow live
    * traffic in the bounded reorder window. The row carries the divider band that says so. */
   isOrderSwitchBoundary?: boolean,
   onClick: React.MouseEventHandler<HTMLTableCellElement>
@@ -37,7 +38,9 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 
   // One cell per reorderable column, keyed exactly like the header - the row follows whatever
   // order the header is dragged into.
-  const fieldContent: Record<MessageColumnKey, React.ReactNode> = {
+  // `index` and `publishTime` render as the bespoke sticky pair below, never through this map -
+  // Omit keeps the map honest about it while the record stays total over the rest.
+  const fieldContent: Record<Exclude<MessageColumnKey, 'index'>, React.ReactNode> = {
     publishTime: <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />,
     key: <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />,
     value: <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />,
@@ -60,7 +63,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   // it is scrolled to; the labeled badge itself sits on the sticky publish-time cell.
   const boundaryClass = props.isOrderSwitchBoundary ? s.OrderSwitchBoundaryTd : '';
 
-  const fieldTd = (columnKey: MessageColumnKey) => (
+  const fieldTd = (columnKey: Exclude<MessageColumnKey, 'index'>) => (
     <Td
       key={columnKey}
       testId={columnKey === 'value' ? 'cs-message-value' : undefined}
@@ -79,20 +82,28 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         key="index"
         testId="cs-message"
-        width="36rem"
+        width={`${props.getColumnWidth('index')}px`}
         className={`${s.IndexField} ${boundaryClass}`}
         onClick={onClick}
         coloring={props.coloring}
         isSelected={isSelected}
       >
         {props.message.displayIndex}
-        {/* The guaranteed replay delivered this row out of order - loudly flagged, never
-            silently (the session chip carries the running count). */}
-        {props.message.replaySeamViolation && (
+        {/* The ordering layer delivered this row out of order - loudly flagged, never silently
+            (the warning mark beside the loaded count carries the running total). Mode-aware
+            wording, through the app-wide tooltip like every other affordance. */}
+        {props.message.deliveredOutOfOrder && (
           <span
-            className={s.SeamViolationMarker}
-            data-testid="cs-seam-violation-marker"
-            title="Arrived out of order: a producer clock wrote an earlier timestamp into the pause window, or the source log itself stores an inversion."
+            className={s.OutOfOrderMarker}
+            data-testid="cs-out-of-order-marker"
+            data-tooltip-id={tooltipId}
+            data-tooltip-html={
+              (props.sessionConfig.messageDeliveryOrder ?? 'guaranteed') === 'best-effort'
+                ? 'Out of order: this message arrived after its ~0.75 s reorder window - newer messages were already shown.'
+                : 'Out of order: stored out of order in the topic itself - typical when several producers '
+                  + 'share it, because each stamps its own clock, and send retries or batch flushes reorder '
+                  + 'them further - or a pause fell between replays.'
+            }
           >
             !
           </span>

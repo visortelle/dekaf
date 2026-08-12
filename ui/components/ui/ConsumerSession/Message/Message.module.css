@@ -34,7 +34,9 @@ tr:has(> .Td:hover) {
 
 .PublishTimeField {
   position: sticky;
-  left: 60rem;
+  /* Tracks the resizable index column (set on the table by ConsumerSession); 60rem is the
+     default-width fallback. */
+  left: var(--cs-index-cell-total, 60rem);
   z-index: 1;
 }
 
@@ -44,11 +46,13 @@ tr:has(> .Td:hover) {
   z-index: 1;
 }
 
-/* The row-level seam disclosure: this message arrived out of the selected-time order across a
-   pause seam (producer clock skew into the pause window). Sits beside the index so it is visible
-   at any horizontal scroll. */
-.SeamViolationMarker {
+/* The row-level out-of-order disclosure (Guaranteed's seam violations and, since 2026-08-11,
+   Best effort's late emissions). Sits beside the index so it is visible at any horizontal
+   scroll, and centers itself in the row - the index cell's flex box would otherwise hang it
+   from the text baseline. */
+.OutOfOrderMarker {
   flex: none;
+  align-self: center;
   margin-left: 4rem;
   width: 14rem;
   height: 14rem;
@@ -64,7 +68,7 @@ tr:has(> .Td:hover) {
 }
 
 /* The delivery-order switch point: a divider band across the first row delivered after
-   "Continue live with Best effort". Data-driven per row (not a DOM insertion at an offset), so it
+   "Switch to Best effort and follow live". Data-driven per row (not a DOM insertion at an offset), so it
    survives scrolling, retention trimming and re-sorting. */
 .OrderSwitchBoundaryTd {
   border-top: 3rem solid var(--accent-color, #4a72ff) !important;

@@ -8,10 +8,10 @@ import zio.test.*
   * session request. Proto3 represents an absent enum as zero, so both old binary items and old JSON
   * items must become the explicit current default when they cross this boundary.
   *
-  * That default is BEST EFFORT. Owner decision (2026-08-09, direct instruction): the default is
-  * Best effort - supersedes the review-findings P1.1 note that said Guaranteed. A saved session
-  * that never named a delivery order merges with bounded lateness and never stalls on a silent
-  * stream. Explicit Guaranteed and explicit Fastest are choices and are preserved. */
+  * That default is GUARANTEED. Owner decision (2026-08-11, direct instruction) - the third move
+  * of this default; the plan file's decision log is the record. A saved session that never named
+  * a delivery order replays recorded history exactly and auto-pauses when caught up. Explicit
+  * Best effort and explicit Fastest are choices and are preserved. */
 object managedConsumerSessionDeliveryOrderTest extends ZIOSpecDefault:
 
     private val ref = "delivery-order-fixture"
@@ -47,13 +47,13 @@ object managedConsumerSessionDeliveryOrderTest extends ZIOSpecDefault:
     private val deliveryOrderFieldNumber = 8
 
     def spec = suite(this.getClass.toString)(
-        test("an UNSPECIFIED saved value loads as Best effort, the default that also covers legacy items") {
+        test("an UNSPECIFIED saved value loads as Guaranteed, the default that also covers legacy items") {
             // Pre-existing saved sessions carry no delivery-order field at all. Zero is proto3
-            // absence, and absence resolves to the product default - Best effort - never to an
-            // ordering the saved session never chose. The base spec names explicit Guaranteed so
+            // absence, and absence resolves to the product default - Guaranteed - never to an
+            // ordering the saved session never chose. The base spec names explicit BEST EFFORT so
             // the expected result can only come from the UNSPECIFIED mapping, not the fixture.
             val otherwiseValid = ManagedConsumerSessionConfigSpec.toPb(
-                specWith(Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED))
+                specWith(Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME))
             )
             val oldWireItem = otherwiseValid.copy(
                 messageDeliveryOrder = apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED
@@ -61,15 +61,15 @@ object managedConsumerSessionDeliveryOrderTest extends ZIOSpecDefault:
 
             assertTrue(
                 ManagedConsumerSessionConfigSpec.fromPb(oldWireItem).messageDeliveryOrder.contains(
-                    apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+                    apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
                 )
             )
         },
-        test("an item SERIALIZED before the field existed carries no delivery-order field and still loads as Best effort") {
+        test("an item SERIALIZED before the field existed carries no delivery-order field and still loads as Guaranteed, the default") {
             // The compatibility case that matters: BYTES on disk, written by a build that had no
             // field 8 at all - not an in-memory model with the enum set to zero.
             val preFieldBytes = ManagedConsumerSessionConfigSpec
-                .toPb(specWith(Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED)))
+                .toPb(specWith(Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME)))
                 .copy(messageDeliveryOrder = apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED)
                 .toByteArray
 
@@ -79,10 +79,10 @@ object managedConsumerSessionDeliveryOrderTest extends ZIOSpecDefault:
             assertTrue(
                 !wireFieldNumbers(preFieldBytes).contains(deliveryOrderFieldNumber),
                 parsed.messageDeliveryOrder == apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED,
-                loaded.messageDeliveryOrder.contains(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME)
+                loaded.messageDeliveryOrder.contains(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED)
             ) ?? s"wireFields=${wireFieldNumbers(preFieldBytes)} loaded=${loaded.messageDeliveryOrder}"
         },
-        test("a spec built without naming a delivery order carries Best effort, not an absent value") {
+        test("a spec built without naming a delivery order carries Guaranteed, not an absent value") {
             // The case-class default itself: every in-process construction that predates the field
             // (and every future one that ignores it) has to land on the same product default.
             val builtWithoutTheField = ManagedConsumerSessionConfigSpec(
@@ -97,27 +97,27 @@ object managedConsumerSessionDeliveryOrderTest extends ZIOSpecDefault:
 
             assertTrue(
                 builtWithoutTheField.messageDeliveryOrder.contains(
-                    apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+                    apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
                 )
             ) ?? s"messageDeliveryOrder=${builtWithoutTheField.messageDeliveryOrder}"
         },
-        test("a missing older JSON value is written back as explicit Best effort") {
+        test("a missing older JSON value is written back as explicit Guaranteed, the default") {
             val saved = ManagedConsumerSessionConfigSpec.toPb(specWith(None))
 
             assertTrue(
-                saved.messageDeliveryOrder == apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+                saved.messageDeliveryOrder == apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
             )
         },
-        test("an unrecognized future mode falls back to the Best effort default, never to Fastest") {
+        test("an unrecognized future mode falls back to the Guaranteed default, never to Fastest") {
             val saved = ManagedConsumerSessionConfigSpec.toPb(
                 specWith(Some(apiPb.MessageDeliveryOrder.Unrecognized(99)))
             )
 
             assertTrue(
-                saved.messageDeliveryOrder == apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+                saved.messageDeliveryOrder == apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
             )
         },
-        test("an explicit Best effort choice round-trips - it now coincides with the default, and stays explicit") {
+        test("an explicit Best effort choice round-trips and is never replaced by the Guaranteed default") {
             val saved  = ManagedConsumerSessionConfigSpec.toPb(
                 specWith(Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME))
             )
@@ -128,7 +128,7 @@ object managedConsumerSessionDeliveryOrderTest extends ZIOSpecDefault:
                 loaded.messageDeliveryOrder.contains(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME)
             )
         },
-        test("an explicit Guaranteed choice is preserved, not replaced by the Best effort default") {
+        test("an explicit Guaranteed choice round-trips - it now coincides with the default, and stays explicit") {
             val saved = ManagedConsumerSessionConfigSpec.toPb(
                 specWith(Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED))
             )

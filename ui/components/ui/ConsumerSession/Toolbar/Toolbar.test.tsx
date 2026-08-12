@@ -125,141 +125,96 @@ describe('the delivery-order status', () => {
     deliveryOrderKey?: 'publish-time' | 'broker-publish-time' | 'event-time'
   ) => ({ messageDeliveryOrder, deliveryOrderKey } as ConsumerSessionConfig);
 
-  // Guaranteed's chip reads as the replay it is (the 2026-08-09 redesign), never as a live wait.
-  it.each([
-    ['guaranteed', undefined, 'Replaying history - exact order · Publish time'],
-    ['guaranteed', 'broker-publish-time', 'Replaying history - exact order · Broker publish time'],
-    ['best-effort', 'event-time', 'Best effort · Event time']
-  ] as const)('names %s with the selected time', (mode, time, expected) => {
-    renderToolbar('running', orderedConfig(mode, time), jest.fn(), { orderingActive: true });
+  // 2026-08-11 (owner instruction): the always-visible mode label ("Best effort · Publish time")
+  // and its contract tooltip were REMOVED from the bar - the mode is configuration, documented at
+  // the config's help circles. What the bar still owes a session: the stall disclosure with its
+  // escape, the order-key fallbacks, and the out-of-order WARNING MARK beside the loaded count.
 
-    expect(screen.getByTestId('cs-order-chip').textContent).toContain(expected);
-  });
-
-  it('treats an omitted legacy value as the Best effort default, exactly like the server does', () => {
-    // Owner decision (2026-08-09, direct instruction): the default is Best effort - supersedes
-    // the review-findings P1.1 note that said Guaranteed.
-    renderToolbar('running', {} as ConsumerSessionConfig, jest.fn(), { orderingActive: true });
-
-    expect(screen.getByTestId('cs-order-chip').textContent).toContain('Best effort · Publish time');
-  });
-
-  it('explains the guaranteed replay and its unavoidable source disorder concisely', () => {
-    // Re-aimed with the 2026-08-09 replay redesign: the old text promised an indefinite wait for
-    // every stream, which is no longer the contract - Guaranteed replays recorded history and
-    // pauses at its boundary.
+  it('shows no ordering status at all while an ordered run has nothing to disclose', () => {
     renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), { orderingActive: true });
 
-    expect(screen.getByTestId('cs-order-chip').getAttribute('title')).toBe(
-      'Replays everything recorded up to Play (or the last Resume), of what retention still holds, ' +
-      'in exact order of the selected timestamp, then pauses when caught up. Stored order within ' +
-      'each stream is preserved, so timestamp reversals and redeliveries are counted as out of order.'
-    );
+    expect(screen.queryByTestId('cs-order-chip')).toBeNull();
+    expect(screen.queryByTestId('cs-order-warning')).toBeNull();
   });
 
-  it('explains best-effort ordering without implying that late messages are dropped', () => {
-    renderToolbar('running', orderedConfig('best-effort'), jest.fn(), { orderingActive: true });
-
-    expect(screen.getByTestId('cs-order-chip').getAttribute('title')).toBe(
-      'Merges by the selected timestamp within ~0.75 s. Late messages may ' +
-      'appear out of order; none are dropped.'
-    );
-  });
-
-  it('shows publish-time fallbacks and late counts in plain language', () => {
-    // Re-aimed with the 2026-08-09 seam-counter finding: under guaranteed the late counter ticks
-    // on the SAME commit-phase inversions as the seam counter, so the late chip is best-effort's
-    // gauge only - the guaranteed case is pinned by the double-count test below.
+  it('marks out-of-order deliveries beside the loaded count under Best effort, counting the LATE counter', () => {
     renderToolbar('running', orderedConfig('best-effort', 'event-time'), jest.fn(), {
       orderingActive: true,
-      orderKeyFallbacks: 2,
-      orderingLateDeliveries: 3
+      messagesLoaded: 120,
+      orderingLateDeliveries: 3,
     });
 
-    expect(screen.getByTestId('cs-order-key-fallbacks').textContent).toContain('2 used publish time');
-    expect(screen.getByTestId('cs-order-late').textContent).toContain('3 late');
+    const warning = screen.getByTestId('cs-order-warning');
+    const html = warning.getAttribute('data-tooltip-html') ?? '';
+    // The count leads, in bold; the cause in plain words; the window named.
+    expect(html).toContain('<strong>3</strong>');
+    expect(html).toContain('arrived late');
+    expect(html).toContain('Nothing is lost');
+    expect(html).toContain('~0.75 s');
   });
 
-  it('never counts the same violation twice: guaranteed renders the seam chip, not the late chip', () => {
+  it('marks out-of-order rows under Guaranteed, counting the SEAM counter - never both counters', () => {
     // The server ticks lateEmissions and seamViolations on the identical guaranteed commit-phase
-    // condition; rendering both chips would show one event twice with two causal labels.
+    // condition; the mark must count each violation once, and say causes delivery did not add.
     renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), {
       orderingActive: true,
       orderingLateDeliveries: 3,
-      replaySeamViolations: 3,
+      replaySeamViolations: 2,
     });
 
-    expect(screen.queryByTestId('cs-order-late')).toBeNull();
-    expect(screen.getByTestId('cs-replay-seam-violations').textContent).toContain('3 out of order');
+    const warning = screen.getByTestId('cs-order-warning');
+    const html = warning.getAttribute('data-tooltip-html') ?? '';
+    expect(html).toContain('<strong>2</strong>');
+    expect(html).toContain('did not reorder them');
+    // The common real-world cause is NAMED, not alluded to: several producers, own clocks.
+    expect(html).toContain('several producers');
+    expect(html).toContain('stamps its own clock');
+    expect(html).toContain('marked with');
   });
 
-  it('shows a sustained wait without changing the selected mode label', () => {
-    // The waiting disclosure survives the replay redesign for its documented corner: a stream a
-    // time seek positioned past its end can still hold the merge, and the chip must say so.
+  it('claims nothing at zero - the mark exists only when a violation happened', () => {
+    renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), {
+      orderingActive: true,
+      replaySeamViolations: 0,
+      orderingLateDeliveries: 0,
+    });
+
+    expect(screen.queryByTestId('cs-order-warning')).toBeNull();
+  });
+
+  it('shows a sustained wait as the status area, without any mode label around it', () => {
+    // The waiting disclosure survives the label removal for its documented corner: a stream a
+    // time seek positioned past its end can still hold the merge, and the bar must say so.
     renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), {
       orderingActive: true,
       orderingWaitingStreams: 2
     });
 
-    expect(screen.getByTestId('cs-order-chip').textContent).toContain('Replaying history - exact order · Publish time');
-    expect(screen.getByTestId('cs-order-waiting').textContent).toContain('waiting for 2 topics/partitions');
-  });
-
-  it('does not claim ordering when a requested merge has no active ordering layer', () => {
-    renderToolbar('running', orderedConfig('guaranteed'));
-    expect(screen.queryByTestId('cs-order-chip')).toBeNull();
-  });
-
-  it('reads Guaranteed as a replay, not as a live wait', () => {
-    // The replay redesign: Guaranteed delivers recorded history exactly and then pauses - the
-    // chip must say that, and the old hold-forever wording must be gone with the behaviour.
-    renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), { orderingActive: true });
-
     const chip = screen.getByTestId('cs-order-chip');
-    expect(chip.textContent).toContain('Replaying history - exact order');
-    expect(chip.getAttribute('title')).toMatch(/replays everything recorded/i);
-    expect(chip.getAttribute('title')).not.toMatch(/indefinitely/i);
+    expect(screen.getByTestId('cs-order-waiting').textContent).toContain('waiting for 2 topics/partitions');
+    expect(chip.textContent).not.toContain('Replaying history');
+    expect(chip.textContent).not.toContain('Best effort');
   });
 
-  it('shows the cross-seam violation count whenever the server confessed one', () => {
-    renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), {
+  it('shows publish-time fallbacks in plain language', () => {
+    renderToolbar('running', orderedConfig('best-effort', 'event-time'), jest.fn(), {
       orderingActive: true,
-      replaySeamViolations: 2,
+      orderKeyFallbacks: 2,
     });
 
-    const seam = screen.getByTestId('cs-replay-seam-violations');
-    expect(seam.textContent).toContain('2');
-    // Re-aimed 2026-08-09: the chip label stays short; the tooltip names BOTH causes the proto
-    // does (pause-window clock skew OR an inversion stored in the source log itself).
-    expect(seam.textContent).toMatch(/out of order/i);
-    expect(seam.getAttribute('title')).toMatch(/pause window/i);
-    expect(seam.getAttribute('title')).toMatch(/source log itself stores an inversion/i);
+    expect(screen.getByTestId('cs-order-key-fallbacks').textContent).toContain('2 used publish time');
   });
 
-  it('claims no seam violations at zero', () => {
-    renderToolbar('running', orderedConfig('guaranteed'), jest.fn(), {
-      orderingActive: true,
-      replaySeamViolations: 0,
-    });
-
-    expect(screen.queryByTestId('cs-replay-seam-violations')).toBeNull();
-  });
-
-  it('does not show an ordering chip for fastest delivery', () => {
+  it('shows no status for fastest delivery, which discloses nothing and warns of nothing', () => {
     renderToolbar('running', { messageDeliveryOrder: 'as-received' } as ConsumerSessionConfig, jest.fn(), {
       orderingActive: true
     });
 
     expect(screen.queryByTestId('cs-order-chip')).toBeNull();
+    expect(screen.queryByTestId('cs-order-warning')).toBeNull();
   });
 });
 
-/**
- * Guaranteed - an explicit choice, since the product default is Best effort - waits forever on a
- * silent stream by design. Disclosing the wait is not enough: the same chip that reports the
- * stall has to be able to END it, or the choice is a dead end that reads like an empty topic. The
- * switch is offered exactly where the stall is disclosed, and nowhere else.
- */
 describe('a disclosed Guaranteed stall is actionable from the chip itself', () => {
   afterEach(cleanup);
 

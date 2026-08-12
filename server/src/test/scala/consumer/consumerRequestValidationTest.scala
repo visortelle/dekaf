@@ -104,9 +104,9 @@ object consumerRequestValidationTest extends ZIOSpecDefault:
         test("an unrecognised delivery ORDER stays the settled product default - that one is deliberate") {
             // Not a regression of the above: the owner decided this enum resolves an unknown value
             // to the product default rather than accidentally selecting Fastest. Owner decision
-            // (2026-08-09, direct instruction): the default is Best effort - supersedes the
-            // review-findings P1.1 note that said Guaranteed.
-            assertTrue(MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.Unrecognized(99)) == MessageDeliveryOrder.BestEffort)
+            // (2026-08-11, direct instruction): the default is Guaranteed - the third move of this
+            // default; the plan file's decision log is the record.
+            assertTrue(MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.Unrecognized(99)) == MessageDeliveryOrder.Guaranteed)
         },
         test("the create RPC refuses the unknown key with INVALID_ARGUMENT and names the field") {
             val status = createWith(validConfig.withDeliveryOrderKey(consumerPb.DeliveryOrderKey.Unrecognized(99)))

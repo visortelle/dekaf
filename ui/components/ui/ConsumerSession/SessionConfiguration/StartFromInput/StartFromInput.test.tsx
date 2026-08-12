@@ -49,8 +49,7 @@ const startFromItem = (startFrom: unknown) => ({
 // retry timer alive past the jsdom teardown.
 const renderInput = (
   startFrom: unknown,
-  targetTopicsPersistency?: { hasPersistent: boolean; hasNonPersistent: boolean },
-  deliveryOrder?: 'guaranteed' | 'best-effort' | 'as-received'
+  targetTopicsPersistency?: { hasPersistent: boolean; hasNonPersistent: boolean }
 ) => {
   const onChange = jest.fn();
   render(
@@ -60,7 +59,6 @@ const renderInput = (
         onChange={onChange}
         libraryContext={libraryContext}
         targetTopicsPersistency={targetTopicsPersistency}
-        deliveryOrder={deliveryOrder}
       />
     </SWRConfig>
   );
@@ -808,56 +806,37 @@ describe('non-persistent targets', () => {
 });
 
 /**
- * Latest x Guaranteed (owner decision, 2026-08-09): Guaranteed is an exact replay of recorded
- * history, and "Latest message" selects a replay of nothing - so the option is DISABLED while
- * Guaranteed is chosen, with a note saying why, through the same disabled-option-plus-note
- * mechanism the non-persistent gating uses. A SAVED Latest x Guaranteed combo is never rewritten
- * (the M4 lesson): it loads as written, shows the note, and Play yields the server's instant
- * caught-up answer.
+ * Latest x Guaranteed is NOT gated (owner decision 2026-08-11, reversing the 2026-08-09
+ * disabled-option gate and its note). The combination is legal and now freely selectable: Play
+ * answers with an instant caught-up, and the caught-up panel's two actions are where the user
+ * decides what happens next. What remains pinned here: no option is disabled for it, no note
+ * renders for it, and the editor never rewrites a stored value (the M4 lesson) - while the
+ * NON-PERSISTENT gate (a different mechanism for a different reason) stays intact.
  */
 describe('Latest under a Guaranteed delivery order', () => {
   const note = () => screen.queryByTestId('cs-start-from-latest-guaranteed-note');
 
-  it('disables Latest while the order is Guaranteed, keeping every other mode available', () => {
-    renderInput({ type: 'earliestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'guaranteed');
+  it('keeps every mode selectable - the delivery order disables nothing', () => {
+    renderInput({ type: 'earliestMessage' }, { hasPersistent: true, hasNonPersistent: false });
 
     const options = modeOptions();
-    expect(options.latestMessage).toBe(false);
-    // Only Latest is the replay-of-nothing; everything history-based stays selectable.
+    expect(options.latestMessage).toBe(true);
     expect(options.earliestMessage).toBe(true);
     expect(options.nthMessageAfterEarliest).toBe(true);
     expect(options.dateTime).toBe(true);
   });
 
-  it('says why in one line, naming the live alternative', () => {
-    renderInput({ type: 'earliestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'guaranteed');
+  it('renders no note and rewrites nothing for a stored Latest value', () => {
+    const onChange = renderInput({ type: 'latestMessage' }, { hasPersistent: true, hasNonPersistent: false });
 
-    expect(note()).toBeTruthy();
-    expect(note()!.textContent).toMatch(/Guaranteed replays recorded history/i);
-    expect(note()!.textContent).toMatch(/Best effort/);
-  });
-
-  it('keeps a saved Latest x Guaranteed combo exactly as written - shown and noted, never rewritten', () => {
-    const onChange = renderInput({ type: 'latestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'guaranteed');
-
-    // Nothing is written back: the stored value belongs to the user (the M4 lesson), and Play on
-    // this combo simply yields the server's instant caught-up banner.
     expect(onChange).not.toHaveBeenCalled();
     expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('latestMessage');
-    expect(note()).toBeTruthy();
-  });
-
-  it('leaves Latest available under Best effort, with no note', () => {
-    renderInput({ type: 'latestMessage' }, { hasPersistent: true, hasNonPersistent: false }, 'best-effort');
-
-    expect(modeOptions().latestMessage).toBe(true);
     expect(note()).toBeNull();
   });
 
   it('keeps Latest selectable when nothing retains history - the one mode such topics have', () => {
-    // Non-persistent x Guaranteed is legal (an empty replay announces caught-up instantly), and
-    // Latest is the ONLY selectable mode there - disabling it too would leave no option at all.
-    renderInput({ type: 'latestMessage' }, nonPersistentOnly, 'guaranteed');
+    // Non-persistent topics: Latest is the ONLY selectable mode there, gate or no gate.
+    renderInput({ type: 'latestMessage' }, nonPersistentOnly);
 
     expect(modeOptions().latestMessage).toBe(true);
   });

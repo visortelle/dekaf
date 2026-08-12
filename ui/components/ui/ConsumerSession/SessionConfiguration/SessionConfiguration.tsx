@@ -22,6 +22,7 @@ import { arrayMove } from './array-move';
 import moveLeftIcon from './icons/move-left.svg';
 import moveRightIcon from './icons/move-right.svg';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
+import HelpIcon from '../../ConfigurationTable/HelpIcon/HelpIcon';
 import NumDisplayItemsInput from './NumDisplayItemsInput';
 import { defaultNumDisplayItems } from './display-items';
 import Select from '../../Select/Select';
@@ -90,24 +91,36 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const itemSpec = decoded.item.spec;
 
   // A spec saved before the field existed names no order, and an absent value means the product
-  // default - Best effort - here exactly as it does on the wire and on the server.
-  const deliveryOrder = itemSpec.messageDeliveryOrder ?? 'best-effort';
+  // default - Guaranteed (owner decision 2026-08-11) - here exactly as it does on the wire and
+  // on the server.
+  const deliveryOrder = itemSpec.messageDeliveryOrder ?? 'guaranteed';
   const deliveryOrderTime = itemSpec.deliveryOrderKey ?? 'publish-time';
 
-  const deliveryOrderHelp = deliveryOrder === 'guaranteed'
-    ? 'Replays everything recorded up to Play (of what retention still holds) in exact selected-timestamp ' +
-      'order, then pauses when caught up; Resume replays what was recorded since. Multi-stream sessions ' +
-      'require persistent topics.'
-    : deliveryOrder === 'best-effort'
-      ? 'Merges by the selected timestamp within ~0.75 s. Late messages may appear out of order; none are dropped.'
-      : 'Delivers each topic or partition independently, with no reordering delay.';
+  // ALL modes described at once, behind the label's help circle (the app-wide pattern): the reader
+  // opens this to CHOOSE, so showing only the selected mode's contract - as the always-visible
+  // paragraph this replaced did - answered the one question they were not asking.
+  const deliveryOrderHelp = (
+    <div>
+      <p><strong>Guaranteed</strong> (default) - replays already-recorded messages in exact timestamp
+        order, then pauses. Pressing Play again loads what arrived since. Multi-topic sessions need
+        persistent topics.</p>
+      <p><strong>Best effort</strong> - follows live traffic, sorting by timestamp within
+        ~0.75 s. A late message can appear out of order; nothing is dropped.</p>
+      <p><strong>Fastest</strong> - shows messages as they arrive, with no ordering across topics or
+        partitions.</p>
+    </div>
+  );
 
-  const deliveryOrderTimeHelp = deliveryOrderTime === 'broker-publish-time'
-    ? 'Recorded when the message reaches the broker. Requires broker timestamp entry metadata. ' +
-      'If the cluster does not expose it, the session cannot start; missing values use publish time.'
-    : deliveryOrderTime === 'event-time'
-      ? 'Optional timestamp set by the application. Missing values use publish time and are reported.'
-      : 'Added automatically by the producer; always present.';
+  const deliveryOrderTimeHelp = (
+    <div>
+      <p><strong>Publish time</strong> - stamped by the producer when sending. Always present.</p>
+      <p><strong>Broker publish time</strong> - stamped by the broker on arrival, so producer clock skew
+        cannot disorder it. Needs broker entry metadata enabled on the cluster; without it the session
+        cannot start.</p>
+      <p><strong>Event time</strong> - set by your application. Messages without one fall back to
+        publish time.</p>
+    </div>
+  );
 
   const onSpecChange = (spec: ManagedConsumerSessionConfigSpec) => {
     const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, val: { ...item, spec } };
@@ -165,18 +178,17 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             // The start-from modes depend on what the selected topics retain, and the targets that
             // decide that live here.
             targetTopicsPersistency={targetTopicsPersistency(itemSpec.targets, props.libraryContext)}
-            // ...and on the delivery order: Guaranteed is an exact replay of recorded history, so
-            // "Latest message" (a replay of nothing) is gated in the selector, with the note.
-            deliveryOrder={deliveryOrder}
           />
 
           <FormItem>
             <label htmlFor="cs-delivery-order-select" style={{ display: 'flex', alignItems: 'center', gap: '12rem' }}>
-              <span>Delivery order</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6rem' }} data-testid="cs-delivery-order-help">
+                Delivery order
+                <HelpIcon help={deliveryOrderHelp} />
+              </span>
               <Select<MessageDeliveryOrder>
                 testId="cs-delivery-order"
                 id="cs-delivery-order-select"
-                ariaDescribedBy="cs-delivery-order-help"
                 value={deliveryOrder}
                 onChange={(v) => onSpecChange({
                   ...itemSpec,
@@ -190,20 +202,18 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                 isReadOnly={props.isReadOnly}
               />
             </label>
-            {/* Visible, not hover-only, and ASSOCIATED - the caveat is the contract. */}
-            <div id="cs-delivery-order-help" style={{ fontSize: '12rem', opacity: 0.75, marginTop: '4rem' }}>
-              {deliveryOrderHelp}
-            </div>
             {deliveryOrder !== 'as-received' && (<>
               <label
                 htmlFor="cs-delivery-order-key-select"
                 style={{ display: 'flex', alignItems: 'center', gap: '12rem', marginTop: '8rem' }}
               >
-                <span>Order by</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6rem' }} data-testid="cs-delivery-order-key-help">
+                  Order by
+                  <HelpIcon help={deliveryOrderTimeHelp} />
+                </span>
                 <Select<DeliveryOrderKey>
                   testId="cs-delivery-order-key"
                   id="cs-delivery-order-key-select"
-                  ariaDescribedBy="cs-delivery-order-key-help"
                   value={deliveryOrderTime}
                   onChange={(v) => onSpecChange({
                     ...itemSpec,
@@ -217,9 +227,6 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                   isReadOnly={props.isReadOnly}
                 />
               </label>
-              <div id="cs-delivery-order-key-help" style={{ fontSize: '12rem', opacity: 0.75, marginTop: '4rem' }}>
-                {deliveryOrderTimeHelp}
-              </div>
             </>)}
           </FormItem>
 
@@ -235,6 +242,15 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                 label='Limit num. display messages'
                 isReadOnly={props.isReadOnly}
               />
+              <span data-testid="cs-num-display-items-help" style={{ display: 'flex', alignItems: 'center' }}>
+                <HelpIcon
+                  help={
+                    'Limits how many messages are kept in the browser. Choose it based on the average '
+                    + 'message size in the consumed topics - if the browser hangs or runs out of memory, '
+                    + 'lower the limit for this consumer session.'
+                  }
+                />
+              </span>
               <div style={{ visibility: itemSpec.numDisplayItems === undefined ? 'hidden' : 'visible' }}>
                 <NumDisplayItemsInput
                   value={itemSpec.numDisplayItems ?? defaultNumDisplayItems}

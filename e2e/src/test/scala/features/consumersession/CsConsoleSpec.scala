@@ -35,10 +35,11 @@ class CsConsoleSpec extends DekafSuite:
     cs.openTools()
     assertThat(cs.toolsResizeHandle).isVisible()
 
-    // Preserve the former 400rem default (360 CSS px under Dekaf's 0.9px root scale).
+    // 340 CSS px by owner instruction (2026-08-11; was 400rem = 360px under the 0.9 root scale).
+    // A plain pixel value, deliberately not rem-scaled - the persisted drag sizes are pixels too.
     val defaultHeight = cs.toolsPanelDomHeight
-    assert(math.abs(defaultHeight - 360) <= 3,
-      s"the resizable Tools panel changed its old 400rem default: $defaultHeight")
+    assert(math.abs(defaultHeight - 340) <= 3,
+      s"the resizable Tools panel changed its 340px default: $defaultHeight")
 
     // A large preference restored in a shorter viewport is capped without rewriting it. More
     // importantly, the FIRST drag starts at the VISIBLE cap, not the hidden 900px preference -

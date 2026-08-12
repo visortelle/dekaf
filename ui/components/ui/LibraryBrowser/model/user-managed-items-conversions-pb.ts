@@ -1198,14 +1198,14 @@ export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSess
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
     valueProjectionList: managedValueProjectionListValOrRefFromPb(v.getValueProjectionList()!),
     numDisplayItems: v.getNumDisplayItems()?.getValue(),
-    // Absent/unspecified on the wire means the DEFAULT, which is best-effort - the server maps
-    // proto absence the same way, for items saved before the field existed as much as for new
-    // ones. Guaranteed and Fastest are only ever explicit choices.
+    // Absent/unspecified on the wire means the DEFAULT, which is Guaranteed (owner decision
+    // 2026-08-11) - the server maps proto absence the same way, for items saved before the field
+    // existed as much as for new ones. Best effort and Fastest are only ever explicit choices.
     messageDeliveryOrder: v.getMessageDeliveryOrder() === consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED
       ? 'as-received'
-      : v.getMessageDeliveryOrder() === consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
-        ? 'guaranteed'
-        : 'best-effort',
+      : v.getMessageDeliveryOrder() === consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+        ? 'best-effort'
+        : 'guaranteed',
     deliveryOrderKey: v.getDeliveryOrderKey() === consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_BROKER_PUBLISH_TIME
       ? 'broker-publish-time'
       : v.getDeliveryOrderKey() === consumerPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_EVENT_TIME
@@ -1231,12 +1231,12 @@ export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSession
 
   if (v.messageDeliveryOrder === 'as-received') {
     specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED);
-  } else if (v.messageDeliveryOrder === 'guaranteed') {
-    specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
-  } else {
-    // 'best-effort' or a missing value from an older JSON item: both write the default, so a
-    // re-saved legacy item carries the order it will actually run under.
+  } else if (v.messageDeliveryOrder === 'best-effort') {
     specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+  } else {
+    // 'guaranteed' or a missing value from an older JSON item: both write the default (owner
+    // decision 2026-08-11), so a re-saved legacy item carries the order it will actually run under.
+    specPb.setMessageDeliveryOrder(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
   }
 
   if (v.deliveryOrderKey === 'broker-publish-time') {

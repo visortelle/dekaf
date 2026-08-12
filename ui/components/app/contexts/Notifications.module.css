@@ -1,4 +1,5 @@
 .ToastContainer {
+  width: auto !important;
   max-width: calc(100vw - 24rem) !important;
   padding: 8rem !important;
   position: relative;
@@ -14,6 +15,11 @@
 }
 
 .Toast {
+  /* The container is width:auto, so every toast must declare its own column - a bare min-width
+     let long messages run the full viewport width. */
+  width: 320rem !important;
+  max-width: calc(100vw - 48rem) !important;
+  margin-left: auto !important;
   font-family: "Inter" !important;
   border-radius: 8rem !important;
   box-shadow: 0rem 2rem 4rem rgb(0 0 0 / 27%) !important;

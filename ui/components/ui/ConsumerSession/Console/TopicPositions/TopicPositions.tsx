@@ -7,6 +7,7 @@ import { createDeadline } from '../../../../../proto-utils/proto-utils';
 import { SessionState } from '../../types';
 import Table, { Columns, ColumnsConfig } from '../../../Table/Table';
 import Field from '../../Message/Field/Field';
+import NothingToShow from '../../../NothingToShow/NothingToShow';
 import {
   TopicPositionRow,
   behindMsOf,
@@ -91,11 +92,13 @@ const copyableCell = (
   isAggregate: boolean,
   title: string,
   value: CellValue,
-  rawValue: string | undefined
+  rawValue: string | undefined,
+  copyLabel?: string
 ): React.ReactElement => {
   const field = (
     <Field
       title={title}
+      copyLabel={copyLabel}
       value={rawValue === undefined ? undefined : value}
       rawValue={rawValue}
       tooltip={undefined}
@@ -115,7 +118,10 @@ const topicCell = (row: TopicPositionRow): React.ReactElement =>
     isAggregateRow(row),
     'Topic / partition',
     row.topicFqn,
-    row.topicFqn
+    row.topicFqn,
+    // The column heading is "Topic / partition", but what lands on the clipboard is one fully
+    // qualified name - so the toast names that, not the heading.
+    'Topic FQN'
   );
 
 const messageIdCell = (isAggregate: boolean, title: string, value: string | undefined): React.ReactElement =>
@@ -443,17 +449,25 @@ const TopicPositions: React.FC<TopicPositionsProps> = (props) => {
 
   return (
     <div className={s.TopicPositions} data-testid="topic-positions">
+      {/* The same grey rounded empty-state the rest of the app uses (NothingToShow); the testids
+          stay on wrappers so the cells asserting these states keep their anchors. */}
       {!isSessionStarted && (
         <div className={s.Empty} data-testid="topic-positions-not-started">
-          Start the session to see each topic's stored range and session position.
+          <NothingToShow content="Start the session to see each topic's stored range and session position." />
         </div>
       )}
 
       {isSessionStarted && sessionGone !== undefined && (
         <div className={s.Empty} data-testid="topic-positions-session-gone">
-          This consumer session has ended, so its positions stopped updating.
-          {sessionGone.message === undefined ? '' : ` ${sessionGone.message}.`}
-          &nbsp;Start the session again to see them.
+          <NothingToShow
+            content={
+              <>
+                This consumer session has ended, so its positions stopped updating.
+                {sessionGone.message === undefined ? '' : ` ${sessionGone.message}.`}
+                &nbsp;Start the session again to see them.
+              </>
+            }
+          />
         </div>
       )}
 

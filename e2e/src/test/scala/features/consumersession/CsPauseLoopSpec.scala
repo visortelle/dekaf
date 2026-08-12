@@ -52,10 +52,10 @@ class CsPauseLoopSpec extends DekafSuite:
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
     cs.setStartFrom("Earliest message")
-    // RETENTION IS PART OF THE ARRANGEMENT. A session keeps 10,000 messages on screen by default
-    // and drops its oldest past that, which would leave 45,000 of these unobservable and reduce
-    // the whole test back to a count. Asking for more than the run produces is what makes the
-    // delivered set readable at all; `retainedCount` below proves the ask took effect.
+    // RETENTION IS PART OF THE ARRANGEMENT. A session drops its oldest messages past the display
+    // limit (1,000,000 by default since 2026-08-11; 10,000 when this cell was written, which would
+    // have left 45,000 of these unobservable). The explicit ask keeps the cell INDEPENDENT of that
+    // product default, whatever it becomes; `retainedCount` below proves the ask took effect.
     cs.setNumDisplayItems(total + 5_000)
     cs.play()
 

@@ -230,9 +230,10 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
     // `slice(-limit)` retention into "keep everything", so it is not passed through as given.
     numDisplayItems: displayItemLimit(spec.numDisplayItems),
     // A spec saved before the field existed names no order. It runs under the product default -
-    // Best effort - which is exactly what the server does with proto3 absence, so the session the
-    // browser describes and the session the server builds cannot disagree.
-    messageDeliveryOrder: spec.messageDeliveryOrder ?? 'best-effort',
+    // Guaranteed (owner decision 2026-08-11) - which is exactly what the server does with proto3
+    // absence, so the session the browser describes and the session the server builds cannot
+    // disagree.
+    messageDeliveryOrder: spec.messageDeliveryOrder ?? 'guaranteed',
     deliveryOrderKey: spec.deliveryOrderKey
   }
 }

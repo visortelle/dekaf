@@ -75,7 +75,12 @@ object mergeMessageDeliveryOrderingTest extends ZIOSpecDefault:
 
         def noteResolved(resolved: (String, StartFromOutcome)): Unit = out += resolved
 
-        def delivered: Vector[String] = out.result().collect { case (v, StartFromOutcome.Deliver) => v }
+        def delivered: Vector[String] = out.result().collect {
+            case (v, StartFromOutcome.Deliver) => v
+            case (v, StartFromOutcome.DeliverOutOfOrder) => v
+        }
+        /** The subset the merge itself flagged as emitted below an already-emitted key. */
+        def deliveredFlagged: Vector[String] = out.result().collect { case (v, StartFromOutcome.DeliverOutOfOrder) => v }
         def dropped: Vector[String] = out.result().collect { case (v, StartFromOutcome.Drop) => v }
         def requeued: Vector[String] = out.result().collect { case (v, StartFromOutcome.Requeue) => v }
 
@@ -160,8 +165,11 @@ object mergeMessageDeliveryOrderingTest extends ZIOSpecDefault:
             assertTrue(
                 // b-60 first (both spoke), then a IN APPEND ORDER - 100 before 90 - never resorted.
                 f.delivered == Vector("b-60", "a-100", "a-90"),
-                f.merge.lateDeliveryCount == 1L // the dip is exactly one confessed disorder
-            ) ?? s"delivered=${f.delivered} late=${f.merge.lateDeliveryCount}"
+                f.merge.lateDeliveryCount == 1L, // the dip is exactly one confessed disorder
+                // ...and the dip itself is the flagged row (2026-08-11): the marker pairs with the
+                // exact message the ledger counted, not with a session-level total alone.
+                f.deliveredFlagged == Vector("a-90")
+            ) ?? s"delivered=${f.delivered} late=${f.merge.lateDeliveryCount} flagged=${f.deliveredFlagged}"
         },
         test("a stream released by the grace delivers LATE when it wakes - immediately, counted, nothing wedged") {
             val f = Fixture(Vector(a, b))
@@ -174,8 +182,9 @@ object mergeMessageDeliveryOrderingTest extends ZIOSpecDefault:
                 emittedPastB == Vector("a-100"),
                 f.delivered == Vector("a-100", "b-late"),
                 f.merge.heldCount == 0,
-                f.merge.lateDeliveryCount == 1L
-            ) ?? s"delivered=${f.delivered} late=${f.merge.lateDeliveryCount}"
+                f.merge.lateDeliveryCount == 1L,
+                f.deliveredFlagged == Vector("b-late") // the woken straggler carries the marker
+            ) ?? s"delivered=${f.delivered} late=${f.merge.lateDeliveryCount} flagged=${f.deliveredFlagged}"
         },
         test("THE LIFECYCLE OF A COPY IS EXPLICIT: only a listener-confirmed failure licenses redelivery") {
             // The two loss paths the old inferences opened, closed from both sides. A copy with

@@ -104,3 +104,24 @@
 .NoData {
   color: #aaa;
 }
+
+/* The out-of-order warning beside the loaded count: the app's warning palette in a small round
+   badge, carrying its count and cause in the tooltip. */
+.OrderWarning {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 22rem;
+  height: 22rem;
+  margin-left: 4rem;
+  /* Breathing room against whatever sits to the right (the Export messages button). */
+  margin-right: 12rem;
+  border-radius: 50%;
+  background: var(--warning-background-color, #fff7e0);
+  color: var(--warning-text-color, #7a5b00);
+  border: 1rem solid var(--warning-text-color, #7a5b00);
+  font-size: 14rem;
+  font-weight: 700;
+  cursor: help;
+}

@@ -533,7 +533,7 @@ class ConsumerServiceImpl(
 
         // THE WIRE VALUE IS CHECKED BEFORE THE CONVERSION, and that is load-bearing.
         // `MessageDeliveryOrder.fromPb` resolves both UNSPECIFIED and an unrecognized future value
-        // to the product default (Best effort) - right for a session CONFIGURATION, where absence
+        // to the product default (Guaranteed) - right for a session CONFIGURATION, where absence
         // means "the product default", and exactly wrong for a MUTATION, where it would turn
         // "the client said nothing" into "the client asked to switch to Best effort".
         request.messageDeliveryOrder match

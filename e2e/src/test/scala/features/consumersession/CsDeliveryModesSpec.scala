@@ -37,8 +37,8 @@ import harness.Eventually.eventually
   *     delivers everything recorded up to that boundary - of what retention still holds - in
   *     strict key order, then AUTO-PAUSES with the caught-up banner (`cs-replay-caught-up`) on
   *     the ordinary paused state. A message published AFTER Play belongs to the NEXT chunk: it is
-  *     handed back and its consumer held, never delivered into the current chunk. Resume extends
-  *     the boundary to now and replays the delta exactly; "Continue live with Best effort" is the
+  *     handed back and its consumer held, never delivered into the current chunk. "Load new messages" extends
+  *     the boundary to now and replays the delta exactly; "Switch to Best effort and follow live" is the
   *     designed way OUT of the replay into live following. No live phase, no stall, no held tail:
   *     a drained or empty stream holds nothing back, because history needs no proof from the
   *     future.
@@ -52,7 +52,8 @@ import harness.Eventually.eventually
   * SEAM VIOLATIONS (a producer-clock reversal across a resume seam) need controlled clock skew
   * and are pinned at the unit tier. What IS e2e-checkable, and asserted in every replay/resume
   * cell that pauses at a boundary: ordinary chunked flows raise ZERO seam flags - the session
-  * chip (`cs-replay-seam-violations`) stays absent and no row carries the marker.
+  * warning mark (`cs-order-warning`, which carries the seam count under Guaranteed since the
+  * 2026-08-11 toolbar rework) stays absent and no row carries the marker.
   *
   * WAITS are deterministic: sentinel/count gating (`awaitLoaded` on totals whose last message is
   * the sentinel), the caught-up banner itself as the app's own "the replay reached its boundary"
@@ -67,17 +68,18 @@ class CsDeliveryModesSpec extends StartFromSupport:
   private val bestEffortLabel = "Best effort"
   private val guaranteedLabel = "Guaranteed"
 
-  private def orderChip = page.getByTestId("cs-order-chip")
   private def waitingChip = page.getByTestId("cs-order-waiting")
 
   // The replay surface (the landed redesign's own test-ids).
   private def caughtUpBanner = page.getByTestId("cs-replay-caught-up")
-  private def bannerNewerLine = page.getByTestId("cs-replay-caught-up-newer")
   private def bannerExcludedLine = page.getByTestId("cs-replay-caught-up-excluded")
-  private def bannerResume = page.getByTestId("cs-replay-resume")
+  // Labelled "Load new messages up to now"; the testid keeps the older `resume` wording because
+  // that is what the action still IS - a resume that extends the boundary.
+  private def loadNewMessages = page.getByTestId("cs-replay-resume")
   private def bannerContinueBestEffort = page.getByTestId("cs-replay-continue-best-effort")
-  private def seamChip = page.getByTestId("cs-replay-seam-violations")
-  private def seamMarkers = page.getByTestId("cs-seam-violation-marker")
+  // Since 2026-08-11 the session-level count rides the warning mark beside the loaded counter.
+  private def seamChip = page.getByTestId("cs-order-warning")
+  private def seamMarkers = page.getByTestId("cs-out-of-order-marker")
 
   /** Two fresh single-log topics; every multi-TOPIC cell arranges on this shape because it gives
     * the test an independent producer handle per stream - liveness is then a per-stream choice. */
@@ -200,7 +202,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     assertSettledLoaded(cs, liveSeeds.size + liveTail.size, "Fastest must deliver exactly once - the counter may not keep climbing")
     // NO order assertion, deliberately: Fastest builds no merge, so arrival interleaving is
     // whatever the two racing consumers produced - asserting any order would pin luck.
-    assertThat(orderChip).not().isVisible() // no ordering layer, and the chip must not pretend otherwise
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible() // no ordering layer, so nothing to confess
     DeliveredMessages.assertExactly(pausedExportedSet(cs), liveSeeds ++ liveTail, "A-F delivered multiset")
   }
 
@@ -214,8 +216,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), liveTail)
     cs.awaitLoaded(liveSeeds.size + liveTail.size)
     assertSettledLoaded(cs, liveSeeds.size + liveTail.size, "Best effort must deliver exactly once")
-    assertThat(orderChip).isVisible()
-    assertThat(page.getByTestId("cs-order-late")).not().isVisible() // an ordered live run confesses no late deliveries
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible() // an ordered live run confesses no out-of-order deliveries
     cs.pauseFromToolbar()
     cs.assertState("paused", timeoutMs = 10000)
     assertArrivalOrder(cs, liveSeeds ++ liveTail, "A-B arrival order")
@@ -230,11 +231,8 @@ class CsDeliveryModesSpec extends StartFromSupport:
     // Chunk 1 is everything recorded up to Play: all six seeds - including the globally-last one,
     // which the old contract held forever - then the boundary auto-pause with the banner.
     awaitCaughtUp(cs, liveSeeds.size)
-    assertThat(orderChip).isVisible()
-    assert(
-      orderChip.textContent().contains("Replaying history - exact order"),
-      s"the chip must name the replay, got '${orderChip.textContent()}'"
-    )
+    // (The chip label that used to name the replay here was removed 2026-08-11 with the always-on
+    // mode text; the caught-up banner awaitCaughtUp asserts IS the replay's announcement.)
 
     // Live traffic published after Play is recorded PAST the boundary: none of it may deliver
     // into this chunk, however long it sits on the broker.
@@ -242,9 +240,9 @@ class CsDeliveryModesSpec extends StartFromSupport:
     assertSettledLoaded(cs, liveSeeds.size, "post-Play traffic belongs to the NEXT chunk - nothing may leak past the boundary")
     DeliveredMessages.assertExactly(cs.exportedValues(), liveSeeds, "A-G first-chunk multiset")
 
-    // Resume extends the boundary to now: the whole tail replays as chunk 2, exactly once, and
+    // "Load new messages" extends the boundary to now: the whole tail replays as chunk 2, exactly once, and
     // the session catches up again.
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, liveSeeds.size + liveTail.size)
     assertSettledLoaded(cs, liveSeeds.size + liveTail.size, "the delta must replay exactly once")
     assertNoSeamViolations()
@@ -287,7 +285,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     cs.play()
     cs.awaitLoaded(staticBacklog.size)
     assertSettledLoaded(cs, staticBacklog.size, "Fastest must deliver the backlog exactly once")
-    assertThat(orderChip).not().isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
     // NO order assertion: Fastest promises none (see cell A-F).
     DeliveredMessages.assertExactly(pausedExportedSet(cs), staticBacklog, "B-F delivered multiset")
   }
@@ -300,7 +298,6 @@ class CsDeliveryModesSpec extends StartFromSupport:
     // everything - each partition's tail is released by the bounded reorder grace, not by traffic.
     cs.awaitLoaded(staticBacklog.size)
     assertSettledLoaded(cs, staticBacklog.size, "Best effort must deliver the backlog exactly once")
-    assertThat(orderChip).isVisible()
     cs.pauseFromToolbar()
     cs.assertState("paused", timeoutMs = 10000)
     assertArrivalOrder(cs, staticBacklog, "B-B arrival order")
@@ -321,7 +318,6 @@ class CsDeliveryModesSpec extends StartFromSupport:
     // Banner content on a topic with NOTHING past the boundary: the newer-entries line and the
     // excluded-topics line say nothing, because a zero is silence, not a claim (R1 pins the
     // positive halves).
-    assertThat(bannerNewerLine).not().isVisible()
     assertThat(bannerExcludedLine).not().isVisible()
     assertNoSeamViolations()
     assertArrivalOrder(cs, staticBacklog, "B-G arrival order")
@@ -346,7 +342,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     fixtures.produceRoundRobin(Seq(fqnL), mixedLive) // only L is live
     cs.awaitLoaded(mixedBacklog.size + mixedLive.size)
     assertSettledLoaded(cs, mixedBacklog.size + mixedLive.size, "Fastest must deliver exactly once")
-    assertThat(orderChip).not().isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
     // NO order assertion: Fastest promises none.
     DeliveredMessages.assertExactly(pausedExportedSet(cs), mixedBacklog ++ mixedLive, "C-F delivered multiset")
   }
@@ -361,7 +357,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     fixtures.produceRoundRobin(Seq(fqnL), mixedLive)
     cs.awaitLoaded(mixedBacklog.size + mixedLive.size)
     assertSettledLoaded(cs, mixedBacklog.size + mixedLive.size, "Best effort must deliver exactly once")
-    assertThat(orderChip).isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
     cs.pauseFromToolbar()
     cs.assertState("paused", timeoutMs = 10000)
     assertArrivalOrder(cs, mixedBacklog ++ mixedLive, "C-B arrival order")
@@ -383,8 +379,8 @@ class CsDeliveryModesSpec extends StartFromSupport:
     assertSettledLoaded(cs, mixedBacklog.size, "post-Play traffic on L belongs to the next chunk")
     DeliveredMessages.assertExactly(cs.exportedValues(), mixedBacklog, "C-G first-chunk multiset")
 
-    // Resume: the boundary extends to now and the accumulated delta replays exactly once.
-    bannerResume.click()
+    // "Load new messages": the boundary extends to now and the accumulated delta replays exactly once.
+    loadNewMessages.click()
     awaitCaughtUp(cs, mixedBacklog.size + mixedLive.size)
     assertSettledLoaded(cs, mixedBacklog.size + mixedLive.size, "the delta must replay exactly once")
     assertNoSeamViolations()
@@ -416,7 +412,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     cs.play()
     cs.awaitLoaded(d1Backlog.size)
     assertSettledLoaded(cs, d1Backlog.size, "Fastest must deliver the backlog exactly once")
-    assertThat(orderChip).not().isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
     // NO order assertion: Fastest promises none.
     DeliveredMessages.assertExactly(pausedExportedSet(cs), d1Backlog, "D1-F delivered multiset")
   }
@@ -427,7 +423,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     cs.play()
     cs.awaitLoaded(d1Backlog.size)
     assertSettledLoaded(cs, d1Backlog.size, "Best effort must deliver the backlog exactly once")
-    assertThat(orderChip).isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
     cs.pauseFromToolbar()
     cs.assertState("paused", timeoutMs = 10000)
     assertArrivalOrder(cs, d1Backlog, "D1-B arrival order")
@@ -452,9 +448,9 @@ class CsDeliveryModesSpec extends StartFromSupport:
     fixtures.produceRoundRobin(partitionFqns(fqn, 3), release)
     assertSettledLoaded(cs, d1Backlog.size, "pause-window words belong to the next chunk")
 
-    // Resume: all three deliver - the formerly-empty partitions join the replay like any other
+    // "Load new messages": all three deliver - the formerly-empty partitions join the replay like any other
     // stream, in key order.
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, d1Backlog.size + release.size)
     assertSettledLoaded(cs, d1Backlog.size + release.size, "the delta must replay exactly once")
     assertNoSeamViolations()
@@ -466,7 +462,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
   // CELL D2 - EDGE: a static topic BECOMES LIVE again. Two topics, four seeds round-robin
   // (A = m-00/m-02, B = m-01/m-03), then ONE more message to the topic that had finished. For
   // the replay contract this is the chunk rule at its sharpest: the late word is recorded PAST
-  // the boundary, so it lands in the NEXT chunk - banner first, then Resume delivers it.
+  // the boundary, so it lands in the NEXT chunk - banner first, then "Load new messages" delivers it.
   // =============================================================================================
 
   private val d2Seeds = (0 until 4).map(i => f"m-$i%02d")
@@ -499,7 +495,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     DeliveredMessages.assertExactly(cs.exportedValues(), d2Seeds :+ "x-00", "D2-B delivered multiset")
   }
 
-  test("CS-DM-D2G [STATIC-BECOMES-LIVE x Guaranteed]: the late word lands in the NEXT chunk - banner first, then Resume delivers it, order intact") {
+  test("CS-DM-D2G [STATIC-BECOMES-LIVE x Guaranteed]: the late word lands in the NEXT chunk - banner first, then 'Load new messages' delivers it, order intact") {
     val (fqnA, fqnB, parts) = twoFreshTopics()
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), d2Seeds)
     val cs = openTwoTopicSession(parts, Seq(fqnA, fqnB), guaranteedLabel)
@@ -514,9 +510,9 @@ class CsDeliveryModesSpec extends StartFromSupport:
     fixtures.produceRoundRobin(Seq(fqnA), Seq("x-00"))
     assertSettledLoaded(cs, d2Seeds.size, "the late word belongs to the next chunk")
 
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, d2Seeds.size + 1)
-    assertSettledLoaded(cs, d2Seeds.size + 1, "the late word must deliver exactly once on Resume")
+    assertSettledLoaded(cs, d2Seeds.size + 1, "the late word must deliver exactly once on 'Load new messages'")
     assertNoSeamViolations()
     assertArrivalOrder(cs, d2Seeds :+ "x-00", "D2-G arrival order")
     DeliveredMessages.assertExactly(cs.exportedValues(), d2Seeds :+ "x-00", "D2-G delivered multiset")
@@ -549,17 +545,17 @@ class CsDeliveryModesSpec extends StartFromSupport:
     cs.play()
     cs.awaitLoaded(d3Backlog.size)
     assertSettledLoaded(cs, d3Backlog.size, "the backlog must deliver exactly once")
-    assertThat(orderChip).not().isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
     // NO order assertion: Fastest promises none, even where a single log would happen to provide it.
     DeliveredMessages.assertExactly(pausedExportedSet(cs), d3Backlog, "D3-F delivered multiset")
   }
 
-  test("CS-DM-D3B [SINGLE TOPIC x Best effort]: one stream builds no layer - delivery is append order and the chip stays honest") {
+  test("CS-DM-D3B [SINGLE TOPIC x Best effort]: one stream builds no layer - delivery is append order, nothing to confess") {
     val cs = openSingleTopicSession(singleStaticTopic(), bestEffortLabel)
     cs.play()
     cs.awaitLoaded(d3Backlog.size)
     assertSettledLoaded(cs, d3Backlog.size, "the backlog must deliver exactly once")
-    assertThat(orderChip).not().isVisible() // no layer exists, so the chip may not claim one (CS-MO-8's contract, per mode)
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible() // no layer exists, nothing may claim one (CS-MO-8's contract, per mode)
     cs.pauseFromToolbar()
     cs.assertState("paused", timeoutMs = 10000)
     assertArrivalOrder(cs, d3Backlog, "D3-B arrival order")
@@ -572,13 +568,8 @@ class CsDeliveryModesSpec extends StartFromSupport:
     // The boundary is per-stream and positional, so it exists at ANY stream count: the single
     // static log replays completely and the session auto-pauses at its recorded end.
     awaitCaughtUp(cs, d3Backlog.size)
-    // The chip announces the replay even for one stream - the layer carrying the boundary is
-    // real, so the chip claiming it is honest (contrast D3-B, where no layer exists).
-    assertThat(orderChip).isVisible()
-    assert(
-      orderChip.textContent().contains("Replaying history - exact order"),
-      s"the chip must name the replay, got '${orderChip.textContent()}'"
-    )
+    // The boundary layer is real even for one stream: the caught-up banner asserted by
+    // awaitCaughtUp is its announcement (the always-on chip label was removed 2026-08-11).
     assertSettledLoaded(cs, d3Backlog.size, "the backlog must deliver exactly once")
     assertNoSeamViolations()
     assertArrivalOrder(cs, d3Backlog, "D3-G arrival order")
@@ -621,14 +612,14 @@ class CsDeliveryModesSpec extends StartFromSupport:
 
   // =============================================================================================
   // CELL D5 - EDGE: the ONE-CLICK SWITCH, from the caught-up pause. The caught-up banner offers
-  // "Continue live with Best effort" - the designed transition out of the replay into live
+  // "Switch to Best effort and follow live" - the designed transition out of the replay into live
   // following (SetDeliveryOrder on the live session; the only broker-level exercise of that
   // RPC). The pause-window traffic and everything after must arrive exactly once, and the FIRST
   // row delivered after the switch carries the divider badge (`cs-order-switch-point`) that
   // marks where the exact replay ends and the bounded-reorder live following begins.
   // =============================================================================================
 
-  test("CS-DM-D5G [SWITCH]: 'Continue live with Best effort' resumes live delivery from the caught-up pause - marked at the switch point, nothing lost or doubled") {
+  test("CS-DM-D5G [SWITCH]: 'Switch to Best effort and follow live' resumes live delivery from the caught-up pause - marked at the switch point, nothing lost or doubled") {
     val (fqnA, fqnB, parts) = twoFreshTopics()
     val recorded = (0 until 12).map(i => f"m-$i%02d")
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), recorded)
@@ -649,13 +640,15 @@ class CsDeliveryModesSpec extends StartFromSupport:
     cs.awaitLoaded(recorded.size + pauseWindow.size)
     assertThat(caughtUpBanner).not().isVisible() // the replay state died with the barrier
 
-    // And it IS live following now: a fresh round arrives promptly, no Resume needed.
+    // And it IS live following now: a fresh round arrives promptly, nothing to click.
     val liveRound = (0 until 6).map(i => f"p-$i%02d")
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), liveRound)
     val all = recorded ++ pauseWindow ++ liveRound
     cs.awaitLoaded(all.size)
     assertSettledLoaded(cs, all.size, "exactly once across the switch - no re-read, no duplicate")
-    assert(orderChip.textContent().contains("Best effort"), "the chip must now name the mode the session actually runs")
+    // The proof the session now RUNS Best effort is the switch-point divider on the first
+    // post-switch row (asserted below) - the chip label that used to read the mode back was
+    // removed 2026-08-11 with the always-on mode text.
     // NOT asserted here: the switch also writes Best effort back into the session CONFIG (so the
     // next Play keeps it). The config select only exists on the pre-Play configuration view
     // (`currentView` is 'configuration' only while the session is 'new'), so a running session
@@ -715,16 +708,21 @@ class CsDeliveryModesSpec extends StartFromSupport:
     }
 
   test("CS-DM-D6G [CHURN x Guaranteed]: an unload mid-replay redelivers - every copy is deduped against the SAME replay range, and the chunk stays exact") {
-    // BIG blocks, deliberately: the unload must land while the replay is still draining, and a
-    // 6,000-message drain through the whole pipeline gives the admin call a wide deterministic
-    // window (the 12-message shape the old hold-forever cell used would finish before any unload
-    // could arrive). Fast-produced: order is not asserted in this cell (ties across the two
-    // producers), identity is.
+    // The unload must land while the replay is still draining. Block size alone cannot hold that
+    // window open: 6,000 messages drained in under a second on a warm standalone (observed
+    // 2026-08-12 - the auto-pause beat the first assertState poll), so the window is held the way
+    // R1 holds its announce off: through the product's own delivery rate limit. 6,000 recorded
+    // messages at 500/s is a ~12 s drain wherever the pipeline's raw speed goes next; x's
+    // dispatch (below) lands ~8 s in, and the unload strikes a provably LIVE replay - with B's
+    // receiver queue full of dispatched-but-unemitted in-range messages, which is what gives the
+    // dedup assertion real redelivered copies to reject. Fast-produced: order is not asserted in
+    // this cell (ties across the two producers), identity is.
     val (fqnD6A, fqnD6B, parts) = twoFreshTopics()
     val seedsA = fixtures.produceStringsFast(fqnD6A, 3000, prefix = "a")
     val seedsB = fixtures.produceStringsFast(fqnD6B, 3000, prefix = "b")
 
     val cs = openTwoTopicSession(parts, Seq(fqnD6A, fqnD6B), guaranteedLabel)
+    cs.setRateLimit(500)
     cs.play()
     cs.assertState("running")
 
@@ -770,9 +768,9 @@ class CsDeliveryModesSpec extends StartFromSupport:
     // the baseline is read here, post-reload, rather than differenced across the unload.)
     val dispatchedBeforeResume = fixtures.subscriptionDispatchCount(fqnD6B)
 
-    // Resume extends the boundary: the held consumer releases, the broker redelivers x across
+    // 'Load new messages' extends the boundary: the held consumer releases, the broker redelivers x across
     // the churn, and it arrives exactly once.
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, seedsA.size + seedsB.size + 1, timeoutMs = 45000)
     assertSettledLoaded(cs, seedsA.size + seedsB.size + 1, "the next-chunk word must survive the churn and deliver exactly once")
     val redelivered = fixtures.subscriptionDispatchCount(fqnD6B) - dispatchedBeforeResume
@@ -888,20 +886,16 @@ class CsDeliveryModesSpec extends StartFromSupport:
     fixtures.produceRoundRobin(Seq(fqn), newer)
 
     awaitCaughtUp(cs, backlog.size, timeoutMs = 60000)
-    // The boundary instant, formatted: "Caught up to Aug 09, 2026 14:03:22 - ...".
+    // The boundary instant, formatted: "Caught up to Aug 09, 2026 14:03:22".
     val bannerText = caughtUpBanner.textContent()
     assert(
       bannerText.matches("(?s).*Caught up to [A-Z][a-z]{2} \\d{2}, \\d{4} \\d{2}:\\d{2}:\\d{2}.*"),
       s"the banner must name the boundary instant, got: '$bannerText'"
     )
-    // The newer-data line: present, and APPROXIMATE by design ("~N newer entries" - the broker
-    // counts entries, not messages, so the banner never claims an exact message count). The
-    // refinement frame can land moments after the announce, hence the eventually.
-    eventually(timeoutMs = 20000, intervalMs = 300) {
-      assert(bannerNewerLine.isVisible, "the newer-entries line must appear - data was recorded past the boundary")
-      val line = bannerNewerLine.textContent()
-      assert(line.matches("(?s).*~\\d+ newer entries.*"), s"the line must disclose an approximate entry count, got: '$line'")
-    }
+    // The panel no longer reports how much waits past the boundary (the "~N entries" line was
+    // removed 2026-08-11 - it counted broker entries, not messages). What the cell still pins is
+    // the CONTRACT that line described: the replay stops exactly at the boundary, and the words
+    // recorded past it wait for the next chunk.
     // No regex matched a new topic, so the excluded-topics line says nothing.
     assertThat(bannerExcludedLine).not().isVisible()
     assertNoSeamViolations()
@@ -909,7 +903,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     DeliveredMessages.assertExactly(cs.exportedValues(), backlog, "R1 delivered multiset (the boundary excludes the newer words)")
   }
 
-  test("CS-DM-R2 [RESUME EXTENDS]: every Resume extends the boundary and replays the delta exactly - the chunk mechanism is repeatable, not one-shot") {
+  test("CS-DM-R2 [LOAD NEW MESSAGES EXTENDS]: every 'Load new messages' extends the boundary and replays the delta exactly - the chunk mechanism is repeatable, not one-shot") {
     val (fqnA, fqnB, parts) = twoFreshTopics()
     val seeds = (0 until 6).map(i => f"m-$i%02d")
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), seeds)
@@ -917,12 +911,12 @@ class CsDeliveryModesSpec extends StartFromSupport:
     cs.play()
     awaitCaughtUp(cs, seeds.size)
 
-    // Chunk 2: a delta produced INTO the pause, spread over both streams; Resume replays it
+    // Chunk 2: a delta produced INTO the pause, spread over both streams; 'Load new messages' replays it
     // exactly once and the banner returns at the new boundary.
     val delta1 = (0 until 6).map(i => f"d1-$i%02d")
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), delta1)
     assertSettledLoaded(cs, seeds.size, "the delta waits behind the boundary")
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, seeds.size + delta1.size)
     assertSettledLoaded(cs, seeds.size + delta1.size, "chunk 2 must deliver exactly once")
 
@@ -930,7 +924,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     val delta2 = (0 until 4).map(i => f"d2-$i%02d")
     fixtures.produceRoundRobin(Seq(fqnA, fqnB), delta2)
     assertSettledLoaded(cs, seeds.size + delta1.size, "chunk 3 waits behind the extended boundary")
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, seeds.size + delta1.size + delta2.size)
     assertSettledLoaded(cs, seeds.size + delta1.size + delta2.size, "chunk 3 must deliver exactly once")
 
@@ -939,41 +933,32 @@ class CsDeliveryModesSpec extends StartFromSupport:
     DeliveredMessages.assertExactly(cs.exportedValues(), seeds ++ delta1 ++ delta2, "R2 delivered multiset")
   }
 
-  test("CS-DM-R3 [LATEST x GUARANTEED, the gate]: the selector disables 'Latest message' under Guaranteed in BOTH directions, with the note, and never rewrites the stored value") {
+  test("CS-DM-R3 [LATEST x GUARANTEED, ungated]: 'Latest message' stays selectable under Guaranteed in BOTH directions, with no note, and nothing is rewritten") {
+    // Owner decision 2026-08-11, reversing the 2026-08-09 disabled-option gate: the combination
+    // is legal, and what the user gets is the instant caught-up with its panel (R3B pins that
+    // flow) - the decision belongs there, not to a greyed-out option. This cell pins the un-gate:
+    // nothing disabled, nothing noted, nothing rewritten.
     val (t, ns, topic) = fixtures.freshTopicParts()
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
 
-    // Direction 1: Guaranteed first - "Latest message" is disabled in the start-from select, and
-    // the note explains why.
+    // Direction 1: Guaranteed first - "Latest message" stays selectable.
     cs.setDeliveryOrder(guaranteedLabel)
     assert(
-      cs.disabledStartFromLabels.contains("Latest message"),
-      s"'Latest message' must be disabled under Guaranteed, disabled set: ${cs.disabledStartFromLabels}"
+      !cs.disabledStartFromLabels.contains("Latest message"),
+      s"'Latest message' must stay selectable under Guaranteed, disabled set: ${cs.disabledStartFromLabels}"
     )
-    val note = page.getByTestId("cs-start-from-latest-guaranteed-note")
-    assertThat(note).isVisible()
-    assert(
-      note.textContent().contains("Guaranteed replays recorded history - to follow live, use Best effort."),
-      s"the note must carry the remediation, got '${note.textContent()}'"
-    )
+    assertThat(page.getByTestId("cs-start-from-latest-guaranteed-note")).not().isVisible()
 
-    // Direction 2: Latest first, then Guaranteed - the saved-combo path (M4 lesson: a stored
-    // combination is NEVER rewritten). The select keeps Latest, disabled option and all, and the
-    // note explains it.
+    // Direction 2: Latest first, then Guaranteed - the stored value is the user's (M4 lesson).
     cs.setDeliveryOrder(bestEffortLabel)
     cs.setStartFrom("Latest message")
     cs.setDeliveryOrder(guaranteedLabel)
-    assertThat(note).isVisible()
     assertThat(cs.startFromSelect).hasValue("latestMessage")
-
-    // Leaving Guaranteed re-enables the option - the gate is the combination's, not the mode's.
-    cs.setDeliveryOrder(bestEffortLabel)
     assert(
       !cs.disabledStartFromLabels.contains("Latest message"),
-      s"'Latest message' must re-enable under Best effort, disabled set: ${cs.disabledStartFromLabels}"
+      s"'Latest message' must stay selectable in the saved-combo direction too, disabled set: ${cs.disabledStartFromLabels}"
     )
-    assertThat(note).not().isVisible()
   }
 
   test("CS-DM-R3B [LATEST x GUARANTEED, the combination]: playing a saved Latest x Guaranteed combo is an INSTANT caught-up that reads nothing") {
@@ -1012,7 +997,7 @@ class CsDeliveryModesSpec extends StartFromSupport:
     val delta = (0 until 4).map(i => f"d-$i%02d")
     fixtures.produceRoundRobin(Seq(fqn), delta)
     assertSettledLoaded(cs, 0, "pause-window words wait for the next chunk")
-    bannerResume.click()
+    loadNewMessages.click()
     awaitCaughtUp(cs, delta.size)
     assertSettledLoaded(cs, delta.size, "the delta must deliver exactly once - and the old backlog must stay out")
     DeliveredMessages.assertExactly(cs.exportedValues(), delta, "R3B delivered multiset (the unread backlog is not in it)")

@@ -50,19 +50,19 @@ describe("a saved consumer-session config keeps its delivery order", () => {
 
   const defaultSpec = () => getDefaultManagedItem('consumer-session-config', libraryContext).spec;
 
-  // Owner decision (2026-08-09, direct instruction): the default is Best effort - supersedes the
-  // review-findings P1.1 note that said Guaranteed.
-  it("writes the new managed-item default as best-effort order", () => {
+  // Owner decision (2026-08-11, direct instruction): the default is Guaranteed - the third move
+  // of this default; the plan file's decision log is the record.
+  it("writes the new managed-item default as Guaranteed order", () => {
     const saved = managedConsumerSessionConfigSpecToPb(defaultSpec());
     const loaded = managedConsumerSessionConfigSpecFromPb(saved);
     expect(saved.getMessageDeliveryOrder()).toBe(
       require('../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb')
-        .MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+        .MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
     );
-    expect(loaded.messageDeliveryOrder).toBe('best-effort');
+    expect(loaded.messageDeliveryOrder).toBe('guaranteed');
   });
 
-  it("normalizes an older UNSPECIFIED field to the best-effort default", () => {
+  it("normalizes an older UNSPECIFIED field to the Guaranteed default", () => {
     const consumerPb = require('../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb');
     const saved = managedConsumerSessionConfigSpecToPb(defaultSpec());
     // Set the protobuf field itself to zero after building an otherwise-valid object. Going
@@ -75,10 +75,10 @@ describe("a saved consumer-session config keeps its delivery order", () => {
     expect(saved.getMessageDeliveryOrder()).toBe(
       consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED
     );
-    expect(loaded.messageDeliveryOrder).toBe('best-effort');
+    expect(loaded.messageDeliveryOrder).toBe('guaranteed');
   });
 
-  it("loads an item SERIALIZED before the field existed - field absent in the bytes - as best-effort", () => {
+  it("loads an item SERIALIZED before the field existed - field absent in the bytes - as Guaranteed, the default", () => {
     // The compatibility case that actually ships: BYTES written by a build with no field 8 at
     // all, not an in-memory object whose enum happens to read zero. Proto3 omits a zero enum, so
     // round-tripping through serializeBinary produces exactly those pre-field bytes.
@@ -104,15 +104,15 @@ describe("a saved consumer-session config keeps its delivery order", () => {
     const parsed = managedPb.ManagedConsumerSessionConfigSpec.deserializeBinary(preFieldBytes);
     expect(parsed.getMessageDeliveryOrder())
       .toBe(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED);
-    expect(managedConsumerSessionConfigSpecFromPb(parsed).messageDeliveryOrder).toBe('best-effort');
+    expect(managedConsumerSessionConfigSpecFromPb(parsed).messageDeliveryOrder).toBe('guaranteed');
   });
 
-  it("writes a missing older JSON value as the explicit best-effort default", () => {
+  it("writes a missing older JSON value as the explicit Guaranteed default", () => {
     const legacy = { ...defaultSpec(), messageDeliveryOrder: undefined };
     const saved = managedConsumerSessionConfigSpecToPb(legacy);
     expect(saved.getMessageDeliveryOrder()).toBe(
       require('../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb')
-        .MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+        .MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
     );
   });
 

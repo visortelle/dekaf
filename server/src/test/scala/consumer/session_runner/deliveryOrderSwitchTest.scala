@@ -9,7 +9,7 @@ import scala.jdk.CollectionConverters.*
 
 /** CHANGING THE DELIVERY ORDER OF A SESSION THAT IS ALREADY RUNNING.
   *
-  * Guaranteed - an explicit choice, since the product default is Best effort - can wait on an
+  * Guaranteed - the product default since 2026-08-11 - can wait on an
   * idle source forever. The wait is disclosed; this is what makes it ACTIONABLE - one call
   * switches the live session to Best effort and the messages the barrier was holding are
   * RELEASED, in the new order, exactly once. Nothing is re-read from the broker, nothing is

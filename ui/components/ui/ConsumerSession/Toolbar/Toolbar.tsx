@@ -129,13 +129,14 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
   const playButtonState = (props.sessionState === 'new' || props.sessionState === 'paused') ? 'play' : 'pause';
   // Be defensive at this presentation boundary too: older/incomplete callers that omit the
-  // field have the same meaning as protobuf UNSPECIFIED and old saved JSON - Best effort.
-  const messageDeliveryOrder = props.config?.messageDeliveryOrder ?? 'best-effort';
-  const deliveryOrderTime = props.config?.deliveryOrderKey === 'broker-publish-time'
-    ? 'Broker publish time'
-    : props.config?.deliveryOrderKey === 'event-time'
-      ? 'Event time'
-      : 'Publish time';
+  // field have the same meaning as protobuf UNSPECIFIED and old saved JSON - Guaranteed, the
+  // product default (owner decision 2026-08-11; third move of this default).
+  const messageDeliveryOrder = props.config?.messageDeliveryOrder ?? 'guaranteed';
+  // What the warning mark beside the loaded count reports. Guaranteed: the seam counter (the late
+  // counter double-ticks on the same commit-phase inversions). Best effort: the late counter.
+  const outOfOrderCount = messageDeliveryOrder === 'guaranteed'
+    ? props.replaySeamViolations
+    : props.orderingLateDeliveries;
 
   // No runtime config means the stored configuration could not be converted into one - there is
   // nothing to send. Play used to stay enabled and start a session that could never leave
@@ -253,28 +254,50 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           </div>
         </div>
 
-        {props.config !== undefined && (messageDeliveryOrder === 'best-effort'
-          || messageDeliveryOrder === 'guaranteed') && props.orderingActive && (
+        {/* Out-of-order disclosure, to the RIGHT of the counters it qualifies. The mode decides
+            which counter is the honest one: under Guaranteed the seam counter owns commit-phase
+            inversions (the late counter double-ticks on the same events); under Best effort the
+            late counter IS the mode's quality gauge. The tooltip carries the count in bold and
+            the plain-words cause; each guaranteed row also carries its own "!" marker. */}
+        {outOfOrderCount > 0 && (
+          <span
+            className={s.OrderWarning}
+            data-testid="cs-order-warning"
+            role="img"
+            aria-label="Some messages were shown out of order"
+            data-tooltip-id={tooltipId}
+            data-tooltip-html={
+              messageDeliveryOrder === 'guaranteed'
+                ? `<strong>${i18n.formatLongNumber(outOfOrderCount)}</strong> message${outOfOrderCount === 1 ? ' is' : 's are'} out of order on screen. `
+                  + 'Guaranteed did not reorder them: they were written to the topic out of order - '
+                  + 'typical when several producers share a topic, because each stamps its own clock, '
+                  + 'and send retries or batch flushes reorder them further - or a pause fell between '
+                  + 'replays. Each one is marked with "!".'
+                : `<strong>${i18n.formatLongNumber(outOfOrderCount)}</strong> message${outOfOrderCount === 1 ? ' was' : 's were'} shown out of order: `
+                  + 'they arrived late, after newer messages were already on screen. Nothing is lost. '
+                  + 'Best effort waits up to ~0.75 s for late messages, then moves on. '
+                  + 'Each one is marked with "!".'
+            }
+          >
+            !
+          </span>
+        )}
+
+        {/* The ordering STATUS area. The always-on mode label it used to carry ("Best effort ·
+            Publish time") was removed 2026-08-11 (owner instruction) - the mode is configuration,
+            one click away, and the bar tells only what needs telling: a stall being disclosed
+            (with its one-click escape) and the order-key fallbacks. Renders nothing otherwise. */}
+        {props.config !== undefined && props.orderingActive
+          && (props.orderingWaitingStreams > 0 || props.orderKeyFallbacks > 0) && (
           <div
             className={s.MessagesLoadedStats}
             data-testid="cs-order-chip"
             role="status"
-            title={
-              messageDeliveryOrder === 'guaranteed'
-                ? 'Replays everything recorded up to Play (or the last Resume), of what retention still holds, ' +
-                  'in exact order of the selected timestamp, then pauses when caught up. Stored order within ' +
-                  'each stream is preserved, so timestamp reversals and redeliveries are counted as out of order.'
-                : 'Merges by the selected timestamp within ~0.75 s. Late messages may ' +
-                  'appear out of order; none are dropped.'
-            }
           >
             <div className={s.MessagesLoadedStat}>
-              <span className={s.MessagesLoadedStatTitle}>
-                {messageDeliveryOrder === 'guaranteed' ? 'Replaying history - exact order' : 'Best effort'} · {deliveryOrderTime}
-              </span>
               {props.orderingWaitingStreams > 0 && (
                 <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-waiting">
-                  &nbsp;· waiting for {i18n.formatLongNumber(props.orderingWaitingStreams)} topics/partitions
+                  waiting for {i18n.formatLongNumber(props.orderingWaitingStreams)} topics/partitions
                 </strong>
               )}
               {/* The escape from that wait, RIGHT NEXT TO IT. The replay waits only on streams
@@ -314,29 +337,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
               {props.orderKeyFallbacks > 0 && (
                 <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-key-fallbacks">
                   &nbsp;· {i18n.formatLongNumber(props.orderKeyFallbacks)} used publish time
-                </strong>
-              )}
-              {/* Under guaranteed the seam chip below owns inversions - the server ticks both
-                  counters on the same commit-phase events, so rendering both here would show
-                  each violation twice with two different causal labels. */}
-              {messageDeliveryOrder !== 'guaranteed' && props.orderingLateDeliveries > 0 && (
-                <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-late">
-                  &nbsp;· {i18n.formatLongNumber(props.orderingLateDeliveries)} late
-                </strong>
-              )}
-              {/* Replay ordering violations, loudly: the replay delivered these flagged (each
-                  row carries its own marker); this is the session-level count. The tooltip names
-                  both causes the proto does - the chip stays short. */}
-              {props.replaySeamViolations > 0 && (
-                <strong
-                  className={s.MessagesLoadedStatValue}
-                  data-testid="cs-replay-seam-violations"
-                  title={
-                    'Delivered flagged, never silently: a producer clock wrote an earlier timestamp ' +
-                    'into a pause window, or the source log itself stores an inversion.'
-                  }
-                >
-                  &nbsp;· {i18n.formatLongNumber(props.replaySeamViolations)} out of order
                 </strong>
               )}
             </div>

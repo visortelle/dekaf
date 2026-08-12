@@ -39,7 +39,7 @@ import { Th } from './Th';
 import { useColumnWidths } from '../resizable/useColumnWidths';
 import useLocalStorage from 'use-local-storage-state';
 import { localStorageKeys } from '../../local-storage-keys';
-import { MessageColumnKey, messageColumnDefaultWidths, messageThMeta, reorderableMessageColumns } from './message-columns';
+import { MessageColumnKey, ReorderableMessageColumnKey, messageColumnDefaultWidths, messageThMeta, reorderableMessageColumns } from './message-columns';
 import { useColumnOrder } from '../resizable/useColumnOrder';
 import MessageDetails from './Message/MessageDetails/MessageDetails';
 import ActionButton from '../ActionButton/ActionButton';
@@ -144,7 +144,6 @@ export function handleResumeResponse(res: ResumeResponse, sinks: ResumeResponseS
   sinks.setReplayCaughtUp(consumerStats?.getReplayCaughtUp()
     ? {
       boundaryAtMs: consumerStats.getReplayBoundaryAtMs(),
-      newerEntriesApprox: consumerStats.getReplayNewerEntriesApprox(),
       excludedTopics: consumerStats.getReplayExcludedTopicsList(),
       excludedTopicCount: consumerStats.getReplayExcludedTopicCount(),
     }
@@ -308,8 +307,9 @@ const Session: React.FC<SessionProps> = (props) => {
   const { getWidth: getColumnWidth, startResize: startColumnResize, suppressSortClickRef } =
     useColumnWidths<MessageColumnKey>('consumer-session-messages', messageColumnDefaultWidths);
   const toolsPane = useResizablePane('consumer-session-tools', {
-    // Preserve the old 400rem default while the persisted drag values themselves stay in pixels.
-    defaultSize: remToPx(400),
+    // 340px by owner instruction (2026-08-11; was 400rem). A plain pixel value on purpose - the
+    // persisted drag values are pixels too.
+    defaultSize: 340,
     minSize: remToPx(100),
     maxSize: remToPx(1600),
     resizeAxis: 'vertical',
@@ -325,13 +325,13 @@ const Session: React.FC<SessionProps> = (props) => {
   // Draggable column order for the message table, persisted like the widths are. Index and
   // publish time stay pinned in front (they are the sticky pair whose offsets depend on each
   // other); everything else reorders freely, and the ROWS follow the header via `columnOrder`.
-  const { order: messageColumnOrder, moveColumn: moveMessageColumn } = useColumnOrder<MessageColumnKey>(
+  const { order: messageColumnOrder, moveColumn: moveMessageColumn } = useColumnOrder<ReorderableMessageColumnKey>(
     'consumer-session-messages',
     reorderableMessageColumns
   );
-  const [dragOverMessageColumn, setDragOverMessageColumn] = useState<MessageColumnKey | undefined>(undefined);
-  const draggingMessageColumnRef = useRef<MessageColumnKey | undefined>(undefined);
-  const columnDragProps = (key: MessageColumnKey): React.ThHTMLAttributes<HTMLTableCellElement> => ({
+  const [dragOverMessageColumn, setDragOverMessageColumn] = useState<ReorderableMessageColumnKey | undefined>(undefined);
+  const draggingMessageColumnRef = useRef<ReorderableMessageColumnKey | undefined>(undefined);
+  const columnDragProps = (key: ReorderableMessageColumnKey): React.ThHTMLAttributes<HTMLTableCellElement> => ({
     draggable: true,
     onDragStart: (e) => {
       if (suppressSortClickRef.current) {
@@ -371,6 +371,11 @@ const Session: React.FC<SessionProps> = (props) => {
     onResizeStart: (x: number) => startColumnResize(key, x),
     suppressSortClickRef,
   });
+  // The index column's TOTAL cell width (content + the Td's 12rem-a-side padding): the sticky
+  // offset the publish-time pair sits at. Was the constant 60 while the index column was fixed;
+  // resizable since 2026-08-11, so the header offset and the body offset (through the
+  // --cs-index-cell-total variable read by Message.module.css) both track the live width.
+  const indexCellTotal = getColumnWidth('index') + 24;
   const [_searchInResults, setSearchInResults] = useState<string>('');
   const [searchInResults] = useDebounce(_searchInResults, 1000);
   const [startFromProgress, _setStartFromProgress] = useState<StartFromSkipProgress | undefined>(undefined);
@@ -408,7 +413,7 @@ const Session: React.FC<SessionProps> = (props) => {
   // Cross-seam ordering violations - monotonic from the server, reset only with the session.
   const [replaySeamViolations, setReplaySeamViolations] = useState(0);
   // The delivery-order switch point: the processed count at the moment a live Guaranteed session
-  // was switched away (the caught-up banner's "Continue live with Best effort", or the stall
+  // was switched away (the caught-up banner's "Switch to Best effort and follow live", or the stall
   // escape on the chip). Rows at or below it are the exact replay; rows past it follow live
   // traffic in the bounded reorder window - the first such row carries the divider marker.
   // Session-scoped: survives later pauses and resumes, cleared only with the session.
@@ -511,7 +516,6 @@ const Session: React.FC<SessionProps> = (props) => {
       ? state === undefined
       : state !== undefined
       && prev.boundaryAtMs === state.boundaryAtMs
-      && prev.newerEntriesApprox === state.newerEntriesApprox
       && prev.excludedTopicCount === state.excludedTopicCount
       && prev.excludedTopics.join('\u0000') === state.excludedTopics.join('\u0000');
 
@@ -772,7 +776,7 @@ const Session: React.FC<SessionProps> = (props) => {
     return 'applied';
   };
 
-  // The caught-up banner's "Continue live with Best effort": the granted switch releases the
+  // The caught-up banner's "Switch to Best effort and follow live": the granted switch releases the
   // boundary holds server-side and live delivery resumes - so the session follows it back into
   // `running`, which also starts a fresh resume stream through the ordinary path (the superseded
   // one drains, as every resume's predecessor does). A refused switch was already reported and
@@ -783,6 +787,7 @@ const Session: React.FC<SessionProps> = (props) => {
       setSessionState('running');
     }
   };
+
 
   const cleanup = useCallback(async () => {
     console.info(`%cCleaning up session: ${props.sessionKey}`, consoleCss);
@@ -1182,6 +1187,27 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState]);
 
   const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
+
+  // THE CAUGHT-UP PANEL IS RENDERED BY THE SESSION ITSELF, docked bottom-right - not an inline
+  // strip above the table (the state is worth acting on, not worth a permanent band of chrome),
+  // and NOT a notification. It lived in a persistent toast for a day (2026-08-11) and every
+  // boundary hand-off was a race against react-toastify's lifecycle: a toast created under a
+  // still-exiting id is silently DROPPED ("Load new messages" -> dismiss -> re-announce produced
+  // exactly that, and the panel never returned - e2e CS-DM-R2), and per-episode fresh ids traded
+  // that for the retiring panel and its successor COEXISTING while the exit animation played -
+  // an instant catch-up re-announces within milliseconds of the dismissal, faster than any exit
+  // (two panels on screen; e2e CS-DM-R3B). Removal mediated by an animation cannot be made
+  // synchronous, so the panel left the toast layer instead: rendered conditionally below, at
+  // most one can exist, a close is plain state, and unmounting takes it along.
+  //
+  // The close is scoped to the EPISODE: a new caught-up record re-opens the panel (the sink
+  // collapses equal records, so the identity only changes when the boundary or its excluded
+  // set does - new information, worth re-showing), and every resume clears the record, so the
+  // next boundary starts open again.
+  const [caughtUpPanelClosed, setCaughtUpPanelClosed] = useState(false);
+  useEffect(() => {
+    setCaughtUpPanelClosed(false);
+  }, [replayCaughtUp]);
   const messagesToShow = useMemo(() => {
     let msgs = searchInResults === '' ? messages : messages.filter(msg => {
       return msg.key?.includes(searchInResults) || msg.value?.includes(searchInResults);
@@ -1242,19 +1268,6 @@ const Session: React.FC<SessionProps> = (props) => {
           <StartFromDegradedBanner abandonedStreams={startFromDegradation} />
         )}
 
-        {/* The reason-differentiated pause: the guaranteed replay reached its boundary and the
-            SERVER paused the runner - this banner is what tells the two pauses apart, and it
-            carries the two ways on: Resume (the server extends the boundary and replays the
-            delta) and the one-click switch to live Best effort. Gated on `paused` plus the
-            record, which frames retire the moment they stop asserting the state. */}
-        {currentView === 'messages' && sessionState === 'paused' && replayCaughtUp !== undefined && (
-          <ReplayCaughtUpBanner
-            caughtUp={replayCaughtUp}
-            onResume={() => setSessionState('running')}
-            onContinueWithBestEffort={continueLiveWithBestEffort}
-          />
-        )}
-
         {/* What this pause COSTS, stated while it is in effect. A paused session hands its
             prefetched messages back for redelivery and picks them up on resume - which recovers
             them only where the broker still has them. A non-persistent topic keeps no log, so the
@@ -1290,7 +1303,7 @@ const Session: React.FC<SessionProps> = (props) => {
             className={`${cts.Table} ${s.Table}`}
             data-testid="cs-table"
             data-cs-sort={typeof sort.key === 'string' ? `${sort.key}:${sort.direction}` : `projection:${sort.direction}`}
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', ['--cs-index-cell-total' as string]: `${indexCellTotal}rem` } as React.CSSProperties}
             ref={tableRef}
             // Focusable: the keyboard navigation below is unreachable for a keyboard user without
             // a tabIndex - onKeyDown only fires on a focused element.
@@ -1332,6 +1345,7 @@ const Session: React.FC<SessionProps> = (props) => {
                     setSort={setSort}
                     sortKey="index"
                     style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                    {...resizeProps('index')}
                     help={(
                       <>
                         <p>
@@ -1351,7 +1365,7 @@ const Session: React.FC<SessionProps> = (props) => {
                     sort={sort}
                     setSort={setSort}
                     sortKey="publishTime"
-                    style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }}
+                    style={{ position: 'sticky', left: remToPx(indexCellTotal), zIndex: 10 }}
                     help={help.publishTime}
                     {...resizeProps('publishTime')}
                   />
@@ -1436,6 +1450,20 @@ const Session: React.FC<SessionProps> = (props) => {
         onResizeStart={toolsPane.startResize}
         resizePane={toolsPane}
       />
+
+      {/* Docked, fixed-position, out of the grid's layout entirely. Rendering it HERE is the
+          correctness: one conditional element cannot become two panels, whatever the timing of
+          boundary hand-offs (see the caughtUpPanelClosed comment above for the toast history). */}
+      {currentView === 'messages' && sessionState === 'paused' && replayCaughtUp !== undefined && !caughtUpPanelClosed && (
+        <div className={s.ReplayCaughtUpDock}>
+          <ReplayCaughtUpBanner
+            caughtUp={replayCaughtUp}
+            onResume={() => setSessionState('running')}
+            onContinueWithBestEffort={continueLiveWithBestEffort}
+            onClose={() => setCaughtUpPanelClosed(true)}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -1449,6 +1477,9 @@ const ConsumerSession: React.FC<ConsumerSessionProps> = (props) => {
   const [config, setConfig] = useState<ManagedConsumerSessionConfigValOrRef>(props.initialConfig);
   // This is a browser preference, not part of a saved consumer-session configuration. Read the
   // durable value as unknown so corrupted/legacy storage cannot make the panel disappear forever.
+  // VISIBLE by default (owner decision 2026-08-11, reversing the closed-by-default from earlier
+  // the same day). A stored preference still wins - this is only what a browser that has never
+  // expressed one gets.
   const [storedIsShowConsole, setStoredIsShowConsole] = useLocalStorage<unknown>(localStorageKeys.consumerSessionToolsOpen, {
     defaultValue: true
   });

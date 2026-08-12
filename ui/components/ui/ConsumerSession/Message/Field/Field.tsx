@@ -9,6 +9,10 @@ export type FieldProps = {
   isShowTooltips: boolean,
   rawValue?: string,
   title?: string,
+  /** What the copy toast calls this value. Defaults to "<title> value", which reads correctly for
+   * columns whose title names a field ("Publish time value copied") - set it where the column
+   * title is a heading rather than a thing you can hold ("Topic / partition" -> "Topic FQN"). */
+  copyLabel?: string,
   valueHref?: string,
   testId?: string,
 }
@@ -22,7 +26,7 @@ const Field: React.FC<FieldProps> = (props) => {
     }
 
     void copyToClipboard(props.rawValue).then((ok) => {
-      if (ok) notifySuccess(`${props.title} value copied to clipboard.`);
+      if (ok) notifySuccess(`${props.copyLabel ?? `${props.title} value`} copied to clipboard.`);
       else notifyWarn(copyFailureMessage());
     });
   }

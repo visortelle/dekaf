@@ -146,8 +146,9 @@ const testIdByKey = new Map(Object.entries(messageThMeta).map(([key, meta]) => [
 const headerOrder = () =>
   Array.from(document.querySelectorAll('th[data-testid^="cs-th-"]'))
     .map((el) => keyByTestId.get(el.getAttribute('data-testid')!)!)
-    // The sticky pair is pinned in front and is not reorderable.
-    .filter((key) => key !== undefined && key !== 'publishTime');
+    // The sticky pair is pinned in front and is not reorderable. ('index' joined the meta record
+    // when it became resizable on 2026-08-11, so it now needs excluding by name too.)
+    .filter((key) => key !== undefined && key !== 'publishTime' && key !== 'index');
 
 const th = (columnKey: string) => screen.getByTestId(testIdByKey.get(columnKey)!);
 

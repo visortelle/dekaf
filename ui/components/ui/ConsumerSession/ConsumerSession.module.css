@@ -134,31 +134,79 @@
   cursor: pointer;
 }
 
-/* The guaranteed replay's boundary pause: reason-differentiated, with its two ways on inline.
-   Info-toned rather than warning-toned - catching up is the mode doing its job. */
-.ReplayCaughtUp {
-  padding: 6rem 12rem;
-  background: var(--surface-color, #eef3ff);
-  border-bottom: 1rem solid var(--border-color, #c9d6f2);
-  font-size: 12rem;
+/* The guaranteed replay's boundary pause, DOCKED by the session itself - not a toast. It lived in
+   a persistent notification first, and react-toastify's lifecycle made every boundary hand-off a
+   race: removal is animation-mediated (a dismissed toast lingers in the DOM past the dismiss
+   call) and a toast created under a still-exiting id is silently dropped, so resume-then-recatch
+   either stacked two panels (an instant catch-up re-announces within milliseconds - e2e
+   CS-DM-R3B) or swallowed the new one (CS-DM-R2). Rendered conditionally by the component, at
+   most one panel can exist, closing is plain state, and leaving the page takes it along. Fixed at
+   bottom-right - the position the notification had - and out of layout, so the session grid never
+   learns it is there. */
+.ReplayCaughtUpDock {
+  position: fixed;
+  bottom: 16rem;
+  right: 16rem;
+  /* Above the table's sticky cells (999, which resolve in the same root stacking context) and
+     where the notification layer used to paint; below tooltips (9999) - the panel's own button
+     titles must render on top of it. */
+  z-index: 1000;
+  animation: replay-caught-up-in 0.2s ease-out both;
 }
 
+@keyframes replay-caught-up-in {
+  from { opacity: 0; transform: translateX(24rem); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The panel owns its surface now (the notification used to paint it): the app's white card, sized
+   to its content - the two action buttons side by side set the width - and capped so a long topic
+   list cannot grow it across the viewport. Column with a single gap so every optional line spaces
+   itself; the actions are the shared SmallButton, so no button styling lives here. The right
+   padding clears the close button riding the top-right corner. */
+.ReplayCaughtUp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  padding: 8rem 30rem 8rem 12rem;
+  font-size: 12rem;
+  background: var(--background-color, #fff);
+  color: var(--text-color);
+  border: 1rem solid var(--border-color, #d9dbe3);
+  border-radius: 8rem;
+  box-shadow: 0rem 2rem 4rem rgb(0 0 0 / 27%);
+  width: max-content;
+  max-width: min(640rem, calc(100vw - 48rem));
+}
+
+.ReplayCaughtUpClose {
+  position: absolute;
+  top: 4rem;
+  right: 4rem;
+}
+
+/* What HAPPENED, at a glance and above everything else: the panel is read at a distance, and the
+   two lines under it are the detail for whoever wants it. Set in the notification's own size
+   rather than the panel's dense 12rem so it carries as a heading. */
+.ReplayCaughtUpTitle {
+  font-size: 15rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* WHEN it happened - the fact most likely to be acted on, so it keeps weight of its own. */
+.ReplayCaughtUpHeadline {
+  font-weight: 600;
+}
+
+/* One ROW, always: the two ways on are peers, and stacking them read as a list of steps. The
+   panel is sized to fit them (.ReplayCaughtUp's max-content width). */
 .ReplayCaughtUpActions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12rem;
-  margin-top: 4rem;
-}
-
-.ReplayCaughtUpButton {
-  background: transparent;
-  border: 1rem solid currentColor;
-  border-radius: 3rem;
-  padding: 0 6rem;
-  font-size: 12rem;
-  color: inherit;
-  cursor: pointer;
-  white-space: nowrap;
+  flex-wrap: nowrap;
+  gap: 8rem;
+  margin-top: 2rem;
 }
 
 /* What a pause costs on topics that retain nothing - shown only while the pause is in effect. */

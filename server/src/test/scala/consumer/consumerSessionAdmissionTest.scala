@@ -129,23 +129,24 @@ object consumerSessionAdmissionTest extends ZIOSpecDefault:
                 !ConsumerSessionRunner.needsDeliveryOrderLayer(MessageDeliveryOrder.AsReceived, 1)
             )
         },
-        test("an absent delivery order resolves to Best effort, the product default, while explicit choices stay explicit") {
+        test("an absent delivery order resolves to Guaranteed, the product default, while explicit choices stay explicit") {
             // An ABSENT enum is proto3 zero - every older client and every config saved before the
-            // field existed. Owner decision (2026-08-09, direct instruction): the default is Best
-            // effort - supersedes the review-findings P1.1 note that said Guaranteed. A session
-            // that never named an order merges with bounded lateness and never stalls on a silent
-            // stream. Explicit Guaranteed and explicit Fastest are choices and are never rewritten.
+            // field existed. Owner decision (2026-08-11, direct instruction): the default is
+            // Guaranteed - the third move of this default (the plan file's decision log is the
+            // record), superseding the 2026-08-09 Best effort default. A session that never named
+            // an order replays recorded history exactly and auto-pauses when caught up. Explicit
+            // Best effort and explicit Fastest are choices and are never rewritten.
             assertTrue(
-                MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED) == MessageDeliveryOrder.BestEffort,
+                MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED) == MessageDeliveryOrder.Guaranteed,
                 MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED) == MessageDeliveryOrder.AsReceived,
                 MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME) == MessageDeliveryOrder.BestEffort,
                 MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED) == MessageDeliveryOrder.Guaranteed,
-                MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.Unrecognized(99)) == MessageDeliveryOrder.BestEffort,
-                ConsumerSessionConfig.fromPb(consumerPb.ConsumerSessionConfig()).messageDeliveryOrder == MessageDeliveryOrder.BestEffort,
-                sessionConfig(Vector.empty).messageDeliveryOrder == MessageDeliveryOrder.BestEffort
+                MessageDeliveryOrder.fromPb(consumerPb.MessageDeliveryOrder.Unrecognized(99)) == MessageDeliveryOrder.Guaranteed,
+                ConsumerSessionConfig.fromPb(consumerPb.ConsumerSessionConfig()).messageDeliveryOrder == MessageDeliveryOrder.Guaranteed,
+                sessionConfig(Vector.empty).messageDeliveryOrder == MessageDeliveryOrder.Guaranteed
             )
         },
-        test("a REQUEST whose delivery-order enum is zero on the wire resolves to Best effort") {
+        test("a REQUEST whose delivery-order enum is zero on the wire resolves to Guaranteed, the default") {
             // The request-side twin of the pre-field managed item: bytes an older client actually
             // sends. Proto3 omits a zero enum entirely, so the field is absent on the wire - and
             // the decoded request must still run the product default.
@@ -158,7 +159,7 @@ object consumerSessionAdmissionTest extends ZIOSpecDefault:
                 // Field 8 in ConsumerSessionConfig; a protobuf tag is (fieldNumber << 3) | wireType.
                 !wireFieldNumbers(requestBytes).contains(8),
                 decoded.messageDeliveryOrder == consumerPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED,
-                ConsumerSessionConfig.fromPb(decoded).messageDeliveryOrder == MessageDeliveryOrder.BestEffort
+                ConsumerSessionConfig.fromPb(decoded).messageDeliveryOrder == MessageDeliveryOrder.Guaranteed
             ) ?? s"wireFields=${wireFieldNumbers(requestBytes)} decoded=${ConsumerSessionConfig.fromPb(decoded).messageDeliveryOrder}"
         },
         test("a config past the target cap is refused BEFORE any broker work - the clients are never touched") {

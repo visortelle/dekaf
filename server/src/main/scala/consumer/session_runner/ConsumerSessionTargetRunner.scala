@@ -188,12 +188,12 @@ case class ConsumerSessionTargetRunner(
                             .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                             .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
                             .withSessionTargetValueProjectionListResult(valueProjectionListResult.map(ValueProjectionResult.toPb))
-                            // GUARANTEED replay only: the barrier decided this delivery undercuts
-                            // an already-emitted order key (a resume-seam skew or a source-log
-                            // inversion) - the row is on screen out of order, LOUDLY. Serialized
-                            // by the ordering lock every guaranteed delivery runs under; false on
-                            // every other path.
-                            .withReplaySeamViolation(consumerListener.replaySeamFlagPending)
+                            // ORDERED delivery (Guaranteed or, since 2026-08-11, Best effort):
+                            // the layer decided this delivery undercuts an already-emitted order
+                            // key - the row is on screen out of order, LOUDLY. Thread-local, so
+                            // the stamp read here pairs with the delivery running on THIS call
+                            // stack; false on every unordered path.
+                            .withDeliveredOutOfOrder(consumerListener.outOfOrderFlagPending.get)
                     )
                 )
 

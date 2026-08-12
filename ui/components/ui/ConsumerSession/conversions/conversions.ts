@@ -75,7 +75,7 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     topic: message.getTopic()?.getValue() ?? null,
     sessionContextStateJson: message.getSessionContextStateJson()?.getValue() ?? null,
     debugStdout: message.getDebugStdout()?.getValue() ?? null,
-    replaySeamViolation: message.getReplaySeamViolation(),
+    deliveredOutOfOrder: message.getDeliveredOutOfOrder(),
 
     sessionTargetIndex: message.getSessionTargetIndex()?.getValue() ?? null,
 
@@ -887,14 +887,15 @@ export function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerS
  * and the live SetDeliveryOrder switch must ask for the same thing, and two copies of this ternary
  * could drift into a running session that no longer matches its own configuration.
  *
- * An unrecognized value maps to Best effort, which is what proto3 absence means on the server too.
+ * An unrecognized/absent value maps to Guaranteed, the product default (owner decision
+ * 2026-08-11) - which is what proto3 absence means on the server too.
  */
 export function messageDeliveryOrderToPb(order: MessageDeliveryOrder | undefined): pb.MessageDeliveryOrder {
   return order === 'as-received'
     ? pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED
-    : order === 'guaranteed'
-      ? pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
-      : pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME;
+    : order === 'best-effort'
+      ? pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+      : pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED;
 }
 
 export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig {

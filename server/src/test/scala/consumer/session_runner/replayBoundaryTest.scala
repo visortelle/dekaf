@@ -402,7 +402,7 @@ object replayBoundaryTest extends ZIOSpecDefault:
             // The wire half of the seam contract: the merge-tier semantics live in
             // replaySeamTest; here the flagged emission is driven through the real target
             // pipeline and the real response path, so the row the browser renders carries
-            // Message.replay_seam_violation and the frame's stats carry
+            // Message.delivered_out_of_order and the frame's stats carry
             // ConsumerStats.replay_seam_violations.
             val f = Fixture("cs-replay-seam-wire", topicCount = 2, endsAtPlay = Map(0 -> 0L, 1 -> 0L))
             try
@@ -410,7 +410,7 @@ object replayBoundaryTest extends ZIOSpecDefault:
                 f.runner.resume(observer, isDebug = false)
                 f.deliver(0, "a-100", 100L, 0L)
                 f.deliver(1, "b-200", 200L, 0L) // chunk 1 completes: max emitted key is 200
-                val cleanRows = observer.deliveredMessages.map(_.replaySeamViolation)
+                val cleanRows = observer.deliveredMessages.map(_.deliveredOutOfOrder)
 
                 f.consumers(0).recordedEnd(1L) // stream 0 grew while paused
                 val second = RecordingObserver()
@@ -420,11 +420,11 @@ object replayBoundaryTest extends ZIOSpecDefault:
                 assertTrue(
                     cleanRows == Vector(false, false),
                     second.deliveredKeys == Vector("a-150"), // delivered - never silently dropped
-                    second.deliveredMessages.map(_.replaySeamViolation) == Vector(true), // and loudly flagged
+                    second.deliveredMessages.map(_.deliveredOutOfOrder) == Vector(true), // and loudly flagged
                     second.received.flatMap(_.consumerStats).exists(_.replaySeamViolations == 1L),
                     second.caughtUpFrames.nonEmpty
                 ) ?? (s"cleanRows=$cleanRows delta=${second.deliveredKeys} " +
-                    s"flags=${second.deliveredMessages.map(_.replaySeamViolation)} " +
+                    s"flags=${second.deliveredMessages.map(_.deliveredOutOfOrder)} " +
                     s"seams=${second.received.flatMap(_.consumerStats).map(_.replaySeamViolations)}")
             finally f.close()
         },

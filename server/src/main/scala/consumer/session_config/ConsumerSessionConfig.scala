@@ -46,13 +46,14 @@ object MessageDeliveryOrder:
         case pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED                  => MessageDeliveryOrder.Guaranteed
         // Zero is both proto3 absence and UNSPECIFIED, including requests from older clients and
         // every config saved before the field existed. A session that never NAMED an order gets
-        // the product default - Best effort: bounded-lateness merging that never stalls on a
-        // silent stream. Owner decision (2026-08-09, direct instruction), superseding the
-        // review-findings P1.1 note that said Guaranteed; Guaranteed is an explicit choice.
-        case pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED                 => MessageDeliveryOrder.BestEffort
+        // the product default - Guaranteed: an exact replay of recorded history that auto-pauses
+        // when caught up, with the caught-up panel offering the ways on. Owner decision
+        // (2026-08-11, direct instruction), superseding the 2026-08-09 Best effort default -
+        // this default has now moved twice, so the decision log in the plan file is the record.
+        case pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED                 => MessageDeliveryOrder.Guaranteed
         // An old server cannot implement a future mode; use its current product default instead
         // of accidentally selecting Fastest. The explicit match keeps this distinct from zero.
-        case _: pb.MessageDeliveryOrder.Unrecognized                                    => MessageDeliveryOrder.BestEffort
+        case _: pb.MessageDeliveryOrder.Unrecognized                                    => MessageDeliveryOrder.Guaranteed
 
     def toPb(v: MessageDeliveryOrder): pb.MessageDeliveryOrder = v match
         case MessageDeliveryOrder.AsReceived => pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED
@@ -105,7 +106,7 @@ case class ConsumerSessionConfig(
     coloringRuleChain: ColoringRuleChain,
     pauseTriggerChain: ConsumerSessionPauseTriggerChain,
     valueProjectionList: ValueProjectionList,
-    messageDeliveryOrder: MessageDeliveryOrder = MessageDeliveryOrder.BestEffort,
+    messageDeliveryOrder: MessageDeliveryOrder = MessageDeliveryOrder.Guaranteed,
     deliveryOrderKey: DeliveryOrderKey = DeliveryOrderKey.PublishTime
 )
 

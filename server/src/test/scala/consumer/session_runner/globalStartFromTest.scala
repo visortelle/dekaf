@@ -58,7 +58,10 @@ object globalStartFromTest extends ZIOSpecDefault:
         }
         Run(
             dropped = out.collect { case (value, StartFromOutcome.Drop) => value },
-            delivered = out.collect { case (value, StartFromOutcome.Deliver) => value },
+            delivered = out.collect {
+                case (value, StartFromOutcome.Deliver) => value
+                case (value, StartFromOutcome.DeliverOutOfOrder) => value
+            },
             maxHeld = maxHeld,
             leftHeld = merge.heldCount
         )

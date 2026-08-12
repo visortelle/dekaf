@@ -1,8 +1,9 @@
 // Canonical keys + default widths (px) for the resizable columns of the consumer-session
-// message table. The `index` column is intentionally excluded: it stays a fixed-width sticky
-// column whose width feeds `publishTime`'s sticky offset. Value-projection columns are dynamic
-// and keep their own configured widths.
+// message table - INCLUDING `index` (resizable since 2026-08-11; it stays sticky, and its live
+// width feeds `publishTime`'s sticky offset through the --cs-index-cell-total variable).
+// Value-projection columns are dynamic and keep their own configured widths.
 export type MessageColumnKey =
+  | 'index'
   | 'publishTime'
   | 'key'
   | 'value'
@@ -21,6 +22,7 @@ export type MessageColumnKey =
   | 'sessionContextState';
 
 export const messageColumnDefaultWidths: Record<MessageColumnKey, number> = {
+  index: 36,
   publishTime: 180,
   key: 160,
   value: 240,
@@ -39,9 +41,12 @@ export const messageColumnDefaultWidths: Record<MessageColumnKey, number> = {
   sessionContextState: 380,
 };
 
-/** The message columns a user may DRAG into any order - everything except the sticky index /
-  * publish-time pair. This is also the default order. */
-export const reorderableMessageColumns: MessageColumnKey[] = [
+/** Everything except the sticky index / publish-time pair - what the drag-reorder system (and
+  * therefore `columnOrder` everywhere) actually carries. */
+export type ReorderableMessageColumnKey = Exclude<MessageColumnKey, 'index' | 'publishTime'>;
+
+/** The message columns a user may DRAG into any order - this is also the default order. */
+export const reorderableMessageColumns: ReorderableMessageColumnKey[] = [
   'key',
   'value',
   'sessionTargetIndex',
@@ -63,6 +68,9 @@ export const reorderableMessageColumns: MessageColumnKey[] = [
 import type { SortKey } from './sort';
 
 export const messageThMeta: Record<MessageColumnKey, { testId: string; title: string; sortKey: SortKey; helpKey: string }> = {
+  // `index` and `publishTime` render their headers bespoke (sticky pair); their entries exist so
+  // this record stays total over the key type.
+  index: { testId: 'cs-th-index', title: '#', sortKey: 'index', helpKey: 'index' },
   publishTime: { testId: 'cs-th-publishTime', title: 'Publish time', sortKey: 'publishTime', helpKey: 'publishTime' },
   key: { testId: 'cs-th-key', title: 'Key', sortKey: 'key', helpKey: 'key' },
   value: { testId: 'cs-th-value', title: 'Value', sortKey: 'value', helpKey: 'value' },

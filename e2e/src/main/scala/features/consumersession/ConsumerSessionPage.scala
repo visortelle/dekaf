@@ -259,16 +259,32 @@ final case class ConsumerSessionPage(page: Page):
   def target(i: Int = 0): TargetSelector = TargetSelector(page, targets.nth(i))
 
   // --- Navigation ---
+  //
+  // openForTopic PINS the delivery order to Best effort. The generic feature lanes (filters,
+  // table, chunking, start-from, library, ...) were written and verified against live-following
+  // delivery; since 2026-08-11 the product DEFAULT is Guaranteed (an exact replay that
+  // auto-pauses when caught up), under which their premises - a session that keeps 'running',
+  // post-Play traffic streaming in - do not hold. Per the standing rule, a scenario must not
+  // inherit the default it does not test, so the shared entry selects Best effort explicitly.
+  // Mode-aware specs overwrite it per cell; the DEFAULT itself is pinned by CS-MO-0 through
+  // openForTopicDefaults, the one navigation that leaves the configuration untouched.
   def openForTopic(tenant: String, namespace: String, topic: String): Unit =
     openForTopic(tenant, namespace, topic, persistency = "persistent")
 
   /** `persistency` is the route segment: "persistent" or "non-persistent". */
   def openForTopic(tenant: String, namespace: String, topic: String, persistency: String): Unit =
     page.navigate(s"/tenants/$tenant/namespaces/$namespace/topics/$persistency/$topic/consumer-session")
+    setDeliveryOrder("Best effort")
 
-  /** Namespace-level mount (no current topic) - drives CS-7. */
+  /** Navigate WITHOUT touching the configuration - what CS-MO-0 pins the product default through. */
+  def openForTopicDefaults(tenant: String, namespace: String, topic: String): Unit =
+    page.navigate(s"/tenants/$tenant/namespaces/$namespace/topics/persistent/$topic/consumer-session")
+
+  /** Namespace-level mount (no current topic) - drives CS-7 and the no-current-topic lanes; pins
+    * Best effort for the same reason openForTopic does. */
   def openForNamespace(tenant: String, namespace: String): Unit =
     page.navigate(s"/tenants/$tenant/namespaces/$namespace/consumer-session")
+    setDeliveryOrder("Best effort")
 
   /** Switch target 1's topic selector to "Specific Topic(s)" and enter the given FQNs. */
   def setTargetTopicsSpecific(topicFqns: Seq[String]): Unit =

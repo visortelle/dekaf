@@ -23,9 +23,9 @@ enum DeliveryOrderSwitch:
 /** Decide what a live delivery-order change means.
   *
   * ONLY ONE TRANSITION IS HONOURED: Guaranteed -> Best effort. That is the whole point of the
-  * operation - Guaranteed (an explicit choice, since the product default is Best effort) can wait
-  * forever on a stream whose recorded range cannot be delivered (trimmed by retention, or seeked
-  * past the end), so the disclosed stall needs an action that does not throw the session away.
+  * operation - Guaranteed (the product default since 2026-08-11) can wait forever on a stream
+  * whose recorded range cannot be delivered (trimmed by retention, or seeked past the end), so
+  * the disclosed stall needs an action that does not throw the session away.
   *
   * WHY THE OTHER DIRECTIONS ARE REFUSED RATHER THAN FAKED:
   *

@@ -55,7 +55,7 @@ export function getDefaultManagedItem(itemType: ManagedItemType, libraryContext:
             val: getDefaultManagedItem("value-projection-list", libraryContext) as ManagedValueProjectionList
           },
           numDisplayItems: undefined,
-          messageDeliveryOrder: 'best-effort'
+          messageDeliveryOrder: 'guaranteed'
         }
       }
 

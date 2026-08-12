@@ -33,15 +33,19 @@ message Message {
   int64 num_message_processed = 59;
   int64 num_message_sent = 60;
 
-  // GUARANTEED (exact-replay) delivery only: this message's order key is LOWER than the highest
-  // key already emitted by this session - it is on screen out of order, loudly, never silently.
-  // Possible only across a resume seam (the boundary extension lets a delta message carry an
-  // older producer-stamped key than something an earlier chunk already showed) or when the
-  // source log itself stores an inversion. The key compared is the session's SELECTED order key
-  // (publish / broker publish / event time) against previously emitted keys of the same kind -
-  // never against wall clock, so ordinary old event times are not violations. The session-level
-  // count of these rides on ConsumerStats.replay_seam_violations.
-  bool replay_seam_violation = 61;
+  // ORDERED delivery (Guaranteed or Best effort): this message's order key is LOWER than the
+  // highest key already emitted by this session - it is on screen out of order, loudly, never
+  // silently. Under GUARANTEED that is possible only across a resume seam (the boundary
+  // extension lets a delta message carry an older producer-stamped key than something an earlier
+  // chunk already showed) or when the source log itself stores an inversion; under BEST EFFORT
+  // it means the message arrived after its reorder window and its peers were already shown
+  // (renamed from replay_seam_violation on 2026-08-11, same tag, when Best effort's late
+  // deliveries started carrying the flag too). The key compared is the session's SELECTED order
+  // key (publish / broker publish / event time) against previously emitted keys of the same
+  // kind - never against wall clock, so ordinary old event times are not violations. Session
+  // counts: ConsumerStats.replay_seam_violations (Guaranteed) and the late-deliveries counter
+  // (Best effort).
+  bool delivered_out_of_order = 61;
 
   // Evaluated message filter code can produce logs or errors.
   // We need to store them in the message to be able to show them in the UI.
@@ -315,13 +319,13 @@ message ConsumerSessionTarget {
 // How a session that reads MORE THAN ONE delivery stream (several topics, or one partitioned
 // topic) interleaves MESSAGE delivery across them.
 enum MessageDeliveryOrder {
-  // Uses BEST_EFFORT_BY_PUBLISH_TIME, the product default (owner decision 2026-08-09,
-  // superseding the earlier decision that made GUARANTEED the default). Zero is also proto3
-  // absence, so every older client and every config saved before this field existed lands here:
-  // a session that never named an order merges with bounded lateness and never stalls on a
-  // silent stream. GUARANTEED is an explicit choice; its indefinite wait is still reported to
-  // the client (see delivery_order_waiting_streams) and the UI still offers the one-click
-  // switch to Best effort.
+  // Uses GUARANTEED, the product default (owner decision 2026-08-11, superseding the 2026-08-09
+  // Best effort default, which itself superseded an earlier Guaranteed one - the plan file's
+  // decision log is the record). Zero is also proto3 absence, so every older client and every
+  // config saved before this field existed lands here: a session that never named an order
+  // replays recorded history exactly and auto-pauses when caught up.
+  // BEST_EFFORT_BY_PUBLISH_TIME is the explicit choice for live following; the caught-up
+  // announcement and the one-click switch (SetDeliveryOrder) are the ways between them.
   MESSAGE_DELIVERY_ORDER_UNSPECIFIED = 0;
   // Every stream delivers independently and messages interleave as they arrive. Fastest.
   MESSAGE_DELIVERY_ORDER_AS_RECEIVED = 1;

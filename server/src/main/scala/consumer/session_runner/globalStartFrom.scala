@@ -119,6 +119,12 @@ enum StartFromOutcome:
     /** Part of it - hand it to the session. */
     case Deliver
 
+    /** Deliver, AND the merge emitted it below an already-emitted order key (Best effort's late
+      * emission - the message outlived its reorder window; since 2026-08-11 the row carries the
+      * marker for it). In the OUTCOME rather than on the payload because the merge is generic in
+      * what it holds; the production handler stamps the verdict onto the HeldMessage. */
+    case DeliverOutOfOrder
+
     /** A broker COPY whose original's fate is still open: hand it back, decide nothing - no
       * acknowledgment, no budget, no cursor. The broker redelivers it with backoff until the
       * original settles: its ack ends the copies, its recorded failure makes the next copy the
@@ -631,9 +637,11 @@ final class GlobalSkipMerge[P](
       * statistic is advertised: two messages sharing a millisecond are a tie-break, not a "late
       * delivery", however the deterministic full key orders them. The newest-emitted key itself
       * advances by the full order, so ties keep a stable frontier. */
-    private def noteEmitted(key: MessageOrderKey): Unit =
-        if lastEmittedKey.exists(last => key.orderTime < last.orderTime) then lateEmissions += 1
+    private def noteEmitted(key: MessageOrderKey): Boolean =
+        val late = lastEmittedKey.exists(last => key.orderTime < last.orderTime)
+        if late then lateEmissions += 1
         if lastEmittedKey.forall(last => Ordering[MessageOrderKey].gt(key, last)) then lastEmittedKey = Some(key)
+        late
 
     private def tailMinOffered: Long =
         if tailFloorCacheDirty then
@@ -1005,8 +1013,15 @@ final class GlobalSkipMerge[P](
                                     tailHeadless += streamId
                                     tailFloorCacheDirty = true
                                 onStreamShrank(streamId, queue.size)
-                                if continuous && !drop then noteEmitted(key)
-                                out += (taken -> (if drop then StartFromOutcome.Drop else StartFromOutcome.Deliver))
+                                // The verdict is computed here anyway for the lateness ledger;
+                                // riding it on the OUTCOME is what lets the row carry the marker
+                                // (Message.delivered_out_of_order) at zero extra cost.
+                                val emittedLate = continuous && !drop && noteEmitted(key)
+                                out += (taken -> (
+                                  if drop then StartFromOutcome.Drop
+                                  else if emittedLate then StartFromOutcome.DeliverOutOfOrder
+                                  else StartFromOutcome.Deliver
+                                ))
                                 // The budget can hit zero on THIS claim. Waiting for one more head
                                 // just to have the NEXT claim answer "no" held the boundary batch
                                 // hostage: when this drop emptied a still-waited stream, everything
@@ -1122,7 +1137,7 @@ final class GlobalSkipMerge[P](
                     // one already emitted is on screen out of order - loudly. Same tie rule as
                     // the lateness ledger: an equal selected time is a tie-break, not disorder.
                     if lastEmittedKey.exists(last => key.orderTime < last.orderTime) then seamViolations += 1
-                    noteEmitted(key)
+                    val _ = noteEmitted(key)
             }
         }
         guaranteedInFlight = None
@@ -1388,7 +1403,12 @@ final case class StartFromPlan(discard: StartFromDiscardPlan, ordering: StartFro
 final case class HeldMessage(
     consumer: Consumer[Array[Byte]],
     message: PulsarMessage[Array[Byte]],
-    listener: ConsumerListener
+    listener: ConsumerListener,
+    /** Set by the merge AT EMISSION when this delivery's order key undercuts one already emitted
+      * (Best effort's late emission - the message outlived its reorder window). Rides to
+      * [[ConsumerListener.deliverNow]], which stamps it onto the delivery's own call stack.
+      * Guaranteed's equivalent travels through the peek/commit pair instead. */
+    deliveredOutOfOrder: Boolean = false
 )
 
 /** The session-wide ordering layer the listeners hand every delivered message to.

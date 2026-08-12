@@ -3,7 +3,7 @@
  * @jest-environment-options {"customExportConditions": ["node"]}
  *
  * The ROW-LEVEL disclosures of the guaranteed replay: the per-row seam-violation marker and the
- * switch-point marker left behind by "Continue live with Best effort".
+ * switch-point marker left behind by "Switch to Best effort and follow live".
  *
  * Both live INSIDE the virtualized message table, which jsdom cannot lay out - so, exactly like
  * the columns suite, react-virtuoso is replaced with a plain table that renders every row through
@@ -49,6 +49,7 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SWRConfig } from 'swr';
+import * as Notifications from '../../app/contexts/Notifications';
 import ConsumerSession from './ConsumerSession';
 import { getDefaultManagedItem } from '../LibraryBrowser/default-library-items';
 import { localStorageKeys } from '../../local-storage-keys';
@@ -105,7 +106,7 @@ const message = (n: number, opts: { seamViolation?: boolean } = {}) => {
   // The server stamps every delivered message with its target; the row renderer dereferences it.
   m.setSessionTargetIndex(new Int32Value().setValue(0));
   if (opts.seamViolation) {
-    m.setReplaySeamViolation(true);
+    m.setDeliveredOutOfOrder(true);
   }
   return m;
 };
@@ -164,7 +165,11 @@ const renderRunningSession = async () => {
   await act(async () => {
     render(
       <SWRConfig value={{ shouldRetryOnError: false, refreshInterval: 0, revalidateOnFocus: false }}>
-        <ConsumerSession initialConfig={{ type: 'value', val: config } as never} libraryContext={topicContext} />
+        {/* The caught-up panel - which carries the switch this suite clicks - is rendered by the
+            toast container since 2026-08-11, so the provider has to be mounted here too. */}
+        <Notifications.DefaultProvider>
+          <ConsumerSession initialConfig={{ type: 'value', val: config } as never} libraryContext={topicContext} />
+        </Notifications.DefaultProvider>
       </SWRConfig>
     );
   });
@@ -189,7 +194,7 @@ const flush = async () => {
 const sessionState = () => screen.getByTestId('cs-session').getAttribute('data-cs-state');
 const rowTexts = () => screen.getAllByTestId('cs-rendered-row').map((row) => row.textContent ?? '');
 
-describe('the per-row seam-violation marker', () => {
+describe('the per-row out-of-order marker', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     (Element.prototype as { scrollTo?: () => void }).scrollTo = () => undefined;
@@ -212,15 +217,18 @@ describe('the per-row seam-violation marker', () => {
     await flush();
 
     expect(screen.getAllByTestId('cs-rendered-row')).toHaveLength(3);
-    const markers = screen.getAllByTestId('cs-seam-violation-marker');
+    const markers = screen.getAllByTestId('cs-out-of-order-marker');
     expect(markers).toHaveLength(1);
     // The marker sits on the row that carried the flag - m-2, not its neighbours.
     expect(markers[0].closest('tr')?.textContent).toContain('m-2');
-    // The explanation is on the marker itself, in the user's terms: a producer clock, not proto
-    // field names.
-    expect(markers[0].getAttribute('title')).toMatch(/out of order/i);
-    expect(markers[0].getAttribute('title')).toMatch(/producer clock/i);
-    expect(markers[0].getAttribute('title')).toMatch(/pause/i);
+    // The explanation is on the marker itself, in the user's terms - through the app-wide
+    // tooltip since 2026-08-11 (a native title rendered nothing readable), and mode-aware: this
+    // session runs Guaranteed, so the causes are the stored inversion and the pause seam.
+    const tooltip = markers[0].getAttribute('data-tooltip-html') ?? '';
+    expect(markers[0].getAttribute('title')).toBeNull();
+    expect(tooltip).toMatch(/out of order/i);
+    expect(tooltip).toMatch(/several producers/i);
+    expect(tooltip).toMatch(/pause/i);
   });
 
   it('marks nothing when no message carries the flag - absent field means no marker', async () => {
@@ -232,7 +240,7 @@ describe('the per-row seam-violation marker', () => {
     await flush();
 
     expect(screen.getAllByTestId('cs-rendered-row')).toHaveLength(2);
-    expect(screen.queryByTestId('cs-seam-violation-marker')).toBeNull();
+    expect(screen.queryByTestId('cs-out-of-order-marker')).toBeNull();
   });
 });
 
@@ -259,8 +267,11 @@ describe('the delivery-order switch-point marker', () => {
   });
 
   const switchToLive = async () => {
+    // The switch rides the caught-up panel, which the toast container mounts a tick after the
+    // boundary lands - so it is FOUND, not assumed present.
+    const button = await screen.findByTestId('cs-replay-continue-best-effort');
     await act(async () => {
-      fireEvent.click(screen.getByTestId('cs-replay-continue-best-effort'));
+      fireEvent.click(button);
     });
   };
 

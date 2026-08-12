@@ -111,16 +111,16 @@ export type DeliveryOrderKey = 'publish-time' | 'broker-publish-time' | 'event-t
 
 /**
  * The guaranteed replay's caught-up announcement, as one record: the boundary the replay delivered
- * up to, the approximate newer-data indicator, and the topics excluded from this replay chunk.
+ * up to, and the topics excluded from this replay chunk.
  *
- * `newerEntriesApprox` counts broker ENTRIES, not messages - under batching one entry holds many
- * messages, so it is a lower bound and every rendering of it must say "~" or "new messages
- * waiting", never an exact count. `excludedTopics` is capped at 5 names by the server;
+ * The wire also carries `replay_newer_entries_approx`, deliberately NOT kept here: it counts broker
+ * ENTRIES rather than messages (under batching one entry holds many), so it could only ever be
+ * shown as a lower bound in a unit no reader thinks in - dropped 2026-08-11.
+ * `excludedTopics` is capped at 5 names by the server;
  * `excludedTopicCount` carries the true count.
  */
 export type ReplayCaughtUpStats = {
   boundaryAtMs: number;
-  newerEntriesApprox: number;
   excludedTopics: string[];
   excludedTopicCount: number;
 };
@@ -171,7 +171,10 @@ export type MessageDescriptor = {
   /** The guaranteed replay delivered this message out of the selected-time order across a pause
    * seam (a producer clock wrote an earlier timestamp into the pause window). Detected at
    * emission by the server, flagged loudly, never dropped. Absent on the wire means false. */
-  replaySeamViolation: boolean;
+  /** The ordering layer emitted this row below an already-emitted key (renamed from
+   * replaySeamViolation on 2026-08-11, when Best effort's late emissions joined Guaranteed's
+   * seam violations in carrying it). The row shows the out-of-order marker for it. */
+  deliveredOutOfOrder: boolean;
 
   sessionTargetIndex: Nullable<number>,
 

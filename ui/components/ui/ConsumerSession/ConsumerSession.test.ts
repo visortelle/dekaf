@@ -64,6 +64,7 @@ import ConsumerSession, {
 } from './ConsumerSession';
 import { getDefaultManagedItem } from '../LibraryBrowser/default-library-items';
 import { defaultValue as notifications } from '../../app/contexts/Notifications';
+import * as Notifications from '../../app/contexts/Notifications';
 
 // react-virtuoso (the message table) measures itself with ResizeObserver, which jsdom does not
 // provide - same stub as TopicPositions.test.tsx. And the session auto-scrolls its table;
@@ -567,9 +568,11 @@ describe('the guaranteed replay caught-up state carried on a ResumeResponse', ()
       excludedTopicCount: 7,
     }), sinks);
 
+    // The frame still CARRIES `replay_newer_entries_approx`; the client stopped reading it on
+    // 2026-08-11, when the "~N entries" line was removed - it was approximate in a unit (broker
+    // entries, not messages) that no reader thinks in.
     expect(lastCaughtUp(sinks)).toEqual({
       boundaryAtMs: 1_754_700_000_000,
-      newerEntriesApprox: 42,
       excludedTopics: ['persistent://t/ns/a', 'persistent://t/ns/b'],
       excludedTopicCount: 7,
     });
@@ -828,10 +831,18 @@ describe('a live consumer session', () => {
       React.createElement(
         SWRConfig,
         { value: { shouldRetryOnError: false, refreshInterval: 0, revalidateOnFocus: false } },
-        React.createElement(ConsumerSession, {
-          initialConfig: initialConfig as never,
-          libraryContext,
-        })
+        // The caught-up panel is rendered by the toast container (2026-08-11: it moved out of the
+        // inline strip into a persistent notification), so the provider has to be mounted for the
+        // panel to exist at all - without it these tests would assert against a DOM that never
+        // gets it, and pass or fail for the wrong reason.
+        React.createElement(
+          Notifications.DefaultProvider,
+          null,
+          React.createElement(ConsumerSession, {
+            initialConfig: initialConfig as never,
+            libraryContext,
+          })
+        )
       )
     );
   };
@@ -948,7 +959,7 @@ describe('a live consumer session', () => {
   /**
    * P2.16: a Guaranteed stall must be ESCAPABLE, not merely disclosed.
    *
-   * Guaranteed - an explicit choice, since the product default is Best effort - waits, by design,
+   * Guaranteed - the product default since 2026-08-11 - waits, by design,
    * indefinitely for every topic or partition - on a silent one that is forever, and it looks
    * exactly like an empty topic. The chip discloses the wait and carries the escape; what is
    * asserted here is everything the escape has to do to be real:
@@ -983,7 +994,6 @@ describe('a live consumer session', () => {
       });
     };
 
-    const orderChipText = () => screen.getByTestId('cs-order-chip').textContent;
     const deliveryOrderSentByPlay = (client: { createConsumer: unknown }, call: number) => {
       const req = (client.createConsumer as jest.Mock).mock.calls[call][0] as {
         getConsumerSessionConfig: () => { getMessageDeliveryOrder: () => number };
@@ -1041,10 +1051,9 @@ describe('a live consumer session', () => {
 
       await switchToBestEffort();
 
-      // The session's own configuration now says Best effort - the chip reads it back.
-      await waitFor(() => expect(orderChipText()).toContain('Best effort'));
-
-      // ...and so does the next session built from it. Without the write, Play would silently put
+      // The proof the configuration moved is the WIRE: the next session built from it asks for
+      // Best effort. (The chip label that used to read it back was removed 2026-08-11.)
+      // Without the write, Play would silently put
       // the user back into the stall they just escaped.
       stop();
       await awaitState('new');
@@ -1064,7 +1073,6 @@ describe('a live consumer session', () => {
       await switchToBestEffort();
 
       expect(consumerServiceClient.setDeliveryOrder).toHaveBeenCalledTimes(1);
-      await waitFor(() => expect(orderChipText()).toContain('Best effort'));
 
       // The entry is a VALUE now, not a reference still carrying a rewritten draft: the session
       // owns its copy, and the library item it used to name is unchanged.
@@ -1084,8 +1092,9 @@ describe('a live consumer session', () => {
       // so nothing else would ever retire this status.
       await waitFor(() => expect(screen.queryByTestId('cs-order-waiting')).toBeNull());
       expect(screen.queryByTestId('cs-order-switch-best-effort')).toBeNull();
-      // The chip itself stays: the session is still merging, in the other mode.
-      expect(orderChipText()).toContain('Best effort');
+      // With the disclosure retired the whole status area goes - since 2026-08-11 the bar has no
+      // always-on mode label, so a healthy merge shows nothing at all.
+      expect(screen.queryByTestId('cs-order-chip')).toBeNull();
     });
 
     it('shows a refused switch and leaves the session, its configuration and the wait alone', async () => {
@@ -1101,9 +1110,9 @@ describe('a live consumer session', () => {
       // The reason is the whole value of a refusal - swallowing it leaves a button that looks like
       // it worked.
       await waitFor(() => expect(deliveryOrderErrors().join('\n')).toContain(refusal));
-      // Nothing moved: the live session is still Guaranteed (whose chip reads as the replay it
-      // is) and still held, so the disclosure and its escape both stay exactly where they were.
-      expect(orderChipText()).toContain('Replaying history');
+      // Nothing moved: the session is still held, so the disclosure and its escape both stay
+      // exactly where they were. (The mode label that used to say "Replaying history" was removed
+      // from the bar 2026-08-11 - the stall disclosure itself is the observable now.)
       expect(screen.getByTestId('cs-order-waiting').textContent).toContain('waiting for 3 topics/partitions');
       expect(screen.getByTestId('cs-order-switch-best-effort')).toBeTruthy();
       expect(deliveryOrderSentByPlay(consumerServiceClient, 0)).toBe(MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
@@ -1121,8 +1130,10 @@ describe('a live consumer session', () => {
         streams[0].emit('data', frame({ active: true, waiting: 0 }));
       });
 
-      // The chip is there - the merge is running - but there is no stall to escape.
-      expect(await screen.findByTestId('cs-order-chip')).toBeTruthy();
+      // No stall means NOTHING renders - since 2026-08-11 the bar carries no always-on mode
+      // label, so a healthy merge shows no status area and offers no escape.
+      await act(async () => {});
+      expect(screen.queryByTestId('cs-order-chip')).toBeNull();
       expect(screen.queryByTestId('cs-order-switch-best-effort')).toBeNull();
       expect(consumerServiceClient.setDeliveryOrder).not.toHaveBeenCalled();
     });
@@ -1152,6 +1163,7 @@ describe('a live consumer session', () => {
         streams[0].emit('data', frame({ active: true, caughtUp }));
       });
       await awaitState('paused');
+      await screen.findByTestId('cs-replay-caught-up');
     };
 
     let reportedErrors: string[] = [];
@@ -1179,7 +1191,7 @@ describe('a live consumer session', () => {
       expect(consumerServiceClient.pause).not.toHaveBeenCalled();
     });
 
-    it('says what it caught up TO, in the reader\'s clock', async () => {
+    it('leads with WHAT happened, then says what it caught up TO in the reader\'s clock', async () => {
       const { streams } = installFakeGrpcClients();
       renderSession({ deliveryOrder: 'guaranteed' });
 
@@ -1187,29 +1199,10 @@ describe('a live consumer session', () => {
       await runUntilCaughtUp(streams, { boundaryAtMs: Date.UTC(2026, 7, 9, 0, 0, 0) });
 
       expect(banner()).toBeTruthy();
+      // The heading is what the panel is read for at a distance; the boundary is the detail.
+      expect(banner()!.textContent).toContain('Guaranteed order consumer session finished');
       expect(banner()!.textContent).toContain('Caught up to');
       expect(banner()!.textContent).toContain('2026');
-    });
-
-    it('announces newer data only approximately - entries, never an exact message count', async () => {
-      const { streams } = installFakeGrpcClients();
-      renderSession({ deliveryOrder: 'guaranteed' });
-
-      await runUntilCaughtUp(streams, { newerEntriesApprox: 12000 });
-
-      const newer = screen.getByTestId('cs-replay-caught-up-newer');
-      expect(newer.textContent).toContain('~12,000 newer entries');
-      expect(newer.textContent).toMatch(/resume/i);
-    });
-
-    it('claims no newer data when the server reported none', async () => {
-      const { streams } = installFakeGrpcClients();
-      renderSession({ deliveryOrder: 'guaranteed' });
-
-      await runUntilCaughtUp(streams);
-
-      expect(banner()).toBeTruthy();
-      expect(screen.queryByTestId('cs-replay-caught-up-newer')).toBeNull();
     });
 
     it('names the topics excluded from this replay, with the TRUE count past the listed five', async () => {
@@ -1238,6 +1231,71 @@ describe('a live consumer session', () => {
       expect(screen.queryByTestId('cs-replay-caught-up-excluded')).toBeNull();
     });
 
+    it('a closed panel must not spring back on the next frame - the close survives the render storm', async () => {
+      // The bug this pins (in its original, toast-era form): the announcing effect ran on EVERY
+      // render, and a session parked at the boundary re-renders constantly (the server re-asserts
+      // the state on every response, and the counters tick) - so closing the panel lasted about a
+      // second. The panel is component state now, but the invariant is the same: a close holds
+      // for as long as the session sits at ONE boundary, whatever re-renders around it.
+      const { streams } = installFakeGrpcClients();
+      renderSession({ deliveryOrder: 'guaranteed' });
+      await runUntilCaughtUp(streams);
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('cs-replay-caught-up-close'));
+      });
+      expect(banner()).toBeNull();
+
+      // Re-render the session for reasons that have nothing to do with the boundary - which is
+      // what actually happens while it sits there. Identical caught-up frames alone would not do
+      // it: the sink collapses equal records, so they change no state and re-render nothing.
+      act(() => {
+        streams[0].emit('data', frame({ active: true, caughtUp: {}, seamViolations: 1 }));
+      });
+      act(() => {
+        streams[0].emit('data', frame({ active: true, caughtUp: {}, seamViolations: 2 }));
+      });
+      act(() => {
+        streams[0].emit('data', frame({ active: true, caughtUp: {}, seamViolations: 3 }));
+      });
+
+      // Still closed: the boundary did not change, so nothing re-opened what the reader closed.
+      expect(banner()).toBeNull();
+    });
+
+    it('the panel leaves with the boundary and returns for the next episode - exactly one, always', async () => {
+      // History, because this sequence broke twice: the panel lived in a persistent toast, and
+      // resume-then-recatch-up (dismiss -> re-announce, milliseconds apart on an instant catch-up)
+      // lost both ways - react-toastify silently drops a toast created under a still-exiting id
+      // (one fixed id: the second boundary's panel never appeared, e2e CS-DM-R2), and fresh ids
+      // per episode let the retiring panel and its successor COEXIST while the exit animation
+      // played (two panels, a strict-mode ambiguity - e2e CS-DM-R3B). The panel is a conditional
+      // render of the session component now: at most one element can exist, in every timing.
+      const { streams } = installFakeGrpcClients();
+      renderSession({ deliveryOrder: 'guaranteed' });
+      await runUntilCaughtUp(streams);
+      expect(screen.getAllByTestId('cs-replay-caught-up')).toHaveLength(1);
+
+      // Resume: the frames stop asserting the boundary, and the panel goes WITH the record -
+      // directly assertable here, with no toast layer's animationend between the state and the
+      // DOM.
+      await act(async () => { play(); });
+      await awaitState('running');
+      await waitFor(() => expect(streams).toHaveLength(2));
+      act(() => {
+        streams[1].emit('data', frame({ active: true }));
+      });
+      await waitFor(() => expect(banner()).toBeNull());
+
+      // The next boundary: the panel returns, and there is still exactly one of it.
+      act(() => {
+        streams[1].emit('data', frame({ active: true, caughtUp: {} }));
+      });
+      await awaitState('paused');
+      await screen.findByTestId('cs-replay-caught-up');
+      expect(screen.getAllByTestId('cs-replay-caught-up')).toHaveLength(1);
+    });
+
     it('a manual pause shows no caught-up banner - the reason differentiates the paused state', async () => {
       const { streams } = installFakeGrpcClients();
       renderSession({ deliveryOrder: 'guaranteed' });
@@ -1253,10 +1311,10 @@ describe('a live consumer session', () => {
       play();
       await awaitState('paused');
 
-      expect(banner()).toBeNull();
+      await waitFor(() => expect(banner()).toBeNull());
     });
 
-    it('Resume goes back to running through the ordinary resume flow and retires the banner', async () => {
+    it('"Load new messages up to now" goes back to running through the ordinary resume flow and retires the banner', async () => {
       const { streams } = installFakeGrpcClients();
       renderSession({ deliveryOrder: 'guaranteed' });
       await runUntilCaughtUp(streams);
@@ -1269,10 +1327,12 @@ describe('a live consumer session', () => {
       // The ordinary resume flow: a new resume stream against the same consumer - the server
       // extends the boundary on it.
       await waitFor(() => expect(streams).toHaveLength(2));
-      expect(banner()).toBeNull();
+      // And the panel goes with the boundary: it is a conditional render of the session now, so
+      // its retirement is plain DOM here (no toast layer, no animationend jsdom never fires).
+      await waitFor(() => expect(banner()).toBeNull());
     });
 
-    it('Continue live with Best effort switches the LIVE session and resumes into live delivery', async () => {
+    it('Switch to Best effort and follow live switches the LIVE session and resumes into live delivery', async () => {
       const { consumerServiceClient, streams } = installFakeGrpcClients();
       renderSession({ deliveryOrder: 'guaranteed' });
       await runUntilCaughtUp(streams);
@@ -1289,8 +1349,8 @@ describe('a live consumer session', () => {
       expect(req.getMessageDeliveryOrder()).toBe(MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
 
       // The server resumed live delivery on the switch; the session follows it back to running.
+      // (Panel retirement is e2e's to assert - see the note above on jsdom and `animationend`.)
       await awaitState('running');
-      expect(banner()).toBeNull();
 
       // ...and the configuration was persisted through the same wiring, so the next Play asks for
       // what the session is now doing.
@@ -1324,7 +1384,7 @@ describe('a live consumer session', () => {
       expect(consumerServiceClient.createConsumer).toHaveBeenCalledTimes(1);
     });
 
-    it('the session-level seam count rides the chip area whenever the server confesses one', async () => {
+    it('the session-level seam count rides the warning mark whenever the server confesses one', async () => {
       const { streams } = installFakeGrpcClients();
       renderSession({ deliveryOrder: 'guaranteed' });
 
@@ -1336,8 +1396,8 @@ describe('a live consumer session', () => {
         streams[0].emit('data', frame({ active: true, seamViolations: 2 }));
       });
 
-      const seam = await screen.findByTestId('cs-replay-seam-violations');
-      expect(seam.textContent).toContain('2');
+      const warning = await screen.findByTestId('cs-order-warning');
+      expect(warning.getAttribute('data-tooltip-html')).toContain('2');
     });
   });
 });

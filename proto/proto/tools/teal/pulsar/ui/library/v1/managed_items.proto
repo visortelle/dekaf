@@ -354,9 +354,9 @@ message ManagedConsumerSessionConfigSpec {
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 5;
   ManagedValueProjectionListValOrRef value_projection_list = 6;
   google.protobuf.Int64Value num_display_items = 7;
-  // Absent (UNSPECIFIED) means BEST_EFFORT_BY_PUBLISH_TIME, the default (owner decision
-  // 2026-08-09, superseding the earlier GUARANTEED default) - including every item saved before
-  // this field existed. Explicit GUARANTEED and AS_RECEIVED (Fastest) are choices and are
+  // Absent (UNSPECIFIED) means GUARANTEED, the default (owner decision 2026-08-11, superseding
+  // the 2026-08-09 Best effort default) - including every item saved before this field existed.
+  // Explicit BEST_EFFORT_BY_PUBLISH_TIME and AS_RECEIVED (Fastest) are choices and are
   // preserved as written.
   tools.teal.pulsar.ui.api.v1.MessageDeliveryOrder message_delivery_order = 8;
   // Absent (UNSPECIFIED) means publish time, exactly as every ordered spec saved before the field.

@@ -12,11 +12,11 @@ case class ManagedConsumerSessionConfigSpec(
     coloringRuleChain: ManagedColoringRuleChainValOrRef,
     valueProjectionList: ManagedValueProjectionListValOrRef,
     numDisplayItems: Option[Long],
-    // Missing and UNSPECIFIED both use BEST_EFFORT_BY_PUBLISH_TIME, the product default - owner
-    // decision (2026-08-09, direct instruction), superseding the review-findings P1.1 note that
-    // said Guaranteed. Pre-existing saved items carry no field at all and run the default;
-    // explicit Guaranteed and Fastest are choices and are preserved.
-    messageDeliveryOrder: Option[apiPb.MessageDeliveryOrder] = Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME),
+    // Missing and UNSPECIFIED both use GUARANTEED, the product default - owner decision
+    // (2026-08-11, direct instruction), the third move of this default (the plan file's decision
+    // log is the record). Pre-existing saved items carry no field at all and run the default;
+    // explicit Best effort and Fastest are choices and are preserved.
+    messageDeliveryOrder: Option[apiPb.MessageDeliveryOrder] = Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED),
     deliveryOrderKey: Option[apiPb.DeliveryOrderKey] = None
 )
 
@@ -45,7 +45,7 @@ object ManagedConsumerSessionConfigSpec:
             numDisplayItems = v.numDisplayItems,
             messageDeliveryOrder = v.messageDeliveryOrder
                 .map(normalizeMessageDeliveryOrder)
-                .getOrElse(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME),
+                .getOrElse(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED),
             deliveryOrderKey = v.deliveryOrderKey.getOrElse(apiPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_UNSPECIFIED)
         )
 
@@ -54,9 +54,9 @@ object ManagedConsumerSessionConfigSpec:
         case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME => v
         case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED                  => v
         case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED                 =>
-            apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+            apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
         case _: apiPb.MessageDeliveryOrder.Unrecognized =>
-            apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+            apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
 
 case class ManagedConsumerSessionConfig(
     metadata: ManagedItemMetadata,

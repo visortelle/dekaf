@@ -250,6 +250,20 @@ a fixed one; its old 2200ms wait expired just before the first refresh and faile
 Making the prop honest would double a deliberately broker-heavy panel's poll rate, so it is
 recorded as an owner decision rather than changed.
 
+**A toast dismissed and re-announced is briefly TWO elements - or silently NONE** (found 2026-08-12
+root-causing CS-DM-R2 and R3B). react-toastify's removal is animation-mediated: a dismissed toast
+stays in the DOM until its exit animation ends, and a toast created under a still-exiting id is
+silently dropped. So a panel that is dismissed and re-announced moments later - the caught-up
+banner across a "Load new messages" hand-off - loses both ways: one fixed id and the re-announce
+is swallowed (a 20s timeout that reads like the banner never appeared - R2); fresh ids per episode
+and the retiring panel coexists with its successor, which every strict locator rejects in
+milliseconds with "resolved to 2 elements" (R3B - an instant catch-up re-announces faster than
+ANY exit animation, so no exit duration is short enough). The fix was structural: the caught-up
+panel is not a toast at all - the session component renders it conditionally
+(`ConsumerSession.tsx`, `ReplayCaughtUpDock`), so at most one exists by construction. If a
+notification-like panel ever needs dismiss-then-re-announce again, render it from the owning
+component; do not put it in the toast layer, and do not `.first()`/`.last()` around the ambiguity.
+
 **Infrastructure**
 - **No independent Library oracle.** LIB CRUD arranges *and* verifies through the same UI path, so a
   shared serialization/render defect could pass both. A generated `LibraryService` gRPC stub would fix
@@ -451,7 +465,7 @@ supersedes the 2026-08-08 decision that said Guaranteed.)
 branch): Play captures every stream's recorded end; the session delivers everything recorded up
 to that boundary in strict key order, then AUTO-PAUSES on the ordinary paused state with the
 caught-up banner (`cs-replay-caught-up`). A message published after Play belongs to the NEXT
-chunk - handed back un-acked, its consumer held - and an explicit Resume extends the boundary to
+chunk - handed back un-acked, its consumer held - and an explicit "Load new messages up to now" extends the boundary to
 now and replays the delta exactly. "Continue live with Best effort" (on the banner) is the
 designed transition out of the replay into live following. The hold-forever behavior these cells
 used to pin - and the `PINS THE CURRENT PRODUCT DECISION` markers that guarded it - are gone;
@@ -464,7 +478,7 @@ The liveness states, and what each Guaranteed cell now proves:
   topics give the test an independent live producer per stream. Fastest delivers everything exactly
   once (no order asserted - Fastest is the absence of the merge); Best effort delivers in global
   publish-time order; Guaranteed turns live traffic into CHUNKS - the recorded range replays and
-  pauses, post-Play traffic stays settled at zero until Resume replays it as the next chunk,
+  pauses, post-Play traffic stays settled at zero until "Load new messages" replays it as the next chunk,
   exactly once, order intact across both chunks.
 - **B ALL STATIC** (CS-DM-BF/BB/BG) - one 3-partition topic, backlog on every partition: the
   one-click "browse this topic" shape. Fastest and Best effort complete the backlog (the ~0.75s
@@ -474,12 +488,12 @@ The liveness states, and what each Guaranteed cell now proves:
 - **C MIXED** (CS-DM-CF/CB/CG) - two topics, one live and one stopped before Play. Under
   Guaranteed the stopped topic holds NOTHING back: the recorded range replays whole (including
   what the old contract held behind the silent stream), the live tail waits past the boundary,
-  and Resume delivers the accumulated delta exactly once.
+  and "Load new messages" delivers the accumulated delta exactly once.
 - **D EDGES** - empty-from-birth partitions (D1: backlog on one partition of three, the other two
   never spoke - an empty recorded range is trivially FINISHED, so the backlog replays in full,
   promptly, with no waiting chip; pause-window words on all three partitions then arrive together
   as the next chunk); static-becomes-live (D2: the late word to a finished topic is recorded PAST
-  the boundary - banner first, then Resume delivers it, order intact); a single non-partitioned
+  the boundary - banner first, then "Load new messages" delivers it, order intact); a single non-partitioned
   topic (D3: one stream needs no MERGE - Fastest/Best effort stay chip-free - but the replay
   boundary is not a merge property: Guaranteed builds its layer at ANY stream count, so the chip
   announces the replay and the static single topic pauses caught-up like any other shape);
@@ -489,7 +503,7 @@ The liveness states, and what each Guaranteed cell now proves:
 - **D5 THE SWITCH** (CS-DM-D5G) - from the caught-up pause, the banner's "Continue live with Best
   effort" (the only broker-level exercise of the SetDeliveryOrder RPC) releases the boundary and
   the session follows live traffic: the pause-window words flow, a fresh round arrives with no
-  Resume, everything exactly once across the transition, and EXACTLY ONE divider badge
+  loading new messages, everything exactly once across the transition, and EXACTLY ONE divider badge
   (`cs-order-switch-point`, "Best effort from here") sits on the first row delivered after the
   switch - rows above are the exact replay, rows below the bounded-reorder live following. The
   switch also writes Best effort back into the config (pinned at the jest tier).
@@ -502,7 +516,7 @@ The liveness states, and what each Guaranteed cell now proves:
   boundary-nacked word sits un-acked on the churned topic, and the chunk must stay EXACT across
   the reconnect - every redelivered copy counted against the SAME replay range (the caught-up
   count is exactly 6,000, never 6,001), the broker's bracketed dispatch counter proving
-  redeliveries really reached the session, and Resume then delivering the held next-chunk word
+  redeliveries really reached the session, and "Load new messages" then delivering the held next-chunk word
   exactly once. D6S parks a skip-first-14 mid-count (12 seeded, dispatched, none shown),
   unloads one stream, and asserts the two survivors BY NAME - a double-spent or under-spent
   budget picks the wrong survivors, not just the wrong count. Fastest is skipped in D6: it makes
@@ -511,11 +525,11 @@ The liveness states, and what each Guaranteed cell now proves:
   instant ("Caught up to <t>") and, because words were recorded past the boundary mid-drain, the
   approximate newer-data line ("~N newer entries" - the broker counts entries, so the banner
   never claims an exact message count); the excluded-topics line stays silent with no regex in
-  play. R2: Resume extends the boundary REPEATABLY - three chunks through one session, each delta
-  exact, the banner returning at every new boundary. R3: Latest x Guaranteed's GATE - the
-  start-from select disables "Latest message" under Guaranteed with the note ("Guaranteed replays
-  recorded history - to follow live, use Best effort."), in BOTH directions, never rewrites the
-  stored value, and re-enables on leaving Guaranteed. R3B - the combination's PLAY behavior on a
+  play. R2: "Load new messages" extends the boundary REPEATABLY - three chunks through one session, each delta
+  exact, the banner returning at every new boundary. R3: Latest x Guaranteed UNGATED (owner
+  decision 2026-08-11, reversing the 2026-08-09 disabled-option gate) - "Latest message" stays
+  selectable under Guaranteed in BOTH directions, shows no note, and never rewrites the stored
+  value. R3B - the combination's PLAY behavior on a
   topic that HOLDS a backlog (instant caught-up over an empty boundary, the pre-play backlog
   unread, chunk verbs intact) - caught a real first-play boundary-clobbering bug on 2026-08-09
   and now pins the fixed contract: the create is the first Play, and the boundaries decided at
@@ -530,16 +544,16 @@ window only ever asserting "nothing more arrives".
 an earlier timestamp into a pause window - controlled clock skew, unit-tier territory (the
 hand-clock tests next to the merge). What the replay/resume cells DO assert, everywhere a
 boundary is crossed: ZERO seam flags in ordinary flows - the session counter chip
-(`cs-replay-seam-violations`) stays absent and no row carries `cs-seam-violation-marker` - so a
+(`cs-order-warning`, carrying the seam count since the 2026-08-11 toolbar rework) stays absent and no row carries `cs-out-of-order-marker` - so a
 false positive cannot ship unnoticed.
 
 Alongside the matrix, the same redesign re-aimed the other Guaranteed pins: `CsMergeOrderSpec`
 CS-MO-G1 (complete replay in exact key order, then the boundary pause), CS-MO-G2 (post-Play words
-wait for the next chunk; Resume replays the delta), CS-MO-T1 (the documented tiebreak over real
+wait for the next chunk; "Load new messages" replays the delta), CS-MO-T1 (the documented tiebreak over real
 publish-time ties, now across the WHOLE recorded set), CS-MO-0B (a single non-persistent stream
 is an instant caught-up - nothing recorded, nothing replayed, and a word published into the pause
 is honestly gone); `CsWideTopologySpec` CS-WT-2 (the barrier finishes at width 200 - the whole
-20,000 replays, auto-pauses, and one closing word per partition arrives as a 200-message Resume
+20,000 replays, auto-pauses, and one closing word per partition arrives as a 200-message next chunk
 delta); and `CsFlowControlSpec` CS-FC-5 (the byte watermark's hold is now an UNDELIVERABLE
 recorded range - a force-deleted mid-drain topic - because an empty-at-boundary stream no longer
 holds anything; its dispatch-counter oracle is CONNECTION-EPOCH-BRACKETED, since the broker's
@@ -549,7 +563,7 @@ cap). CS-FC-2 kept its give-up contract untouched but needed one arranged premis
 console now opens by default, so the collapsed-console layout oracle closes it first.
 
 **A live-edge stream resumed AGAIN with no delta re-arms the wait** (known corner, disclosed, no
-e2e cell - owner decision pending). A second resume RPC - which is the FIRST Resume the user
+e2e cell - owner decision pending). A second resume RPC - which is the FIRST 'Load new messages' the user
 presses, since the create's Play consumed the boundary - of a Guaranteed session whose stream sits
 at the live edge with NOTHING recorded since re-captures a boundary the extension cannot classify:
 nothing was ever offered on that stream, so "cursor already at the end" and "cursor before the

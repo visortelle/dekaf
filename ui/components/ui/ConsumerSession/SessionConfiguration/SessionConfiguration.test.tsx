@@ -543,8 +543,9 @@ describe('start-from is told what the targets retain', () => {
   });
 });
 
-// Owner decision (2026-08-09, direct instruction): the default is Best effort - supersedes the
-// review-findings P1.1 note that said Guaranteed.
+// Owner decision (2026-08-11, direct instruction): the default is Guaranteed - third move of
+// this default (the plan file's decision log is the record), superseding the 2026-08-09
+// Best effort default.
 describe('delivery order', () => {
   const pbModule = require('../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb');
   const { consumerSessionConfigToPb, messageDeliveryOrderToPb } = require('../conversions/conversions');
@@ -569,42 +570,47 @@ describe('delivery order', () => {
   };
 
   const orderSelect = () => screen.getByTestId('cs-delivery-order') as HTMLSelectElement;
-  const orderHelp = () => document.getElementById('cs-delivery-order-help')?.textContent ?? '';
+  // The help moved into the label's question-mark circle (2026-08-11), which renders through the
+  // app-wide tooltip - so what the reader gets is the data-tooltip-html payload, and that is what
+  // these read.
+  const helpHtml = (labelTestId: string) =>
+    screen.getByTestId(labelTestId).querySelector('[data-tooltip-html]')?.getAttribute('data-tooltip-html') ?? '';
+  const orderHelp = () => helpHtml('cs-delivery-order-help');
   const timeSelect = () => screen.getByTestId('cs-delivery-order-key') as HTMLSelectElement;
-  const timeHelp = () => document.getElementById('cs-delivery-order-key-help')?.textContent ?? '';
+  const timeHelp = () => helpHtml('cs-delivery-order-key-help');
 
-  it('a new spec resolves to the Best effort default and serializes it explicitly', () => {
-    // The product default, by owner decision: a new session merges with bounded lateness and
-    // never stalls on a silent stream. Guaranteed remains an explicit choice with its stall
-    // disclosure and one-click switch untouched.
+  it('a new spec resolves to the Guaranteed default and serializes it explicitly', () => {
+    // The product default, by owner decision (2026-08-11; the third move of this default - the
+    // plan file's decision log is the record): a new session replays recorded history exactly and
+    // auto-pauses when caught up. Best effort remains the explicit choice for live following.
     const item = getDefaultManagedItem('consumer-session-config', libraryContext);
     const resolved = consumerSessionConfigFromValOrRef({ type: 'value', val: item } as never, undefined);
 
-    expect(resolved.messageDeliveryOrder).toBe('best-effort');
+    expect(resolved.messageDeliveryOrder).toBe('guaranteed');
     expect(consumerSessionConfigToPb(resolved).getMessageDeliveryOrder())
-      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
   });
 
-  it('an older spec without the field resolves and serializes as Best effort, like every other absence', () => {
+  it('an older spec without the field resolves and serializes as Guaranteed, like every other absence', () => {
     // Pre-branch saved sessions carry no field. They inherit the same product default as a new
     // one - a session that never named an order runs the default, not something it chose.
     const item = getDefaultManagedItem('consumer-session-config', libraryContext);
     const legacy = { ...item, spec: { ...item.spec, messageDeliveryOrder: undefined } };
     const resolved = consumerSessionConfigFromValOrRef({ type: 'value', val: legacy } as never, undefined);
 
-    expect(resolved.messageDeliveryOrder).toBe('best-effort');
+    expect(resolved.messageDeliveryOrder).toBe('guaranteed');
     expect(consumerSessionConfigToPb(resolved).getMessageDeliveryOrder())
-      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
   });
 
-  it('an absent value at the wire boundary itself serializes as Best effort, the default', () => {
+  it('an absent value at the wire boundary itself serializes as Guaranteed, the default', () => {
     // The one mapping Play and the live switch share. Its catch-all branch is what an
     // unresolved absent value falls into, so the branch has to name the default - and explicit
-    // Guaranteed has to stay untouched next to it.
+    // Best effort has to stay untouched next to it.
     expect(messageDeliveryOrderToPb(undefined))
-      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
-    expect(messageDeliveryOrderToPb('guaranteed'))
       .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
+    expect(messageDeliveryOrderToPb('best-effort'))
+      .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME);
   });
 
   it('an explicit Guaranteed choice survives spec -> resolved config -> protobuf, undisturbed by the default', () => {
@@ -617,11 +623,11 @@ describe('delivery order', () => {
       .toBe(pbModule.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED);
   });
 
-  it('shows all session settings immediately with Best effort order selected by default', () => {
+  it('shows all session settings immediately with Guaranteed order selected by default', () => {
     renderConfig(getDefaultManagedItem('consumer-session-config', libraryContext));
 
     expect(screen.queryByTestId('cs-advanced-toggle')).toBeNull();
-    expect(orderSelect().value).toBe('best-effort');
+    expect(orderSelect().value).toBe('guaranteed');
     expect(screen.getByText('Limit num. display messages')).toBeTruthy();
     expect(screen.getByTestId('cs-session-filters')).toBeTruthy();
     expect(screen.getByTestId('cs-session-projections')).toBeTruthy();
@@ -638,27 +644,28 @@ describe('delivery order', () => {
     ]);
   });
 
-  it('shows distinct help for every mode and hides Order by only for Fastest', () => {
+  it('documents ALL modes in the help circle, and hides Order by only for Fastest', () => {
+    // Re-aimed 2026-08-11: the help became a chooser's aid in the label's circle, describing every
+    // mode at once - a reader deciding between modes should not have to select each one to learn
+    // what it does. The mode contracts themselves are unchanged.
     renderControlledOrder();
 
-    // The default is Best effort, so the walk starts there.
-    expect(orderHelp()).toContain('within ~0.75 s');
-    expect(orderHelp()).toContain('none are dropped');
-    expect(timeSelect()).toBeTruthy();
-
-    // Re-aimed with the 2026-08-09 replay redesign: Guaranteed's help describes the replay
-    // contract (deliver recorded history exactly, pause at the boundary, Resume extends), not the
-    // old hold-forever wait.
-    fireEvent.change(orderSelect(), { target: { value: 'guaranteed' } });
-    expect(orderHelp()).toContain('Replays everything recorded up to Play');
-    expect(orderHelp()).toContain('pauses when caught up');
-    expect(orderHelp()).toContain('Resume replays what was recorded since');
+    expect(orderHelp()).toContain('Guaranteed');
+    expect(orderHelp()).toContain('exact timestamp order');
+    expect(orderHelp()).toContain('Best effort');
+    expect(orderHelp()).toContain('~0.75 s');
+    expect(orderHelp()).toContain('nothing is dropped');
+    expect(orderHelp()).toContain('Fastest');
+    expect(orderHelp()).toContain('no ordering across topics');
+    // The old hold-forever framing must never come back.
     expect(orderHelp()).not.toContain('Waits indefinitely');
     expect(timeSelect()).toBeTruthy();
 
+    // The help is selection-independent; the Order by row is not - Fastest sorts nothing.
+    fireEvent.change(orderSelect(), { target: { value: 'guaranteed' } });
+    expect(timeSelect()).toBeTruthy();
     fireEvent.change(orderSelect(), { target: { value: 'as-received' } });
-    expect(orderHelp()).toContain('independently');
-    expect(orderHelp()).toContain('no reordering delay');
+    expect(orderHelp()).toContain('Guaranteed'); // still the full catalogue
     expect(screen.queryByTestId('cs-delivery-order-key')).toBeNull();
   });
 
@@ -670,23 +677,21 @@ describe('delivery order', () => {
       'Broker publish time',
       'Event time',
     ]);
-    expect(timeHelp()).toBe('Added automatically by the producer; always present.');
-
-    fireEvent.change(timeSelect(), { target: { value: 'broker-publish-time' } });
-    expect(timeHelp()).toContain('when the message reaches the broker');
-    expect(timeHelp()).toContain('broker timestamp entry metadata');
-
-    fireEvent.change(timeSelect(), { target: { value: 'event-time' } });
-    expect(timeHelp()).toContain('set by the application');
-    expect(timeHelp()).toContain('use publish time');
+    // One circle documents all three timestamps, whatever is selected.
+    expect(timeHelp()).toContain('Publish time');
+    expect(timeHelp()).toContain('stamped by the producer');
+    expect(timeHelp()).toContain('Broker publish time');
+    expect(timeHelp()).toContain('broker entry metadata');
+    expect(timeHelp()).toContain('cannot start');
+    expect(timeHelp()).toContain('Event time');
+    expect(timeHelp()).toContain('fall back to');
   });
 
-  it('shows a spec without the field as the Best effort default', () => {
+  it('shows a spec without the field as the Guaranteed default', () => {
     const item = getDefaultManagedItem('consumer-session-config', libraryContext);
     renderConfig({ ...item, spec: { ...item.spec, messageDeliveryOrder: undefined } });
 
-    expect(orderSelect().value).toBe('best-effort');
-    expect(orderHelp()).toContain('within ~0.75 s');
+    expect(orderSelect().value).toBe('guaranteed');
     expect(screen.getByTestId('cs-delivery-order-key')).toBeTruthy();
   });
 
@@ -735,28 +740,18 @@ describe('choosing Guaranteed while the start-from is Latest', () => {
     return item;
   };
 
-  it('shows the note and rewrites neither field', () => {
+  it('rewrites neither field, and renders no note (removed 2026-08-11, owner instruction)', () => {
     renderControlledOrder(withLatestStartFrom());
-    expect(screen.queryByTestId('cs-start-from-latest-guaranteed-note')).toBeNull();
 
     fireEvent.change(screen.getByTestId('cs-delivery-order'), { target: { value: 'guaranteed' } });
 
-    // The order is what the user just chose; the start-from is untouched; the note explains the
-    // combination instead of any silent rewrite.
+    // The order is what the user just chose; the start-from is untouched - the gate is the
+    // disabled option alone, with the why in the delivery-order help circle.
     expect((screen.getByTestId('cs-delivery-order') as HTMLSelectElement).value).toBe('guaranteed');
     expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('latestMessage');
-    expect(screen.getByTestId('cs-start-from-latest-guaranteed-note')).toBeTruthy();
-  });
-
-  it('retires the note when the order goes back to Best effort', () => {
-    renderControlledOrder(withLatestStartFrom());
-
-    fireEvent.change(screen.getByTestId('cs-delivery-order'), { target: { value: 'guaranteed' } });
-    expect(screen.getByTestId('cs-start-from-latest-guaranteed-note')).toBeTruthy();
+    expect(screen.queryByTestId('cs-start-from-latest-guaranteed-note')).toBeNull();
 
     fireEvent.change(screen.getByTestId('cs-delivery-order'), { target: { value: 'best-effort' } });
-
-    expect(screen.queryByTestId('cs-start-from-latest-guaranteed-note')).toBeNull();
     expect((screen.getByTestId('cs-start-from') as HTMLSelectElement).value).toBe('latestMessage');
   });
 });

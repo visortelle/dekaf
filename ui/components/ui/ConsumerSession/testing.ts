@@ -36,7 +36,7 @@ export function genMessageDescriptor(
     sessionValueProjectionListResult: [],
     numMessageProcessed: 0,
     numMessageSent: 0,
-    replaySeamViolation: false,
+    deliveredOutOfOrder: false,
     ...override,
   };
 }
@@ -74,7 +74,7 @@ export function genEmptyMessageDescriptor(
     sessionValueProjectionListResult: [],
     numMessageProcessed: 0,
     numMessageSent: 0,
-    replaySeamViolation: false,
+    deliveredOutOfOrder: false,
     ...override,
   };
 }

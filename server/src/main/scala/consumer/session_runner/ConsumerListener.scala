@@ -173,7 +173,11 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       */
     def deliverNow(held: HeldMessage): Unit =
         try
-            held.listener.targetMessageHandler.onNext(held.message)
+            // The merge decided at emission whether this delivery undercuts an already-emitted
+            // key (Best effort's late emission); the stamp pairs with THIS call stack only.
+            held.listener.outOfOrderFlagPending.set(held.deliveredOutOfOrder)
+            try held.listener.targetMessageHandler.onNext(held.message)
+            finally held.listener.outOfOrderFlagPending.set(false)
             acknowledge(held.consumer, held.message)
             held.listener.recordCursor(
                 held.consumer.getTopic,
@@ -223,14 +227,19 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * Invoked from [[pumpGuaranteedDelivery]] under the session's ordering lock. */
     var onReplayCaughtUp: () => Unit = () => ()
 
-    /** Whether the delivery currently running through this listener's target pipeline is a SEAM
-      * VIOLATION - its order key undercuts one already emitted (possible only across a resume
-      * seam under producer clock skew, or a source-log inversion). Set and cleared around each
-      * barrier send by [[pumpGuaranteedDelivery]]; every guaranteed delivery runs serialized
-      * under the session's ordering lock, so a plain flag cannot race. Always false outside
-      * guaranteed ordering - the relax to best effort clears it for good. The target pipeline
-      * stamps it onto the outgoing row (Message.replay_seam_violation). */
-    @volatile var replaySeamFlagPending: Boolean = false
+    /** Whether the delivery currently running through this listener's target pipeline was emitted
+      * OUT OF ORDER - its order key undercuts one already emitted. Under GUARANTEED that is a
+      * seam violation (resume-seam clock skew, or a source-log inversion), set and cleared around
+      * each barrier send by [[pumpGuaranteedDelivery]]. Under BEST EFFORT (since 2026-08-11) it
+      * is a late emission - the message outlived its reorder window - and rides the HeldMessage
+      * from the merge through [[deliverNow]].
+      *
+      * A THREAD LOCAL, not a plain flag: guaranteed sends are serialized by the ordering lock,
+      * but best-effort sends can run concurrently on different listener threads for the SAME
+      * target, and the stamp must pair with the delivery on ITS OWN call stack - the target
+      * pipeline reads it synchronously inside onNext. The target pipeline stamps it onto the
+      * outgoing row (Message.delivered_out_of_order). */
+    val outOfOrderFlagPending: ThreadLocal[java.lang.Boolean] = ThreadLocal.withInitial(() => java.lang.Boolean.FALSE)
 
     /** Report a drop to the client, and NEVER let that reporting cost the message.
       *
@@ -648,9 +657,9 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * and all, without re-reading it. */
     private def deliverStrict(held: HeldMessage, seamViolation: Boolean): Boolean =
         try
-            held.listener.replaySeamFlagPending = seamViolation
+            held.listener.outOfOrderFlagPending.set(seamViolation)
             try held.listener.targetMessageHandler.onNext(held.message)
-            finally held.listener.replaySeamFlagPending = false
+            finally held.listener.outOfOrderFlagPending.set(false)
             held.listener.finalizeDelivered(held)
             true
         catch
@@ -686,9 +695,9 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
       * re-read - they were received and not acknowledged, and a recreate would have lost them.
       */
     def relaxDeliveryOrderToBestEffort(): Unit = startFromOrdering.inOrder {
-        // The replay's per-delivery seam flag dies with the barrier: best-effort deliveries run
-        // concurrently on listener threads and must never read a stale true.
-        replaySeamFlagPending = false
+        // The replay's per-delivery flag dies with the barrier on THIS thread; best-effort
+        // deliveries stamp their own (the flag is thread-local precisely so they cannot cross).
+        outOfOrderFlagPending.set(false)
         val released = startFromOrdering.relaxGuaranteedToBestEffort()
         if released.nonEmpty then handleResolved(released)
         // Same tail as every other decision point: a released batch can spend a counted cut's last
@@ -778,6 +787,11 @@ class ConsumerListener(val targetMessageHandler: ConsumerSessionTargetMessageHan
                                     // unlimited, which is what keeps a counted skip positioning
                                     // at full speed under any limit.
                                     held.listener.deliver(held)
+                                case StartFromOutcome.DeliverOutOfOrder =>
+                                    // Deliver, with the merge's own verdict stamped where the
+                                    // generic merge could not put it: the row will carry the
+                                    // out-of-order marker.
+                                    held.listener.deliver(held.copy(deliveredOutOfOrder = true))
                         catch
                             case err: Throwable =>
                                 logger.warn(

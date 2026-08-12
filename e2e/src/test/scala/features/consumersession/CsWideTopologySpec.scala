@@ -55,7 +55,6 @@ class CsWideTopologySpec extends DekafSuite:
     cs.awaitLoaded(backlog, timeoutMs = 180000)
 
     assert(cs.loadedCount == backlog, s"every message must arrive, got ${cs.loadedCount}")
-    assertThat(page.getByTestId("cs-order-chip")).isVisible()
     assert(cs.state == "running", s"the session must still be healthy, got '${cs.state}'")
     cs.stop()
   }
@@ -79,11 +78,9 @@ class CsWideTopologySpec extends DekafSuite:
     cs.assertState("paused", timeoutMs = 10000)
     Thread.sleep(2000) // the boundary must be a fixpoint, not a moment the counter passed through
     assert(cs.loadedCount == backlog, s"the replay must stop exactly at the boundary, got ${cs.loadedCount}")
-    assertThat(page.getByTestId("cs-order-chip")).isVisible()
     // Round-robin production is time-ordered within every partition, so exactness at width has
     // nothing to confess: no source inversions, no late deliveries, and no seam flags.
-    assertThat(page.getByTestId("cs-order-late")).not().isVisible()
-    assertThat(page.getByTestId("cs-replay-seam-violations")).not().isVisible()
+    assertThat(page.getByTestId("cs-order-warning")).not().isVisible()
 
     // Phase 2: one closing word per partition INTO the pause, ticked so publish times strictly
     // increase past the whole backlog - 200 words recorded past the boundary, none of which may

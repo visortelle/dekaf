@@ -8,12 +8,12 @@ Dekaf allows you to explore Apache Pulsar topic data by using **consumer session
 - Consume multiple topics at once
 - Choose how Dekaf combines multiple topics or partitions. Pulsar itself does not guarantee order
   across topics.
-  - **Guaranteed** is an exact replay: it delivers everything recorded up to Play (of what
+  - **Guaranteed** (the default) is an exact replay: it delivers everything recorded up to Play (of what
     retention still holds) in strict selected-timestamp order, then auto-pauses with a caught-up
-    banner; Resume extends the replay to now, and an ordering violation across a pause seam
+    banner, whose "Load new messages up to now" extends the replay to the present; an ordering violation across a pause seam
     (producer clock skew) is delivered loudly flagged - a row marker plus a session counter -
     never silently. Multi-stream sessions require persistent topics.
-  - **Best effort** (the default) merges by the selected timestamp within ~0.75 s. Late messages can
+  - **Best effort** merges by the selected timestamp within ~0.75 s. Late messages can
     appear out of order; none are dropped.
   - **Fastest** delivers each topic or partition independently, with no reordering delay.
   - See the [comparison of start positions and modes](./modes-comparison.md) for how every
@@ -36,7 +36,7 @@ Dekaf allows you to explore Apache Pulsar topic data by using **consumer session
 
 The amount of messages that can be processed during the consumer session is unlimited, but the amount of messages that are loaded and displayed in the user-faced UI at once has limits.
 
-By default this limit equals to `10,000` messages. Depending on the average message size, you can configure this number for specific topic.
+By default this limit equals to `1,000,000` messages. Depending on the average message size in the consumed topics, you can lower it per consumer session - the help beside the toggle says when to.
 
 Operations that user can perform on the loaded data (e.g. sorting, export, or search in found) are limited to these messages.
 

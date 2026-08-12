@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import s from './StartFromInput.module.css'
 import Select, { List } from '../../../Select/Select';
 import DatetimePicker from '../../../DatetimePicker/DatetimePicker';
-import { ConsumerSessionStartFrom, MessageDeliveryOrder } from '../../types';
+import { ConsumerSessionStartFrom } from '../../types';
 import Input from '../../../Input/Input';
 import RelativeDateTimePicker from '../../../RelativeDateTimePicker/RelativeDateTimePicker';
 import { v4 as uuid } from 'uuid';
@@ -31,13 +31,6 @@ export type StartFromInputProps = {
    * (the standalone library item editor), which leaves every mode available.
    */
   targetTopicsPersistency?: TargetTopicsPersistency;
-  /**
-   * The session's delivery order, when the editor knows it. Guaranteed is an exact replay of
-   * recorded history (owner decision, 2026-08-09), so "Latest message" - a replay of nothing - is
-   * disabled under it, with a note, through the same mechanism as the non-persistent gating.
-   * Omitted in the standalone library item editor, which gates nothing.
-   */
-  deliveryOrder?: MessageDeliveryOrder;
 };
 
 type StartFromType = ConsumerSessionStartFrom['type'];
@@ -62,13 +55,13 @@ const list: List<StartFromType> = [
 // Which modes need retained history - and why - lives in target-topics-persistency.ts, shared
 // with the session-local fallback so the note below and what Play actually sends cannot disagree.
 //
-// `isLatestReplayGated` is the other gate, from the delivery order: Guaranteed replays recorded
-// history, and "Latest message" selects a replay of nothing - the combination is legal (Play
-// yields an instant caught-up answer) but never useful, so the option is disabled while the
-// history modes are on the table. Never together with the history gate: on topics that retain
-// nothing, Latest is the one mode that exists and must stay selectable.
-function startFromList(isHistoryUnavailable: boolean, isLatestReplayGated: boolean): List<StartFromType> {
-  if (!isHistoryUnavailable && !isLatestReplayGated) {
+// Latest x Guaranteed is deliberately NOT gated here (owner decision 2026-08-11, reversing the
+// 2026-08-09 disabled-option gate): the combination is legal - Play answers with an instant
+// caught-up and raises the caught-up panel, whose "Load new messages up to now" and "Switch to
+// Best effort and follow live" are the decision the user then makes. A selectable option plus
+// that notification beats a greyed-out entry needing an explanation.
+function startFromList(isHistoryUnavailable: boolean): List<StartFromType> {
+  if (!isHistoryUnavailable) {
     return list;
   }
 
@@ -77,11 +70,7 @@ function startFromList(isHistoryUnavailable: boolean, isLatestReplayGated: boole
       return item;
     }
 
-    if (isHistoryUnavailable && historyDependentStartFromTypes.includes(item.value)) {
-      return { ...item, disabled: true };
-    }
-
-    if (isLatestReplayGated && !isHistoryUnavailable && item.value === 'latestMessage') {
+    if (historyDependentStartFromTypes.includes(item.value)) {
       return { ...item, disabled: true };
     }
 
@@ -98,7 +87,6 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     ? 'none'
     : startFromPersistencyAdvice(props.targetTopicsPersistency);
   const isHistoryUnavailable = persistencyAdvice === 'history-unavailable';
-  const isLatestReplayGated = props.deliveryOrder === 'guaranteed';
   const resolvedStartFromType = resolveResult.type === 'success' ? resolveResult.value?.spec?.startFrom?.type : undefined;
 
   useEffect(() => {
@@ -175,7 +163,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       <div className={s.TypeSelect}>
         <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
           testId="cs-start-from"
-          list={startFromList(isHistoryUnavailable, isLatestReplayGated)}
+          list={startFromList(isHistoryUnavailable)}
           value={itemSpec.startFrom.type}
           onChange={(v) => {
             switch (v as StartFromType) {
@@ -262,15 +250,6 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         <div className={s.PersistencyNote} data-testid="cs-start-from-mixed-persistency-note">
           Some of the selected topics are non-persistent and keep no history. Those start from now, whatever is chosen
           here.
-        </div>
-      )}
-      {/* Both directions of the Latest x Guaranteed gate end here: picking Guaranteed while Latest
-          is chosen, and looking at Latest while Guaranteed is chosen. A SAVED combo is never
-          rewritten - it loads as written, this note explains it, and Play yields the server's
-          instant caught-up answer. */}
-      {isLatestReplayGated && (
-        <div className={s.PersistencyNote} data-testid="cs-start-from-latest-guaranteed-note" role="status">
-          Guaranteed replays recorded history - to follow live, use Best effort.
         </div>
       )}
       {(itemSpec.startFrom.type === 'nthMessageAfterEarliest' || itemSpec.startFrom.type === 'nthMessageBeforeLatest') && (

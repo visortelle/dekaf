@@ -15,7 +15,11 @@
  * a persisted config, and by the retention itself.
  */
 
-export const defaultNumDisplayItems = 10_000;
+// 1,000,000 by owner instruction (2026-08-11; was 10,000). This is BOTH the prefill when the
+// limit toggle is switched on AND - via `displayItemLimit` - the bound applied when no limit is
+// configured, so it is the real ceiling of every session's browser buffer. The help beside the
+// toggle tells the reader to lower it per session when message sizes make it too much.
+export const defaultNumDisplayItems = 1_000_000;
 
 /**
  * The limit a text field means, or `undefined` when it does not mean one. `undefined` is "refuse
