@@ -125,7 +125,10 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]);
   }
 
-  const key = `${props.tenant}-${props.namespace}-${props.topic}`;
+  // The persistency belongs in here: `persistent://t/n/x` and `non-persistent://t/n/x` can both
+  // exist, and they are different topics. Without the scheme, navigating between them left every
+  // child of this page mounted - the consumer session kept consuming the topic just left.
+  const key = `${props.topicPersistency}-${props.tenant}-${props.namespace}-${props.topic}`;
 
   let buttons: ToolbarButtonProps[] = [
     {

@@ -33,7 +33,8 @@ class ProducerBytesSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.openTools() // reveal the (already-mounted) Produce console
+    cs.openTools()
+    page.getByTestId("console-tab-produce").click()
     dismissCredentialsIfPresent()
 
     page.getByTestId("produce-encoding").selectOption(new SelectOption().setLabel("Bytes (hex)"))

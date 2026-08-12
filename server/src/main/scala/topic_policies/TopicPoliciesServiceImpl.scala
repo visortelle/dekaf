@@ -51,14 +51,14 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetBacklogQuotasResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     destinationStorage = destinationStorageBacklogQuotaPb,
                     messageAge = messageAgeBacklogQuotaPb,
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetBacklogQuotasResponse(status = Some(status)))
         }
     override def setBacklogQuotas(request: pb.SetBacklogQuotasRequest): Future[pb.SetBacklogQuotasResponse] =
@@ -104,10 +104,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     adminClient.topicPolicies(request.isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
-            Future.successful(pb.SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetBacklogQuotasResponse(status = Some(status)))
         }
     override def removeBacklogQuota(request: pb.RemoveBacklogQuotaRequest): Future[pb.RemoveBacklogQuotaResponse] =
@@ -122,13 +122,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     logger.info(s"Removing backlog quota (message age) on topic ${request.topic}")
                     adminClient.topicPolicies(request.isGlobal).removeBacklogQuota(request.topic, BacklogQuotaType.message_age)
                 case _ =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified")
+                    val status = Status(code = Code.INVALID_ARGUMENT.value, message = "Backlog quota type should be specified")
                     return Future.successful(pb.RemoveBacklogQuotaResponse(status = Some(status)))
 
-            Future.successful(pb.RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveBacklogQuotaResponse(status = Some(status)))
         }
     override def getDelayedDelivery(request: pb.GetDelayedDeliveryRequest): Future[pb.GetDelayedDeliveryResponse] =
@@ -147,12 +147,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetDelayedDeliveryResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 delayedDelivery = delayedDeliveryPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetDelayedDeliveryResponse(status = Some(status)))
         }
     override def setDelayedDelivery(request: pb.SetDelayedDeliveryRequest): Future[pb.SetDelayedDeliveryResponse] =
@@ -166,10 +166,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                 .build()
             adminClient.topicPolicies(request.isGlobal).setDelayedDeliveryPolicy(request.topic, delayedDeliveryPolicies)
 
-            Future.successful(pb.SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetDelayedDeliveryResponse(status = Some(status)))
         }
     override def removeDelayedDelivery(request: pb.RemoveDelayedDeliveryRequest): Future[pb.RemoveDelayedDeliveryResponse] =
@@ -179,10 +179,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing delayed delivery policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDelayedDeliveryPolicy(request.topic)
 
-            Future.successful(pb.RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveDelayedDeliveryResponse(status = Some(status)))
         }
     override def getMessageTtl(request: pb.GetMessageTtlRequest): Future[pb.GetMessageTtlResponse] =
@@ -200,12 +200,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetMessageTtlResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 messageTtl = messageTtlPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMessageTtlResponse(status = Some(status)))
         }
     override def setMessageTtl(request: pb.SetMessageTtlRequest): Future[pb.SetMessageTtlResponse] =
@@ -215,10 +215,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting message TTL policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMessageTTL(request.topic, request.messageTtlSeconds)
 
-            Future.successful(pb.SetMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMessageTtlResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMessageTtlResponse(status = Some(status)))
         }
     override def removeMessageTtl(request: pb.RemoveMessageTtlRequest): Future[pb.RemoveMessageTtlResponse] =
@@ -228,10 +228,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing message TTL policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMessageTTL(request.topic)
 
-            Future.successful(pb.RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMessageTtlResponse(status = Some(status)))
         }
     override def getRetention(request: pb.GetRetentionRequest): Future[pb.GetRetentionResponse] =
@@ -250,12 +250,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetRetentionResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 retention = retentionPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetRetentionResponse(status = Some(status)))
         }
     override def setRetention(request: pb.SetRetentionRequest): Future[pb.SetRetentionResponse] =
@@ -266,10 +266,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             val retention = new RetentionPolicies(request.retentionTimeInMinutes, request.retentionSizeInMb)
             adminClient.topicPolicies(request.isGlobal).setRetention(request.topic, retention)
 
-            Future.successful(pb.SetRetentionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetRetentionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetRetentionResponse(status = Some(status)))
         }
     override def removeRetention(request: pb.RemoveRetentionRequest): Future[pb.RemoveRetentionResponse] =
@@ -279,10 +279,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing retention for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeRetention(request.topic)
 
-            Future.successful(pb.RemoveRetentionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveRetentionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveRetentionResponse(status = Some(status)))
         }
     override def getMaxUnackedMessagesOnConsumer(request: pb.GetMaxUnackedMessagesOnConsumerRequest): Future[pb.GetMaxUnackedMessagesOnConsumerResponse] =
@@ -300,12 +300,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetMaxUnackedMessagesOnConsumerResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxUnackedMessagesOnConsumer = maxUnackedMessagesOnConsumerPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
     override def setMaxUnackedMessagesOnConsumer(request: pb.SetMaxUnackedMessagesOnConsumerRequest): Future[pb.SetMaxUnackedMessagesOnConsumerResponse] =
@@ -315,10 +315,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max unacked messages on consumer policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnConsumer(request.topic, request.maxUnackedMessagesOnConsumer)
 
-            Future.successful(pb.SetMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
 
@@ -329,10 +329,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max unacked messages on consumer policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnConsumer(request.topic)
 
-            Future.successful(pb.RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
     override def getMaxUnackedMessagesOnSubscription(request: pb.GetMaxUnackedMessagesOnSubscriptionRequest): Future[pb.GetMaxUnackedMessagesOnSubscriptionResponse] =
@@ -350,12 +350,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetMaxUnackedMessagesOnSubscriptionResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 maxUnackedMessagesOnSubscription = maxUnackedMessagesOnSubscriptionPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
     override def setMaxUnackedMessagesOnSubscription(request: pb.SetMaxUnackedMessagesOnSubscriptionRequest): Future[pb.SetMaxUnackedMessagesOnSubscriptionResponse] =
@@ -365,10 +365,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max unacked messages on subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnSubscription(request.topic, request.maxUnackedMessagesOnSubscription)
 
-            Future.successful(pb.SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
     override def removeMaxUnackedMessagesOnSubscription(request: pb.RemoveMaxUnackedMessagesOnSubscriptionRequest): Future[pb.RemoveMaxUnackedMessagesOnSubscriptionResponse] =
@@ -378,10 +378,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max unacked messages on subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnSubscription(request.topic)
 
-            Future.successful(pb.RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
     override def getInactiveTopicPolicies(request: pb.GetInactiveTopicPoliciesRequest): Future[pb.GetInactiveTopicPoliciesResponse] =
@@ -406,12 +406,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetInactiveTopicPoliciesResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 inactiveTopicPolicies = inactiveTopicPoliciesPb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetInactiveTopicPoliciesResponse(status = Some(status)))
         }
     override def setInactiveTopicPolicies(request: pb.SetInactiveTopicPoliciesRequest): Future[pb.SetInactiveTopicPoliciesResponse] =
@@ -433,10 +433,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     throw new IllegalArgumentException("InactiveTopicPoliciesDeleteMode should be specified.")
 
             adminClient.topicPolicies(request.isGlobal).setInactiveTopicPolicies(request.topic, inactiveTopicPolicies)
-            Future.successful(pb.SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetInactiveTopicPoliciesResponse(status = Some(status)))
         }
     override def removeInactiveTopicPolicies(request: pb.RemoveInactiveTopicPoliciesRequest): Future[pb.RemoveInactiveTopicPoliciesResponse] =
@@ -446,10 +446,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing inactive topic policies for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeInactiveTopicPolicies(request.topic)
 
-            Future.successful(pb.RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveInactiveTopicPoliciesResponse(status = Some(status)))
         }
     override def getPersistence(request: pb.GetPersistenceRequest): Future[pb.GetPersistenceResponse] =
@@ -470,12 +470,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetPersistenceResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 persistence = persistencePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetPersistenceResponse(status = Some(status)))
         }
     override def setPersistence(request: pb.SetPersistenceRequest): Future[pb.SetPersistenceResponse] =
@@ -486,10 +486,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             val persistencePolicies = PersistencePolicies(request.bookkeeperEnsemble, request.bookkeeperWriteQuorum, request.bookkeeperAckQuorum, request.managedLedgerMaxMarkDeleteRate)
             adminClient.topicPolicies(request.isGlobal).setPersistence(request.topic, persistencePolicies)
 
-            Future.successful(pb.SetPersistenceResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetPersistenceResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetPersistenceResponse(status = Some(status)))
         }
     override def removePersistence(request: pb.RemovePersistenceRequest): Future[pb.RemovePersistenceResponse] =
@@ -499,10 +499,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing persistence policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removePersistence(request.topic)
 
-            Future.successful(pb.RemovePersistenceResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemovePersistenceResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemovePersistenceResponse(status = Some(status)))
         }
     override def getDeduplication(request: pb.GetDeduplicationRequest): Future[pb.GetDeduplicationResponse] =
@@ -516,12 +516,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     pb.GetDeduplicationResponse.Deduplication.Specified(new pb.DeduplicationSpecified(enabled = v))
 
             Future.successful(pb.GetDeduplicationResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 deduplication
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetDeduplicationResponse(status = Some(status)))
         }
     override def setDeduplication(request: pb.SetDeduplicationRequest): Future[pb.SetDeduplicationResponse] =
@@ -530,10 +530,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Setting deduplication policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setDeduplicationStatus(request.topic, request.enabled)
-            Future.successful(pb.SetDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetDeduplicationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetDeduplicationResponse(status = Some(status)))
         }
     override def removeDeduplication(request: pb.RemoveDeduplicationRequest): Future[pb.RemoveDeduplicationResponse] =
@@ -543,10 +543,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing deduplication policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationStatus(request.topic)
 
-            Future.successful(pb.RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveDeduplicationResponse(status = Some(status)))
         }
     override def getDeduplicationSnapshotInterval(request: pb.GetDeduplicationSnapshotIntervalRequest): Future[pb.GetDeduplicationSnapshotIntervalResponse] =
@@ -560,12 +560,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     pb.GetDeduplicationSnapshotIntervalResponse.Interval.Enabled(new pb.DeduplicationSnapshotIntervalEnabled(interval = v))
 
             Future.successful(pb.GetDeduplicationSnapshotIntervalResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 interval
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
     override def setDeduplicationSnapshotInterval(request: pb.SetDeduplicationSnapshotIntervalRequest): Future[pb.SetDeduplicationSnapshotIntervalResponse] =
@@ -575,10 +575,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting deduplication snapshot interval policy for topic ${request.topic}. ${request.interval}")
             adminClient.topicPolicies(request.isGlobal).setDeduplicationSnapshotInterval(request.topic, request.interval)
 
-            Future.successful(pb.SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
     override def removeDeduplicationSnapshotInterval(request: pb.RemoveDeduplicationSnapshotIntervalRequest): Future[pb.RemoveDeduplicationSnapshotIntervalResponse] =
@@ -588,10 +588,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing deduplication snapshot interval policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationSnapshotInterval(request.topic)
 
-            Future.successful(pb.RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
     override def getDispatchRate(request: pb.GetDispatchRateRequest): Future[pb.GetDispatchRateResponse] =
@@ -612,12 +612,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetDispatchRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 dispatchRate = dispatchRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetDispatchRateResponse(status = Some(status)))
         }
     override def setDispatchRate(request: pb.SetDispatchRateRequest): Future[pb.SetDispatchRateResponse] =
@@ -633,10 +633,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                 .build
 
             adminClient.topicPolicies(request.isGlobal).setDispatchRate(request.topic, dispatchRate)
-            Future.successful(pb.SetDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetDispatchRateResponse(status = Some(status)))
         }
     override def removeDispatchRate(request: pb.RemoveDispatchRateRequest): Future[pb.RemoveDispatchRateResponse] =
@@ -646,10 +646,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing dispatch rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDispatchRate(request.topic)
 
-            Future.successful(pb.RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveDispatchRateResponse(status = Some(status)))
         }
     override def getReplicatorDispatchRate(request: pb.GetReplicatorDispatchRateRequest): Future[pb.GetReplicatorDispatchRateResponse] =
@@ -670,12 +670,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetReplicatorDispatchRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 replicatorDispatchRate = replicatorDispatchRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetReplicatorDispatchRateResponse(status = Some(status)))
         }
     override def setReplicatorDispatchRate(request: pb.SetReplicatorDispatchRateRequest): Future[pb.SetReplicatorDispatchRateResponse] =
@@ -691,10 +691,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                 .build
 
             adminClient.topicPolicies(request.isGlobal).setReplicatorDispatchRate(request.topic, dispatchRate)
-            Future.successful(pb.SetReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetReplicatorDispatchRateResponse(status = Some(status)))
         }
     override def removeReplicatorDispatchRate(request: pb.RemoveReplicatorDispatchRateRequest): Future[pb.RemoveReplicatorDispatchRateResponse] =
@@ -704,10 +704,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing replicator dispatch rate for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeReplicatorDispatchRate(request.topic)
 
-            Future.successful(pb.RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveReplicatorDispatchRateResponse(status = Some(status)))
         }
     override def getSubscriptionDispatchRate(request: pb.GetSubscriptionDispatchRateRequest): Future[pb.GetSubscriptionDispatchRateResponse] =
@@ -728,12 +728,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetSubscriptionDispatchRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 subscriptionDispatchRate = subscriptionDispatchRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetSubscriptionDispatchRateResponse(status = Some(status)))
         }
     override def setSubscriptionDispatchRate(request: pb.SetSubscriptionDispatchRateRequest): Future[pb.SetSubscriptionDispatchRateResponse] =
@@ -749,10 +749,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                 .build
 
             adminClient.topicPolicies(request.isGlobal).setSubscriptionDispatchRate(request.topic, dispatchRate)
-            Future.successful(pb.SetSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetSubscriptionDispatchRateResponse(status = Some(status)))
         }
     override def removeSubscriptionDispatchRate(request: pb.RemoveSubscriptionDispatchRateRequest): Future[pb.RemoveSubscriptionDispatchRateResponse] =
@@ -762,10 +762,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing subscription dispatch rate for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionDispatchRate(request.topic)
 
-            Future.successful(pb.RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveSubscriptionDispatchRateResponse(status = Some(status)))
         }
     override def getCompactionThreshold(request: pb.GetCompactionThresholdRequest): Future[pb.GetCompactionThresholdResponse] =
@@ -776,12 +776,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                 case None => pb.GetCompactionThresholdResponse.Threshold.Disabled(new pb.CompactionThresholdDisabled())
                 case Some(v) => pb.GetCompactionThresholdResponse.Threshold.Enabled(new pb.CompactionThresholdEnabled(threshold = v))
             Future.successful(pb.GetCompactionThresholdResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 threshold
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetCompactionThresholdResponse(status = Some(status)))
         }
     override def setCompactionThreshold(request: pb.SetCompactionThresholdRequest): Future[pb.SetCompactionThresholdResponse] =
@@ -791,10 +791,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting compaction threshold policy for topic ${request.topic}. ${request.threshold}")
             adminClient.topicPolicies(request.isGlobal).setCompactionThreshold(request.topic, request.threshold)
 
-            Future.successful(pb.SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetCompactionThresholdResponse(status = Some(status)))
         }
     override def removeCompactionThreshold(request: pb.RemoveCompactionThresholdRequest): Future[pb.RemoveCompactionThresholdResponse] =
@@ -804,10 +804,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing compaction threshold policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeCompactionThreshold(request.topic)
 
-            Future.successful(pb.RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveCompactionThresholdResponse(status = Some(status)))
         }
     override def getPublishRate(request: pb.GetPublishRateRequest): Future[pb.GetPublishRateResponse] =
@@ -826,12 +826,12 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
 
             Future.successful(pb.GetPublishRateResponse(
-                status = Some(Status(code = Code.OK.index)),
+                status = Some(Status(code = Code.OK.value)),
                 publishRate = publishRatePb
             ))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetPublishRateResponse(status = Some(status)))
         }
     override def setPublishRate(request: pb.SetPublishRateRequest): Future[pb.SetPublishRateResponse] =
@@ -842,10 +842,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             val publishRate = PublishRate( request.rateInMsg, request.rateInByte )
             adminClient.topicPolicies(request.isGlobal).setPublishRate(request.topic, publishRate)
 
-            Future.successful(pb.SetPublishRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetPublishRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetPublishRateResponse(status = Some(status)))
         }
     override def removePublishRate(request: pb.RemovePublishRateRequest): Future[pb.RemovePublishRateResponse] =
@@ -855,10 +855,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing publish rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removePublishRate(request.topic)
 
-            Future.successful(pb.RemovePublishRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemovePublishRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemovePublishRateResponse(status = Some(status)))
         }
     override def getMaxConsumersPerSubscription(request: pb.GetMaxConsumersPerSubscriptionRequest): Future[pb.GetMaxConsumersPerSubscriptionResponse] =
@@ -877,13 +877,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetMaxConsumersPerSubscriptionResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     maxConsumersPerSubscription = maxConsumersPerSubscriptionPb
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
     override def setMaxConsumersPerSubscription(request: pb.SetMaxConsumersPerSubscriptionRequest): Future[pb.SetMaxConsumersPerSubscriptionResponse] =
@@ -893,10 +893,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max consumers per subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxConsumersPerSubscription(request.topic, request.maxConsumersPerSubscription)
 
-            Future.successful(pb.SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
     override def removeMaxConsumersPerSubscription(request: pb.RemoveMaxConsumersPerSubscriptionRequest): Future[pb.RemoveMaxConsumersPerSubscriptionResponse] =
@@ -906,10 +906,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max consumers per subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumersPerSubscription(request.topic)
 
-            Future.successful(pb.RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
     override def getMaxProducers(request: pb.GetMaxProducersRequest): Future[pb.GetMaxProducersResponse] =
@@ -926,13 +926,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetMaxProducersResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     maxProducers = maxProducersPb
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxProducersResponse(status = Some(status)))
         }
     override def setMaxProducers(request: pb.SetMaxProducersRequest): Future[pb.SetMaxProducersResponse] =
@@ -942,10 +942,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max producers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxProducers(request.topic, request.maxProducers)
 
-            Future.successful(pb.SetMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxProducersResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxProducersResponse(status = Some(status)))
         }
     override def removeMaxProducers(request: pb.RemoveMaxProducersRequest): Future[pb.RemoveMaxProducersResponse] =
@@ -955,10 +955,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max producers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxProducers(request.topic)
 
-            Future.successful(pb.RemoveMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxProducersResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxProducersResponse(status = Some(status)))
         }
     override def getMaxSubscriptionsPerTopic(request: pb.GetMaxSubscriptionsPerTopicRequest): Future[pb.GetMaxSubscriptionsPerTopicResponse] =
@@ -977,13 +977,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetMaxSubscriptionsPerTopicResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     maxSubscriptionsPerTopic = maxSubscriptionsPerTopicPb
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
     override def setMaxSubscriptionsPerTopic(request: pb.SetMaxSubscriptionsPerTopicRequest): Future[pb.SetMaxSubscriptionsPerTopicResponse] =
@@ -993,10 +993,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max subscriptions per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxSubscriptionsPerTopic(request.topic, request.maxSubscriptionsPerTopic)
 
-            Future.successful(pb.SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
     override def removeMaxSubscriptionsPerTopic(request: pb.RemoveMaxSubscriptionsPerTopicRequest): Future[pb.RemoveMaxSubscriptionsPerTopicResponse] =
@@ -1006,10 +1006,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max subscriptions per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxSubscriptionsPerTopic(request.topic)
 
-            Future.successful(pb.RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
     override def getMaxConsumers(request: pb.GetMaxConsumersRequest): Future[pb.GetMaxConsumersResponse] =
@@ -1028,13 +1028,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetMaxConsumersResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     maxConsumers = maxConsumersPb
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxConsumersResponse(status = Some(status)))
         }
     override def setMaxConsumers(request: pb.SetMaxConsumersRequest): Future[pb.SetMaxConsumersResponse] =
@@ -1044,10 +1044,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max consumers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxConsumers(request.topic, request.maxConsumers)
 
-            Future.successful(pb.SetMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxConsumersResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxConsumersResponse(status = Some(status)))
         }
     override def removeMaxConsumers(request: pb.RemoveMaxConsumersRequest): Future[pb.RemoveMaxConsumersResponse] =
@@ -1057,10 +1057,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max consumers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumers(request.topic)
 
-            Future.successful(pb.RemoveMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxConsumersResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxConsumersResponse(status = Some(status)))
         }
     override def getSubscriptionTypesEnabled(request: pb.GetSubscriptionTypesEnabledRequest): Future[pb.GetSubscriptionTypesEnabledResponse] =
@@ -1086,13 +1086,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     )
             Future.successful(
                 pb.GetSubscriptionTypesEnabledResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     subscriptionTypesEnabled = subscriptionTypesEnabledPb
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
     override def setSubscriptionTypesEnabled(request: pb.SetSubscriptionTypesEnabledRequest): Future[pb.SetSubscriptionTypesEnabledResponse] =
@@ -1112,10 +1112,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             val subscriptionTypesEnabled = request.types.map(pbToSubscriptionType).toSet.asJava
             adminClient.topicPolicies(request.isGlobal).setSubscriptionTypesEnabled(request.topic, subscriptionTypesEnabled)
 
-            Future.successful(pb.SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
     override def removeSubscriptionTypesEnabled(request: pb.RemoveSubscriptionTypesEnabledRequest): Future[pb.RemoveSubscriptionTypesEnabledResponse] =
@@ -1125,10 +1125,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing subscription types enabled policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionTypesEnabled(request.topic)
 
-            Future.successful(pb.RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
         }
     override def getSubscribeRate(request: pb.GetSubscribeRateRequest): Future[pb.GetSubscribeRateResponse] =
@@ -1148,13 +1148,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetSubscribeRateResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     subscribeRate = subscribeRatePb
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetSubscribeRateResponse(status = Some(status)))
         }
     override def setSubscribeRate(request: pb.SetSubscribeRateRequest): Future[pb.SetSubscribeRateResponse] =
@@ -1165,10 +1165,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             val subscribeRate = new SubscribeRate(request.subscribeThrottlingRatePerConsumer, request.ratePeriodInSeconds)
 
             adminClient.topicPolicies(request.isGlobal).setSubscribeRate(request.topic, subscribeRate)
-            Future.successful(pb.SetSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetSubscribeRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetSubscribeRateResponse(status = Some(status)))
         }
     override def removeSubscribeRate(request: pb.RemoveSubscribeRateRequest): Future[pb.RemoveSubscribeRateResponse] =
@@ -1177,10 +1177,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing subscribe rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscribeRate(request.topic)
-            Future.successful(pb.RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveSubscribeRateResponse(status = Some(status)))
         }
     override def getSchemaCompatibilityStrategy(request: pb.GetSchemaCompatibilityStrategyRequest): Future[pb.GetSchemaCompatibilityStrategyResponse] =
@@ -1194,7 +1194,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
                     pb.GetSchemaCompatibilityStrategyResponse.Strategy.Specified(new pb.SchemaCompatibilityStrategySpecified(
                         strategy = schemaCompatibilityStrategyToPb(v)
                     ))
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(
                 pb.GetSchemaCompatibilityStrategyResponse(
                     status = Some(status),
@@ -1203,7 +1203,7 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
     override def setSchemaCompatibilityStrategy(request: pb.SetSchemaCompatibilityStrategyRequest): Future[pb.SetSchemaCompatibilityStrategyResponse] =
@@ -1212,11 +1212,11 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
         try {
             adminClient.topicPolicies(request.isGlobal).setSchemaCompatibilityStrategy(request.topic, schemaCompatibilityStrategyFromPb(request.strategy))
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(pb.SetSchemaCompatibilityStrategyResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
     override def removeSchemaCompatibilityStrategy(request: pb.RemoveSchemaCompatibilityStrategyRequest): Future[pb.RemoveSchemaCompatibilityStrategyResponse] =
@@ -1225,10 +1225,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
         try {
             logger.info(s"Removing schema compatibility strategy policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSchemaCompatibilityStrategy(request.topic)
-            Future.successful(pb.RemoveSchemaCompatibilityStrategyResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveSchemaCompatibilityStrategyResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
     override def getMaxMessageSize(request: pb.GetMaxMessageSizeRequest): Future[pb.GetMaxMessageSizeResponse] =
@@ -1241,13 +1241,13 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
 
             Future.successful(
                 pb.GetMaxMessageSizeResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     maxMessageSize
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetMaxMessageSizeResponse(status = Some(status)))
         }
     override def setMaxMessageSize(request: pb.SetMaxMessageSizeRequest): Future[pb.SetMaxMessageSizeResponse] =
@@ -1257,10 +1257,10 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Setting max message size policy for topic ${request.topic}. ${request.maxMessageSize}")
             adminClient.topicPolicies(request.isGlobal).setMaxMessageSize(request.topic, request.maxMessageSize)
 
-            Future.successful(pb.SetMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.SetMaxMessageSizeResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetMaxMessageSizeResponse(status = Some(status)))
         }
     override def removeMaxMessageSize(request: pb.RemoveMaxMessageSizeRequest): Future[pb.RemoveMaxMessageSizeResponse] =
@@ -1270,9 +1270,9 @@ class TopicPoliciesServiceImpl extends pb.TopicPoliciesServiceGrpc.TopicPolicies
             logger.info(s"Removing max message size policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxMessageSize(request.topic)
 
-            Future.successful(pb.RemoveMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(pb.RemoveMaxMessageSizeResponse(status = Some(Status(code = Code.OK.value))))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.RemoveMaxMessageSizeResponse(status = Some(status)))
         }

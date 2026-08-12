@@ -81,8 +81,10 @@ export const KeyField: React.FC<FieldProps> = (props) => {
 }
 
 export const ValueField: React.FC<FieldProps> = (props) => {
-  const value = props.message.value === null ? undefined : limitString(props.message.value, 100);
-  return <Field isShowTooltips={props.isShowTooltips} testId="cs-cell-value" title="Value" value={value} rawValue={value} tooltip={help.value} />
+  // The cell shows a shortened value, but rawValue is what gets copied to the clipboard - so it has
+  // to stay the complete payload, otherwise a copy hands the user ellipsised text.
+  const value = props.message.value === null ? undefined : props.message.value;
+  return <Field isShowTooltips={props.isShowTooltips} testId="cs-cell-value" title="Value" value={value === undefined ? undefined : limitString(value, 100)} rawValue={value} tooltip={help.value} />
 }
 
 export const SessionTargetIndexField: React.FC<FieldProps> = (props) => {

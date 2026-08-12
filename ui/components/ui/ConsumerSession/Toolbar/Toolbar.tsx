@@ -1,15 +1,80 @@
 import React from 'react';
+import useLocalStorage from 'use-local-storage-state';
 import s from './Toolbar.module.css'
 import pauseIcon from './icons/pause.svg';
 import resumeIcon from './icons/resume.svg';
 import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import { SessionState, ConsumerSessionConfig, MessageDescriptor } from '../types';
+import { SessionState, ConsumerSessionConfig, MessageDescriptor, MessageDeliveryOrder } from '../types';
 import SmallButton from '../../SmallButton/SmallButton';
 import Input from '../../Input/Input';
 import ExportMessagesButton from './ExportMessagesButton/ExportMessagesButton';
 import { tooltipId } from '../../Tooltip/Tooltip';
+import { localStorageKeys } from '../../../local-storage-keys';
+
+/**
+ * A small non-negative integer input committed on blur or Enter, with 0 meaning "off".
+ *
+ * DRAFT-COMMITTED, like the other numeric inputs in the session config: keystrokes edit a local
+ * draft, and only a valid commit reaches storage - so a half-typed value can never become the
+ * live setting, and an invalid one reverts to what was there before.
+ */
+export const DeliveryControlInput: React.FC<{
+  testId: string;
+  caption: string;
+  title: string;
+  value: number;
+  onCommit: (n: number) => void;
+}> = (props) => {
+  const [draft, setDraft] = React.useState<string>(props.value > 0 ? String(props.value) : '');
+
+  // An external change (another tab via the storage event, or a reset) replaces the draft - the
+  // input shows the live value whenever the user is not mid-edit.
+  React.useEffect(() => {
+    setDraft(props.value > 0 ? String(props.value) : '');
+  }, [props.value]);
+
+  // Above this, "messages per second" and "messages to load" stop meaning anything - and the
+  // wire carries an int64, so the ceiling also keeps the value inside every representation.
+  const maxCommittable = 1_000_000_000;
+
+  const commit = () => {
+    // Digits only ever enter the draft (invalid text is REJECTED wholesale below, not stripped
+    // into a different number), so the only invalid draft is the empty string - the explicit off.
+    const parsed = draft === '' ? 0 : Number.parseInt(draft, 10);
+    const next = Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, maxCommittable) : 0;
+    setDraft(next > 0 ? String(next) : '');
+    props.onCommit(next);
+  };
+
+  return (
+    <div className={s.DeliveryControl} data-tooltip-id={tooltipId} data-tooltip-html={props.title}>
+      <input
+        className={s.DeliveryControlInput}
+        data-testid={props.testId}
+        value={draft}
+        placeholder="off"
+        inputMode="numeric"
+        onChange={(e) => {
+          // REJECT invalid text, never repair it: stripping turned a pasted "1.5" into 15 and
+          // "1e3" into 13 - a different number than the user gave, silently.
+          const next = e.target.value;
+          if (/^[0-9]{0,10}$/.test(next)) {
+            setDraft(next);
+          }
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+      />
+      <span className={s.DeliveryControlCaption}>{props.caption}</span>
+    </div>
+  );
+};
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -25,12 +90,60 @@ export type ToolbarProps = {
   searchInResults: string,
   onSearchInResultsChange: (v: string) => void,
   numFoundInResults: number,
+  /** How many messages the ordering layer emitted out of the selected-time order so far -
+   * best-effort mode's honest quality gauge (clock skew past the reorder window, retries). Under
+   * guaranteed the chip is NOT rendered: the server ticks this counter and the seam counter on
+   * the same commit-phase inversions, so showing both would count each event twice. */
+  orderingLateDeliveries: number,
+  /** Whether the server actually RUNS an ordering layer for this session. A single-stream
+   * session builds none and pays no reorder latency, whatever the config asked - the chip must
+   * not claim otherwise. */
+  orderingActive: boolean,
+  /** Topic/partition streams that have held delivery past the server's warning interval. Under
+   * the replay design this is the documented time-seek corner (a stream the seek positioned past
+   * its end); the disclosure and its escape stay for it. */
+  orderingWaitingStreams: number,
+  /** Messages that used publish time because the selected time was absent. */
+  orderKeyFallbacks: number,
+  /** Ordering violations the guaranteed replay delivered flagged: a producer clock wrote an
+   * earlier timestamp into a pause window, or the source log itself stores an inversion (the
+   * proto names both causes). Monotonic per session. */
+  replaySeamViolations: number,
+  /** Switches THIS session's delivery order, applied by whoever owns the session configuration.
+   *
+   * A Guaranteed stream that a time seek positioned past its end can hold the merge (the
+   * documented stall corner), so disclosing the wait is not enough - the same chip that reports
+   * the stall has to be able to end it. When no caller can apply the change the control is not
+   * rendered at all: a button that does nothing is worse than no button. */
+  onDeliveryOrderChange?: (order: MessageDeliveryOrder) => void,
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const i18n = I18n.useContext();
 
+  // Browser-wide delivery controls, NOT session config: both live in localStorage and ride the
+  // session's requests (the rate on each Resume, the auto-pause purely client-side), so neither
+  // can travel with a saved session into a library item.
+  const [rateLimit, setRateLimit] = useLocalStorage<number>(localStorageKeys.consumerSessionRateLimit, { defaultValue: 0 });
+  const [pauseAfter, setPauseAfter] = useLocalStorage<number>(localStorageKeys.consumerSessionPauseAfterLoaded, { defaultValue: 0 });
+
   const playButtonState = (props.sessionState === 'new' || props.sessionState === 'paused') ? 'play' : 'pause';
+  // Be defensive at this presentation boundary too: older/incomplete callers that omit the
+  // field have the same meaning as protobuf UNSPECIFIED and old saved JSON - Guaranteed, the
+  // product default (owner decision 2026-08-11; third move of this default).
+  const messageDeliveryOrder = props.config?.messageDeliveryOrder ?? 'guaranteed';
+  // What the warning mark beside the loaded count reports. Guaranteed: the seam counter (the late
+  // counter double-ticks on the same commit-phase inversions). Best effort: the late counter.
+  const outOfOrderCount = messageDeliveryOrder === 'guaranteed'
+    ? props.replaySeamViolations
+    : props.orderingLateDeliveries;
+
+  // No runtime config means the stored configuration could not be converted into one - there is
+  // nothing to send. Play used to stay enabled and start a session that could never leave
+  // "initializing", which reads as a hang rather than as the configuration error it is. This only
+  // matters for the transition that BUILDS a session from the config - Play from `new`; pause and
+  // resume are name-only RPCs that never touch it (see the disabled scoping below).
+  const isConfigUnusable = props.config === undefined;
 
   let playButtonOnClick: () => void;
   switch (props.sessionState) {
@@ -55,9 +168,24 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
-            disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
+            disabled={(isConfigUnusable && props.sessionState === 'new') || (props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running')}
           />
         </div>
+
+        <DeliveryControlInput
+          testId="cs-rate-limit"
+          caption="msg/s limit"
+          value={rateLimit}
+          onCommit={setRateLimit}
+          title={'Show at most this many messages per second. Leave empty for full speed.<br/>Takes effect when you press Play. Your browser remembers it - it is not saved with the session.'}
+        />
+        <DeliveryControlInput
+          testId="cs-pause-after"
+          caption="pause after"
+          value={pauseAfter}
+          onCommit={setPauseAfter}
+          title={'Load exactly this many more messages, then pause - Play loads the next batch. Leave empty to turn this off.<br/>Your browser remembers it - it is not saved with the session.'}
+        />
 
         <div className={s.Control}>
           <SmallButton
@@ -73,14 +201,17 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         <div className={s.Control}>
           <SmallButton
             testId="cs-tools"
-            title={"Toggle additional tools"}
+            title={"Toggle More tools"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
-            text={"Tools"}
+            text={"More tools"}
             type="regular"
           />
         </div>
 
+      </div>
+
+      <div className={s.ToolbarRight}>
         <div
           className={s.Control}
           style={{ position: 'relative', width: '320rem' }}
@@ -101,9 +232,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             </div>
           )}
         </div>
-      </div>
-
-      <div className={s.ToolbarRight}>
         <div className={s.MessagesLoadedStats}>
           <div className={s.MessagesLoadedStat}>
             <strong className={s.MessagesLoadedStatValue} data-testid="cs-processed">{i18n.formatLongNumber(props.messagesProcessed)}</strong>
@@ -125,6 +253,95 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
           </div>
         </div>
+
+        {/* Out-of-order disclosure, to the RIGHT of the counters it qualifies. The mode decides
+            which counter is the honest one: under Guaranteed the seam counter owns commit-phase
+            inversions (the late counter double-ticks on the same events); under Best effort the
+            late counter IS the mode's quality gauge. The tooltip carries the count in bold and
+            the plain-words cause; each guaranteed row also carries its own "!" marker. */}
+        {outOfOrderCount > 0 && (
+          <span
+            className={s.OrderWarning}
+            data-testid="cs-order-warning"
+            role="img"
+            aria-label="Some messages were shown out of order"
+            data-tooltip-id={tooltipId}
+            data-tooltip-html={
+              messageDeliveryOrder === 'guaranteed'
+                ? `<strong>${i18n.formatLongNumber(outOfOrderCount)}</strong> message${outOfOrderCount === 1 ? ' is' : 's are'} out of order on screen. `
+                  + 'Guaranteed did not reorder them: they were written to the topic out of order - '
+                  + 'typical when several producers share a topic, because each stamps its own clock, '
+                  + 'and send retries or batch flushes reorder them further - or a pause fell between '
+                  + 'replays. Each one is marked with "!".'
+                : `<strong>${i18n.formatLongNumber(outOfOrderCount)}</strong> message${outOfOrderCount === 1 ? ' was' : 's were'} shown out of order: `
+                  + 'they arrived late, after newer messages were already on screen. Nothing is lost. '
+                  + 'Best effort waits up to ~0.75 s for late messages, then moves on. '
+                  + 'Each one is marked with "!".'
+            }
+          >
+            !
+          </span>
+        )}
+
+        {/* The ordering STATUS area. The always-on mode label it used to carry ("Best effort ·
+            Publish time") was removed 2026-08-11 (owner instruction) - the mode is configuration,
+            one click away, and the bar tells only what needs telling: a stall being disclosed
+            (with its one-click escape) and the order-key fallbacks. Renders nothing otherwise. */}
+        {props.config !== undefined && props.orderingActive
+          && (props.orderingWaitingStreams > 0 || props.orderKeyFallbacks > 0) && (
+          <div
+            className={s.MessagesLoadedStats}
+            data-testid="cs-order-chip"
+            role="status"
+          >
+            <div className={s.MessagesLoadedStat}>
+              {props.orderingWaitingStreams > 0 && (
+                <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-waiting">
+                  waiting for {i18n.formatLongNumber(props.orderingWaitingStreams)} topics/partitions
+                </strong>
+              )}
+              {/* The escape from that wait, RIGHT NEXT TO IT. The replay waits only on streams
+                  still inside their recorded range - but a range that can no longer be delivered
+                  (trimmed by retention, or the start position seeked past the end) holds that
+                  wait forever and looks exactly like an empty topic; the disclosure above says
+                  so, and this ends it in one click, without going back through the configuration
+                  screen. Offered only for a Guaranteed session that is actually stalled, and
+                  only when a caller can apply the change. */}
+              {messageDeliveryOrder === 'guaranteed'
+                && props.orderingWaitingStreams > 0
+                && props.onDeliveryOrderChange !== undefined && (
+                <button
+                  type="button"
+                  data-testid="cs-order-switch-best-effort"
+                  onClick={() => props.onDeliveryOrderChange?.('best-effort')}
+                  title={
+                    'Stop waiting for the silent topics/partitions. Switches this session to Best effort, ' +
+                    'which merges within a bounded reorder window and delivers late messages out of order ' +
+                    'rather than holding everything for them. Nothing already loaded is lost.'
+                  }
+                  style={{
+                    marginLeft: '8rem',
+                    padding: '0 6rem',
+                    border: '1rem solid currentColor',
+                    borderRadius: '3rem',
+                    background: 'transparent',
+                    color: 'inherit',
+                    font: 'inherit',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Continue with Best effort
+                </button>
+              )}
+              {props.orderKeyFallbacks > 0 && (
+                <strong className={s.MessagesLoadedStatValue} data-testid="cs-order-key-fallbacks">
+                  &nbsp;· {i18n.formatLongNumber(props.orderKeyFallbacks)} used publish time
+                </strong>
+              )}
+            </div>
+          </div>
+        )}
 
         <div>
           <ExportMessagesButton

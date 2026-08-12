@@ -8,12 +8,32 @@ import scala.jdk.CollectionConverters.*
 class ConsumerSessionConfigSpec extends DekafSuite:
   private def count(n: Int) = new LocatorAssertions.HasCountOptions().setTimeout(20000)
 
-  test("CS-1: Start-From offers all 7 options") {
+  /** The whole Start-From catalog. Named rather than counted: a count is satisfied by a renamed or
+    * swapped mode just as happily as by the right one, which is how this assertion previously
+    * survived a new mode being added without saying anything about it. */
+  private val allStartFromModes = List(
+    "Earliest message",
+    "Latest message",
+    "Message with specific ID",
+    "Specific time",
+    "Relative time ago",
+    "Skip first n messages",
+    "Latest n messages",
+    // Two approximate modes, not one: "about half way in" is either half the ENTRIES or half the
+    // PUBLISH-TIME RANGE, and a single control could not say which. Named in full here because a count would be
+    // satisfied by one mode renamed to the other's label.
+    "Approximate position (% of data)",
+    "Approximate position (% of time)"
+  )
+
+  test("CS-1: Start-From offers every mode, all of them selectable on a persistent topic") {
     val (t, ns, topic) = fixtures.freshTopicParts()
-    ConsumerSessionPage(page).openForTopic(t, ns, topic)
-    val opts = page.getByTestId("cs-start-from").locator("option").allTextContents().asScala.toList
-    assert(opts.size == 7, s"got: $opts")
-    assert(opts.contains("Earliest message") && opts.contains("Latest message") && opts.contains("Message with specific ID"))
+    val cs = ConsumerSessionPage(page)
+    cs.openForTopic(t, ns, topic)
+    assert(cs.startFromLabels == allStartFromModes, s"got: ${cs.startFromLabels}")
+    // A persistent topic keeps history, so nothing is greyed out - the counterpart on a
+    // non-persistent topic is CsStartFromMatrixSpec CS-SFM-2.
+    assert(cs.disabledStartFromLabels.isEmpty, s"unexpectedly disabled on a persistent topic: ${cs.disabledStartFromLabels}")
   }
 
   test("CS-17: Stop clears the loaded messages") {

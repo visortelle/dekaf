@@ -31,11 +31,11 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         try {
             adminClient.topics.createPartitionedTopic(request.topic, request.numPartitions, request.properties.asJava)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.CreatePartitionedTopicResponse(status = Some(status)))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.CreatePartitionedTopicResponse(status = Some(status)))
         }
 
@@ -45,11 +45,11 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         try {
             adminClient.topics.createNonPartitionedTopic(request.topic, request.properties.asJava)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.CreateNonPartitionedTopicResponse(status = Some(status)))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.CreateNonPartitionedTopicResponse(status = Some(status)))
         }
 
@@ -71,11 +71,11 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                         persistent ++ nonPersistent
             catch {
                 case err: Throwable =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                     return Future.successful(pb.ListTopicsResponse(status = Some(status)))
             }
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(pb.ListTopicsResponse(status = Some(status), topics = topics))
 
     override def listPartitionedTopics(request: pb.ListPartitionedTopicsRequest): Future[pb.ListPartitionedTopicsResponse] =
@@ -88,11 +88,11 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 adminClient.topics.getPartitionedTopicList(request.namespace, options)
             catch {
                 case err: Throwable =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                     return Future.successful(pb.ListPartitionedTopicsResponse(status = Some(status)))
             }
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(pb.ListPartitionedTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
 
     override def getTopicsInternalStats(request: pb.GetTopicsInternalStatsRequest): Future[pb.GetTopicsInternalStatsResponse] =
@@ -110,7 +110,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 case _ => None
         }.toMap
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(pb.GetTopicsInternalStatsResponse(status = Some(status), stats = stats))
 
     override def deleteTopic(request: pb.DeleteTopicRequest): Future[pb.DeleteTopicResponse] =
@@ -126,12 +126,12 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         def lookupNonPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupTopic(request.topicName))
 
         def handleSuccess(): Future[pb.DeleteTopicResponse] = {
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(pb.DeleteTopicResponse(status = Some(status)))
         }
 
         def handleFailure(err: Throwable): Future[pb.DeleteTopicResponse] = {
-            val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+            val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
             Future.successful(pb.DeleteTopicResponse(status = Some(status)))
         }
 
@@ -154,10 +154,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics.unload(request.topicName)) match
             case Success(_) =>
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(pb.UnloadTopicResponse(status = Some(status)))
             case Failure(err) =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.UnloadTopicResponse(status = Some(status)))
 
     override def getTopicsStats(request: pb.GetTopicsStatsRequest): Future[pb.GetTopicsStatsResponse] =
@@ -216,7 +216,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         // This RPC method always returns Code.OK because in case we request stats for a single topic,
         // we want to avoid additional API calls to detect is topic partitioned or not.
-        val status: Status = Status(code = Code.OK.index, message = errors.map(_.getMessage).mkString(". "))
+        val status: Status = Status(code = Code.OK.value, message = errors.map(_.getMessage).mkString(". "))
 
         Future.successful(pb.GetTopicsStatsResponse(
             status = Some(status),
@@ -244,10 +244,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         match
             case Failure(err) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetTopicsPropertiesResponse(status = Some(status)))
             case Success(properties) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.GetTopicsPropertiesResponse(
                     status = Some(status),
                     topicsProperties = properties
@@ -269,10 +269,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             adminClient.topics.updateProperties(request.topic, request.topicProperties.asJava)
         match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SetTopicPropertiesResponse(status = Some(status)))
             case Success(value) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.SetTopicPropertiesResponse(
                     status = Some(status)
                 ))
@@ -282,11 +282,11 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(_root_.topic.getTopicPartitioning(adminClient, request.topicFqn)) match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status)))
             case Success(partitioning: TopicPartitioning) =>
                 val isPartitioned = partitioning.`type` == TopicPartitioningType.Partitioned
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
 
                 Future.successful(pb.GetIsPartitionedTopicResponse(
                     status = Some(status),
@@ -300,10 +300,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics.updatePartitionedTopic(request.topicFqn, request.numPartitions, request.updateLocalTopicOnly, request.force)) match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.UpdatePartitionedTopicResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.UpdatePartitionedTopicResponse(status = Some(status)))
 
     override def createMissedPartitions(request: CreateMissedPartitionsRequest): Future[CreateMissedPartitionsResponse] =
@@ -311,10 +311,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics.createMissedPartitions(request.topicFqn)) match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.CreateMissedPartitionsResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.CreateMissedPartitionsResponse(status = Some(status)))
 
     override def getCompactionStatus(request: GetCompactionStatusRequest): Future[GetCompactionStatusResponse] =
@@ -322,10 +322,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics.compactionStatus(request.topicFqn)) match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetCompactionStatusResponse(status = Some(status)))
             case Success(lrps) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.GetCompactionStatusResponse(
                     status = Some(status),
                     processStatus = Some(LongRunningProcessStatus.toPb(lrps))
@@ -336,10 +336,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics.triggerCompaction(request.topicFqn)) match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.TriggerCompactionResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.TriggerCompactionResponse(status = Some(status)))
 
     override def deleteSubscription(request: DeleteSubscriptionRequest): Future[DeleteSubscriptionResponse] =
@@ -347,10 +347,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics.deleteSubscription(request.topicFqn, request.subscriptionName, request.isForce)) match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.DeleteSubscriptionResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.DeleteSubscriptionResponse(status = Some(status)))
 
     override def createSubscription(request: CreateSubscriptionRequest): Future[CreateSubscriptionResponse] =
@@ -378,10 +378,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             )
         match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.CreateSubscriptionResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.CreateSubscriptionResponse(status = Some(status)))
 
     override def expireMessages(request: ExpireMessagesRequest): Future[ExpireMessagesResponse] =
@@ -424,10 +424,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                     throw RuntimeException("Empty expire messages target (should be either expire of all subscriptions or on a specific one)")
         match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.ExpireMessagesResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.ExpireMessagesResponse(status = Some(status)))
 
     override def skipSubscriptionMessages(request: SkipSubscriptionMessagesRequest): Future[SkipSubscriptionMessagesResponse] =
@@ -445,10 +445,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                     throw RuntimeException("Empty skip messages target (should be either skip of all messages or exact number of messages)")
         match
             case Failure(err: Throwable) =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.SkipSubscriptionMessagesResponse(status = Some(status)))
             case Success(_) =>
-                val status: Status = Status(code = Code.OK.index)
+                val status: Status = Status(code = Code.OK.value)
                 Future.successful(pb.SkipSubscriptionMessagesResponse(status = Some(status)))
 
     override def resetCursor(request: ResetCursorRequest): Future[ResetCursorResponse] =
@@ -468,10 +468,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                     adminClient.topics().resetCursor(request.topicFqn, request.subscriptionName, timestamp)
         match
             case Failure(err: Throwable) =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(ResetCursorResponse(status = Some(status)))
             case Success(_) =>
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(ResetCursorResponse(status = Some(status)))
 
     override def getSubscriptionStats(request: GetSubscriptionStatsRequest): Future[GetSubscriptionStatsResponse] =
@@ -501,10 +501,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                     .getOrElse(throw new Exception(s"Subscription \"${request.subscriptionName}\" not found on topic \"${request.topicFqn}\""))
         match
             case Failure(err: Throwable) =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscriptionStatsResponse(status = Some(status)))
             case Success(subscriptionStats) =>
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(GetSubscriptionStatsResponse(
                     status = Some(status),
                     subscriptionStats = Some(subscriptionStatsToPb(subscriptionStats))
@@ -515,10 +515,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics().getSubscriptionProperties(request.topicFqn, request.subscriptionName)) match
             case Failure(err: Throwable) =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetSubscriptionPropertiesResponse(status = Some(status)))
             case Success(properties) =>
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(GetSubscriptionPropertiesResponse(
                     status = Some(status),
                     properties = Option(properties).map(_.asScala.toMap).getOrElse(Map.empty)
@@ -530,8 +530,8 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         Try(adminClient.topics().updateSubscriptionProperties(request.topicFqn, request.subscriptionName, request.properties.asJava)) match
             case Failure(err: Throwable) =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetSubscriptionPropertiesResponse(status = Some(status)))
             case Success(_) =>
-                val status = Status(code = Code.OK.index)
+                val status = Status(code = Code.OK.value)
                 Future.successful(SetSubscriptionPropertiesResponse(status = Some(status)))

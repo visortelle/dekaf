@@ -1,0 +1,123 @@
+package consumer.session_runner
+
+import consumer.deserializer.deserializers.TreatBytesAsJson
+import io.circe.parser.parse as parseJson
+import org.apache.pulsar.client.api.Schema
+import org.apache.pulsar.client.impl.MessageImpl
+import org.apache.pulsar.common.api.proto.MessageMetadata
+import zio.test.*
+
+import java.nio.ByteBuffer
+import scala.jdk.CollectionConverters.*
+
+/** `serializeMessage` builds both the protobuf message sent to the browser and the JSON view that
+  * user filters/projections see as `message.*` in JS.
+  *
+  * Regression context: the key was built by splicing the raw string into a JSON literal
+  * (`parseJson(s""" "$key" """)`), so a key containing a quote, backslash or newline produced
+  * invalid JSON, parsed to Left and was SILENTLY DROPPED - key filters and key projections then
+  * quietly missed those messages. The value path had always used circe for exactly this reason.
+  */
+object messageConvertersTest extends ZIOSpecDefault:
+
+    private val topicName = "persistent://public/default/topic-a"
+    private val deserializer = consumer.deserializer.Deserializer(deserializer = TreatBytesAsJson())
+
+    private def message(
+        key: String | Null = null,
+        payload: String = "null",
+        properties: Map[String, String] = Map.empty,
+        eventTime: Long = 0L,
+        publishTime: Long = 0L
+    ): MessageImpl[Array[Byte]] =
+        val md = new MessageMetadata()
+        // publish_time is mandatory on MessageMetadata - reading it when unset throws
+        // IllegalStateException, so every fixture message carries one.
+        md.setPublishTime(if publishTime > 0 then publishTime else 1_700_000_000_000L)
+        if key != null then md.setPartitionKey(key)
+        if eventTime > 0 then md.setEventTime(eventTime)
+        properties.foreach { (k, v) => md.addProperty().setKey(k).setValue(v) }
+        val msg = MessageImpl.create[Array[Byte]](
+            md,
+            ByteBuffer.wrap(payload.getBytes("UTF-8")),
+            Schema.BYTES,
+            topicName
+        )
+        // serializeMessage reads msg.getMessageId.toByteArray; MessageImpl.create leaves it null.
+        msg.setMessageId(new org.apache.pulsar.client.impl.MessageIdImpl(1L, 2L, -1))
+        msg
+
+    private def serialize(msg: MessageImpl[Array[Byte]]): ConsumerSessionMessage =
+        converters.serializeMessage(Map.empty, msg, deserializer)
+
+    /** The key as the browser/JS side sees it, read back out of the JSON view. */
+    private def keyInJsonView(msg: MessageImpl[Array[Byte]]): Option[String] =
+        parseJson(serialize(msg).messageAsJsonOmittingValue).toOption
+            .flatMap(_.hcursor.downField("key").as[String].toOption)
+
+    def spec = suite(this.getClass.toString)(
+        test("a plain key survives serialization") {
+            assertTrue(keyInJsonView(message(key = "order-42")).contains("order-42"))
+        },
+        test("a key containing a double quote survives") {
+            // Previously: the spliced literal became "a"b" -> invalid JSON -> key dropped entirely.
+            assertTrue(keyInJsonView(message(key = "a\"b")).contains("a\"b"))
+        },
+        test("a key containing a backslash survives") {
+            assertTrue(keyInJsonView(message(key = "a\\b")).contains("a\\b"))
+        },
+        test("a key containing a newline survives") {
+            assertTrue(keyInJsonView(message(key = "line1\nline2")).contains("line1\nline2"))
+        },
+        test("a key containing a tab and a control character survives") {
+            assertTrue(keyInJsonView(message(key = "a\tbc")).contains("a\tbc"))
+        },
+        test("a non-ASCII key survives") {
+            assertTrue(keyInJsonView(message(key = "世界-Grüße-🌍")).contains("世界-Grüße-🌍"))
+        },
+        test("an absent key yields no key field rather than an empty string") {
+            val json = parseJson(serialize(message(key = null)).messageAsJsonOmittingValue).toOption.get
+            val keyField = json.hcursor.downField("key").as[String].toOption
+            assertTrue(keyField.isEmpty)
+        },
+        test("an empty key is preserved as an empty string") {
+            assertTrue(keyInJsonView(message(key = "")).contains(""))
+        },
+        test("the JSON view is always parseable, whatever the key contains") {
+            val nasty = List("\"", "\\", "\n", "\"}", "{\"a\":1}", "\u0000", "'", "世界")
+            val unparseable = nasty.filter { k =>
+                parseJson(serialize(message(key = k)).messageAsJsonOmittingValue).isLeft
+            }
+            assertTrue(unparseable.isEmpty) ?? s"keys that produced invalid JSON: ${unparseable.map(k => s"[$k]").mkString(", ")}"
+        },
+        test("the protobuf key matches the JSON view") {
+            // Both sides feed the UI, and they must agree on the actual key VALUE, not merely on
+            // whether one exists (the old `isDefined == isDefined` passed even if one side mangled a
+            // quote). The pb key is the circe-encoded string (`_.asJson.noSpaces`), so decode it
+            // before comparing - a key with a quote is exactly the case the encoding exists for.
+            val msg = message(key = "a\"b")
+            val serialized = serialize(msg)
+            val pbKeyDecoded = serialized.messagePb.key
+                .filter(_.nonEmpty)
+                .flatMap(raw => parseJson(raw).toOption)
+                .flatMap(_.asString)
+            assertTrue(
+                pbKeyDecoded.contains("a\"b"),
+                pbKeyDecoded == keyInJsonView(msg)
+            ) ?? s"pbKeyDecoded=$pbKeyDecoded jsonView=${keyInJsonView(msg)}"
+        },
+        test("properties round-trip into the JSON view") {
+            val serialized = serialize(message(key = "k", properties = Map("a" -> "A", "b" -> "B")))
+            val json = parseJson(serialized.messageAsJsonOmittingValue).toOption.get
+            val props = json.hcursor.downField("properties").as[Map[String, String]].toOption
+            assertTrue(props.contains(Map("a" -> "A", "b" -> "B")))
+        },
+        test("an eventTime of 0 is omitted from the JSON view") {
+            val json = parseJson(serialize(message(key = "k", eventTime = 0L)).messageAsJsonOmittingValue).toOption.get
+            assertTrue(json.hcursor.downField("eventTime").as[Long].toOption.isEmpty)
+        },
+        test("a non-zero eventTime is retained") {
+            val json = parseJson(serialize(message(key = "k", eventTime = 1234L)).messageAsJsonOmittingValue).toOption.get
+            assertTrue(json.hcursor.downField("eventTime").as[Long].toOption.contains(1234L))
+        }
+    )

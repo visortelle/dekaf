@@ -3,6 +3,7 @@ package library
 import scalapb.json4s.JsonFormat
 import com.typesafe.scalalogging.Logger
 import com.tools.teal.pulsar.ui.library.v1.library as pb
+import scala.concurrent.blocking
 import scala.util.{Failure, Success, Try}
 
 type FileName = String
@@ -31,20 +32,42 @@ object Library:
     // (e.g. `../../…`) can never escape the library directory. Real ids are UUIDs.
     private val SafeItemId = "^[A-Za-z0-9_-]{1,200}$".r
 
+    private def isSafeItemId(itemId: LibraryItemId): Boolean =
+        SafeItemId.findFirstIn(itemId).isDefined
+
+    // The single file name an item may live under. Write, delete and scan must all agree on it.
+    private def fileNameOf(itemId: LibraryItemId): FileName = s"$itemId.binpb"
+
 class Library:
     private var rootDir = "./data"
-    private var db = LibraryDb(itemsById = Map.empty)
+    @volatile private var db = LibraryDb(itemsById = Map.empty)
     private val logger: Logger = Logger(getClass.getName)
+
+    // A Library instance is shared by every gRPC call (LibraryServiceImpl holds exactly one), so
+    // saveLibraryItem/deleteLibraryItem run concurrently against it. Each mutation is
+    // "touch the file, rescan the dir, publish the snapshot" - three steps that MUST NOT interleave:
+    //   - two writers could interleave so that an OLDER scan publishes last, dropping a
+    //     just-written item from the snapshot even though its file is on disk;
+    //   - a delete racing a scan could remove a file between os.list and os.read.bytes, blowing up
+    //     the unrelated writer with NoSuchFileException;
+    //   - deleteItem's exists-then-remove could let two concurrent deletes both report success.
+    // One lock over the whole sequence makes each mutation atomic with respect to the others.
+    //
+    // Each mutation is additionally wrapped in scala.concurrent.blocking: LibraryServiceImpl is
+    // bound on ExecutionContext.global (see GrpcServer), a bounded ForkJoinPool that only spawns
+    // compensation threads for blocking it is TOLD about - unmarked, the O(N) directory rescan
+    // below, serialized under this lock, would starve unrelated compute tasks pool-wide.
+    private val mutationLock = new Object
 
     def size: Int = db.itemsById.size
 
     private def requireSafeItemId(itemId: LibraryItemId): Unit =
-        if Library.SafeItemId.findFirstIn(itemId).isEmpty then
+        if !Library.isSafeItemId(itemId) then
             throw new IllegalArgumentException(
                 s"Invalid library item id - only alphanumerics, '_' and '-' are allowed."
             )
 
-    def writeItem(item: LibraryItem): Unit =
+    def writeItem(item: LibraryItem): Unit = blocking(mutationLock.synchronized {
         val itemId = item.spec.metadata.id
         requireSafeItemId(itemId)
 
@@ -55,7 +78,7 @@ class Library:
                 s"Library item $itemId must be available in at least one context; an item without contexts would be unreachable."
             )
 
-        val fileName = s"$itemId.binpb"
+        val fileName = Library.fileNameOf(itemId)
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
         val itemAsBinary = LibraryItem.toPb(item).toByteArray
 
@@ -65,15 +88,27 @@ class Library:
         )
 
         refreshDb()
+    })
 
-    def deleteItem(itemId: LibraryItemId): Unit =
+    def deleteItem(itemId: LibraryItemId): Unit = blocking(mutationLock.synchronized {
         requireSafeItemId(itemId)
-        val fileName = s"$itemId.binpb"
+        val fileName = Library.fileNameOf(itemId)
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
+
+        // os.remove delegates to Files.deleteIfExists, which returns false rather than throwing -
+        // so deleting an id that was never there reported OK, indistinguishable from a real delete.
+        // Check the FILE, not the cached db: the db is a snapshot and a stale entry would otherwise
+        // decide the outcome. NoSuchElementException stays out of the IllegalArgumentException
+        // (INVALID_ARGUMENT) channel used for malformed ids; the service maps it to NOT_FOUND.
+        // The exists check and the remove are only meaningful together, hence the surrounding lock -
+        // unserialized, two concurrent deletes both saw the file and both reported success.
+        if !os.exists(filePath) then
+            throw new NoSuchElementException(s"No library item with id: $itemId")
 
         os.remove(filePath)
 
         refreshDb()
+    })
 
     def getItemById(itemId: LibraryItemId): Option[LibraryItem] =
         db.itemsById.get(itemId)
@@ -108,17 +143,53 @@ class Library:
             .map { path =>
                 val fileName = path.last
                 val fileContent = os.read.bytes(path)
-                val scanResultEntryA = Try(LibraryItem.fromPb(pb.LibraryItem.parseFrom(fileContent)))
+                val scanResultEntryA = Try {
+                    val itemPb = pb.LibraryItem.parseFrom(fileContent)
+                    // A stored item carrying the unimplemented AllNamespaceMatcher.namespace_regex
+                    // must keep LOADING. The conversion below REFUSES a set regex - right for
+                    // request data, where accepting it would silently widen the caller's scope -
+                    // but on this path the refusal made the whole item vanish from the library
+                    // with only a WARN and no way to repair it through the product. Strip the
+                    // FIELD (it was never applied by any version that wrote it), keep the ITEM,
+                    // and name what was ignored.
+                    val lenientPb = itemPb.copy(metadata = itemPb.metadata.map(md =>
+                        md.copy(availableForContexts = md.availableForContexts.map(matcher =>
+                            resourceMatcherWithoutNamespaceRegex(
+                                matcher,
+                                pattern =>
+                                    logger.warn(
+                                        s"Library file $fileName: ignoring unimplemented AllNamespaceMatcher.namespace_regex '$pattern'; the matcher covers every namespace of the matching tenant."
+                                    )
+                            )
+                        ))
+                    ))
+                    LibraryItem.fromPb(lenientPb)
+                }
                 val scanResultEntry = scanResultEntryA.toEither
 
-                val libraryItemIdFromFileName = fileName.split('.').head
                 scanResultEntry match
                     case Left(err) =>
                         logger.warn(s"Failed to parse library item from file $fileName: $err")
                         fileName -> scanResultEntry
                     case Right(item) =>
                         val itemId = item.spec.metadata.id
-                        if itemId != libraryItemIdFromFileName then
+                        // Whatever the scan surfaces must be ADDRESSABLE: writeItem and deleteItem
+                        // both derive `$itemId.binpb` from the id and reject ids outside the safe
+                        // charset, so the scan has to hold itself to the same two rules. Deriving
+                        // the id with `fileName.split('.').head` instead accepted
+                        // `id.extra.binpb` as item `id` - listed and gettable, but deleting it hit
+                        // NOT_FOUND and saving it created a SECOND file; and skipping
+                        // requireSafeItemId surfaced ids like `bad+id` that every write and delete
+                        // then rejected with INVALID_ARGUMENT.
+                        if !Library.isSafeItemId(itemId) then
+                            logger.warn(s"Skipping library file $fileName: item id $itemId is not a valid item id")
+                            fileName -> Left(
+                                new Exception(
+                                    s"Library item id $itemId in file $fileName is not a valid item id"
+                                )
+                            )
+                        else if fileName != Library.fileNameOf(itemId) then
+                            logger.warn(s"Skipping library file $fileName: item id $itemId does not match the file name")
                             fileName -> Left(
                                 new Exception(
                                     s"File name $fileName does not match library item id $itemId"
@@ -128,7 +199,14 @@ class Library:
             }
             .toMap
 
-    private def refreshDb(): Unit =
+    // Every mutation rebuilds the snapshot by rescanning the WHOLE directory rather than patching
+    // the one key it touched. Deliberate: the scan is the single reconciliation point (it also
+    // picks up files an operator adds or removes out of band), and an incremental update would
+    // have to re-prove every scan invariant on its own (safe-id filter, name/id agreement,
+    // parse-failure skips) - drift between the two paths would surface as phantom or missing
+    // items. N is the library size (hundreds of small files), mutations are user-click rare, and
+    // the I/O is marked `blocking`, so the O(N) rescan is cheap for what it buys.
+    private def refreshDb(): Unit = blocking(mutationLock.synchronized {
         val scanResult = scan()
         val itemsById = scanResult.collect { case (_, Right(item)) =>
             val itemId = item.spec.metadata.id
@@ -137,3 +215,4 @@ class Library:
         logger.info(s"Library refreshed. Found ${itemsById.size} items in library")
 
         db = LibraryDb(itemsById = itemsById)
+    })

@@ -27,6 +27,12 @@
   opacity: 0.5;
 }
 
+.ClickableFieldValue:focus-visible {
+  border-radius: 2rem;
+  outline: 2px solid var(--accent-color, #4a72ff);
+  outline-offset: 2px;
+}
+
 .FieldValueLink {
   color: inherit !important;
 }
@@ -38,4 +44,3 @@
 .NoData {
   color: #aaa;
 }
-

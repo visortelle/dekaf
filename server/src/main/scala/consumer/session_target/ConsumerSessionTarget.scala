@@ -19,15 +19,18 @@ case class ConsumerSessionTarget(
 )
 
 object ConsumerSessionTarget:
+    /** Each field under its own name, so the caller's `targets[n]` prefix composes into a full path
+      * - see [[_root_.consumer.atProtoField]]. */
     def fromPb(v: pb.ConsumerSessionTarget): ConsumerSessionTarget =
         ConsumerSessionTarget(
             isEnabled = v.isEnabled,
-            consumptionMode = ConsumerSessionTargetConsumptionMode.fromPb(v.getConsumptionMode),
-            messageValueDeserializer = Deserializer.fromPb(v.getMessageValueDeserializer),
-            topicSelector = TopicSelector.fromPb(v.getTopicSelector),
-            messageFilterChain = MessageFilterChain.fromPb(v.getMessageFilterChain),
-            coloringRuleChain = ColoringRuleChain.fromPb(v.getColoringRuleChain),
-            valueProjectionList = ValueProjectionList.fromPb(v.getValueProjectionList)
+            consumptionMode = _root_.consumer.atProtoField("consumption_mode")(ConsumerSessionTargetConsumptionMode.fromPb(v.getConsumptionMode)),
+            messageValueDeserializer =
+                _root_.consumer.atProtoField("message_value_deserializer")(Deserializer.fromPb(v.getMessageValueDeserializer)),
+            topicSelector = _root_.consumer.atProtoField("topic_selector")(TopicSelector.fromPb(v.getTopicSelector)),
+            messageFilterChain = _root_.consumer.atProtoField("message_filter_chain")(MessageFilterChain.fromPb(v.getMessageFilterChain)),
+            coloringRuleChain = _root_.consumer.atProtoField("coloring_rule_chain")(ColoringRuleChain.fromPb(v.getColoringRuleChain)),
+            valueProjectionList = _root_.consumer.atProtoField("value_projection_list")(ValueProjectionList.fromPb(v.getValueProjectionList))
         )
 
     def toPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget =

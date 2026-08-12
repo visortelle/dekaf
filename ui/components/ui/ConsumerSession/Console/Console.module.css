@@ -2,8 +2,27 @@
   display: flex;
   flex-direction: column;
   background-color: #fff;
-  overflow: auto;
-  border-top: 4px solid var(--border-color);
+  overflow: hidden;
+  border-top: none;
+  position: relative;
+}
+
+/* The full handle stays in flow and hit-testable. Its centre line uses the shared handle's
+   thickness and replaces the old top border. */
+.Console .ResizeHandle::after {
+  background-color: var(--border-color);
+}
+
+.Console .ResizeHandle:hover::after,
+.Console .ResizeHandle:active::after {
+  background-color: var(--accent-color-blue);
+}
+
+.CloseConsole {
+  position: absolute;
+  top: 9rem;
+  right: 8rem;
+  z-index: 60;
 }
 
 .SubscriptionsCursors {

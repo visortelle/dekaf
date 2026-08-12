@@ -35,9 +35,13 @@ val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 // DEKAF_DATA_DIR), so per-connection isolation lives at the deployment layer, not in here.
 val libraryRoot = s"${config.dataDir.get}/library"
 
-class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
+/** The store is a constructor parameter defaulting to the process-wide library directory - same
+  * reason as `pulsarAuthToCookie`/`PulsarAuthRoutes.routesWith`: `libraryRoot` is derived from a
+  * config val loaded once per JVM, so nothing could otherwise observe what these RPCs answer without
+  * writing into the running instance's own data directory. The production call site in `GrpcServer`
+  * is unchanged. */
+class LibraryServiceImpl(val library: Library = Library.createAndRefreshDb(libraryRoot)) extends pb.LibraryServiceGrpc.LibraryService:
     val logger: Logger = Logger(getClass.getName)
-    val library: Library = Library.createAndRefreshDb(libraryRoot)
 
     override def saveLibraryItem(request: SaveLibraryItemRequest): Future[SaveLibraryItemResponse] =
         logger.debug(s"Updating library item: ${request.item}")
@@ -48,16 +52,16 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             val libraryItem = LibraryItem.fromPb(request.item.get)
             library.writeItem(libraryItem)
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
         } catch {
             case err: IllegalArgumentException =>
                 logger.warn(s"Rejected library item save: ${err.getMessage}")
-                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to save library item. ${err.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.value, message = s"Unable to save library item. ${err.getMessage}")
                 Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
             case err: Exception =>
                 logger.warn(s"Failed to save library item: ${err.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to save library item. ${err.getMessage}}")
+                val status: Status = Status(code = Code.INTERNAL.value, message = s"Unable to save library item. ${err.getMessage}")
                 Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
         }
 
@@ -69,16 +73,22 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
             library.deleteItem(request.id)
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
         } catch {
             case e: IllegalArgumentException =>
                 logger.warn(s"Rejected library item delete: ${e.getMessage}")
-                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to delete library item. ${e.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.value, message = s"Unable to delete library item. ${e.getMessage}")
+                Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
+            // Deleting something that isn't there is a client-visible NOT_FOUND, not a 500 - it
+            // reaches here whenever the id has no file (previously this reported OK silently).
+            case e: NoSuchElementException =>
+                logger.warn(s"Library item to delete not found: ${e.getMessage}")
+                val status: Status = Status(code = Code.NOT_FOUND.value, message = s"Unable to delete library item. ${e.getMessage}")
                 Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
             case e: Exception =>
                 logger.warn(s"Failed to delete library item: ${e.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = "Unable to delete library item")
+                val status: Status = Status(code = Code.INTERNAL.value, message = "Unable to delete library item")
                 Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
         }
 
@@ -91,17 +101,17 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             val libraryItem = library.getItemById(request.id)
 
             if libraryItem.isEmpty then
-                val status: Status = Status(code = Code.NOT_FOUND.index)
+                val status: Status = Status(code = Code.NOT_FOUND.value)
                 return Future.successful(pb.GetLibraryItemResponse(status = Some(status)))
 
             val libraryItemPb = LibraryItem.toPb(libraryItem.get)
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.GetLibraryItemResponse(status = Some(status), item = Some(libraryItemPb)))
         } catch {
             case e: Exception =>
                 logger.warn(s"Failed to get library item: ${e.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library item. ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.value, message = s"Unable to get library item. ${e.getMessage}")
                 Future.successful(pb.GetLibraryItemResponse(status = Some(status)))
         }
 
@@ -117,16 +127,16 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
             val libraryItemsPb = libraryItems.map(LibraryItem.toPb)
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.ListLibraryItemsResponse(status = Some(status), items = libraryItemsPb))
         } catch {
             case e: IllegalArgumentException =>
                 logger.warn(s"Rejected library items list: ${e.getMessage}")
-                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to list library items. ${e.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.value, message = s"Unable to list library items. ${e.getMessage}")
                 Future.successful(pb.ListLibraryItemsResponse(status = Some(status)))
             case e: Exception =>
                 logger.warn(s"Failed to list library items: ${e.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to list library items. ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.value, message = s"Unable to list library items. ${e.getMessage}")
                 Future.successful(pb.ListLibraryItemsResponse(status = Some(status)))
         }
 
@@ -150,7 +160,7 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
                     )
                 ).toVector
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.GetLibraryItemsCountResponse(
                 status = Some(status),
                 itemCountPerType = itemCountPerType
@@ -158,10 +168,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
         } catch {
             case e: IllegalArgumentException =>
                 logger.warn(s"Rejected library items count: ${e.getMessage}")
-                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"Unable to get library items count. ${e.getMessage}")
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.value, message = s"Unable to get library items count. ${e.getMessage}")
                 Future.successful(pb.GetLibraryItemsCountResponse(status = Some(status)))
             case e: Exception =>
                 logger.warn(s"Failed to get library items count: ${e.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library items count. ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.value, message = s"Unable to get library items count. ${e.getMessage}")
                 Future.successful(pb.GetLibraryItemsCountResponse(status = Some(status)))
         }

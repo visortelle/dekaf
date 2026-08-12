@@ -6,8 +6,14 @@ import com.google.protobuf.timestamp.Timestamp
 
 import java.time.Instant
 
-type ConsumerSessionStartFrom = EarliestMessage | LatestMessage | NthMessageAfterEarliest | NthMessageBeforeLatest | MessageId | DateTime | RelativeDateTime
+type ConsumerSessionStartFrom = EarliestMessage | LatestMessage | NthMessageAfterEarliest | NthMessageBeforeLatest | MessageId | DateTime |
+    RelativeDateTime | ApproximateEntryPosition | ApproximatePublishTimePosition
 
+/** A UNION type, so these matches are NOT checked for exhaustiveness: a mode missing from either
+  * direction compiles fine and throws at runtime, surfacing as a generic failure on saving or
+  * loading a session. `startFromConversionsTest` sweeps every mode through both directions for that
+  * reason - it is the only thing standing in for the missing compiler check.
+  */
 object ConsumerSessionStartFrom:
     def fromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom =
         startFrom.startFrom match
@@ -18,6 +24,8 @@ object ConsumerSessionStartFrom:
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)               => MessageId.fromPb(v)
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v)                => DateTime.fromPb(v)
             case pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(v)        => RelativeDateTime.fromPb(v)
+            case pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateEntryPosition(v) => ApproximateEntryPosition.fromPb(v)
+            case pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximatePublishTimePosition(v) => ApproximatePublishTimePosition.fromPb(v)
             case _ => throw IllegalArgumentException("Unknown ConsumerSessionStartFrom type.")
 
     def toPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom =
@@ -26,10 +34,31 @@ object ConsumerSessionStartFrom:
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromEarliestMessage(EarliestMessage.toPb(v)))
             case v: LatestMessage =>
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromLatestMessage(LatestMessage.toPb(v)))
+            // Both Nth modes were readable but not writable: saving a session that used one threw
+            // "Unknown ConsumerSessionStartFrom type" from here.
+            case v: NthMessageAfterEarliest =>
+                pb.ConsumerSessionStartFrom(startFrom =
+                    pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageAfterEarliest(NthMessageAfterEarliest.toPb(v))
+                )
+            case v: NthMessageBeforeLatest =>
+                pb.ConsumerSessionStartFrom(startFrom =
+                    pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageBeforeLatest(NthMessageBeforeLatest.toPb(v))
+                )
             case v: MessageId =>
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(MessageId.toPb(v)))
             case v: DateTime =>
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(DateTime.toPb(v)))
             case v: RelativeDateTime =>
                 pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(RelativeDateTime.toPb(v)))
+            // The two approximate modes carry the SAME payload - one double - so a branch that
+            // reached for the other one's oneof case would still round-trip a fraction and look
+            // right; the only symptom would be a session positioned by the wrong rule.
+            case v: ApproximateEntryPosition =>
+                pb.ConsumerSessionStartFrom(startFrom =
+                    pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximateEntryPosition(ApproximateEntryPosition.toPb(v))
+                )
+            case v: ApproximatePublishTimePosition =>
+                pb.ConsumerSessionStartFrom(startFrom =
+                    pb.ConsumerSessionStartFrom.StartFrom.StartFromApproximatePublishTimePosition(ApproximatePublishTimePosition.toPb(v))
+                )
             case _ => throw IllegalArgumentException("Unknown ConsumerSessionStartFrom type.")

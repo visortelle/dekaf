@@ -33,6 +33,20 @@ message Message {
   int64 num_message_processed = 59;
   int64 num_message_sent = 60;
 
+  // ORDERED delivery (Guaranteed or Best effort): this message's order key is LOWER than the
+  // highest key already emitted by this session - it is on screen out of order, loudly, never
+  // silently. Under GUARANTEED that is possible only across a resume seam (the boundary
+  // extension lets a delta message carry an older producer-stamped key than something an earlier
+  // chunk already showed) or when the source log itself stores an inversion; under BEST EFFORT
+  // it means the message arrived after its reorder window and its peers were already shown
+  // (renamed from replay_seam_violation on 2026-08-11, same tag, when Best effort's late
+  // deliveries started carrying the flag too). The key compared is the session's SELECTED order
+  // key (publish / broker publish / event time) against previously emitted keys of the same
+  // kind - never against wall clock, so ordinary old event times are not violations. Session
+  // counts: ConsumerStats.replay_seam_violations (Guaranteed) and the late-deliveries counter
+  // (Best effort).
+  bool delivered_out_of_order = 61;
+
   // Evaluated message filter code can produce logs or errors.
   // We need to store them in the message to be able to show them in the UI.
   // Both, stdout and stderr are stored in the same field.
@@ -119,6 +133,29 @@ message RelativeDateTime {
   bool is_rounded_to_unit_start = 3;
 }
 
+// Start approximately this far through the entries a physical topic still retains.
+// Each topic and each partition is positioned independently. Interior fractions
+// leave floor(fraction * retained_entries) entries behind; batching therefore
+// makes this an entry position, not an exact message-count position.
+message ApproximateEntryPosition {
+  // 0.0 = earliest retained entry. 1.0 = MessageId.latest, past retained entries,
+  // so only messages published after the seek is applied are shown. Other values
+  // must be within [0.0, 1.0].
+  double fraction = 1;
+}
+
+// Start approximately this far between the session's observed first- and final-entry
+// publish times. The boundary is pooled across EVERY selected physical topic and every
+// topic seeks to the same instant, so a multi-topic session has ONE cutoff rather than
+// one per topic - without that, 50% meant a different moment on each topic.
+message ApproximatePublishTimePosition {
+  // 0.0 = earliest retained message. 1.0 = the greatest final-entry publish time
+  // observed across the session's selected topics; every message sharing that timestamp
+  // can be included. Other values must be within [0.0, 1.0]. Producer clock skew
+  // makes this boundary estimate approximate.
+  double fraction = 1;
+}
+
 message ConsumerSessionStartFrom {
   oneof start_from {
     EarliestMessage start_from_earliest_message = 1;
@@ -128,6 +165,8 @@ message ConsumerSessionStartFrom {
     MessageId start_from_message_id = 3;
     DateTime start_from_date_time = 4;
     RelativeDateTime start_from_relative_date_time = 5;
+    ApproximateEntryPosition start_from_approximate_entry_position = 8;
+    ApproximatePublishTimePosition start_from_approximate_publish_time_position = 9;
   }
 }
 
@@ -277,6 +316,64 @@ message ConsumerSessionTarget {
   ValueProjectionList value_projection_list = 4;
 }
 
+// How a session that reads MORE THAN ONE delivery stream (several topics, or one partitioned
+// topic) interleaves MESSAGE delivery across them.
+enum MessageDeliveryOrder {
+  // Uses GUARANTEED, the product default (owner decision 2026-08-11, superseding the 2026-08-09
+  // Best effort default, which itself superseded an earlier Guaranteed one - the plan file's
+  // decision log is the record). Zero is also proto3 absence, so every older client and every
+  // config saved before this field existed lands here: a session that never named an order
+  // replays recorded history exactly and auto-pauses when caught up.
+  // BEST_EFFORT_BY_PUBLISH_TIME is the explicit choice for live following; the caught-up
+  // announcement and the one-click switch (SetDeliveryOrder) are the ways between them.
+  MESSAGE_DELIVERY_ORDER_UNSPECIFIED = 0;
+  // Every stream delivers independently and messages interleave as they arrive. Fastest.
+  MESSAGE_DELIVERY_ORDER_AS_RECEIVED = 1;
+  // One merged stream ordered by the selected time, BEST EFFORT (bounded lateness). THE PRODUCT
+  // DEFAULT, and what UNSPECIFIED resolves to: delivery is held for a short reorder window so
+  // quieter streams get their say. Timestamps are stamped outside the session's control, so skew
+  // or a slow stream can still deliver late - late messages are delivered out of order, never
+  // dropped - and delivery lags by up to the window plus one sweep period (~0.5-0.75s in total)
+  // whenever some stream is quiet.
+  //
+  // THE NAME IS HISTORICAL. This mode predates delivery_order_key, so its constant still says
+  // "by publish time" while the timestamp it actually compares is whichever DeliveryOrderKey the
+  // session selected - publish time, broker publish time or event time. The constant and its
+  // value 2 are frozen: renaming or aliasing them would break every saved item and every older
+  // client for a cosmetic gain. Internally the mode is called plain "best effort"
+  // (Scala MessageDeliveryOrder.BestEffort, TS 'best-effort').
+  MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME = 2;
+  // AN EXACT REPLAY (owner decision 2026-08-09). One merged stream ordered by the selected
+  // time: the session delivers everything recorded up to the moment Play was pressed (of what
+  // retention still holds - a trimmed message is gone for any reader), in strict key order, and
+  // then AUTO-PAUSES, announcing it on ConsumerStats.replay_caught_up. No live phase: a message
+  // recorded past the boundary is held for the NEXT chunk (its consumer paused) rather than
+  // delivered. Resume extends the boundary to now and replays the delta - itself immutable by
+  // then - exactly; ordering violations are impossible within a chunk, and across a resume seam
+  // they require producer clock skew and are delivered loudly flagged
+  // (Message.replay_seam_violation), never silently. An explicit choice, never what absence
+  // resolves to. Source append order is preserved, so timestamp inversions already stored within
+  // one source pass through and are counted. Failed sends retry in place. A stream whose
+  // recorded range retention trimmed away can still hold a replay (the wait is disclosed via
+  // delivery_order_waiting_streams); the live remedy remains the one-click switch to Best
+  // effort (SetDeliveryOrder).
+  MESSAGE_DELIVERY_ORDER_GUARANTEED = 3;
+}
+
+// Which per-message timestamp the delivery order compares. This is not Pulsar's message
+// `ordering_key` field.
+enum DeliveryOrderKey {
+  DELIVERY_ORDER_KEY_UNSPECIFIED = 0;
+  // Added automatically by the producer. Always present.
+  DELIVERY_ORDER_KEY_PUBLISH_TIME = 1;
+  // Broker entry metadata recording when an entry arrived. Present only when the broker runs the
+  // AppendBrokerTimestampMetadataInterceptor and exposes entry metadata to clients.
+  DELIVERY_ORDER_KEY_BROKER_PUBLISH_TIME = 2;
+  // An optional timestamp set by the application. A message without one (0) uses publish time
+  // and is counted as a fallback.
+  DELIVERY_ORDER_KEY_EVENT_TIME = 3;
+}
+
 message ConsumerSessionConfig {
   ConsumerSessionStartFrom start_from = 1;
   repeated ConsumerSessionTarget targets = 2;
@@ -285,6 +382,10 @@ message ConsumerSessionConfig {
   ColoringRuleChain coloring_rule_chain = 5;
   ValueProjectionList value_projection_list = 6;
   google.protobuf.Int64Value num_display_items = 7;
+  MessageDeliveryOrder message_delivery_order = 8;
+  // Absent (UNSPECIFIED) means publish time - the timestamp every ordered session used before this
+  // field existed. Meaningful only when message_delivery_order is not as-received.
+  DeliveryOrderKey delivery_order_key = 9;
 }
 
 message CreateConsumerRequest {
@@ -543,9 +644,110 @@ message ResumeRequest {
   string consumer_name = 1;
   bool include_consumer_stats = 2;
   bool is_debug = 3;
+
+  // Cap on how many messages per second this session DELIVERS to the client, applied from this
+  // resume onward. 0 means unlimited; negative is refused outright.
+  //
+  // PER REQUEST, NOT PER SESSION CONFIG, like the two flags above it, and deliberately so: the
+  // value belongs to the BROWSER doing the watching (it lives in localStorage), so it must never
+  // travel into a saved library item and follow the session to another person's screen.
+  //
+  // The limit shapes steady-state delivery only. Start-from positioning - the counted skip of a
+  // "skip first n" or the retained-history walk of a "latest n" - is never slowed by it: those
+  // messages were never going to be shown, and slowing the seek would only delay the first visible
+  // message. The count is per SESSION, not per partition, so the number means what it says
+  // regardless of how many partitions the selector matched.
+  int64 max_messages_per_second = 4;
+
+  // Deliver AT MOST this many messages on this stream, then deliver nothing more until the next
+  // resume. 0 means no budget; negative is refused.
+  //
+  // The count is of messages LOADED - the ones that passed every filter and went on the wire, the
+  // number the toolbar's "loaded" counter shows - not of messages processed. A session whose
+  // filters drop most of what they read may well process hundreds to load ten; the budget lets it,
+  // and stops the STREAM at exactly ten.
+  //
+  // Enforced at the delivery drain, EXACTLY: the message that spends the last unit is the last one
+  // sent, whatever was mid-batch behind it stays queued - unacknowledged, undelivered - for the
+  // next resume. A client-side "pause after n" can only ever be approximate (a whole chunk lands
+  // before the client can react, and the first chunk under a rate limit is the full one-second
+  // burst); this is the server-side half that makes the number mean itself.
+  int64 max_messages_to_deliver = 5;
 }
 
-message ConsumerStats {}
+// Progress of a start-from position that has to be resolved by counting messages
+// rather than by seeking. Only NthMessageAfterEarliest needs this: skipping N
+// messages exactly costs O(N) because Pulsar stores no message-ordinal index, so
+// a large N takes real time and the UI must be able to say so.
+message StartFromProgress {
+  int64 messages_skipped = 1;
+  int64 messages_to_skip = 2;
+  // True once the requested position has been reached and normal delivery began.
+  bool complete = 3;
+  // True once the position was resolved BEST-EFFORT rather than exactly: a stream the merge was
+  // waiting on stayed silent past the stall window and was abandoned (named below). The COUNT is
+  // still exact; WHICH messages were dropped may differ from the exact answer. Sticky for the
+  // session - a degradation that happened does not un-happen.
+  bool degraded = 4;
+  // The streams ("consumer@topic") the resolution gave up waiting for.
+  repeated string abandoned_streams = 5;
+}
+
+message ConsumerStats {
+  // Absent unless the session's start-from is still being resolved.
+  StartFromProgress start_from_progress = 1;
+  // How many messages the delivery-order layer resolved out of the selected timestamp order so
+  // far, measured before the network hop. Timestamp ties are tie-breaks, never counted. In
+  // Guaranteed mode this counts disorder already stored within a source (and redeliveries); in
+  // Best effort it can also count messages arriving after the reorder window. Only meaningful when
+  // delivery_order_active is true.
+  int64 ordering_late_deliveries = 2;
+  // Whether an ordering layer (best-effort OR guaranteed) is ACTUALLY RUNNING for this session.
+  // False when a BEST-EFFORT configuration resolved to a single delivery stream - one log is
+  // already in order, so no layer is built and no latency is paid; the client must not claim
+  // otherwise. GUARANTEED builds its layer at ANY stream count since the exact-replay redesign
+  // (owner decision 2026-08-09): the replay boundary, the auto-pause and the caught-up signal
+  // live in that layer, and one stream needs them exactly as much as fifty.
+  bool delivery_order_active = 3;
+  // How many messages used publish time because the selected timestamp was
+  // absent on the message: broker publish time without the broker-side interceptor, or an
+  // event-time session meeting messages that carry none. The client surfaces the first
+  // occurrence as a notification with remediation.
+  int64 order_key_fallbacks = 4;
+  // Number of topic/partition streams a delivery-order merge has waited on for at least the
+  // stall-warning interval. Zero while the merge is making normal progress.
+  int32 delivery_order_waiting_streams = 5;
+
+  // GUARANTEED (exact-replay) delivery: true once the session has delivered everything recorded
+  // up to the replay boundary (the moment Play or the last Resume was pressed, of what retention
+  // still held) and has AUTO-PAUSED itself. The server cannot flip the browser's play state -
+  // this signal is how the client learns; Resume extends the boundary to now and replays the
+  // delta. Cleared (absent) once a resume starts the next chunk.
+  bool replay_caught_up = 6;
+
+  // The wall-clock instant the current replay boundary was captured at - "caught up to <t>".
+  // Meaningful whenever replay_caught_up is true.
+  int64 replay_boundary_at_ms = 7;
+
+  // APPROXIMATELY how many newer ENTRIES exist past the replay boundary. The broker's backlog
+  // and entry arithmetic count ENTRIES, not messages - a batching producer packs many messages
+  // into one entry - so this can only ever be a "~N" and the client must present it that way
+  // ("new messages waiting" / "~N newer"), never as an exact count. 0 means none are known,
+  // which is not proof none exist.
+  int64 replay_newer_entries_approx = 8;
+
+  // GUARANTEED delivery: how many messages were emitted with an order key LOWER than a key
+  // already emitted (see Message.replay_seam_violation). Monotonic per session; possible only
+  // across a resume seam under producer clock skew, or when a source log stores an inversion.
+  int64 replay_seam_violations = 9;
+
+  // Topics that currently match this session's topic selectors but are NOT part of the running
+  // session - typically regex-matched topics created after Play. They are excluded from the
+  // replay by design (no late-joiner classifier); restarting the session includes them. Names
+  // are capped at a handful; replay_excluded_topic_count carries the full count.
+  repeated string replay_excluded_topics = 10;
+  int32 replay_excluded_topic_count = 11;
+}
 
 message ResumeResponse {
   google.rpc.Status status = 1;
@@ -558,6 +760,55 @@ message PauseRequest {
 }
 
 message PauseResponse {
+  google.rpc.Status status = 1;
+}
+
+// Change the delivery order of a session that is ALREADY RUNNING, without recreating it.
+//
+// Two situations need it, both Guaranteed's. Mid-replay, a stream whose recorded range
+// retention trimmed away can hold the replay indefinitely; the wait is disclosed
+// (ConsumerStats.delivery_order_waiting_streams) and this call is what makes it ACTIONABLE -
+// one call switches the live session to Best effort and the already-held messages are
+// released, in the new order, exactly once. And at the replay boundary
+// (ConsumerStats.replay_caught_up), this is the designed "continue live with Best effort"
+// transition: the switch releases the boundary pause and the session resumes live delivery
+// under Best effort - unless the user had ALSO paused it manually, in which case their pause
+// stands and the next Resume goes live.
+//
+// WHY NOT JUST RECREATE THE SESSION. A recreate would lose the held set (received, unacknowledged,
+// and nowhere else), RE-RESOLVE the start-from against a log that has moved - which for Latest-n
+// and both approximate modes selects a DIFFERENT set of messages, silently changing what the user
+// is looking at - and redeliver everything already on screen as duplicates.
+//
+// THIS CHANGES THE LIVE SESSION ONLY. It does not touch the saved session configuration; a client
+// that wants the next Play to use the new order writes it into the configuration itself.
+//
+// ONLY A RELAXATION IS ACCEPTED, and only this one: Guaranteed -> Best effort. See
+// SetDeliveryOrderResponse for what the other directions answer and why.
+message SetDeliveryOrderRequest {
+  string consumer_name = 1;
+  // The order to switch the live session to. UNSPECIFIED names nothing and is refused with
+  // INVALID_ARGUMENT rather than resolved to the product default - a mutation must say what it
+  // wants.
+  MessageDeliveryOrder message_delivery_order = 2;
+}
+
+// OK when the live session now delivers in the requested order - including when it already did,
+// so a repeated click is harmless.
+//
+// FAILED_PRECONDITION, with the reason in the message, when the switch cannot be honestly
+// performed:
+//
+//   - the session does not exist, or its play stream has ended;
+//   - the request asks for a STRONGER order (anything -> Guaranteed). Guaranteed promises that
+//     Dekaf introduced no cross-stream disorder; a session that has already emitted past a silent
+//     stream cannot un-emit it, so no future behavior could make that promise true. Restart the
+//     session to get it;
+//   - the request asks for AS_RECEIVED. That is not a weaker order of the merged stream, it is
+//     the absence of the merge - and the same merge also resolves a counted start-from cut, so
+//     dismantling it mid-cut would silently change which messages the cut selects. Fastest stays
+//     a configuration choice that takes effect on the next Play.
+message SetDeliveryOrderResponse {
   google.rpc.Status status = 1;
 }
 
@@ -579,11 +830,105 @@ message ResolveTopicSelectorResponse {
   repeated string topic_fqns = 2;
 }
 
+// One physical topic's endpoints and how far this session has read through them.
+//
+// A DEBUG VIEW, polled on demand - never pushed with the message stream. Filling one
+// row costs three admin round trips (first entry, last entry, internal stats), so a
+// session over a wide selector costs three per PARTITION every refresh. That is why
+// the client asks for this rather than receiving it, and why the asking is off by
+// default.
+//
+// EVERY FIELD IS OPTIONAL BECAUSE EVERY LOOKUP CAN DECLINE. A topic Pulsar refuses to
+// examine at all (non-persistent: 405) answers with `unavailable_reason` set and the
+// endpoints absent - which is different from an EMPTY topic, where the lookups
+// succeed and there is genuinely nothing to report. Absent means "not known", never
+// "zero".
+message TopicPosition {
+  // The physical topic - a partition of a partitioned topic, not the parent, since
+  // `examineMessage` refuses the parent outright.
+  string topic_fqn = 1;
+
+  // The oldest message the topic still holds. Absent on an empty topic, and on one
+  // whose first entry aged out between the two lookups.
+  google.protobuf.BytesValue first_message_id = 2;
+  google.protobuf.Int64Value first_publish_time = 3;
+
+  // The newest message the topic holds. Absent on an empty topic: `examineMessage`
+  // THROWS for "latest" there rather than answering, where "earliest" clamps.
+  google.protobuf.BytesValue last_message_id = 4;
+  google.protobuf.Int64Value last_publish_time = 5;
+
+  // The furthest message-ID position this session has PROCESSED from this topic. This
+  // is session-local progress, not a Pulsar subscription cursor or the last row on screen.
+  // A session filter can drop almost everything it reads, so the last DISPLAYED message
+  // can lag this by an arbitrary amount and would make both progress figures below read
+  // far too low.
+  //
+  // Absent until the session has processed something from this topic.
+  google.protobuf.BytesValue cursor_message_id = 6;
+  google.protobuf.Int64Value cursor_publish_time = 7;
+
+  // Where the cursor sits in the topic's TIME range: 0.0 at the first message's
+  // publish time, 1.0 at the last's. Absent when there is no cursor yet, and on a
+  // topic that occupies a single instant (first == last), which has no interior to
+  // place anything in.
+  google.protobuf.DoubleValue cursor_time_fraction = 8;
+
+  // The session's entry position among the entries currently stored: position ordinal
+  // over stored count. Sitting ON the first of N entries is 1/N, and on the last it is
+  // 1.0; a topic storing a single entry is therefore 1.0 when that entry is processed.
+  // There is no 0.0 with a position present.
+  //
+  // ENTRIES, NOT MESSAGES. A batched entry holds many messages, so this tracks
+  // message count only as closely as batch sizes stayed uniform - the same
+  // approximation ApproximateEntryPosition documents. It is named for what it measures.
+  google.protobuf.DoubleValue cursor_entry_fraction = 9;
+
+  // Entries currently stored in the topic, as `getInternalStats` reports them.
+  google.protobuf.Int64Value retained_entries = 10;
+
+  // The session's 1-based position among the stored entries, which is the numerator of
+  // `cursor_entry_fraction`. Shown so a reader can see the arithmetic rather than
+  // trust a percentage.
+  google.protobuf.Int64Value cursor_entry_ordinal = 11;
+
+  // Why this row is blank, when it is. Set for a topic the broker refuses to examine
+  // (a non-persistent topic cannot answer either lookup) and for a lookup that failed
+  // outright. An EMPTY topic is NOT a reason - it answers, with nothing in it.
+  google.protobuf.StringValue unavailable_reason = 12;
+
+  // The earliest message-ID position this session has PROCESSED from this topic. Like the furthest position,
+  // this is session-local bookkeeping: it is tracked from the first consumed message
+  // even if this debug tab has never been opened, and remains known if retention later
+  // removes the message or the broker cannot expose retained-log endpoints.
+  google.protobuf.BytesValue first_consumed_message_id = 13;
+  google.protobuf.Int64Value first_consumed_publish_time = 14;
+}
+
+message GetTopicPositionsRequest {
+  string consumer_name = 1;
+}
+
+message GetTopicPositionsResponse {
+  google.rpc.Status status = 1;
+  repeated TopicPosition positions = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
   rpc Resume(ResumeRequest) returns (stream ResumeResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
+
+  // Change a LIVE session's delivery order. A dedicated RPC rather than a field on Resume: this
+  // mutates a running session, and a session-mutating operation has to be explicit rather than a
+  // side effect of pressing Play.
+  rpc SetDeliveryOrder(SetDeliveryOrderRequest) returns (SetDeliveryOrderResponse);
+
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
   rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
+
+  // Poll the per-topic debug view. See [[TopicPosition]] for why this is polled rather
+  // than pushed.
+  rpc GetTopicPositions(GetTopicPositionsRequest) returns (GetTopicPositionsResponse);
 }

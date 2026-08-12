@@ -89,11 +89,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             adminClient.namespaces.createNamespace(request.namespaceName, policies)
 
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(CreateNamespaceResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(CreateNamespaceResponse(status = Some(status)))
         }
 
@@ -104,11 +104,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             adminClient.namespaces.deleteNamespace(request.namespaceName, request.force)
 
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(DeleteNamespaceResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteNamespaceResponse(status = Some(status)))
         }
 
@@ -121,11 +121,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 adminClient.namespaces.getNamespaces(request.tenant).asScala
             catch {
                 case err: Exception =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                     return Future.successful(pb.ListNamespacesResponse(status = Some(status)))
             }
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(pb.ListNamespacesResponse(status = Some(status), namespaces = namespaces.toSeq))
 
     override def getTopicsCount(request: GetTopicsCountRequest): Future[GetTopicsCountResponse] =
@@ -194,7 +194,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 (ns, count)
             ).toMap
 
-            val status = Status(code = Code.OK.index)
+            val status = Status(code = Code.OK.value)
             Future.successful(
                 GetTopicsCountResponse(
                     status = Some(status),
@@ -206,7 +206,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetTopicsCountResponse(status = Some(status)))
         }
 
@@ -225,19 +225,19 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             val permissions = Option(adminClient.namespaces.getPermissions(request.namespace).asScala.toMap) match
                 case None =>
-                    val status = Status(code = Code.INTERNAL.index)
+                    val status = Status(code = Code.INTERNAL.value)
                     return Future.successful(GetPermissionsResponse(status = Some(status)))
                 case Some(v) =>
                     v.map(x => x._1 -> new pb.AuthActions(authActions = x._2.asScala.toList.map(authActionToPb)))
             Future.successful(
                 GetPermissionsResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     permissions
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetPermissionsResponse(status = Some(status)))
         }
     override def grantPermissions(request: GrantPermissionsRequest): Future[GrantPermissionsResponse] =
@@ -258,7 +258,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             if permissions.exists(_._1 == request.role && request.existenceCheck) then
                 val status = Status(
-                    code = Code.FAILED_PRECONDITION.index,
+                    code = Code.FAILED_PRECONDITION.value,
                     message = s"There are already granted permissions for this role: ${request.role}. Please choose another role name."
                 )
                 return Future.successful(GrantPermissionsResponse(status = Some(status)))
@@ -267,12 +267,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 GrantPermissionsResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GrantPermissionsResponse(status = Some(status)))
         }
 
@@ -285,12 +285,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 RevokePermissionsResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RevokePermissionsResponse(status = Some(status)))
         }
 
@@ -301,7 +301,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             val permissions = Option(adminClient.namespaces.getPermissionOnSubscription(request.namespace).asScala.toMap) match
                 case None =>
-                    val status = Status(code = Code.INTERNAL.index)
+                    val status = Status(code = Code.INTERNAL.value)
                     return Future.successful(GetPermissionOnSubscriptionResponse(status = Some(status)))
                 case Some(v) =>
                     v.collect {
@@ -312,14 +312,14 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 GetPermissionOnSubscriptionResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     permissions,
                     roles
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetPermissionOnSubscriptionResponse(status = Some(status)))
         }
 
@@ -332,7 +332,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             if permissions.exists(_._1 == request.subscription && request.existenceCheck) then
                 val status = Status(
-                    code = Code.FAILED_PRECONDITION.index,
+                    code = Code.FAILED_PRECONDITION.value,
                     message = s"There are already assigned roles for this subscription: ${request.subscription}. Please choose another subscription name."
                 )
                 return Future.successful(GrantPermissionOnSubscriptionResponse(status = Some(status)))
@@ -340,12 +340,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             adminClient.namespaces.grantPermissionOnSubscription(request.namespace, request.subscription, request.roles.toSet.asJava)
             Future.successful(
                 GrantPermissionOnSubscriptionResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GrantPermissionOnSubscriptionResponse(status = Some(status)))
         }
 
@@ -358,12 +358,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 RevokePermissionOnSubscriptionResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(RevokePermissionOnSubscriptionResponse(status = Some(status)))
         }
 
@@ -382,13 +382,13 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 GetPropertiesResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     properties
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetPropertiesResponse(status = Some(status)))
         }
     override def setProperties(request: SetPropertiesRequest): Future[SetPropertiesResponse] =
@@ -405,12 +405,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 SetPropertiesResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SetPropertiesResponse(status = Some(status)))
         }
 
@@ -423,12 +423,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 UnloadNamespaceResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(UnloadNamespaceResponse(status = Some(status)))
         }
 
@@ -441,12 +441,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 UnloadNamespaceBundleResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(UnloadNamespaceBundleResponse(status = Some(status)))
         }
 
@@ -459,12 +459,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 ClearNamespaceBacklogResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(ClearNamespaceBacklogResponse(status = Some(status)))
         }
 
@@ -477,12 +477,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 ClearBundleBacklogResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(ClearBundleBacklogResponse(status = Some(status)))
         }
 
@@ -502,12 +502,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 SplitNamespaceBundleResponse(
-                    status = Some(Status(code = Code.OK.index))
+                    status = Some(Status(code = Code.OK.value))
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(SplitNamespaceBundleResponse(status = Some(status)))
         }
 
@@ -520,12 +520,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             Future.successful(
                 GetBundlesResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     bundles = Option(bundles.getBoundaries).map(_.asScala.toSeq).getOrElse(Seq.empty).sliding(2).map { case List(a, b) => s"${a}_$b" }.toSeq
                 )
             )
         } catch {
             case err: Exception =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetBundlesResponse(status = Some(status)))
         }

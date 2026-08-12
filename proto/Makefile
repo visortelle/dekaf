@@ -6,7 +6,8 @@ clean:
 	rm -rf ./gen
 	rm -rf ../ui/grpc-web
 	rm -rf ../server/src/main/scala/pb
-	rm -rf ../demoapp/src/main/scala/pb
+	rm -rf ../demoapp/src/main/java/com/tools/teal/pulsar/ui
+	rm -rf ../demoapp/src/main/java/com/google
 
 .PHONY: build
 build:

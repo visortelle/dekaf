@@ -8,6 +8,7 @@ import arrowUpIcon from './arrow-up.svg';
 import { useDebounce } from 'use-debounce';
 import { useColumnWidths, ColumnConstraint } from '../resizable/useColumnWidths';
 import ColumnResizeHandle from '../resizable/ColumnResizeHandle';
+import { useColumnOrder } from '../resizable/useColumnOrder';
 import * as Notifications from '../../app/contexts/Notifications';
 import useSWR, { SWRConfiguration, mutate } from 'swr';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -21,6 +22,7 @@ import SmallButton from '../SmallButton/SmallButton';
 import refreshIcon from './refresh.svg';
 import NoData from '../NoData/NoData';
 import { tooltipId } from '../Tooltip/Tooltip';
+import { sortTableData } from './sorting';
 
 import { TableFilterDescriptor, TableFilterValue } from './filters/types';
 import filterIcon from './filter.svg';
@@ -58,6 +60,9 @@ export type Column<DE, LD> = {
   title: ReactNode,
   render: (data: DE, lazyData?: LD) => ReactNode,
   sortFn?: (a: { data: DE, lazyData: LD | undefined }, b: { data: DE, lazyData: LD | undefined }) => number,
+  /** Marks rows whose rendered sort value is absent. Missing rows stay after populated rows in
+    * both directions; unlike encoding absence in sortFn, this is not inverted by descending sort. */
+  isSortValueMissing?: (entry: { data: DE, lazyData: LD | undefined }) => boolean,
   filter?: {
     descriptor: TableFilterDescriptor,
     testFn: (data: DE, lazyData: LD | undefined, filterValue: TableFilterValue) => boolean,
@@ -96,17 +101,42 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   },
   itemNamePlural?: string,
   toolbar?: { visibility: 'visible' | 'hidden' },
+  /** 'small' tightens paddings and type for dense, embedded tables (e.g. the Tools panel).
+    * Purely presentational - every behavior is identical. */
+  size?: 'default' | 'small',
+  /** Rows this returns true for stay FIRST under every sort, in both directions - for summary
+    * rows that describe the table rather than compete with it. Column sortFns stay direction-blind
+    * plain comparators; a comparator cannot hold a row on top by itself, because 'desc' is the
+    * reverse of the sorted array and would flip it to the bottom. */
+  pinFirst?: (dataEntry: DE) => boolean,
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  // State, not a ref: TableVirtuoso must first mount with the REAL scroll parent. Mounting with
+  // undefined and switching to customScrollParent on a later render leaves a 0-height viewport
+  // measurement that only a window resize refreshes - no rows render until then.
+  const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
   const [lazyData, setLazyData] = useState<Record<DataEntryKey, LD>>({});
   const [lazyDataLoading, setLazyDataLoading] = useState<Record<string, boolean>>({});
   const [itemsRendered, setItemsRendered] = useState<ListItem<DE>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 250);
   const [sort, setSort] = useState<Sort<CK>>(props.defaultSort ?? { type: 'none' });
   const { notifyError } = Notifications.useContext();
-  const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
+  const visibleConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
+  // Sticky-left columns are pinned to the FRONT and are not reorderable: a sticky column in the
+  // middle of the scroll area would float over its neighbours. Everything else can be dragged
+  // into any order, and the order is remembered per table like the widths are.
+  const stickyConfig = visibleConfig.filter(column => column.stickyTo === 'left');
+  const reorderableConfig = visibleConfig.filter(column => column.stickyTo !== 'left');
+  const { order: columnOrder, moveColumn } = useColumnOrder<CK>(
+    props.tableId,
+    reorderableConfig.map(column => column.columnKey)
+  );
+  const columnsConfig = [
+    ...stickyConfig,
+    ...columnOrder.flatMap(columnKey => reorderableConfig.filter(column => column.columnKey === columnKey))
+  ];
+  const draggingColumnRef = React.useRef<CK | undefined>(undefined);
   // ONE GLOBAL auto-refresh preference shared by every table - an owner design decision
   // ("we either want to refresh any table, or not"), deliberately NOT per-table.
   // use-local-storage-state syncs all hook instances on the same key, so flipping the toggle on
@@ -192,7 +222,8 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     columnKey: CK,
     isSortable: boolean,
     filter: Column<DE, LD>['filter'],
-    style?: React.CSSProperties
+    style?: React.CSSProperties,
+    isDraggable?: boolean
   };
   const Th = useMemo(() => (thProps: ThProps) => {
     const handleColumnHeaderClick = () => {
@@ -225,6 +256,47 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
     const isColumnFiltered = Boolean(filtersInUse[thProps.columnKey]);
 
+    // Native HTML5 drag: the resize handle's mousedown sets suppressSortClickRef before any drag
+    // gesture can begin, so a resize never turns into a column drag. The drag-over indicator is
+    // toggled IMPERATIVELY (classList), never via state: this Th component's TYPE is recreated
+    // when its memo deps change, and a state update mid-drag would remount the th under the
+    // cursor - the browser then abandons the drop and the drag silently does nothing.
+    const dragProps = !thProps.isDraggable ? {} : {
+      draggable: true,
+      onDragStart: (e: React.DragEvent) => {
+        if (suppressSortClickRef.current) {
+          e.preventDefault();
+          return;
+        }
+        draggingColumnRef.current = thProps.columnKey;
+        e.dataTransfer.setData('text/plain', thProps.columnKey);
+        e.dataTransfer.effectAllowed = 'move';
+      },
+      onDragEnd: () => {
+        draggingColumnRef.current = undefined;
+      },
+      onDragOver: (e: React.DragEvent) => {
+        if (draggingColumnRef.current === undefined) {
+          return;
+        }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        (e.currentTarget as HTMLElement).classList.add(s.ThDragOver);
+      },
+      onDragLeave: (e: React.DragEvent) => {
+        (e.currentTarget as HTMLElement).classList.remove(s.ThDragOver);
+      },
+      onDrop: (e: React.DragEvent) => {
+        e.preventDefault();
+        (e.currentTarget as HTMLElement).classList.remove(s.ThDragOver);
+        const dragged = draggingColumnRef.current;
+        draggingColumnRef.current = undefined;
+        if (dragged !== undefined && dragged !== thProps.columnKey) {
+          moveColumn(dragged, thProps.columnKey);
+        }
+      }
+    };
+
     return (
       <th
         className={`${s.Th} ${thProps.isSortable ? s.SortableTh : ''}`}
@@ -233,6 +305,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         data-testid="table-th"
         data-column-key={thProps.columnKey}
         data-sort-direction={(sort.type === 'by-single-column' && sort.column === thProps.columnKey) ? sort.direction : undefined}
+        {...dragProps}
       >
         <div
           data-tooltip-id={tooltipId}
@@ -284,7 +357,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         <ColumnResizeHandle onResizeStart={(clientX) => startColumnResize(thProps.columnKey, clientX)} />
       </th>
     );
-  }, [sort, props.columns, filtersInUse, startColumnResize]);
+  }, [sort, props.columns, filtersInUse, startColumnResize, moveColumn]);
 
   const sortedData = useMemo(() => {
     const activeFilters = Object.entries<FilterInUse>(filtersInUseDebounced as Record<string, FilterInUse>).filter(([_, filter]) => {
@@ -303,20 +376,35 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
       });
     });
 
-    if (sort.type === 'by-single-column') {
-      const sortFn = props.columns.columns[sort.column]!.sortFn;
-      const sorted = sortFn ?
-        dataToSort.sort((a, b) => sortFn(
-          { data: a, lazyData: lazyData[props.getId(a)] },
-          { data: b, lazyData: lazyData[props.getId(b)] })
-        ) :
-        dataToSort;
+    const pin = (rows: DE[]): DE[] => {
+      const pinFirst = props.pinFirst;
+      if (pinFirst === undefined) {
+        return rows;
+      }
+      return [...rows.filter((de) => pinFirst(de)), ...rows.filter((de) => !pinFirst(de))];
+    };
 
-      return sort.direction === 'asc' ? sorted : [...sorted].reverse();
+    if (sort.type === 'by-single-column') {
+      const column = props.columns.columns[sort.column]!;
+      const sortFn = column.sortFn;
+      const entryOf = (dataEntry: DE) => ({ data: dataEntry, lazyData: lazyData[props.getId(dataEntry)] });
+      if (sortFn === undefined) {
+        return pin(dataToSort);
+      }
+
+      return sortTableData({
+        data: dataToSort,
+        direction: sort.direction,
+        sortFn,
+        entryOf,
+        isSortValueMissing: column.isSortValueMissing,
+        // The synthetic summary is pinned only after column ordering.
+        pinFirst: props.pinFirst
+      });
     }
 
-    return data;
-  }, [loadedData, sort, lazyData, filtersInUseDebounced]);
+    return pin(data);
+  }, [loadedData, sort, lazyData, filtersInUseDebounced, props.pinFirst]);
 
   if (data.length === 0) {
     return (
@@ -327,7 +415,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   }
 
   return (
-    <div className={s.Table}>
+    <div className={`${s.Table} ${props.size === 'small' ? s.SizeSmall : ''}`}>
       <div className={s.Toolbars}>
         {Boolean(Object.keys(filtersInUse).length) && <div className={s.FiltersToolbar}>
           <FiltersToolbar<CK>
@@ -370,12 +458,12 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         )}
       </div>
 
-      <div className={s.ScrollContainer} ref={scrollContainerRef}>
-        <TableVirtuoso
+      <div className={s.ScrollContainer} ref={setScrollContainer}>
+        {scrollContainer !== null && <TableVirtuoso
           data={sortedData}
           overscan={{
-            main: (scrollContainerRef?.current?.clientHeight || 0) / 3,
-            reverse: (scrollContainerRef?.current?.clientHeight || 0) / 3
+            main: (scrollContainer.clientHeight || 0) / 3,
+            reverse: (scrollContainer.clientHeight || 0) / 3
           }}
           fixedHeaderContent={() => (
             <tr>
@@ -390,6 +478,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
                     isSortable={Boolean(props.columns.columns[columnConfig.columnKey]!.sortFn)}
                     filter={props.columns.columns[columnConfig.columnKey]!.filter}
                     style={{ width: getColumnWidth(columnConfig.columnKey), ...style }}
+                    isDraggable={columnConfig.stickyTo !== 'left'}
                   />
                 );
               })}
@@ -424,7 +513,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
               </>
             );
           }}
-          customScrollParent={scrollContainerRef.current || undefined}
+          customScrollParent={scrollContainer}
           totalCount={data?.length}
           itemsRendered={(items) => {
             const isShouldUpdate = !isEqual(itemsRendered, items)
@@ -432,7 +521,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
               setItemsRendered(() => items);
             }
           }}
-        />
+        />}
       </div>
     </div>
   );

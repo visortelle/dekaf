@@ -18,6 +18,7 @@ class ProducerValidationSpec extends DekafSuite:
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
     cs.openTools()
+    page.getByTestId("console-tab-produce").click()
     page.waitForTimeout(500)
     if page.getByText("Pulsar Credentials").isVisible then
       page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Done").setExact(true)).click()

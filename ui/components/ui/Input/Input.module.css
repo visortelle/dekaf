@@ -145,6 +145,12 @@
   opacity: 0.5;
 }
 
+/* Shown, because the setting is part of what is being read - but not offered as a control. */
+.AddonReadOnly,
+.AddonReadOnly:hover {
+  cursor: default;
+}
+
 .AddonLabel {
   width: 16rem;
   height: 20rem;

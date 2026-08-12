@@ -1,4 +1,4 @@
-import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, JsMessageFilter, MessageFilter, MessageFilterChainMode } from "../../ConsumerSession/types";
+import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, JsMessageFilter, MessageFilter, MessageFilterChainMode, DeliveryOrderKey, MessageDeliveryOrder } from "../../ConsumerSession/types";
 import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../ConsumerSession/topic-selector/topic-selector";
 import { BasicMessageFilter, BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
@@ -114,12 +114,16 @@ export type StartFromEarliestMessage = { type: 'earliestMessage' };
 export type StartFromLatestMessage = { type: 'latestMessage' };
 export type StartFromNthMessageAfterEarliest = { type: 'nthMessageAfterEarliest', n: number };
 export type StartFromNthMessageBeforeLatest = { type: 'nthMessageBeforeLatest', n: number };
+/** Approximate position over retained entries, in [0, 1], resolved per physical topic. */
+export type StartFromApproximateEntryPosition = { type: 'approximateEntryPosition', fraction: number };
+/** Approximate position between retained boundary-entry publish times, in [0, 1], per logical topic. */
+export type StartFromApproximatePublishTimePosition = { type: 'approximatePublishTimePosition', fraction: number };
 export type StartFromMessageId = { type: 'messageId', messageId: ManagedMessageIdValOrRef };
 export type StartFromDateTime = { type: 'dateTime', dateTime: ManagedDateTimeValOrRef };
 export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: ManagedRelativeDateTimeValOrRef };
 
 export type ManagedConsumerSessionStartFromSpec = {
-  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
+  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromApproximateEntryPosition | StartFromApproximatePublishTimePosition | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
 };
 export type ManagedConsumerSessionStartFrom = {
   metadata: ManagedItemMetadata,
@@ -258,7 +262,10 @@ export type ManagedConsumerSessionConfigSpec = {
   pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
   valueProjectionList: ManagedValueProjectionListValOrRef,
-  numDisplayItems: number | undefined
+  numDisplayItems: number | undefined,
+  // Optional on disk for older JSON; a missing value resolves to Guaranteed.
+  messageDeliveryOrder?: MessageDeliveryOrder,
+  deliveryOrderKey?: DeliveryOrderKey
 };
 
 export type ManagedConsumerSessionConfig = {

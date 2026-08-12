@@ -14,6 +14,13 @@ import com.google.common.primitives.{Bytes, Doubles, Ints, Shorts}
 
 object primitiveConvTest extends ZIOSpecDefault {
     private val floatPrecision = 0.000_000_1
+
+    /* Renders a byte array as hex so a failing table case is identifiable in the report. */
+    private def hex(bytes: Array[Byte]): String = bytes.map(b => f"0x$b%02x").mkString("[", " ", "]")
+
+    /* Keeps a label on a single line. */
+    private def show(s: String): String = s.replace("\\", "\\\\").replace("\n", "\\n").replace("\t", "\\t")
+
     def spec = suite(this.getClass.toString)(
         test("eqFloat") {
             case class TestCase(a: Double, b: Double, precision: Double, expected: Boolean)
@@ -33,7 +40,11 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Float.NaN, Float.NaN, floatPrecision, false)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                val actual = primitiveConv.eqFloat(testCase.a, testCase.b, testCase.precision)
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: eqFloat(${testCase.a}, ${testCase.b}, ${testCase.precision}) = $actual, expected ${testCase.expected}"
+            }.reduce(_ && _)
         },
         test("bytesToInt8") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Byte]) => Boolean)
@@ -55,7 +66,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x01, 0x01).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToInt8(${hex(testCase.bytes)}) = ${primitiveConv.bytesToInt8(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToInt16") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Short]) => Boolean)
@@ -78,7 +92,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x00, 0x01, 0x01).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToInt16(${hex(testCase.bytes)}) = ${primitiveConv.bytesToInt16(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToInt32") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Int]) => Boolean)
@@ -104,7 +121,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToInt32(${hex(testCase.bytes)}) = ${primitiveConv.bytesToInt32(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToInt64") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Long]) => Boolean)
@@ -139,7 +159,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToInt64(${hex(testCase.bytes)}) = ${primitiveConv.bytesToInt64(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToFloat32") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Float]) => Boolean)
@@ -165,7 +188,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToFloat32(${hex(testCase.bytes)}) = ${primitiveConv.bytesToFloat32(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToFloat64") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Double]) => Boolean)
@@ -200,7 +226,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToFloat64(${hex(testCase.bytes)}) = ${primitiveConv.bytesToFloat64(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToString") {
             case class TestCase(bytes: Array[Byte], expected: String)
@@ -223,7 +252,11 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """qu"ote"s""")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                val actual = show(primitiveConv.bytesToString(testCase.bytes))
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToString(${hex(testCase.bytes)}) = $actual, expected ${show(testCase.expected)}"
+            }.reduce(_ && _)
         },
         test("bytesToJsonString") {
             case class TestCase(bytes: Array[Byte], expected: String)
@@ -244,7 +277,11 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s"""")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                val actual = show(primitiveConv.bytesToJsonString(testCase.bytes))
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToJsonString(${hex(testCase.bytes)}) = $actual, expected ${show(testCase.expected)}"
+            }.reduce(_ && _)
         },
         test("bytesToBoolean") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Boolean]) => Boolean)
@@ -261,7 +298,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x01).map(_.toByte), _.isLeft)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToBoolean(${hex(testCase.bytes)}) = ${primitiveConv.bytesToBoolean(testCase.bytes)}"
+            }.reduce(_ && _)
         },
         test("bytesToJson") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, String]) => Boolean)
@@ -289,7 +329,11 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft),
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                val actual = primitiveConv.bytesToJson(testCase.bytes)
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: bytesToJson(${show(primitiveConv.bytesToString(testCase.bytes))}) = $actual"
+            }.reduce(_ && _)
         },
         test("leftPad") {
             case class TestCase(bytes: Array[Byte], size: Int, pad: Byte, expected: Array[Byte])
@@ -308,7 +352,11 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x01).map(_.toByte), 1, 0, Array(0x01).map(_.toByte))
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) =>
+                val actual = hex(primitiveConv.leftPad(testCase.bytes, testCase.size, testCase.pad))
+                assertTrue(runTestCase(testCase)) ??
+                    s"case #$idx: leftPad(${hex(testCase.bytes)}, ${testCase.size}, ${testCase.pad}) = $actual, expected ${hex(testCase.expected)}"
+            }.reduce(_ && _)
         }
     )
 }

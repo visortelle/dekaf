@@ -6,7 +6,9 @@ import arrowDownIcon from './arrow-down.svg';
 export type ListItem<V> = {
   type: 'item',
   value: V,
-  title: string
+  title: string,
+  /** Kept visible but not selectable - an option that is inapplicable here, rather than absent. */
+  disabled?: boolean
 } | { type: 'group', title: string, items: ListItem<V>[] } | { type: 'empty', title: string };
 
 export type List<V> = ListItem<V>[]
@@ -21,6 +23,10 @@ export type SelectProps<V> = {
   size?: 'regular' | 'small';
   isReadOnly?: boolean;
   testId?: string;
+  /** Forwarded to the native select so an external <label htmlFor> can address it. */
+  id?: string;
+  /** Forwarded as aria-describedby so visible help text is announced with the control. */
+  ariaDescribedBy?: string;
 }
 
 function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
@@ -30,7 +36,7 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
     }
 
     const valueKey = item.value.toString();
-    return <option key={valueKey} value={valueKey}>{item.title}</option>
+    return <option key={valueKey} value={valueKey} disabled={item.disabled}>{item.title}</option>
   }
 
   return (
@@ -42,6 +48,8 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
     `}>
       {props.value === undefined && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
+        id={props.id}
+        aria-describedby={props.ariaDescribedBy}
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
         onChange={(v) => props.onChange(v.target.value as V)}
         value={props.value}

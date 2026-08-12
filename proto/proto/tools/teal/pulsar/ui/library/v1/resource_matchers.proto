@@ -24,6 +24,15 @@ message ExactNamespaceMatcher {
 
 message AllNamespaceMatcher {
   TenantMatcher tenant = 1;
+
+  // NOT IMPLEMENTED - setting this field is REJECTED with INVALID_ARGUMENT. It is not ignored:
+  // ignoring it returned a matcher covering EVERY namespace of the matching tenant to a caller that
+  // had asked for a subset, which is a silent widening of access scope.
+  //
+  // Unimplemented deliberately, not by oversight: matchers are tested against other matchers rather
+  // than against a concrete namespace, so an AllNamespaceMatcher tested against another
+  // AllNamespaceMatcher would have to decide whether one regex subsumes another, which is
+  // undecidable in general. Leave it unset; narrow with ExactNamespaceMatcher instead.
   string namespace_regex = 2;
 }
 

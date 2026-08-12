@@ -1,0 +1,20 @@
+.StartFromProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+  min-width: 320rem;
+}
+
+.Bar {
+  width: 100%;
+  height: 8rem;
+}
+
+.Counts {
+  font-variant-numeric: tabular-nums;
+}
+
+.Hint {
+  font-size: x-small;
+  color: grey;
+}

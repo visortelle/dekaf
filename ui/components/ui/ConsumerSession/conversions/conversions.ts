@@ -1,6 +1,8 @@
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
+import { messageIdError } from "../SessionConfiguration/StartFromInput/message-id";
+import { relativeDateTimeValueMax } from "../../RelativeDateTimePicker/relative-date-time";
 import {
   MessageDescriptor,
   PartialMessageDescriptor,
@@ -29,7 +31,8 @@ import {
   TestResult,
   ChainTestResult,
   JsMessageFilter,
-  ValueProjectionResult
+  ValueProjectionResult,
+  MessageDeliveryOrder
 } from "../types";
 
 import {
@@ -72,6 +75,7 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     topic: message.getTopic()?.getValue() ?? null,
     sessionContextStateJson: message.getSessionContextStateJson()?.getValue() ?? null,
     debugStdout: message.getDebugStdout()?.getValue() ?? null,
+    deliveredOutOfOrder: message.getDeliveredOutOfOrder(),
 
     sessionTargetIndex: message.getSessionTargetIndex()?.getValue() ?? null,
 
@@ -287,6 +291,48 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): Consume
 
     case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_LATEST_MESSAGE:
       return { type: 'latestMessage' };
+
+    // These two were missing while startFromToPb wrote them, so the mapping was one-way: a saved
+    // "skip first n" / "latest n" config serialized fine and then threw "Unknown StartFrom value
+    // case" on the way back in.
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_NTH_MESSAGE_AFTER_EARLIEST: {
+      const nthMessageAfterEarliestPb = startFrom.getStartFromNthMessageAfterEarliest();
+      if (nthMessageAfterEarliestPb === undefined) {
+        throw new Error('NthMessageAfterEarliest should be defined.');
+      }
+
+      return { type: 'nthMessageAfterEarliest', n: nthMessageAfterEarliestPb.getN() };
+    }
+
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_NTH_MESSAGE_BEFORE_LATEST: {
+      const nthMessageBeforeLatestPb = startFrom.getStartFromNthMessageBeforeLatest();
+      if (nthMessageBeforeLatestPb === undefined) {
+        throw new Error('NthMessageBeforeLatest should be defined.');
+      }
+
+      return { type: 'nthMessageBeforeLatest', n: nthMessageBeforeLatestPb.getN() };
+    }
+
+    // The two approximate modes carry the SAME payload - one double - so a branch that reached for
+    // the other one's oneof case would still produce a valid-looking fraction; the only symptom
+    // would be a session positioned by the wrong rule.
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_ENTRY_POSITION: {
+      const approximateEntryPositionPb = startFrom.getStartFromApproximateEntryPosition();
+      if (approximateEntryPositionPb === undefined) {
+        throw new Error('ApproximateEntryPosition should be defined.');
+      }
+
+      return { type: 'approximateEntryPosition', fraction: approximateEntryPositionPb.getFraction() };
+    }
+
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_APPROXIMATE_PUBLISH_TIME_POSITION: {
+      const approximatePublishTimePositionPb = startFrom.getStartFromApproximatePublishTimePosition();
+      if (approximatePublishTimePositionPb === undefined) {
+        throw new Error('ApproximatePublishTimePosition should be defined.');
+      }
+
+      return { type: 'approximatePublishTimePosition', fraction: approximatePublishTimePositionPb.getFraction() };
+    }
 
     case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_MESSAGE_ID: {
       const byteArray = startFrom.getStartFromMessageId()?.getMessageId_asU8();
@@ -761,7 +807,7 @@ export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.Consumer
   return targetPb;
 }
 
-function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
+export function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
   const startFromPb = new pb.ConsumerSessionStartFrom();
 
   switch (startFrom.type) {
@@ -777,28 +823,79 @@ function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionS
     case 'nthMessageBeforeLatest':
       startFromPb.setStartFromNthMessageBeforeLatest(new pb.NthMessageBeforeLatest().setN(startFrom.n));
       break;
-    case 'messageId':
+    case 'approximateEntryPosition':
+      startFromPb.setStartFromApproximateEntryPosition(new pb.ApproximateEntryPosition().setFraction(startFrom.fraction));
+      break;
+    case 'approximatePublishTimePosition':
+      startFromPb.setStartFromApproximatePublishTimePosition(new pb.ApproximatePublishTimePosition().setFraction(startFrom.fraction));
+      break;
+    case 'messageId': {
+      // The last point where a start position of zero bytes can still be stopped. The shared hex
+      // parser accepts blank text - an empty byte payload is a real thing - but an empty start
+      // position is not, and the server refuses it after a full create round trip.
+      const idError = messageIdError(startFrom.hexString);
+      if (idError !== undefined) {
+        throw new Error(idError);
+      }
+
       startFromPb.setStartFromMessageId(new pb.MessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
       break;
+    }
     case 'dateTime':
       const epochSeconds = Math.floor(startFrom.dateTime.getTime() / 1000);
       const timestampPb = new Timestamp();
       timestampPb.setSeconds(epochSeconds);
       startFromPb.setStartFromDateTime(new pb.DateTime().setDateTime(timestampPb));
       break;
-    case 'relativeDateTime':
+    case 'relativeDateTime': {
+      // The last point where a number this start position cannot mean can still be stopped. The
+      // picker refuses these on the way in, but a value can also arrive from the LIBRARY, whose
+      // stored field is an int64 while this request field is an int32 - and older builds saved
+      // whatever they were handed. Left alone:
+      //
+      // - a negative is subtracted as a negative, so "n hours ago" seeks into the FUTURE, and it
+      //   serializes cleanly, so nothing downstream ever questions it;
+      // - a fraction, NaN or anything past int32 fails an assertion inside the generated
+      //   serializer, which kills Play with a message about protobuf internals.
+      //
+      // Refused here instead, where the create path turns it into a notification the user can act
+      // on, and where the configuration is still exactly as they saved it.
+      const { unit, value, isRoundedToUnitStart } = startFrom.relativeDateTime;
+      if (!Number.isInteger(value) || value < 0 || value > relativeDateTimeValueMax) {
+        throw new Error(
+          `Relative start position must be a whole number of ${unit}s from 0 to ${relativeDateTimeValueMax}, but it is ${value}.`
+        );
+      }
+
       const relativeDateTimePb = new pb.RelativeDateTime();
-      relativeDateTimePb.setUnit(dateTimeUnitToPb(startFrom.relativeDateTime.unit))
-      relativeDateTimePb.setValue(startFrom.relativeDateTime.value)
-      relativeDateTimePb.setIsRoundedToUnitStart(startFrom.relativeDateTime.isRoundedToUnitStart)
+      relativeDateTimePb.setUnit(dateTimeUnitToPb(unit))
+      relativeDateTimePb.setValue(value)
+      relativeDateTimePb.setIsRoundedToUnitStart(isRoundedToUnitStart)
 
       startFromPb.setStartFromRelativeDateTime(relativeDateTimePb);
       break;
+    }
     default:
       throw new Error(`Unknown StartFrom type. ${startFrom}`);
   }
 
   return startFromPb;
+}
+
+/**
+ * The wire symbol for a delivery order. ONE mapping, deliberately: the session config sent by Play
+ * and the live SetDeliveryOrder switch must ask for the same thing, and two copies of this ternary
+ * could drift into a running session that no longer matches its own configuration.
+ *
+ * An unrecognized/absent value maps to Guaranteed, the product default (owner decision
+ * 2026-08-11) - which is what proto3 absence means on the server too.
+ */
+export function messageDeliveryOrderToPb(order: MessageDeliveryOrder | undefined): pb.MessageDeliveryOrder {
+  return order === 'as-received'
+    ? pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED
+    : order === 'best-effort'
+      ? pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME
+      : pb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED;
 }
 
 export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig {
@@ -816,6 +913,14 @@ export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.Con
   configPb.setPauseTriggerChain(pauseTriggerChainPb);
   configPb.setColoringRuleChain(coloringRuleChainPb);
   configPb.setValueProjectionList(valueProjectionListPb);
+  configPb.setMessageDeliveryOrder(messageDeliveryOrderToPb(config.messageDeliveryOrder));
+  configPb.setDeliveryOrderKey(
+    config.deliveryOrderKey === 'broker-publish-time'
+      ? pb.DeliveryOrderKey.DELIVERY_ORDER_KEY_BROKER_PUBLISH_TIME
+      : config.deliveryOrderKey === 'event-time'
+        ? pb.DeliveryOrderKey.DELIVERY_ORDER_KEY_EVENT_TIME
+        : pb.DeliveryOrderKey.DELIVERY_ORDER_KEY_PUBLISH_TIME
+  );
 
   return configPb;
 }
@@ -869,4 +974,3 @@ export function valueProjectionResultToPb(v: ValueProjectionResult): pb.ValuePro
   }
   return resultPb;
 }
-

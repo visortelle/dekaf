@@ -3,15 +3,54 @@ package consumer.session_runner
 import consumer.session_target.ConsumerSessionTarget
 import consumer.session_target.consumption_mode.modes.ReadCompactedConsumptionMode
 import org.apache.pulsar.client.api.*
+import org.apache.pulsar.client.impl.MultiplierRedeliveryBackoff
 
 import scala.jdk.CollectionConverters.*
+
+/** The client-side prefetch budget one TARGET may spend across all its topic consumers, in
+  * messages. A flat 2000-per-consumer receiver queue scaled the session's prefetch memory with
+  * the topic count - a 1000-topic regex selector configured ~2 million prefetched messages
+  * (payloads included) before anything was even shown. The budget divides across the target's
+  * consumers instead, floored so a huge selector still makes progress and capped at the old
+  * per-consumer value so small sessions keep their throughput. */
+val receiverQueueBudgetPerTarget: Int = 20_000
+val receiverQueueMin: Int = 50
+val receiverQueueMax: Int = 2_000
+
+/** The per-consumer receiver queue for a target consuming `topicCount` topics: the budget divided
+  * evenly, clamped to [[receiverQueueMin]]..[[receiverQueueMax]]. */
+def receiverQueueSizeFor(topicCount: Int): Int =
+    val even = receiverQueueBudgetPerTarget / (topicCount max 1)
+    even.max(receiverQueueMin).min(receiverQueueMax)
+
+/** The session-wide prefetch budget while a delivery-order merge is active, and its clamps.
+  *
+  * The merge's own watermarks bound what IT holds, but `consumer.pause()` cannot un-prefetch:
+  * everything already in a receiver queue is still delivered after a pause, so an ordered
+  * session's real memory exposure is prefetch PLUS merge holds PLUS the delivery limiter's
+  * queue. This budget makes the prefetch term a TRUE CEILING: it divides across the session's
+  * ACTUAL stream total (resolved before anything subscribes), and the floor is ONE - at the
+  * admitted maximum of 2,000 streams every consumer still gets 2 slots, so no admitted topology
+  * can exceed the budget through the floor (the old floor of 10 turned "5,000" into 20,000 at
+  * that width). The whole-session bound is then: <= 5,000 prefetched messages, <= 10,000 / 256
+  * MiB merge-held, <= 2,000 / 128 MiB limiter-queued, plus one in-flight send per stream. */
+val mergeReceiverQueueBudgetPerSession: Int = 5_000
+val mergeReceiverQueueMin: Int = 1
+val mergeReceiverQueueMax: Int = 500
+
+/** The per-consumer receiver queue for a BEST-EFFORT-ORDERED session: the session budget divided
+  * across the session's total resolved streams. */
+def mergeReceiverQueueSizeFor(totalSessionStreams: Int): Int =
+    val even = mergeReceiverQueueBudgetPerSession / (totalSessionStreams max 1)
+    even.max(mergeReceiverQueueMin).min(mergeReceiverQueueMax)
 
 def buildConsumer(
     pulsarClient: PulsarClient,
     consumerName: String,
     topicsToConsume: Vector[String],
     listener: MessageListener[Array[Byte]],
-    targetConfig: ConsumerSessionTarget
+    targetConfig: ConsumerSessionTarget,
+    receiverQueueSize: Int = receiverQueueMax
 ): Either[String, ConsumerBuilder[Array[Byte]]] =
     val isReadCompacted = targetConfig.consumptionMode.mode match
         case _: ReadCompactedConsumptionMode => true
@@ -19,12 +58,21 @@ def buildConsumer(
 
     val consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(2000)
+        .receiverQueueSize(receiverQueueSize)
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
         .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
-        .negativeAckRedeliveryDelay(0, java.util.concurrent.TimeUnit.SECONDS)
+        // DECAYING redelivery, not a flat delay. The old `negativeAckRedeliveryDelay(0, SECONDS)`
+        // is floored to 100ms by the client, which turned every sustained nack source into a
+        // ten-per-second redelivery hammer with no exit - and nacks are routine here: a paused
+        // session nacks everything it receives, and a delivery that throws mid-batch is handed
+        // back the same way. The first redelivery still comes at 100ms - pause/resume feels as
+        // immediate as before - while a message bounced over and over backs off toward a 10s
+        // ceiling, so a sustained source decays instead of hammering. (The start-from merge used
+        // to be the loudest source, nacking whatever it declined at its memory cap; it now PAUSES
+        // hot consumers instead and declines nothing.)
+        .negativeAckRedeliveryBackoff(MultiplierRedeliveryBackoff.builder.minDelayMs(100).maxDelayMs(10_000).build)
         .messageListener(listener)
         .startMessageIdInclusive()
         .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)

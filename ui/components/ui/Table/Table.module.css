@@ -231,3 +231,23 @@
   border-radius: 4rem;
   background-color: var(--surface-color);
 }
+
+/* size='small': dense variant for embedded tables. Presentation only. */
+.SizeSmall .Th,
+.SizeSmall .Td {
+  font-size: 12rem;
+}
+
+.SizeSmall .Th .ThContent {
+  padding: 2rem 6rem;
+}
+
+.SizeSmall .Td .TdContent {
+  padding: 2rem 6rem;
+}
+
+/* The drop-position indicator while a column drag hovers this header: the dragged column will
+   land immediately BEFORE it. */
+.ThDragOver {
+  box-shadow: inset 3rem 0 0 0 var(--accent-color, #4a72ff);
+}

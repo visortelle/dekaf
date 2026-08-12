@@ -10,3 +10,53 @@
 .AdditionalControls {
   margin-top: 8rem;
 }
+
+.PersistencyNote {
+  padding: 12rem;
+  border-radius: 8rem;
+  margin-top: 8rem;
+  background: var(--surface-color);
+}
+
+.ApproximateFraction {
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.MessageCount {
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.ApproximateFractionSlider {
+  width: 100%;
+  margin: 0;
+  /* Without this the native range control paints in the BROWSER'S own blue, which sits visibly
+     off the app's palette next to every other control. `accent-color` tints the thumb and the
+     filled track while keeping the native widget (focus ring, keyboard behavior). */
+  accent-color: var(--accent-color-blue);
+}
+
+.ApproximateFractionEndpoints {
+  display: flex;
+  justify-content: space-between;
+  color: grey;
+  font-size: x-small;
+}
+
+.ApproximateFractionValue {
+  display: flex;
+  align-items: center;
+  gap: 6rem;
+}
+
+.ApproximateFractionUnit {
+  color: grey;
+}
+
+.ApproximateFractionError {
+  color: var(--accent-color-red);
+  font-size: x-small;
+}

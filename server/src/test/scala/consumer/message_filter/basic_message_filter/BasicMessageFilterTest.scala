@@ -23,8 +23,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         isShouldFail: Boolean = false
     )
 
+    // ONE pool (and therefore one GraalVM Engine) for the whole suite: building an Engine per test
+    // cost ~132 of them. TestResult.error is populated regardless of the debug flag. Safe because
+    // ZIO Test runs the tests of a suite sequentially.
+    private val sessionContextPool = ConsumerSessionContextPool(isDebug = false)
+
     def runTestSpec(spec: TestSpec): Boolean =
-        val sessionContextPool = ConsumerSessionContextPool(isDebug = true)
         val basicMessageFilter = BasicMessageFilter(op = spec.op)
         val filter = MessageFilter(
             isEnabled = true,
@@ -38,9 +42,16 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         val sessionContext = sessionContextPool.getNextContext
         sessionContext.setCurrentMessage(spec.messageJsonOmittingValue.toJson, Right(spec.messageValueAsJson.trim))
 
-        val result = sessionContext.testMessageFilter(filter = filter).isOk
+        val result = sessionContext.testMessageFilter(filter = filter)
 
-        if spec.isShouldFail then !result else result
+        // A filter that THROWS also yields isOk=false (BasicMessageFilter catches Throwable), so
+        // reading isOk alone made every `isShouldFail` case pass on a crash just as it does on a
+        // correct rejection. An evaluation error is never an expected outcome here: fail loudly.
+        if result.error.nonEmpty then
+            java.lang.System.err.println(s"[filter-test] unexpected evaluation error: ${result.error.get}")
+            false
+        else if spec.isShouldFail then !result.isOk
+        else result.isOk
 
     def spec = suite(s"${this.getClass.toString}")(
         /*
@@ -2680,4 +2691,4 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 )
             )))
         }
-    )
+    ) @@ TestAspect.sequential

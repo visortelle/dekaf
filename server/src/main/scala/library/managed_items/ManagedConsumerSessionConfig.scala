@@ -1,6 +1,7 @@
 package library.managed_items
 
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
+import com.tools.teal.pulsar.ui.api.v1.consumer as apiPb
 import library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
 case class ManagedConsumerSessionConfigSpec(
@@ -10,7 +11,13 @@ case class ManagedConsumerSessionConfigSpec(
     pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
     coloringRuleChain: ManagedColoringRuleChainValOrRef,
     valueProjectionList: ManagedValueProjectionListValOrRef,
-    numDisplayItems: Option[Long]
+    numDisplayItems: Option[Long],
+    // Missing and UNSPECIFIED both use GUARANTEED, the product default - owner decision
+    // (2026-08-11, direct instruction), the third move of this default (the plan file's decision
+    // log is the record). Pre-existing saved items carry no field at all and run the default;
+    // explicit Best effort and Fastest are choices and are preserved.
+    messageDeliveryOrder: Option[apiPb.MessageDeliveryOrder] = Some(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED),
+    deliveryOrderKey: Option[apiPb.DeliveryOrderKey] = None
 )
 
 object ManagedConsumerSessionConfigSpec:
@@ -22,7 +29,9 @@ object ManagedConsumerSessionConfigSpec:
             pauseTriggerChain = ManagedConsumerSessionPauseTriggerChainValOrRef.fromPb(v.getPauseTriggerChain),
             coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.getColoringRuleChain),
             valueProjectionList = ManagedValueProjectionListValOrRef.fromPb(v.getValueProjectionList),
-            numDisplayItems = v.numDisplayItems
+            numDisplayItems = v.numDisplayItems,
+            messageDeliveryOrder = Some(normalizeMessageDeliveryOrder(v.messageDeliveryOrder)),
+            deliveryOrderKey = Option.when(v.deliveryOrderKey != apiPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_UNSPECIFIED)(v.deliveryOrderKey)
         )
 
     def toPb(v: ManagedConsumerSessionConfigSpec): pb.ManagedConsumerSessionConfigSpec =
@@ -33,8 +42,21 @@ object ManagedConsumerSessionConfigSpec:
             pauseTriggerChain = Some(ManagedConsumerSessionPauseTriggerChainValOrRef.toPb(v.pauseTriggerChain)),
             coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain)),
             valueProjectionList = Some(ManagedValueProjectionListValOrRef.toPb(v.valueProjectionList)),
-            numDisplayItems = v.numDisplayItems
+            numDisplayItems = v.numDisplayItems,
+            messageDeliveryOrder = v.messageDeliveryOrder
+                .map(normalizeMessageDeliveryOrder)
+                .getOrElse(apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED),
+            deliveryOrderKey = v.deliveryOrderKey.getOrElse(apiPb.DeliveryOrderKey.DELIVERY_ORDER_KEY_UNSPECIFIED)
         )
+
+    private def normalizeMessageDeliveryOrder(v: apiPb.MessageDeliveryOrder): apiPb.MessageDeliveryOrder = v match
+        case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_AS_RECEIVED                => v
+        case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_BEST_EFFORT_BY_PUBLISH_TIME => v
+        case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED                  => v
+        case apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_UNSPECIFIED                 =>
+            apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
+        case _: apiPb.MessageDeliveryOrder.Unrecognized =>
+            apiPb.MessageDeliveryOrder.MESSAGE_DELIVERY_ORDER_GUARANTEED
 
 case class ManagedConsumerSessionConfig(
     metadata: ManagedItemMetadata,

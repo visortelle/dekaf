@@ -41,6 +41,9 @@ val useLatestTopicSchemaDeserializer = Deserializer(deserializer = UseLatestTopi
 val treatBytesAsJsonDeserializer = Deserializer(deserializer = TreatBytesAsJson())
 
 object convertersTest extends ZIOSpecDefault:
+    /* Renders a byte array as hex so a failing table case is identifiable in the report. */
+    private def hex(bytes: Array[Byte]): String = bytes.map(b => f"0x$b%02x").mkString("[", " ", "]")
+
     def spec = suite(s"${this.getClass.toString} - messageValueToJson()")(
         test("AVRO schema") {
             val avroSchemaDefinition = """
@@ -72,33 +75,33 @@ object convertersTest extends ZIOSpecDefault:
                     .build
 
             val jsonToEncode = """{"name":"Alyssa","favorite_number":256}"""
-            val avroPayload = avro.converters.fromJson(
+
+            avro.converters.fromJson(
                 avroSchemaDefinition.getBytes,
                 jsonToEncode.getBytes
             ) match
-                case Right(value) => value
-                case Left(error)  => throw error
+                case Left(error) => assertNever(s"failed to encode the AVRO test payload: $error")
+                case Right(avroPayload) =>
+                    val avroSchema = AvroSchema.of(schemaDefinition)
 
-            val avroSchema = AvroSchema.of(schemaDefinition)
+                    val topicName = "topic-a"
+                    val schemaVersion = 1L;
+                    val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                    val message = MessageImpl.create[Array[Byte]](
+                        messageMetadata,
+                        java.nio.ByteBuffer.wrap(avroPayload),
+                        avroSchema,
+                        topicName
+                    )
 
-            val topicName = "topic-a"
-            val schemaVersion = 1L;
-            val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
-            val message = MessageImpl.create[Array[Byte]](
-                messageMetadata,
-                java.nio.ByteBuffer.wrap(avroPayload),
-                avroSchema,
-                topicName
-            )
+                    val schemasByVersion: SchemasByVersion = Map(1L -> schemaInfo)
+                    val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-            val schemasByVersion: SchemasByVersion = Map(1L -> schemaInfo)
-            val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
-
-            val decodedJson = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                case Right(value) => value
-                case Left(err)    => throw err
-
-            assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode))
+                    converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                        case Left(err) => assertNever(s"messageValueToJson failed for the AVRO message: $err")
+                        case Right(decodedJson) =>
+                            assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode)) ??
+                                s"decoded $decodedJson, expected $jsonToEncode"
         },
         test("JSON schema") {
             val avroSchemaDefinition =
@@ -148,11 +151,75 @@ object convertersTest extends ZIOSpecDefault:
             val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
             val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-            val decodedJson = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                case Right(value) => value
-                case Left(err)    => throw err
+            converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                case Left(err) => assertNever(s"messageValueToJson failed for the JSON-schema message: $err")
+                case Right(decodedJson) =>
+                    assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode)) ??
+                        s"decoded $decodedJson, expected $jsonToEncode"
+        },
+        test("a message that names NO schema version is read with the topic's LATEST schema") {
+            // THE CASE THIS DESERIALIZER IS NAMED FOR. A producer using Schema.BYTES (or an older
+            // client) stamps no schema version, so nothing but the topic's registry says what the
+            // bytes are. The old code answered `bytesToJsonString` here, which renders a JSON
+            // DOCUMENT as an escaped JSON STRING - `{\"id\":1,...}` instead of the object - and
+            // `SchemasByVersion.getLatest`, written for exactly this, was never called from
+            // anywhere. Confirmed end to end by e2e CS-SCH-1 (schema registered through the admin
+            // API, payload produced with Schema.BYTES).
+            val schemaDefinition =
+                """
+                  |{
+                  |  "type": "record",
+                  |  "name": "TestOrder",
+                  |  "fields": [
+                  |    { "name": "id", "type": "int" },
+                  |    { "name": "item", "type": "string" }
+                  |  ]
+                  |}
+                  """.stripMargin
 
-            assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode))
+            val schemaInfo = SchemaInfo.builder
+                .`type`(SchemaType.JSON)
+                .schema(schemaDefinition.getBytes)
+                .build
+
+            val jsonToEncode = """{"id":1,"item":"boots"}"""
+            val topicName = "topic-a"
+
+            // No setSchemaVersion: this is what a schema-less producer actually writes.
+            val messageMetadata = new MessageMetadata()
+            val message = MessageImpl.create[Array[Byte]](
+                messageMetadata,
+                java.nio.ByteBuffer.wrap(jsonToEncode.getBytes),
+                Schema.BYTES,
+                topicName
+            )
+
+            val schemasByTopic: SchemasByTopic = Map(topicName -> Map(1L -> schemaInfo))
+
+            converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                case Left(err) => assertNever(s"messageValueToJson failed for the version-less message: $err")
+                case Right(decodedJson) =>
+                    assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode)) ??
+                        s"decoded $decodedJson, expected the OBJECT $jsonToEncode (an escaped string means the raw-bytes fallback ran)"
+        },
+        test("a version-less message on a topic with NO registered schema still reads as raw bytes") {
+            // The other side of the same branch: inferring a schema is only possible when the
+            // registry holds one. With nothing to infer from, the raw-string answer is correct
+            // and must not change.
+            val payload = """{"id":1}"""
+            val message = MessageImpl.create[Array[Byte]](
+                new MessageMetadata(),
+                java.nio.ByteBuffer.wrap(payload.getBytes),
+                Schema.BYTES,
+                "topic-without-schema"
+            )
+
+            converters.messageValueToJson(Map.empty, message, useLatestTopicSchemaDeserializer) match
+                case Left(err) => assertNever(s"messageValueToJson failed for the schema-less topic: $err")
+                case Right(decodedJson) =>
+                    // A JSON string literal - the document as text, quoted and escaped.
+                    assertTrue(parseJson(decodedJson).toOption.exists(_.isString)) ??
+                        s"decoded $decodedJson, expected the raw payload as a JSON string"
         },
         test("PROTOBUF_NATIVE schema") {
             val protoFileName = "user.proto"
@@ -169,48 +236,50 @@ object convertersTest extends ZIOSpecDefault:
               """.stripMargin
 
             val compiledFiles = protobufnative.compiler.compileFiles(List(FileEntry(protoFileName, protoFileContent)))
-            val protoSchemaDefinition = compiledFiles.files.get(protoFileName) match
+            val compiledUserSchema: Either[String, Array[Byte]] = compiledFiles.files.get(protoFileName) match
                 case Some(Right(file)) =>
-                    file.schemas.get("User") match
-                        case Some(schema) => schema.rawSchema
-                        case _            => throw new Exception(s"Failed to compile PROTOBUF_NATIVE message")
-                case _ => throw new Exception(s"Failed to compile PROTOBUF_NATIVE message")
+                    file.schemas.get("User").map(_.rawSchema).toRight(s"""compiled $protoFileName has no "User" message""")
+                case Some(Left(error)) => Left(s"failed to compile $protoFileName: $error")
+                case None              => Left(s"the PROTOBUF_NATIVE compiler returned no result for $protoFileName")
 
-            val schemaInfo = SchemaInfo.builder
-                .`type`(SchemaType.PROTOBUF_NATIVE)
-                .schema(protoSchemaDefinition)
-                .build
+            compiledUserSchema match
+                case Left(reason) => assertNever(reason)
+                case Right(protoSchemaDefinition) =>
+                    val schemaInfo = SchemaInfo.builder
+                        .`type`(SchemaType.PROTOBUF_NATIVE)
+                        .schema(protoSchemaDefinition)
+                        .build
 
-            val protoSchema = Schema.getSchema(schemaInfo).asInstanceOf[Schema[Array[Byte]]]
+                    val protoSchema = Schema.getSchema(schemaInfo).asInstanceOf[Schema[Array[Byte]]]
 
-            val jsonToEncode = """{"name":"Alyssa","favorite_number":256}"""
-            val protoPayload = protobufnative.converters.fromJson(protoSchemaDefinition, jsonToEncode.getBytes) match
-                case Right(value) => value
-                case Left(error)  => throw error
+                    val jsonToEncode = """{"name":"Alyssa","favorite_number":256}"""
 
-            val topicName = "topic-a"
-            val schemaVersion = 1L;
-            val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
-            val message = MessageImpl.create[Array[Byte]](
-                messageMetadata,
-                java.nio.ByteBuffer.wrap(protoPayload),
-                protoSchema,
-                topicName
-            )
+                    protobufnative.converters.fromJson(protoSchemaDefinition, jsonToEncode.getBytes) match
+                        case Left(error) => assertNever(s"failed to encode the PROTOBUF_NATIVE test payload: $error")
+                        case Right(protoPayload) =>
+                            val topicName = "topic-a"
+                            val schemaVersion = 1L;
+                            val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                            val message = MessageImpl.create[Array[Byte]](
+                                messageMetadata,
+                                java.nio.ByteBuffer.wrap(protoPayload),
+                                protoSchema,
+                                topicName
+                            )
 
-            val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
-            val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+                            val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                            val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-            val decodedJson = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                case Right(value) => value
-                case Left(err)    => throw err
-
-            assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode))
+                            converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                                case Left(err) => assertNever(s"messageValueToJson failed for the PROTOBUF_NATIVE message: $err")
+                                case Right(decodedJson) =>
+                                    assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode)) ??
+                                        s"decoded $decodedJson, expected $jsonToEncode"
         },
         test("BOOLEAN to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.BOOLEAN)
                     .build
@@ -228,23 +297,23 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: BOOLEAN payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "false"),
                 TestCase(Array(1), "true")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("INT8 to json") {
             case class TestCase(messagePayload: Array[Byte], expected: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.INT8)
                     .build
@@ -262,11 +331,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: INT8 payload=${hex(testCase.messagePayload)}, expected ${testCase.expected}"
 
-                parseJson(json) == parseJson(testCase.expected)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expected)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "0"),
@@ -276,12 +345,12 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(-18), "-18")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("INT16 to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.INT16)
                     .build
@@ -299,11 +368,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: INT16 payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "0"),
@@ -315,12 +384,12 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0x7f, 0xff).map(_.toByte), Short.MaxValue.toString)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("INT32 to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.INT32)
                     .build
@@ -338,11 +407,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: INT32 payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "0"),
@@ -354,12 +423,12 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0x7f, 0xff, 0xff, 0xff).map(_.toByte), Int.MaxValue.toString)
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("INT64 to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.INT64)
                     .build
@@ -377,11 +446,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: INT64 payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "0"),
@@ -393,12 +462,12 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff).map(_.toByte), s"""${Long.MaxValue.toString}""")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("FLOAT to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.FLOAT)
                     .build
@@ -416,11 +485,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: FLOAT payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "0.0"),
@@ -432,12 +501,12 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0xc6, 0xea, 0x60, 0x0f).map(_.toByte), "-30000.03")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("DOUBLE to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.DOUBLE)
                     .build
@@ -455,11 +524,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: DOUBLE payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(0), "0.0"),
@@ -471,12 +540,12 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0xc0, 0xdd, 0x4c, 0x01, 0xeb, 0x85, 0x1e, 0xb8).map(_.toByte), "-30000.03")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
         test("STRING to json") {
             case class TestCase(messagePayload: Array[Byte], expectedJson: String)
 
-            def runTestCase(testCase: TestCase): Boolean =
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
                 val schemaInfo = SchemaInfo.builder
                     .`type`(SchemaType.STRING)
                     .build
@@ -494,11 +563,11 @@ object convertersTest extends ZIOSpecDefault:
                 val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
                 val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
 
-                val json = converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
-                    case Right(value) => value
-                    case Left(err)    => throw err
+                val label = s"case #$idx: STRING payload=${hex(testCase.messagePayload)}, expected ${testCase.expectedJson}"
 
-                parseJson(json) == parseJson(testCase.expectedJson)
+                converters.messageValueToJson(schemasByTopic, message, useLatestTopicSchemaDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- messageValueToJson failed: $err")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.expectedJson)) ?? s"$label, actual $json"
 
             val testCases = List[TestCase](
                 TestCase(Array(), "\"\""),
@@ -512,6 +581,69 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s"""")
             )
 
-            assertTrue(testCases.forall(runTestCase))
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
         },
+        test("TreatBytesAsJson deserializer - valid JSON payload") {
+            case class TestCase(payload: String)
+
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
+                val topicName = "topic-a"
+                val message = MessageImpl.create[Array[Byte]](
+                    new MessageMetadata(),
+                    ByteBuffer.wrap(testCase.payload.getBytes("UTF-8")),
+                    BytesSchema.of.asInstanceOf[Schema[Array[Byte]]],
+                    topicName
+                )
+
+                // The deserializer ignores the registered schemas by design - it treats the raw bytes as JSON.
+                val schemasByTopic: SchemasByTopic = Map.empty
+
+                val label = s"case #$idx: payload=${testCase.payload}"
+
+                converters.messageValueToJson(schemasByTopic, message, treatBytesAsJsonDeserializer) match
+                    case Left(err)   => assertNever(s"$label -- expected Right, got Left($err)")
+                    case Right(json) => assertTrue(parseJson(json) == parseJson(testCase.payload)) ?? s"$label, actual $json"
+
+            val testCases = List[TestCase](
+                TestCase("""{"name":"Alyssa","favorite_number":256}"""),
+                TestCase("""{"a":2,"b":{"c":3}}"""),
+                TestCase("""[1,2,"a"]"""),
+                TestCase("[]"),
+                TestCase("null"),
+                TestCase("true"),
+                TestCase("-3.0"),
+                TestCase("\"Gruß\"")
+            )
+
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
+        },
+        test("TreatBytesAsJson deserializer - invalid JSON payload") {
+            case class TestCase(payload: String)
+
+            def runTestCase(testCase: TestCase, idx: Int): TestResult =
+                val topicName = "topic-a"
+                val message = MessageImpl.create[Array[Byte]](
+                    new MessageMetadata(),
+                    ByteBuffer.wrap(testCase.payload.getBytes("UTF-8")),
+                    BytesSchema.of.asInstanceOf[Schema[Array[Byte]]],
+                    topicName
+                )
+
+                val schemasByTopic: SchemasByTopic = Map.empty
+
+                val label = s"case #$idx: payload=${testCase.payload}"
+                val actual = converters.messageValueToJson(schemasByTopic, message, treatBytesAsJsonDeserializer)
+
+                assertTrue(actual.isLeft) ?? s"$label -- expected Left, actual $actual"
+
+            val testCases = List[TestCase](
+                TestCase(""),
+                TestCase("2z"),
+                TestCase("undefined"),
+                TestCase("""{a:2,"b":{"c":3}}"""),
+                TestCase("""{"a":}""")
+            )
+
+            testCases.zipWithIndex.map { (testCase, idx) => runTestCase(testCase, idx) }.reduce(_ && _)
+        }
     )

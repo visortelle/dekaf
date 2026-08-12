@@ -41,14 +41,14 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
                 (namespace, getOptionalNamespaceMetricsPb(metricsEntries, namespace))
             ).toMap
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(GetNamespacesMetricsResponse(
                 status = Some(status),
                 namespacesMetrics = optionalNamespacesMetrics
             ))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetNamespacesMetricsResponse(status = Some(status)))
         }
 
@@ -58,14 +58,14 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
                 (namespace, getOptionalNamespacePersistentMetricsPb(metricsEntries, namespace))
             ).toMap
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(GetNamespacesPersistentMetricsResponse(
                 status = Some(status),
                 namespacesPersistentMetrics = optionalNamespacesPersistentMetrics
             ))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetNamespacesPersistentMetricsResponse(status = Some(status)))
         }
 
@@ -76,14 +76,14 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
 //                (namespace, getOptionalTenMetricsPb(metricsEntries, namespace))
 //            ).toMap
 //
-//            val status: Status = Status(code = Code.OK.index)
+//            val status: Status = Status(code = Code.OK.value)
 //            Future.successful(GetTenantsMetricsResponse(
 //                status = Some(status),
 //                namespacesMetrics = optionalNamespacesMetrics
 //            ))
 //        } catch {
 //            case err =>
-//                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+//                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
 //                Future.successful(GetTenantsMetricsResponse(status = Some(status)))
 //        }
 

@@ -1,6 +1,7 @@
 package routes
 
 import harness.DekafSuite
+import harness.Eventually.eventually
 import ui.ConfirmationDialog
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.SelectOption
@@ -60,23 +61,31 @@ class SubscriptionActionSpec extends DekafSuite:
     assert(awaitBacklog(fqn, sub, _ == 0L) == 0L)
   }
 
-  test("SUB-3: expire messages older than a duration runs without error (non-partitioned)") {
+  test("SUB-3: expire messages older than a duration clears the backlog (non-partitioned)") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
     produceCapturing(fqn, 3)
+    val producedAt = System.currentTimeMillis()
     val sub = fixtures.unique("sub")
     admin.topics().createSubscription(fqn, sub, MessageId.earliest)
+    assert(awaitBacklog(fqn, sub, _ == 3L) == 3L) // a REAL backlog to expire
 
     page.navigate(overviewUrl(t, ns, topic, sub))
     page.getByTestId("expire-subscription-messages-button").click()
     page.getByTestId("expire-target-select").selectOption(new SelectOption().setValue("expire-time-in-seconds"))
-    page.getByTestId("expire-duration").locator("input").first().fill("5") // any >0 enables Confirm
+    page.getByTestId("expire-duration").locator("input").first().fill("1") // seconds (DurationInput default unit)
+    // Expiry compares publish time against `now - 1s`, so "older than 1s" is a real precondition of
+    // the assertion below - poll for it (page load usually covers it) instead of sleeping blind.
+    eventually(timeoutMs = 10000, intervalMs = 200) {
+      assert(System.currentTimeMillis() - producedAt > 2000)
+    }
     ConfirmationDialog(page).confirm(guard = Some("CONFIRM"))
 
-    // Oracle for the time-based path: the action runs without error.
-    // (Deterministic backlog effect is asserted on the by-ID leg above - see NOTES.)
     assertThat(page.getByText("Messages were successfully expired")).isVisible()
-    assert(admin.topics().getSubscriptions(fqn).asScala.contains(sub)) // admin cross-check: sub intact
+    // The oracle - a toast only proves a request was fired; this proves the backlog actually drained
+    // while the subscription itself survived.
+    assert(awaitBacklog(fqn, sub, _ == 0L) == 0L)
+    assert(admin.topics().getSubscriptions(fqn).asScala.contains(sub))
   }
 
   test("SUB-3: expire by message ID is disabled for a partitioned topic") {

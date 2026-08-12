@@ -21,11 +21,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         try
             val clusters = adminClient.clusters.getClusters
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(GetClustersResponse(status = Some(status), clusters = clusters.asScala.toList))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetClustersResponse(status = Some(status)))
 
     override def getCluster(request: GetClusterRequest): Future[GetClusterResponse] =
@@ -35,12 +35,12 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
             try adminClient.clusters.getCluster(request.cluster)
             catch
                 case err =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                     return Future.successful(GetClusterResponse(status = Some(status)))
 
         val clusterDataPb = conversions.clusterDataToPb(clusterData)
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(GetClusterResponse(status = Some(status), clusterData = Some(clusterDataPb)))
 
     override def createCluster(request: CreateClusterRequest): Future[CreateClusterResponse] =
@@ -49,17 +49,17 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         try
             val clusterData = request.clusterData match
                 case None =>
-                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Cluster data is empty")
+                    val status = Status(code = Code.FAILED_PRECONDITION.value, message = "Cluster data is empty")
                     return Future.successful(CreateClusterResponse(status = Some(status)))
                 case Some(cd) => conversions.clusterDataFromPb(cd)
 
             adminClient.clusters.createCluster(request.cluster, clusterData)
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(CreateClusterResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(CreateClusterResponse(status = Some(status)))
 
     override def deleteCluster(request: DeleteClusterRequest): Future[DeleteClusterResponse] =
@@ -68,11 +68,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         try
             adminClient.clusters.deleteCluster(request.cluster)
 
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(DeleteClusterResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteClusterResponse(status = Some(status)))
 
     override def getFailureDomains(request: GetFailureDomainsRequest): Future[GetFailureDomainsResponse] =
@@ -81,11 +81,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         try
             val failureDomains = adminClient.clusters.getFailureDomains(request.cluster)
             val failureDomainsPb = failureDomains.asScala.view.mapValues(conversions.failureDomainToPb).toMap
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(GetFailureDomainsResponse(status = Some(status), domains = failureDomainsPb))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetFailureDomainsResponse(status = Some(status)))
 
     override def createFailureDomain(request: CreateFailureDomainRequest): Future[CreateFailureDomainResponse] =
@@ -101,11 +101,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
                 request.domainName,
                 failureDomain
             )
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(CreateFailureDomainResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(CreateFailureDomainResponse(status = Some(status)))
 
     override def deleteFailureDomain(request: DeleteFailureDomainRequest): Future[DeleteFailureDomainResponse] =
@@ -113,11 +113,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
         try
             adminClient.clusters.deleteFailureDomain(request.cluster, request.domainName)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(DeleteFailureDomainResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteFailureDomainResponse(status = Some(status)))
 
     override def updateFailureDomain(request: UpdateFailureDomainRequest): Future[UpdateFailureDomainResponse] =
@@ -132,11 +132,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
                 request.domainName,
                 failureDomain
             )
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(UpdateFailureDomainResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(UpdateFailureDomainResponse(status = Some(status)))
 
     override def createNamespaceIsolationPolicy(request: CreateNamespaceIsolationPolicyRequest): Future[CreateNamespaceIsolationPolicyResponse] =
@@ -151,11 +151,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
                 request.policyName,
                 policy
             )
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(CreateNamespaceIsolationPolicyResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(CreateNamespaceIsolationPolicyResponse(status = Some(status)))
 
     override def deleteNamespaceIsolationPolicy(request: DeleteNamespaceIsolationPolicyRequest): Future[DeleteNamespaceIsolationPolicyResponse] =
@@ -163,11 +163,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
 
         try
             adminClient.clusters.deleteNamespaceIsolationPolicy(request.cluster, request.policyName)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(DeleteNamespaceIsolationPolicyResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteNamespaceIsolationPolicyResponse(status = Some(status)))
 
     override def getNamespaceIsolationPolicy(request: GetNamespaceIsolationPolicyRequest): Future[GetNamespaceIsolationPolicyResponse] =
@@ -176,11 +176,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         try
             val policy = adminClient.clusters.getNamespaceIsolationPolicy(request.cluster, request.policyName)
             val namespaceIsolationDataPb = conversions.namespaceIsolationDataToPb(policy)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(GetNamespaceIsolationPolicyResponse(status = Some(status), namespaceIsolationData = Some(namespaceIsolationDataPb)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetNamespaceIsolationPolicyResponse(status = Some(status)))
 
     override def updateNamespaceIsolationPolicy(request: UpdateNamespaceIsolationPolicyRequest): Future[UpdateNamespaceIsolationPolicyResponse] =
@@ -195,11 +195,11 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
                 request.policyName,
                 policy
             )
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(UpdateNamespaceIsolationPolicyResponse(status = Some(status)))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(UpdateNamespaceIsolationPolicyResponse(status = Some(status)))
 
     override def getBrokersWithNamespaceIsolationPolicy(
@@ -210,9 +210,9 @@ class ClustersServiceImpl extends ClustersServiceGrpc.ClustersService:
         try
             val brokers = adminClient.clusters.getBrokersWithNamespaceIsolationPolicy(request.cluster)
             val brokersPb = brokers.asScala.toList.map(conversions.brokerNamespaceIsolationDataToPb)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(GetBrokersWithNamespaceIsolationPolicyResponse(status = Some(status), brokers = brokersPb))
         catch
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetBrokersWithNamespaceIsolationPolicyResponse(status = Some(status)))

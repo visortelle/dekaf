@@ -20,10 +20,10 @@ class BrokerStatsServiceImpl extends pb.BrokerStatsServiceGrpc.BrokerStatsServic
         try {
             val statsJson = adminClient.brokerStats.getMetrics
             Future.successful(
-                pb.GetBrokerStatsJsonResponse(status = Some(Status(code = Code.OK.index)), statsJson)
+                pb.GetBrokerStatsJsonResponse(status = Some(Status(code = Code.OK.value)), statsJson)
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetBrokerStatsJsonResponse(status = Some(status)))
         }

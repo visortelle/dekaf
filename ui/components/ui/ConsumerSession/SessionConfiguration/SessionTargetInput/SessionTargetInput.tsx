@@ -108,6 +108,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
       <div style={{ marginTop: '-28rem' }}>
         <FormItem>
           <IconToggle<boolean>
+            testId="cs-target-compacted"
             items={[
               { type: 'item', value: true, help: readCompactedHelp, foregroundColor: '#fff', backgroundColor: 'var(--accent-color-blue)', label: 'Compacted' },
               { type: 'item', value: false, help: readCompactedHelp, foregroundColor: 'var(--background-color)', backgroundColor: '#aaa', label: 'Compacted' }

@@ -25,13 +25,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             val config = adminClient.brokers.getAllDynamicConfigurations.asScala.toMap
             Future.successful(
                 GetAllDynamicConfigurationsResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     config
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetAllDynamicConfigurationsResponse(status = Some(status)))
         }
 
@@ -42,13 +42,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             val names = adminClient.brokers.getDynamicConfigurationNames.asScala.toList
             Future.successful(
                 GetDynamicConfigurationNamesResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     names
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetDynamicConfigurationNamesResponse(status = Some(status)))
         }
 
@@ -66,13 +66,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
             Future.successful(
                 GetInternalConfigurationDataResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     config = Some(config)
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetInternalConfigurationDataResponse(status = Some(status)))
         }
 
@@ -83,13 +83,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             val config = adminClient.brokers.getRuntimeConfigurations.asScala.toMap
             Future.successful(
                 GetRuntimeConfigurationsResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     config
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetRuntimeConfigurationsResponse(status = Some(status)))
         }
 
@@ -100,11 +100,11 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.updateDynamicConfiguration(request.name, request.value)
             Future.successful(
-                UpdateDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
+                UpdateDynamicConfigurationResponse(status = Some(Status(code = Code.OK.value)))
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(UpdateDynamicConfigurationResponse(status = Some(status)))
         }
 
@@ -115,11 +115,11 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.deleteDynamicConfiguration(request.name)
             Future.successful(
-                DeleteDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
+                DeleteDynamicConfigurationResponse(status = Some(Status(code = Code.OK.value)))
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteDynamicConfigurationResponse(status = Some(status)))
         }
 
@@ -130,11 +130,11 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.healthcheck(TopicVersion.V2)
             Future.successful(
-                HealthCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
+                HealthCheckResponse(status = Some(Status(code = Code.OK.value)), isOk = true)
             )
         } catch {
             case err =>
-                val status = Status(code = Code.OK.index, message = err.getMessage)
+                val status = Status(code = Code.OK.value, message = err.getMessage)
                 Future.successful(HealthCheckResponse(status = Some(status), isOk = false))
         }
 
@@ -146,7 +146,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         val resourceFqn = request.resourceFqn
 
         def failWithMessage(message: String): Future[CheckResourceExistsResponse] =
-            val status = Status(code = Code.FAILED_PRECONDITION.index, message = message)
+            val status = Status(code = Code.FAILED_PRECONDITION.value, message = message)
             Future.successful(CheckResourceExistsResponse(status = Some(status), isExists = false))
 
         val isResourceExists = request.resource match
@@ -166,7 +166,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 return failWithMessage("Resource type should be specified")
 
         Future.successful(
-            CheckResourceExistsResponse(status = Some(Status(code = Code.OK.index)), isExists = isResourceExists)
+            CheckResourceExistsResponse(status = Some(Status(code = Code.OK.value)), isExists = isResourceExists)
         )
 
     override def backlogQuotaCheck(request: BacklogQuotaCheckRequest): Future[BacklogQuotaCheckResponse] =
@@ -176,11 +176,11 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.backlogQuotaCheck()
             Future.successful(
-                BacklogQuotaCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
+                BacklogQuotaCheckResponse(status = Some(Status(code = Code.OK.value)), isOk = true)
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(BacklogQuotaCheckResponse(status = Some(status), isOk = false))
         }
     override def getResourceGroupsList(request: GetResourceGroupsListRequest): Future[GetResourceGroupsListResponse] =
@@ -191,13 +191,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
             Future.successful(
                 GetResourceGroupsListResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     resourceGroups
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetResourceGroupsListResponse(status = Some(status)))
         }
     override def getResourceGroups(request: GetResourceGroupsRequest): Future[GetResourceGroupsResponse] =
@@ -220,13 +220,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
             Future.successful(
                 GetResourceGroupsResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     resourceGroups
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(GetResourceGroupsResponse(status = Some(status)))
         }
 
@@ -246,13 +246,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
             Future.successful(
                 pb.GetResourceGroupResponse(
-                    status = Some(Status(code = Code.OK.index)),
+                    status = Some(Status(code = Code.OK.value)),
                     resourceGroup = Some(resourceGroup)
                 )
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetResourceGroupResponse(status = Some(status)))
         }
 
@@ -271,13 +271,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                     rg.publishRateInMsgs.foreach(n => resourceGroup.setPublishRateInMsgs(n))
 
                     adminClient.resourcegroups.createResourceGroup(rg.name, resourceGroup)
-                    Future.successful(CreateResourceGroupResponse(status = Some(Status(code = Code.OK.index))))
+                    Future.successful(CreateResourceGroupResponse(status = Some(Status(code = Code.OK.value))))
                 case None =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Resource group should be specified")
+                    val status = Status(code = Code.INVALID_ARGUMENT.value, message = "Resource group should be specified")
                     Future.successful(CreateResourceGroupResponse(status = Some(status)))
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(CreateResourceGroupResponse(status = Some(status)))
         }
 
@@ -288,11 +288,11 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.resourcegroups.deleteResourceGroup(request.name)
             Future.successful(
-                DeleteResourceGroupResponse(status = Some(Status(code = Code.OK.index)))
+                DeleteResourceGroupResponse(status = Some(Status(code = Code.OK.value)))
             )
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(DeleteResourceGroupResponse(status = Some(status)))
         }
 
@@ -311,13 +311,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                     rg.publishRateInMsgs.foreach(n => resourceGroup.setPublishRateInMsgs(n))
 
                     adminClient.resourcegroups.updateResourceGroup(rg.name, resourceGroup)
-                    Future.successful(pb.UpdateResourceGroupResponse(status = Some(Status(code = Code.OK.index))))
+                    Future.successful(pb.UpdateResourceGroupResponse(status = Some(Status(code = Code.OK.value))))
                 case None =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Resource group should be specified")
+                    val status = Status(code = Code.INVALID_ARGUMENT.value, message = "Resource group should be specified")
                     Future.successful(pb.UpdateResourceGroupResponse(status = Some(status)))
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.UpdateResourceGroupResponse(status = Some(status)))
         }
 
@@ -329,15 +329,15 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             Option(adminClient.brokers.getVersion) match
                 case Some(version) =>
                     Future.successful(pb.GetVersionResponse(
-                        status = Some(Status(code = Code.OK.index)),
+                        status = Some(Status(code = Code.OK.value)),
                         version
                     ))
                 case None =>
-                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Something went wrong.")
+                    val status = Status(code = Code.FAILED_PRECONDITION.value, message = "Something went wrong.")
                     Future.successful(pb.GetVersionResponse(status = Some(status)))
         } catch {
             case err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.GetVersionResponse(status = Some(status)))
         }
 }

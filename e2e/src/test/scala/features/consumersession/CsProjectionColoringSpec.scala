@@ -3,7 +3,9 @@ package features.consumersession
 import harness.DekafSuite
 import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.assertions.LocatorAssertions
+import com.microsoft.playwright.options.SelectOption
 import org.apache.pulsar.client.api.Schema
+import scala.jdk.CollectionConverters.*
 
 class CsProjectionColoringSpec extends DekafSuite:
   private def count(n: Int) = new LocatorAssertions.HasCountOptions().setTimeout(20000)
@@ -15,22 +17,51 @@ class CsProjectionColoringSpec extends DekafSuite:
     val p = client.newProducer(Schema.STRING).topic(fqn).create()
     try values.foreach(p.send) finally p.close()
 
-  test("CS-12 (P0): a projection adds a column whose header equals the projection label") {
+  private def produceKeyed(fqn: String, keyed: Seq[(String, String)]): Unit =
+    val p = client.newProducer(Schema.STRING).topic(fqn).create()
+    try keyed.foreach((k, v) => p.newMessage().key(k).value(v).send()) finally p.close()
+
+  /** The rendered PROJECTION cells, in row order.
+    *
+    * A projection `<td>` carries no test-id of its own (the projections are a variable-length run of
+    * columns), but its position is fixed by `Message.tsx`: the projections sit immediately before
+    * the instrumented value cell. Addressing them relative to that anchor reads the real projected
+    * output without asking `ui/` for new instrumentation. */
+  private def projectionCells(cs: ConsumerSessionPage): List[String] =
+    page.locator("[data-testid='cs-message-value']").locator("xpath=preceding-sibling::td[1]")
+      .allInnerTexts().asScala.toList.map(_.trim)
+
+  test("CS-12 (P0): a projection adds a column whose header is its label and whose cells hold the projected value") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
-    produce(fqn, (1 to 3).map(i => s"m-$i"))
+    // Distinct key and value per message, so a projection OF THE KEY cannot be satisfied by
+    // rendering the value column twice - which is what an assertion on the header alone allowed.
+    produceKeyed(fqn, (1 to 3).map(i => s"k-$i" -> s"m-$i"))
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     cs.addProjection()
     cs.projectionLabel.first().fill("MyCol")
+    // Project the message KEY rather than the default (the whole value). The target select has no
+    // test-id; its option values are the discriminator, and are unique to this control on the page.
+    cs.sessionProjections.locator("select:has(option[value='BasicMessageFilterKeyTarget'])")
+      .first().selectOption(new SelectOption().setValue("BasicMessageFilterKeyTarget"))
 
     cs.setStartFrom("Earliest message")
     cs.play()
     assertThat(cs.messages).hasCount(3, count(3))
     assertThat(cs.projectionColumnHeader).hasCount(1, count(1))
     assertThat(cs.projectionColumnHeader).containsText("MyCol", contains)
+
+    // THE assertion: the projected VALUES, exactly, row by row - the server really evaluated the
+    // projection and the results really landed in the right rows. The header is generated entirely
+    // from local config and would render identically for a projection that computed nothing.
+    assert(
+      projectionCells(cs) == List("\"k-1\"", "\"k-2\"", "\"k-3\""),
+      s"the projection column holds ${projectionCells(cs)}"
+    )
+    // ... and it is the KEY, not a second copy of the value column beside it.
+    assert(cs.columnValues("value") == List("m-1", "m-2", "m-3"), s"the value column holds ${cs.columnValues("value")}")
   }
 
   test("CS-13: coloring modal picks a swatch, applies it, and a matching row is colored") {
@@ -40,7 +71,6 @@ class CsProjectionColoringSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
     cs.addColoringRule()                       // default rule = empty filter chain (matches all)
 
     cs.coloringBg.first().click()              // open the "Pick a Color" modal
@@ -63,7 +93,6 @@ class CsProjectionColoringSpec extends DekafSuite:
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
-    cs.revealAdvanced()
 
     // Session rule -> red.
     cs.addColoringRule()
@@ -86,37 +115,44 @@ class CsProjectionColoringSpec extends DekafSuite:
   test("CS-14: changing the deserializer changes how values decode") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val fqn = s"persistent://$t/$ns/$topic"
-    produce(fqn, Seq("\"apple\""))              // raw bytes are the JSON string "apple" (with quotes)
+    // The raw bytes on the wire are the seven characters  "apple"  - a JSON string INCLUDING its
+    // quotes. That is what makes the two deserializers distinguishable: one more decode step
+    // removes exactly one layer of quoting.
+    produce(fqn, Seq("\"apple\""))
 
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
     cs.setStartFrom("Earliest message")
     cs.play()
     assertThat(cs.messages).hasCount(1, count(1))
-    val schemaRendered = cs.firstValueCell.innerText()   // topic STRING schema -> "apple" (quoted)
+    // Topic STRING schema: the bytes decode to the 7-character string `"apple"`, which the value
+    // column then renders as JSON - so the quotes are escaped and a second pair is added.
+    // `columnValues` strips the outer rendering pair, leaving the decoded string itself.
+    assert(cs.columnValues("value") == List("\\\"apple\\\""), s"schema rendering was ${cs.columnValues("value")}")
 
     cs.stop()                                            // back to config view
     cs.setDeserializer("Treat raw bytes as JSON")
     cs.play()
     assertThat(cs.messages).hasCount(1, count(1))
-    val jsonRendered = cs.firstValueCell.innerText()     // JSON parse -> apple (unquoted)
-
-    assert(schemaRendered != jsonRendered,
-      s"deserializer change should alter value rendering: schema='$schemaRendered' json='$jsonRendered'")
+    // Raw bytes as JSON: the same bytes are PARSED, so the value is the string `apple` with no
+    // quotes of its own, rendered with one pair which `columnValues` strips.
+    //
+    // Both renderings are pinned exactly, not merely asserted to differ: "they differ" is satisfied
+    // by any two wrong answers - a decode that dropped a character, or an error placeholder in
+    // either leg - which is what this test used to accept.
+    assert(cs.columnValues("value") == List("apple"), s"JSON rendering was ${cs.columnValues("value")}")
   }
 
-  test("CS-15: the Advanced reveal is one-way (once revealed, stays)") {
+  test("CS-15: all session settings are visible without an advanced disclosure") {
     val (t, ns, topic) = fixtures.freshTopicParts()
     val cs = ConsumerSessionPage(page)
     cs.openForTopic(t, ns, topic)
 
-    assertThat(cs.advancedToggle).isVisible(vis)
-    assertThat(cs.sessionFilters).hasCount(0, count(0))
-
-    cs.revealAdvanced()
+    assertThat(page.getByTestId("cs-advanced-toggle")).hasCount(0, count(0))
+    assertThat(page.getByText("Show advanced settings")).hasCount(0, count(0))
+    assertThat(page.getByTestId("cs-delivery-order")).isVisible(vis)
+    assertThat(page.getByText("Limit num. display messages")).isVisible(vis)
     assertThat(cs.sessionFilters).isVisible(vis)
-
-    cs.sessionFilterPanel.addFilter()                    // adds advanced config -> reveal locks on
-    assertThat(cs.advancedToggle).hasCount(0, count(0))  // toggle is gone
-    assertThat(cs.sessionFilters).isVisible(vis)         // advanced section stays
+    assertThat(cs.sessionProjections).isVisible(vis)
+    assertThat(cs.sessionColoring).isVisible(vis)
   }

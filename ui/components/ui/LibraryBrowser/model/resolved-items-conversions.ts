@@ -4,7 +4,7 @@ import { TopicSelector } from "../../ConsumerSession/topic-selector/topic-select
 import { BasicMessageFilterTarget } from "../../ConsumerSession/basic-message-filter-types";
 import { ValueProjection, ValueProjectionList } from "../../ConsumerSession/value-projections/value-projections";
 import { Deserializer } from "../../ConsumerSession/deserializer/deserializer";
-import { defaultNumDisplayItems } from "../../ConsumerSession/SessionConfiguration/SessionConfiguration";
+import { displayItemLimit } from "../../ConsumerSession/SessionConfiguration/display-items";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -103,6 +103,8 @@ export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionSt
     case 'latestMessage': return { type: 'latestMessage' };
     case 'nthMessageAfterEarliest': return { type: 'nthMessageAfterEarliest', n: spec.startFrom.n };
     case 'nthMessageBeforeLatest': return { type: 'nthMessageBeforeLatest', n: spec.startFrom.n };
+    case 'approximateEntryPosition': return { type: 'approximateEntryPosition', fraction: spec.startFrom.fraction };
+    case 'approximatePublishTimePosition': return { type: 'approximatePublishTimePosition', fraction: spec.startFrom.fraction };
     case 'dateTime': return {
       type: 'dateTime',
       dateTime: dateTimeFromValOrRef(spec.startFrom.dateTime)
@@ -223,7 +225,16 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
     coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
     pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain),
     valueProjectionList: valueProjectionListFromValOrRef(spec.valueProjectionList),
-    numDisplayItems: spec.numDisplayItems === undefined ? defaultNumDisplayItems : spec.numDisplayItems
+    // A persisted spec is JSON on disk: written by an older build, hand-edited, or committed by a
+    // field that did not validate. A limit of zero (or a negative, or a fraction) turns the session's
+    // `slice(-limit)` retention into "keep everything", so it is not passed through as given.
+    numDisplayItems: displayItemLimit(spec.numDisplayItems),
+    // A spec saved before the field existed names no order. It runs under the product default -
+    // Guaranteed (owner decision 2026-08-11) - which is exactly what the server does with proto3
+    // absence, so the session the browser describes and the session the server builds cannot
+    // disagree.
+    messageDeliveryOrder: spec.messageDeliveryOrder ?? 'guaranteed',
+    deliveryOrderKey: spec.deliveryOrderKey
   }
 }
 

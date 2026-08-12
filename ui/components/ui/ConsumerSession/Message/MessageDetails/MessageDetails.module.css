@@ -3,6 +3,10 @@
   overflow: hidden;
   flex: 1;
 
+  /* Prevent horizontal gestures inside the inspector from navigating browser history. The outer
+     resize wrapper intentionally overflows so its edge handle remains fully hit-testable. */
+  overscroll-behavior-x: contain;
+
   margin-top: -1px;
 }
 

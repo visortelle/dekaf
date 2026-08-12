@@ -30,11 +30,11 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
         try {
             adminClient.tenants.createTenant(request.tenantName, config.build)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.CreateTenantResponse(status = Some(status)))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.CreateTenantResponse(status = Some(status)))
         }
 
@@ -52,11 +52,11 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
         try {
             adminClient.tenants.updateTenant(request.tenantName, config.build)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.UpdateTenantResponse(status = Some(status)))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.UpdateTenantResponse(status = Some(status)))
         }
 
@@ -66,11 +66,11 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
         try {
             adminClient.tenants.deleteTenant(request.tenantName, request.force)
-            val status: Status = Status(code = Code.OK.index)
+            val status: Status = Status(code = Code.OK.value)
             Future.successful(pb.DeleteTenantResponse(status = Some(status)))
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 Future.successful(pb.DeleteTenantResponse(status = Some(status)))
         }
 
@@ -96,7 +96,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
             request.tenants.zip(tenantsInfo).toMap
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 return Future.successful(pb.GetTenantsResponse(status = Some(status)))
         }
 
@@ -110,12 +110,12 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
                 Map.empty
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 return Future.successful(pb.GetTenantsResponse(status = Some(status)))
         }
 
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(pb.GetTenantsResponse(
             status = Some(status),
             tenants,
@@ -130,9 +130,9 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
             adminClient.tenants.getTenants.asScala
         } catch {
             case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.value, message = err.getMessage)
                 return Future.successful(pb.ListTenantsResponse(status = Some(status)))
         }
 
-        val status: Status = Status(code = Code.OK.index)
+        val status: Status = Status(code = Code.OK.value)
         Future.successful(pb.ListTenantsResponse(status = Some(status), tenants = tenants.toSeq))

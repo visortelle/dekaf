@@ -21,8 +21,15 @@ export function valueToBytes(value: string, valueType: ValueType): Either.Either
       return Either.right(bytes);
     };
     case 'bytes-hex': {
-      const bytes = hexStringToByteArray(value);
-      return Either.right(bytes);
+      // The parser REFUSES malformed hex by throwing rather than quietly writing some other byte.
+      // This function advertises an Either and its caller inspects it inside an async click
+      // handler with no try of its own, so an escaping throw rejected that handler: no message
+      // sent, and no toast either - the click simply did nothing.
+      try {
+        return Either.right(hexStringToByteArray(value));
+      } catch (err) {
+        return Either.left(err as Error);
+      }
     };
   }
 }
