@@ -220,12 +220,10 @@ const approximateModes = [
 const approximateModeUi = {
   approximateEntryPosition: {
     accessibleName: 'Approximate data position',
-    help: 'Estimated from retained entries; each topic and partition is positioned independently.',
     endLabel: 'New messages',
   },
   approximatePublishTimePosition: {
     accessibleName: 'Approximate publish-time position',
-    help: 'Estimated from the first and last retained entries’ publish times; each topic has its own range and its partitions share one cutoff.',
     endLabel: 'Last publish time',
   },
 } as const;
@@ -244,17 +242,18 @@ describe.each(approximateModes)('the percent control for %s', (mode, prefix) => 
     expect(error()).toBeNull();
   });
 
-  it('gives both controls semantic names and associates the concise help', () => {
+  it('gives both controls semantic names and associates the endpoint labels as their description', () => {
+    // The endpoints line ("0% · Earliest / 100% · ...") is the only helper text these modes carry -
+    // the explanatory notes were removed 2026-08-12 (owner instruction), so it must not be
+    // reintroduced into aria-describedby as a dangling id.
     renderInput({ type: mode, fraction: 0.6 });
 
     const exactPercentage = screen.getByRole('spinbutton', { name: `${ui.accessibleName} percentage` });
     const coarseSlider = screen.getByRole('slider', { name: `${ui.accessibleName} slider` });
-    const note = screen.getByTestId(`${prefix}-note`);
     const endpoints = document.getElementById(`${prefix}-endpoints`)!;
 
-    expect(note.textContent).toBe(ui.help);
-    expect(exactPercentage.getAttribute('aria-describedby')).toBe(`${note.id} ${endpoints.id}`);
-    expect(coarseSlider.getAttribute('aria-describedby')).toBe(`${note.id} ${endpoints.id}`);
+    expect(exactPercentage.getAttribute('aria-describedby')).toBe(endpoints.id);
+    expect(coarseSlider.getAttribute('aria-describedby')).toBe(endpoints.id);
     expect(exactPercentage.getAttribute('aria-invalid')).toBe('false');
     expect(coarseSlider.getAttribute('aria-invalid')).toBe('false');
   });
@@ -388,18 +387,14 @@ describe('the two percent controls are not the same control', () => {
     renderInput({ type: 'approximateEntryPosition', fraction: 0.6 });
 
     expect(screen.getByTestId('cs-start-from-entry-fraction')).toBeTruthy();
-    expect(screen.getByTestId('cs-start-from-entry-note')).toBeTruthy();
     expect(screen.queryByTestId('cs-start-from-publish-time-fraction')).toBeNull();
-    expect(screen.queryByTestId('cs-start-from-publish-time-note')).toBeNull();
   });
 
   it('renders only the publish-time control for the publish-time mode', () => {
     renderInput({ type: 'approximatePublishTimePosition', fraction: 0.6 });
 
     expect(screen.getByTestId('cs-start-from-publish-time-fraction')).toBeTruthy();
-    expect(screen.getByTestId('cs-start-from-publish-time-note')).toBeTruthy();
     expect(screen.queryByTestId('cs-start-from-entry-fraction')).toBeNull();
-    expect(screen.queryByTestId('cs-start-from-entry-note')).toBeNull();
   });
 
   it('keeps the mode when the percentage is edited, rather than falling back to the other one', () => {
@@ -842,33 +837,24 @@ describe('Latest under a Guaranteed delivery order', () => {
   });
 });
 
-describe('counted modes disclose their ordering basis', () => {
-  // The labels "Skip first n messages" / "Latest n messages" used to promise exact global semantics
-  // the server cannot provide - Pulsar keeps append order per partition, not a global publish-time
-  // sequence. The server-side contract lives in MessageOrderKey's scaladoc; this note is the
-  // user-facing half. The COUNT is always exactly n; WHICH n can differ when producer clocks
-  // disagree, and hiding that in a doc comment nobody reads was the review complaint.
+describe('counted modes carry no ordering note', () => {
+  // The note that disclosed the counted modes' ordering basis (exactly n, but WHICH n depends on
+  // producer clocks) was removed 2026-08-12 by owner instruction - the contract lives in
+  // MessageOrderKey's scaladoc and docs/consume instead. This pin keeps the removal deliberate: a
+  // reappearing note is a regression of that instruction, not a restoration.
   it.each([
     ['nthMessageAfterEarliest', { type: 'nthMessageAfterEarliest', n: 5 }],
     ['nthMessageBeforeLatest', { type: 'nthMessageBeforeLatest', n: 5 }],
-  ])('%s shows the ordering note', (_name, startFrom) => {
+  ])('%s renders without the retired note', (_name, startFrom) => {
     renderInput(startFrom);
-    const note = screen.getByTestId('cs-start-from-counted-note');
-    expect(note.textContent).toMatch(/exactly n/i);
-    expect(note.textContent).toMatch(/publish time/i);
-    expect(note.textContent).toMatch(/clocks/i);
-  });
-
-  it('modes that seek exactly do not carry the note', () => {
-    renderInput({ type: 'earliestMessage' });
     expect(screen.queryByTestId('cs-start-from-counted-note')).toBeNull();
   });
 });
 
 describe('the "single non-partitioned topic" hint sits only where it is true', () => {
   // A message id names one entry in one topic's log, so it genuinely wants a single non-partitioned
-  // topic. The counted modes are exact-count ACROSS partitions (the counted-note says as much), so
-  // the same hint there undersells them - it used to appear on all three, pre-rework.
+  // topic. The counted modes are exact-count ACROSS partitions, so the same hint there undersells
+  // them - it used to appear on all three, pre-rework.
   const hint = () => screen.queryByText(/works best with a single non-partitioned topic/i);
 
   const messageIdStartFrom = {
@@ -893,7 +879,5 @@ describe('the "single non-partitioned topic" hint sits only where it is true', (
   ])('does not show it for %s, whose count is exact across partitions', (_name, startFrom) => {
     renderInput(startFrom);
     expect(hint()).toBeNull();
-    // The counted-note is what speaks for these modes now, and it does not undersell them.
-    expect(screen.getByTestId('cs-start-from-counted-note')).toBeTruthy();
   });
 });

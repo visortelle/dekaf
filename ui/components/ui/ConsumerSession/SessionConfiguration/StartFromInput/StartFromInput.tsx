@@ -124,7 +124,9 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
 
   // messageId only: a message id names one entry in one topic's log, so it has no meaning across a
   // partitioned topic or several topics. The counted modes deliberately do NOT carry this - they are
-  // exact-count across partitions (see the counted-note above), and this line would undersell them.
+  // exact-count across partitions, and this line would undersell them. (Their ordering contract
+  // lives in MessageOrderKey's scaladoc and docs/consume; the inline note that restated it was
+  // removed 2026-08-12, owner instruction.)
   const messageIdWorksBestNote = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)' }}>Works best with a single non-partitioned topic.</div>;
 
   const messageIdHexString = itemSpec.startFrom.type === 'messageId'
@@ -252,14 +254,6 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           here.
         </div>
       )}
-      {(itemSpec.startFrom.type === 'nthMessageAfterEarliest' || itemSpec.startFrom.type === 'nthMessageBeforeLatest') && (
-        <div className={s.PersistencyNote} data-testid="cs-start-from-counted-note">
-          Across a partitioned topic or several topics, "first" and "last" are decided by each message's publish time,
-          taken partition by partition in the order they were written. Pulsar keeps no global sequence, so if producer
-          clocks disagree - or one steps backwards - the count is still exactly n, but which n can differ from a strict
-          publish-time answer.
-        </div>
-      )}
       {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
         <div className={s.AdditionalControls}>
           <MessageCountInput
@@ -297,13 +291,6 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             disabled={props.disabled}
             isReadOnly={props.isReadOnly}
           />
-          <div
-            id="cs-start-from-entry-note"
-            className={s.ApproximateFractionNote}
-            data-testid="cs-start-from-entry-note"
-          >
-            Estimated from retained entries; each topic and partition is positioned independently.
-          </div>
         </div>
       )}
       {itemSpec.startFrom.type === 'approximatePublishTimePosition' && (
@@ -318,13 +305,6 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             disabled={props.disabled}
             isReadOnly={props.isReadOnly}
           />
-          <div
-            id="cs-start-from-publish-time-note"
-            className={s.ApproximateFractionNote}
-            data-testid="cs-start-from-publish-time-note"
-          >
-            Estimated from the first and last retained entries’ publish times; each topic has its own range and its partitions share one cutoff.
-          </div>
         </div>
       )}
       {itemSpec.startFrom.type === 'messageId' && (

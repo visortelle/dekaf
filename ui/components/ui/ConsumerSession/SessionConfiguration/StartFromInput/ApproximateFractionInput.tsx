@@ -53,11 +53,9 @@ const ApproximateFractionInput: React.FC<ApproximateFractionInputProps> = (props
 
   const isInvalid = fractionFromPercent(draft) === undefined;
   const sliderPercent = Number(percentFromFraction(props.fraction)) || 0;
-  const helpId = `${props.testIdPrefix}-note`;
   const endpointsId = `${props.testIdPrefix}-endpoints`;
   const errorId = `${props.testIdPrefix}-fraction-error`;
-  const descriptionIds = `${helpId} ${endpointsId}`;
-  const describedBy = isInvalid ? `${descriptionIds} ${errorId}` : descriptionIds;
+  const describedBy = isInvalid ? `${endpointsId} ${errorId}` : endpointsId;
 
   return (
     <div className={s.ApproximateFraction}>
