@@ -16,6 +16,8 @@ export type ModalStackEntry = {
   content: ReactNode,
   isNotCloseable?: boolean,
   styleMode?: 'no-content-padding',
+  /** Overrides the default "modal" test id, for dialogs tests need to tell apart. */
+  testId?: string,
 }
 
 export type ModalStack = ModalStackEntry[];
@@ -83,7 +85,10 @@ type ModalElementProps = {
   onClose: () => void;
 }
 
-const ModalElement: React.FC<ModalElementProps> = (props) => {
+/** The presentational part of a modal: backdrop, card, title bar with the close
+  * icon, and Esc handling. Exported so overlays that live above this provider in
+  * the tree (e.g. the health check overlay) can render the same dialog. */
+export const ModalElement: React.FC<ModalElementProps> = (props) => {
   const isVisible = props.isVisible;
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -106,7 +111,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       exit={{ opacity: 0, scale: 0.5 }}
       transition={{ duration: 0.25, ease: 'easeInOut', delay: 0.1 }}
       tabIndex={0}
-      data-testid="modal"
+      data-testid={props.entry.testId ?? "modal"}
       onKeyDown={(e) => {
         if (!props.entry.isNotCloseable && e.key === 'Escape') {
           props.onClose();

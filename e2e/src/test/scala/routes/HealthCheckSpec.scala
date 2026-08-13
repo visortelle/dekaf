@@ -23,3 +23,23 @@ class HealthCheckSpec extends DekafSuite:
     page.unroute(healthCheckUrl)
     assertThat(page.getByTestId("health-overlay")).hasCount(0, new LocatorAssertions.HasCountOptions().setTimeout(20000))
   }
+
+  test("NAV-15: the health overlay can be dismissed while connectivity is still down") {
+    page.navigate("/overview")
+
+    page.route(healthCheckUrl, route => route.abort())
+    assertThat(page.getByTestId("health-overlay")).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(20000))
+
+    // The overlay used to have no way out, which made the UI unusable - in particular it
+    // covered the credentials button, so a cluster that needs auth couldn't be authenticated
+    // from the UI at all. See #353.
+    page.getByTestId("health-overlay").press("Escape")
+    assertThat(page.getByTestId("health-overlay")).hasCount(0, new LocatorAssertions.HasCountOptions().setTimeout(10000))
+
+    // Connectivity is still down here: the next poll must not bring the overlay back.
+    page.waitForTimeout(8000)
+    assertThat(page.getByTestId("health-overlay")).hasCount(0)
+
+    // The UI underneath stays usable - the credentials button is reachable again.
+    assertThat(page.getByTestId("credentials-button")).isVisible()
+  }

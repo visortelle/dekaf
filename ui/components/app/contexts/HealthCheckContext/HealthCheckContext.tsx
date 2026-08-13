@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import * as GrpcClient from '../GrpcClient/GrpcClient';
 import useSWR from 'swr';
 import { swrKeys } from '../../../swrKeys';
@@ -6,7 +6,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/broker
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { createPortal } from 'react-dom';
 import HealthCheck from '../../../InstancePage/Overview/HealthCheck/HealthCheck';
-import { H3 } from '../../../ui/H/H';
+import { ModalElement } from '../Modals/Modals';
 
 type Status = 'unknown' | 'ok' | 'failed';
 type HealthCheckResult = {
@@ -37,6 +37,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const { brokersServiceClient } = GrpcClient.useContext();
   const [result, setResult] = useState<HealthCheckResult>(defaultValue.healthCheckResult);
   const [brokerVersion, setBrokerVersion] = useState<Value['brokerVersion']>();
+  const [isDismissed, setIsDismissed] = useState(false);
   const lastChecked = React.useRef<number>(0);
 
   useSWR(
@@ -86,43 +87,45 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     getBrokerVersion();
   }, []);
 
-  const style: CSSProperties = {
-    width: '100vw',
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '48rem',
-    zIndex: 1000,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    position: 'fixed',
-    top: 0,
-    left: 0
-  };
+  const isConnectionFailed = result.uiServerConnection === 'failed' || result.brokerConnection === 'failed';
 
-  const isShowOverlay = result.uiServerConnection === 'failed' || result.brokerConnection === 'failed';
+  // Re-arm the overlay once the connection is restored, so that a new outage is
+  // reported again even if the user dismissed the previous one.
+  useEffect(() => {
+    if (!isConnectionFailed) {
+      setIsDismissed(false);
+    }
+  }, [isConnectionFailed]);
+
+  const isShowOverlay = isConnectionFailed && !isDismissed;
   const overlay = isShowOverlay ? createPortal(
-    <div style={style} data-testid="health-overlay">
-      <div style={{ background: '#fff', borderRadius: '12rem', padding: '24rem 48rem', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
-        <div>
-          <H3>
-            There are connectivity issues
-          </H3>
-
-          <ul>
-            <li>
-              If the problem persists, contact your administrator.
-            </li>
-            <li>
-              <a target="_blank" href='https://github.com/visortelle/dekaf/issues'>🛟 Get community support</a> if you are an administrator and not sure how to fix the problem.
-            </li>
-          </ul>
-        </div>
-        <HealthCheck />
-        <div><strong>Last checked at:</strong> {new Date(lastChecked.current).toLocaleTimeString()}</div>
-      </div>
-    </div>,
+    <ModalElement
+      entry={{
+        id: 'health-check',
+        testId: 'health-overlay',
+        title: 'There are connectivity issues',
+        content: (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+            <ul>
+              <li>
+                If your Pulsar cluster requires authentication, close this dialog and set your
+                credentials using the 🔑 button in the navigation sidebar on the left.
+              </li>
+              <li>
+                If the problem persists, contact your administrator.
+              </li>
+              <li>
+                <a target="_blank" href='https://github.com/visortelle/dekaf/issues'>🛟 Get community support</a> if you are an administrator and not sure how to fix the problem.
+              </li>
+            </ul>
+            <HealthCheck />
+            <div><strong>Last checked at:</strong> {new Date(lastChecked.current).toLocaleTimeString()}</div>
+          </div>
+        )
+      }}
+      isVisible
+      onClose={() => setIsDismissed(true)}
+    />,
     document.body
   ) : null;
 
