@@ -49,7 +49,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
   const availableForContexts = useMemo(() => [resourceMatcherFromContext(props.libraryContext, 'derive-from-context')], [props.libraryContext]);
 
   return (
-    <div className={s.LibraryBrowserPanel} ref={hoverRef}>
+    <div className={s.LibraryBrowserPanel} ref={hoverRef} data-testid={`lib-panel-${props.itemType}`}>
       <div style={{ display: 'inline-flex', position: 'relative' }}>
         <FormLabel
           content={(

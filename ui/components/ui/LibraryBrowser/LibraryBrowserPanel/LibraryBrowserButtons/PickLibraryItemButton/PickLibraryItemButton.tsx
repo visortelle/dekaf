@@ -82,6 +82,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
                 itemType={props.itemType}
                 onSelected={(libraryItem) => {
                   props.onPick(libraryItem.spec);
+                  modals.pop();
                 }}
                 onCanceled={modals.pop}
                 libraryContext={props.libraryContext}

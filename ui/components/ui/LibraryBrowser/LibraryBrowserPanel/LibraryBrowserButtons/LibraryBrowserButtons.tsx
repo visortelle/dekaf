@@ -30,6 +30,7 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
           item={props.value}
           libraryContext={props.libraryContext}
           onSaved={props.onSave}
+          testId="lib-save"
         />
       )}
 

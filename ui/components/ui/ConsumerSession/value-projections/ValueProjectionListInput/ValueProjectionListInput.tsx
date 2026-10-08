@@ -90,13 +90,15 @@ const ValueProjectionListInput: React.FC<ValueProjectionListInputProps> = (props
 
       <ListInput<ManagedValueProjectionValOrRef>
         getId={(v) => v.val?.metadata.id || ''}
-        renderItem={(v) => {
+        renderItem={(v, i) => {
           return (
             <ValueProjectionInput
               value={v}
-              onChange={(v) => {
+              onChange={(updatedProjection) => {
+                // Match by position. Matching by id doesn't work when the projection is
+                // replaced by one picked from the library, which carries a different id.
                 const newProjections = itemSpec.projections
-                  .map(projection => projection.val?.metadata.id === v.val?.metadata.id ? v : projection);
+                  .map((projection, projectionIndex) => projectionIndex === i ? updatedProjection : projection);
                 onSpecChange({ ...itemSpec, projections: newProjections });
               }}
               libraryContext={props.libraryContext}
