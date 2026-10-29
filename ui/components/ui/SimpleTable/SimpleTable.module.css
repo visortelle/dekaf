@@ -50,5 +50,5 @@ thead .Row:last-child .Cell {
 }
 
 .NoData {
-  color: #aaa;
+  color: var(--text-color-muted);
 }

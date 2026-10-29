@@ -104,7 +104,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const isShowOverlay = result.uiServerConnection === 'failed' || result.brokerConnection === 'failed';
   const overlay = isShowOverlay ? createPortal(
     <div style={style} data-testid="health-overlay">
-      <div style={{ background: '#fff', borderRadius: '12rem', padding: '24rem 48rem', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
+      <div style={{ background: 'var(--background-color)', borderRadius: '12rem', padding: '24rem 48rem', display: 'flex', flexDirection: 'column', gap: '12rem' }}>
         <div>
           <H3>
             There are connectivity issues

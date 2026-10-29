@@ -1,5 +1,5 @@
 .Container {
-  background-color: #fff;
+  background-color: var(--background-color);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -23,7 +23,7 @@
 
 .DisabledSelect {
   opacity: 1;
-  color: #aaa;
+  color: var(--text-color-muted);
 }
 
 .Placeholder {
@@ -58,5 +58,5 @@
 }
 
 .DisabledArrow svg {
-  fill: #aaa;
+  fill: var(--text-color-muted);
 }

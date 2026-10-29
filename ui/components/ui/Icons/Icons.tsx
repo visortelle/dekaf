@@ -72,7 +72,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
 
   switch (props.topicPersistency) {
     case 'persistent': backgroundColor = 'var(--accent-color-green)'; textColor = '#fff'; title = "to"; break;
-    case 'non-persistent': backgroundColor = '#fff'; textColor = 'var(--accent-color-green)'; title = "np"; style = { backgroundColor: '#eee' }; break;
+    case 'non-persistent': backgroundColor = 'var(--background-color)'; textColor = 'var(--accent-color-green)'; title = "np"; style = { backgroundColor: 'var(--hover-color)' }; break;
   }
 
   return (
@@ -148,7 +148,7 @@ export const InstanceIcon: React.FC<InstanceIconProps> = (props) => {
   return <NodeIcon
     svgIcon={pulsarLogo}
     textColor='var(--accent-color-blue)'
-    backgroundColor="#fff"
+    backgroundColor="var(--background-color)"
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
@@ -169,7 +169,7 @@ export type SubscriptionIconProps = {
 export const SubscriptionIcon: React.FC<SubscriptionIconProps> = (props) => {
   return <NodeIcon
     title="su"
-    textColor='var(--text-color)'
+    textColor='var(--text-on-light-accent-color)'
     backgroundColor='var(--accent-color-yellow)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
@@ -191,7 +191,7 @@ export const ProducerIcon: React.FC<ProducerIconProps> = (props) => {
   return <NodeIcon
     title="pr"
     textColor='var(--accent-color-yellow)'
-    backgroundColor='var(--text-color)'
+    backgroundColor='#333'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
@@ -210,7 +210,7 @@ export type ConsumerIconProps = {
 export const ConsumerIcon: React.FC<ProducerIconProps> = (props) => {
   return <NodeIcon
     title="co"
-    textColor='var(--text-color)'
+    textColor='var(--text-on-light-accent-color)'
     backgroundColor='var(--accent-color-yellow)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}

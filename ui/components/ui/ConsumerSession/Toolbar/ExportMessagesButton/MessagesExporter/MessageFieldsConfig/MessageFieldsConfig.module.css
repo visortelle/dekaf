@@ -11,7 +11,7 @@
   border: 1px solid var(--border-color);
   border-radius: 4rem;
   position: relative;
-  background-color: #fff;
+  background-color: var(--background-color);
 }
 
 .DraggingMessageField {

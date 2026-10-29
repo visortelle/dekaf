@@ -23,7 +23,7 @@
 
 .ListField {
   position: relative;
-  background-color: #fff;
+  background-color: var(--background-color);
 }
 
 .ListFieldInput {
@@ -115,7 +115,7 @@
 }
 
 .DraggingItem {
-  background-color: #fff;
+  background-color: var(--background-color);
   box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.27);
   z-index: 100;
 }

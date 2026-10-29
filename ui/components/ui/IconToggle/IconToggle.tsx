@@ -53,7 +53,7 @@ function IconToggle<T>(props: IconToggleProps<T>): React.ReactElement {
         props.onChange(nextValue);
       }}
       style={{
-        backgroundColor: currentItem?.backgroundColor ? currentItem.backgroundColor : '#fff',
+        backgroundColor: currentItem?.backgroundColor ? currentItem.backgroundColor : 'var(--background-color)',
       }}
       data-tooltip-id={tooltipId}
       data-tooltip-html={currentItem?.help === undefined ? undefined : renderToStaticMarkup(<>{currentItem.help}</>)}

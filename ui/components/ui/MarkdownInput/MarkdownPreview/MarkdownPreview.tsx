@@ -8,6 +8,7 @@ import 'highlight.js/styles/github.css';
 import taskLists from './markdown-it-task-list';
 import sanitizeHtml, { defaults } from 'sanitize-html';
 import { cloneDeep } from 'lodash';
+import * as Theme from '../../../app/contexts/Theme/Theme';
 
 const md = markdownit({
   html: true,
@@ -47,9 +48,10 @@ md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
   return defaultRender(tokens, idx, options, env, self);
 };
 
-mermaid.initialize({
+const initializeMermaid = (theme: Theme.Theme) => mermaid.initialize({
   startOnLoad: true,
   securityLevel: 'loose',
+  theme: theme === 'dark' ? 'dark' : 'default',
 });
 
 const sanitizeOptions = cloneDeep(defaults);
@@ -68,11 +70,13 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
   const [markdownDebounced] = useDebounce(props.markdown, 350);
   const [renderedMarkdown, setRenderedMarkdown] = useState('');
   const mermaidRerenderTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const { theme } = Theme.useContext();
 
   useEffect(() => {
+    initializeMermaid(theme);
     const safeHtml = sanitizeHtml(md.render(props.markdown), sanitizeOptions);
     setRenderedMarkdown(safeHtml);
-  }, [markdownDebounced]);
+  }, [markdownDebounced, theme]);
 
   useEffect(() => {
     if (mermaidRerenderTimeout.current !== undefined) {
@@ -87,11 +91,12 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = (props) => {
         mermaid.contentLoaded();
       }
     }, 300);
-  }, [renderedMarkdown, props.isHidden]);
+  }, [renderedMarkdown, props.isHidden, theme]);
 
   return (
     <div className={s.MarkdownPreview}>
-      <div dangerouslySetInnerHTML={{ __html: renderedMarkdown }}></div>
+      {/* Mermaid bakes the theme into the SVG it renders in place, so remount from source on theme change. */}
+      <div key={theme} dangerouslySetInnerHTML={{ __html: renderedMarkdown }}></div>
     </div>
   );
 }

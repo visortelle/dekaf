@@ -8,6 +8,22 @@
   <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
 
+  <script>
+    // Apply the theme before first paint to avoid a light flash. Keep in sync with
+    // ui/components/app/contexts/Theme/Theme.tsx and the "theme" key in local-storage-keys.ts.
+    (function () {
+      var preference = 'system';
+      try {
+        preference = JSON.parse(localStorage.getItem('theme')) || 'system';
+      } catch (e) {}
+      var isDark = preference === 'dark' ||
+        (preference !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var theme = isDark ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
+
   <link href="ui/static/fonts.css" rel="stylesheet"/>
   <link href="ui/static/globals.css" rel="stylesheet"/>
   <link href="ui/static/dist/entrypoint.css" rel="stylesheet"/>

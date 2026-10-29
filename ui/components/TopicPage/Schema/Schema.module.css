@@ -1,5 +1,5 @@
 .Schema {
-  background-color: #fff;
+  background-color: var(--background-color);
   flex: 1 1 auto;
   display: flex;
   overflow: hidden;

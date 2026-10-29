@@ -22,5 +22,10 @@ export const localStorageKeys = {
   /** Whether the browser-wide consumer-session More tools panel is open. */
   consumerSessionToolsOpen: "consumerSessionToolsOpen",
   /** The last selected More tools tab. Runtime validation handles tabs removed by newer builds. */
-  consumerSessionToolsTab: "consumerSessionToolsTab"
+  consumerSessionToolsTab: "consumerSessionToolsTab",
+  /**
+   * 'light' | 'dark' | 'system'. Also read by the boot script in server/src/main/resources/ui/index.ftl
+   * (as JSON, the way use-local-storage-state writes it), so renaming the key needs a change there too.
+   */
+  theme: "theme"
 } as const;

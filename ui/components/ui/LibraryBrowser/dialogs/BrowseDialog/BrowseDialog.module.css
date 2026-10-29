@@ -2,7 +2,7 @@
   display: grid;
   grid-template-rows: 1fr min-content;
   overflow: hidden;
-  background-color: #fff;
+  background-color: var(--background-color);
 }
 
 .Content {

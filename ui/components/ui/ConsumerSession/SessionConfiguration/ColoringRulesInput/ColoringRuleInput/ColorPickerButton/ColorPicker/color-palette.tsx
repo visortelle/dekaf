@@ -299,7 +299,7 @@ export const themeBackgroundColorName = "theme-background-color" as const;
 
 const themeColors: Record<string, ColorHex> = {
   [themeForegroundColorName]: 'var(--text-color)',
-  [themeBackgroundColorName]: '#ffffff',
+  [themeBackgroundColorName]: 'var(--background-color)',
 }
 
 // TODO - pregenerate it

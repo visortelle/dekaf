@@ -27,5 +27,5 @@
 .ItemEditorContainerChildren {
   width: 480rem;
   padding: 12rem;
-  background-color: #fff;
+  background-color: var(--background-color);
 }

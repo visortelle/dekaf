@@ -12,8 +12,8 @@
   height: 12rem;
   width: 32rem;
   border-radius: 99999px;
-  background-color: #aaa;
-  border: 2rem solid #aaa;
+  background-color: var(--text-color-muted);
+  border: 2rem solid var(--text-color-muted);
 }
 
 .Body:focus {
@@ -31,7 +31,7 @@
 }
 
 .False .Body {
-  background-color: #aaa;
+  background-color: var(--text-color-muted);
 }
 
 .Label {
@@ -41,7 +41,7 @@
 }
 
 .Circle {
-  background-color: #fff;
+  background-color: var(--text-on-accent-color);
   border-radius: 50%;
   width: 18rem;
   height: 18rem;

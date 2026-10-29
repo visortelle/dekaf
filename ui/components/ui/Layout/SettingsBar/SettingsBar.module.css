@@ -2,13 +2,20 @@
   padding: 12rem 12rem 0 8rem;
   position: relative;
   height: 94rem;
-  background-color: #fff;
+  background-color: var(--background-color);
 }
 
 .ProductLogo {
   position: absolute;
   inset: 12rem;
   display: grid;
+}
+
+/* The logo PNG has an opaque white background. Inverting turns it black and the wordmark white,
+   hue-rotate restores the artwork's hues, and screen blending drops the black into the page. */
+:global(:root[data-theme="dark"]) .ProductLogo {
+  filter: invert(1) hue-rotate(180deg);
+  mix-blend-mode: screen;
 }
 
 .ProductLogo:hover {

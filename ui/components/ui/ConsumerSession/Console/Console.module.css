@@ -1,7 +1,7 @@
 .Console {
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: var(--background-color);
   overflow: hidden;
   border-top: none;
   position: relative;

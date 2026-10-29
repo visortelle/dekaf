@@ -1,0 +1,46 @@
+.ThemeSwitch {
+  display: inline-flex;
+  gap: 2rem;
+  padding: 2rem;
+  border-radius: 6rem;
+  background-color: var(--surface-color);
+  border: 1rem solid var(--border-color);
+}
+
+.Option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24rem;
+  height: 22rem;
+  padding: 0;
+  border: none;
+  border-radius: 4rem;
+  background-color: transparent;
+  fill: var(--text-color-muted);
+  color: var(--text-color-muted);
+  transition: var(--transition-short);
+}
+
+.Option svg {
+  width: 14rem;
+  height: 14rem;
+}
+
+.Option:hover {
+  cursor: pointer;
+  fill: var(--text-color);
+  color: var(--text-color);
+}
+
+.Option:focus-visible {
+  outline: 2rem solid var(--accent-color-blue);
+  outline-offset: -2rem;
+}
+
+.Selected {
+  background-color: var(--background-color);
+  fill: var(--text-color);
+  color: var(--text-color);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+}

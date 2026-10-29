@@ -4,6 +4,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { IRange } from 'monaco-editor';
 
 import s from './CodeEditor.module.css';
+import * as Theme from '../../app/contexts/Theme/Theme';
 
 // @monaco-editor/react fetches Monaco at runtime through its own AMD loader, and its default base
 // is cdn.jsdelivr.net - so every code editor here depended on the public internet: seconds of
@@ -31,8 +32,20 @@ export type CodeEditorProps = EditorProps & {
   isReadOnly?: boolean
 };
 
+// vs-dark with the app's dark background, so editors don't sit as grey boxes on the page.
+const darkThemeName = 'dekaf-dark';
+const defineDarkTheme = (monaco: Monaco) => {
+  monaco.editor.defineTheme(darkThemeName, {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: { 'editor.background': '#17181d' },
+  });
+};
+
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   const { options, autoCompleteConfig, ...restProps } = props;
+  const { theme } = Theme.useContext();
 
   let register: monaco.IDisposable | null = null
 
@@ -101,13 +114,14 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
     <div className={s.CodeEditor}>
       <Editor
         beforeMount={(monaco) => {
+          defineDarkTheme(monaco);
           addAutoCompletion(monaco);
         }}
+        theme={theme === 'dark' ? darkThemeName : 'vs'}
         options={{
           readOnly: props.isReadOnly,
           minimap: { enabled: false },
           scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false, verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
-          theme: 'vs',
           fontSize: parseFloat(getComputedStyle(document.documentElement).fontSize) * 14,
           automaticLayout: true,
           ...options,

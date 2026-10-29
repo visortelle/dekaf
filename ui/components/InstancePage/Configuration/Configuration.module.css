@@ -82,7 +82,7 @@
   z-index: 10;
   padding: 12rem;
   box-shadow: 1rem 1rem 8rem rgba(0, 0, 0, 0.27);
-  background-color: #fff;
+  background-color: var(--background-color);
   border-radius: 4rem;
   width: 480rem;
   animation: fade-in 0.2s ease-in-out;

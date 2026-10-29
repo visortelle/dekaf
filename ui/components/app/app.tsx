@@ -4,6 +4,7 @@ import * as Notifications from "./contexts/Notifications";
 import * as GrpcClient from "./contexts/GrpcClient/GrpcClient";
 import * as BrokerConfig from "./contexts/BrokersConfig";
 import * as I18n from "./contexts/I18n/I18n";
+import * as Theme from "./contexts/Theme/Theme";
 import "react-toastify/dist/ReactToastify.css";
 import { SWRConfig } from "swr";
 import Router from "./Router/Router";
@@ -22,11 +23,13 @@ const App: React.FC<AppProps> = (props) => {
   return (
     <>
       <AppContext.DefaultProvider config={props.config}>
-        <I18n.DefaultProvider>
-          <AsyncTasks.DefaultProvider>
-            <_App {...props} />
-          </AsyncTasks.DefaultProvider>
-        </I18n.DefaultProvider>
+        <Theme.DefaultProvider>
+          <I18n.DefaultProvider>
+            <AsyncTasks.DefaultProvider>
+              <_App {...props} />
+            </AsyncTasks.DefaultProvider>
+          </I18n.DefaultProvider>
+        </Theme.DefaultProvider>
       </AppContext.DefaultProvider>
       <Tooltip />
     </>

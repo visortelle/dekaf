@@ -42,5 +42,5 @@
 }
 
 .NoData {
-  color: #aaa;
+  color: var(--text-color-muted);
 }

@@ -20,7 +20,7 @@
   border: 1px solid var(--border-color);
   border-left: none;
   border-top: none;
-  background-color: #fff;
+  background-color: var(--background-color);
   left: 0;
   position: relative;
   white-space: nowrap;
@@ -73,7 +73,7 @@
   border-left: none;
   overflow: hidden;
   text-overflow: ellipsis;
-  background-color: #fff;
+  background-color: var(--background-color);
 }
 
 .Table tr:first-child .Td {
@@ -119,7 +119,7 @@
 }
 
 .NoData {
-  color: #aaa;
+  color: var(--text-color-muted);
 }
 
 @keyframes fade-in {

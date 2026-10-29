@@ -2,7 +2,7 @@
 
 .Picker {
   z-index: 999;
-  background-color: #fff !important;
+  background-color: var(--background-color) !important;
 }
 
 .SvgIcon svg {
@@ -19,8 +19,8 @@
 
 .DatetimePicker:not(.ReadOnly) .Picker:global(.react-datetime-picker--disabled),
 .DatetimePicker:not(.ReadOnly) .Picker:global(.react-datetime-picker--disabled) * {
-  color: #aaa !important;
-  fill: #aaa !important;
+  color: var(--text-color-muted) !important;
+  fill: var(--text-color-muted) !important;
 }
 
 .DatetimePicker .Picker:global(.react-datetime-picker--disabled) :global(.react-datetime-picker__wrapper) {
@@ -66,7 +66,7 @@
 
 .Calendar :global(.react-calendar__tile:enabled:hover),
 .Calendar :global(.react-calendar__tile:enabled:focus) {
-  background-color: #fff !important;
+  background-color: var(--background-color) !important;
   opacity: 0.5 !important;
   transition: var(--transition-short) !important;
 }
@@ -133,7 +133,7 @@
 
 .Calendar :global(.react-calendar__navigation button:enabled:hover),
 .Calendar :global(.react-calendar__navigation button:enabled:focus) {
-  background-color: #fff !important;
+  background-color: var(--background-color) !important;
   opacity: 0.5 !important;
   transition: var(--transition-short) !important;
 }

@@ -102,7 +102,7 @@
 }
 
 .NoData {
-  color: #aaa;
+  color: var(--text-color-muted);
 }
 
 /* The out-of-order warning beside the loaded count: the app's warning palette in a small round

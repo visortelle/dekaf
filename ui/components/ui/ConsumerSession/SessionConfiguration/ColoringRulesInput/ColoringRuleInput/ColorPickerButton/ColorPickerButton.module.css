@@ -1,7 +1,7 @@
 .ColorPickerButton {
   width: 24rem;
   height: 24rem;
-  box-shadow: 0 0 0 1px #ddd;
+  box-shadow: 0 0 0 1px var(--border-color);
   border-radius: 4rem;
 }
 

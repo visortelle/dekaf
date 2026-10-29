@@ -11,7 +11,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(0deg, #fff 10%, #fff0 100%);
+  background: linear-gradient(0deg, var(--background-color) 10%, transparent 100%);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -26,7 +26,7 @@
 
 .ViewFullScreenText {
   opacity: 0;
-  background-color: #fff;
+  background-color: var(--background-color);
   font-size: 12rem;
   border-radius: 12rem;
   box-shadow: 0 0 4rem rgba(0, 0, 0, 0.17);
@@ -88,5 +88,5 @@
   justify-content: center;
   align-items: center;
   font-weight: var(--font-weight-bold);
-  color: #777;
+  color: var(--text-color-secondary);
 }

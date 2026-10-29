@@ -21,7 +21,7 @@
 }
 
 .Crumb:hover {
-  background-color: #eee;
+  background-color: var(--hover-color);
   cursor: pointer;
 }
 

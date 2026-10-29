@@ -56,7 +56,7 @@
 }
 
 .Regular {
-  background-color: #fff;
+  background-color: var(--background-color);
   color: var(--text-color);
 }
 
@@ -118,11 +118,11 @@
   opacity: 1;
   background-color: var(--surface-color) !important;
   border-color: var(--border-color) !important;
-  color: #999 !important;
+  color: var(--text-color-muted) !important;
 }
 
 .DisabledButton svg {
-  fill: #aaa;
+  fill: var(--text-color-muted);
 }
 
 .DisabledButton:hover {

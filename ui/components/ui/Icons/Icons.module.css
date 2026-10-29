@@ -46,7 +46,7 @@
 }
 
 .NodeIconAddon {
-  color: #fff;
+  color: var(--background-color);
   font-size: 8rem;
   font-weight: bold;
   white-space: no-wrap;

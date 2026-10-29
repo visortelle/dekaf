@@ -1,5 +1,5 @@
 .NavigationTree {
-  background-color: #fff;
+  background-color: var(--background-color);
   height: 100%;
   font-size: 14rem;
   display: flex;
@@ -8,7 +8,7 @@
 
 .Node {
   padding: 8rem 12rem 8rem 18rem;
-  background-color: #fff;
+  background-color: var(--background-color);
   position: relative;
   animation: fade-in 0.2s ease-in-out;
 }

@@ -8,40 +8,40 @@ This CSS forces to show scrollbar always.
 It doesn't work in Firefox yet. */
 ::-webkit-scrollbar {
     -webkit-appearance: none;
-    background: #f5f5f5;
+    background: var(--scrollbar-track-color);
 }
 
 ::-webkit-scrollbar:vertical {
     width: 11px;
     padding: 0 1px;
-    border-left: 1px solid #ededed;
-    border-right: 1px solid #ededed;
+    border-left: 1px solid var(--scrollbar-border-color);
+    border-right: 1px solid var(--scrollbar-border-color);
 }
 
 ::-webkit-scrollbar:horizontal {
     height: 11px;
     padding: 1px 0;
-    border-top: 1px solid #ededed;
-    border-bottom: 1px solid #ededed;
+    border-top: 1px solid var(--scrollbar-border-color);
+    border-bottom: 1px solid var(--scrollbar-border-color);
 }
 
 ::-webkit-scrollbar-thumb {
     border-radius: 4px;
-    background-color: #c1c1c1;
+    background-color: var(--scrollbar-thumb-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #7e7e7e;
+  background-color: var(--scrollbar-thumb-hover-color);
 }
 
 ::-webkit-scrollbar-thumb:vertical {
-  border: 2px solid #ededed;
+  border: 2px solid var(--scrollbar-border-color);
   border-top: none;
   border-bottom: none;
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
-  border: 2px solid #ededed;
+  border: 2px solid var(--scrollbar-border-color);
   border-left: none;
   border-right: none;
 }

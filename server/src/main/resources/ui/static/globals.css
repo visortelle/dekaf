@@ -32,6 +32,51 @@
   --accent-color-purple: #9d50ff;
   --max-content-width: 1000px;
   --toastify-icon-color-success: var(--accent-color-green) !important;
+
+  color-scheme: light;
+  --text-color-secondary: #666;
+  --text-color-muted: #aaa;
+  --text-on-accent-color: #fff;
+  /* Text on yellow and other light accents: stays dark in both themes. */
+  --text-on-light-accent-color: rgba(0, 0, 0, 0.816);
+  --hover-color: #eee;
+  --warning-background-color: #fff7e0;
+  --warning-text-color: #7a5b00;
+  --error-color: #b00020;
+  --shimmer-color: rgba(255, 255, 255, 0.5);
+  --loading-overlay-color: #000;
+  --scrollbar-track-color: #f5f5f5;
+  --scrollbar-border-color: #ededed;
+  --scrollbar-thumb-color: #c1c1c1;
+  --scrollbar-thumb-hover-color: #7e7e7e;
+}
+
+/* Set on <html> by the boot script in index.ftl and by ThemeContext. Keep the light values above
+   as the default so a page without the attribute still renders as before. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background-color: #17181d;
+  --background-color-backdrop: rgba(20, 16, 34, 0.85);
+  --surface-color: #22242b;
+  --surface-color-backdrop: rgba(20, 16, 34, 0.92);
+  --text-color: rgba(255, 255, 255, 0.86);
+  --text-color-secondary: rgba(255, 255, 255, 0.6);
+  --text-color-muted: rgba(255, 255, 255, 0.4);
+  --border-color: #2e313a;
+  --hover-color: #2a2d36;
+  --accent-color-blue: #7f8af0;
+  --accent-color-light-blue: #a3b1ff;
+  --warning-background-color: #3a3014;
+  --warning-text-color: #f2c94c;
+  --error-color: #ff6b7f;
+  --shimmer-color: rgba(255, 255, 255, 0.06);
+  --loading-overlay-color: #fff;
+  --scrollbar-track-color: #1c1d23;
+  --scrollbar-border-color: #26282f;
+  --scrollbar-thumb-color: #44474f;
+  --scrollbar-thumb-hover-color: #6a6d76;
+  --toastify-color-light: var(--surface-color);
+  --toastify-text-color-light: var(--text-color);
 }
 
 html,
@@ -52,7 +97,8 @@ button,
 option,
 select {
   font-family: inherit;
-  background-color: #fff;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 strong, b {
@@ -99,6 +145,50 @@ pre.hljs {
   padding: 8rem 18rem;
 }
 
+/* highlight.js: the bundle imports highlight.js/styles/github.css (light). These are the
+   github-dark token colors, scoped to the dark theme. */
+:root[data-theme="dark"] .hljs { color: #c9d1d9; background: var(--surface-color); }
+:root[data-theme="dark"] .hljs-doctag,
+:root[data-theme="dark"] .hljs-keyword,
+:root[data-theme="dark"] .hljs-meta .hljs-keyword,
+:root[data-theme="dark"] .hljs-template-tag,
+:root[data-theme="dark"] .hljs-template-variable,
+:root[data-theme="dark"] .hljs-type,
+:root[data-theme="dark"] .hljs-variable.language_ { color: #ff7b72; }
+:root[data-theme="dark"] .hljs-title,
+:root[data-theme="dark"] .hljs-title.class_,
+:root[data-theme="dark"] .hljs-title.class_.inherited__,
+:root[data-theme="dark"] .hljs-title.function_ { color: #d2a8ff; }
+:root[data-theme="dark"] .hljs-attr,
+:root[data-theme="dark"] .hljs-attribute,
+:root[data-theme="dark"] .hljs-literal,
+:root[data-theme="dark"] .hljs-meta,
+:root[data-theme="dark"] .hljs-number,
+:root[data-theme="dark"] .hljs-operator,
+:root[data-theme="dark"] .hljs-selector-attr,
+:root[data-theme="dark"] .hljs-selector-class,
+:root[data-theme="dark"] .hljs-selector-id,
+:root[data-theme="dark"] .hljs-variable { color: #79c0ff; }
+:root[data-theme="dark"] .hljs-meta .hljs-string,
+:root[data-theme="dark"] .hljs-regexp,
+:root[data-theme="dark"] .hljs-string { color: #a5d6ff; }
+:root[data-theme="dark"] .hljs-built_in,
+:root[data-theme="dark"] .hljs-symbol { color: #ffa657; }
+:root[data-theme="dark"] .hljs-code,
+:root[data-theme="dark"] .hljs-comment,
+:root[data-theme="dark"] .hljs-formula { color: #8b949e; }
+:root[data-theme="dark"] .hljs-name,
+:root[data-theme="dark"] .hljs-quote,
+:root[data-theme="dark"] .hljs-selector-pseudo,
+:root[data-theme="dark"] .hljs-selector-tag { color: #7ee787; }
+:root[data-theme="dark"] .hljs-subst,
+:root[data-theme="dark"] .hljs-emphasis,
+:root[data-theme="dark"] .hljs-strong { color: #c9d1d9; }
+:root[data-theme="dark"] .hljs-section { color: #1f6feb; }
+:root[data-theme="dark"] .hljs-bullet { color: #f2cc60; }
+:root[data-theme="dark"] .hljs-addition { color: #aff5b4; background-color: #033a16; }
+:root[data-theme="dark"] .hljs-deletion { color: #ffdcd7; background-color: #67060c; }
+
 hr {
   background-color: var(--surface-color);
   width: 100%;
@@ -133,7 +223,7 @@ code {
   width: 100%;
   height: 100%;
   opacity: 1;
-  background: #000;
+  background: var(--loading-overlay-color);
   animation-name: loading-overlay;
   animation-duration: 0.66s;
   animation-timing-function: ease;
@@ -152,5 +242,6 @@ code {
 
 .highlight-substring {
   background-color: var(--accent-color-yellow);
+  color: var(--text-on-light-accent-color);
   border-radius: 2rem;
 }

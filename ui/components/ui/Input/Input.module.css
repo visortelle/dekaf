@@ -44,7 +44,7 @@
 
 .InputInput {
   position: relative;
-  background-color: #fff;
+  background-color: var(--background-color);
   border-radius: 6rem;
   border: 1px solid var(--border-color);
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);

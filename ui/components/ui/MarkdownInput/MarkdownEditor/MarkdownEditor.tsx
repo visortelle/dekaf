@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import s from './MarkdownEditor.module.css'
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
-import { githubLight } from '@uiw/codemirror-theme-github';
+import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 import MarkdownPreview from '../MarkdownPreview/MarkdownPreview';
 import A from '../../A/A';
+import * as Theme from '../../../app/contexts/Theme/Theme';
 
 export type MarkdownEditorProps = {
   value: string,
@@ -15,6 +16,7 @@ export type MarkdownEditorProps = {
 const MarkdownEditor: React.FC<MarkdownEditorProps> = (props) => {
   const divRef1 = useRef<HTMLDivElement>(null);
   const divRef2 = useRef<HTMLDivElement>(null);
+  const { theme } = Theme.useContext();
 
   const syncScroll = (sourceRef: React.RefObject<HTMLDivElement>, targetRef: React.RefObject<HTMLDivElement>) => {
     if (!sourceRef.current || !targetRef.current) {
@@ -58,7 +60,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = (props) => {
           value={props.value}
           onChange={props.onChange}
           extensions={[markdown({ defaultCodeLanguage: markdownLanguage })]}
-          theme={githubLight}
+          theme={theme === 'dark' ? githubDark : githubLight}
         />
       </div>
 

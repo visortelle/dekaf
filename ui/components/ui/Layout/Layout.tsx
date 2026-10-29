@@ -4,6 +4,7 @@ import NavigationTree from './NavigationTree/NavigationTree';
 import { TreePath } from './NavigationTree/TreeView';
 import GlobalProgressIndicator from '../GlobalProgressIndicator/GlobalProgressIndicator';
 import SettingsBar from './SettingsBar/SettingsBar';
+import ThemeSwitch from '../ThemeSwitch/ThemeSwitch';
 import { useResizablePane } from '../resizable/useResizablePane';
 import PaneResizeHandle from '../resizable/PaneResizeHandle';
 
@@ -29,6 +30,10 @@ const Layout: React.FC<LayoutProps> = (props) => {
 
         <div className={s.NavigationTree}>
           <NavigationTree selectedNodePath={navigationTree.selectedNodePath} />
+        </div>
+
+        <div className={s.SidebarFooter}>
+          <ThemeSwitch />
         </div>
 
         <PaneResizeHandle mode="edge" onResizeStart={sidebar.startResize} title="Drag to resize sidebar" />

@@ -19,7 +19,7 @@
   border-radius: 12rem;
   overflow: hidden;
   box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
-  background-color: #fff;
+  background-color: var(--background-color);
   max-width: calc(100vw - 24rem);
 }
 
@@ -35,7 +35,7 @@
 
 .TopBar {
   height: 72rem;
-  background-color: #fff;
+  background-color: var(--background-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
